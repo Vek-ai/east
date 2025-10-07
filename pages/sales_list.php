@@ -297,35 +297,6 @@ function showCol($name) {
         <iframe id="pdfFrame" src="" style="height: 70vh; width: 100%;" class="mb-3 border rounded"></iframe>
 
         <div class="container mt-3 border rounded p-3" style="width: 100%;">
-        <h6 class="mb-3">Download Outputs</h6>
-        <div class="row">
-            <div class="col-md-4">
-            <div class="form-check">
-                <input class="form-check-input" type="checkbox" id="officeCopy">
-                <label class="form-check-label" style="color: #ffffff;" for="officeCopy">Cover Sheet (Office Copy)</label>
-            </div>
-            <div class="form-check">
-                <input class="form-check-input" type="checkbox" id="customerCopy">
-                <label class="form-check-label" style="color: #ffffff;" for="customerCopy">Cover Sheet (Customer Copy)</label>
-            </div>
-            </div>
-            <div class="col-md-4">
-            <div class="form-check">
-                <input class="form-check-input" type="checkbox" id="ekmCost">
-                <label class="form-check-label" style="color: #ffffff;" for="ekmCost">EKM Cost Breakdown</label>
-            </div>
-            <div class="form-check">
-                <input class="form-check-input" type="checkbox" id="noPrice">
-                <label class="form-check-label" style="color: #ffffff;" for="noPrice">Cover Sheet w/o Price</label>
-            </div>
-            </div>
-            <div class="col-md-4">
-            <div class="form-check">
-                <input class="form-check-input" type="checkbox" id="jobCsv">
-                <label class="form-check-label" style="color: #ffffff;" for="jobCsv">Job Data CSV</label>
-            </div>
-            </div>
-        </div>
 
         <?php
         $sql = "SELECT id, pricing_name FROM customer_pricing WHERE status = 1 AND hidden = 0 ORDER BY pricing_name ASC";
@@ -335,7 +306,7 @@ function showCol($name) {
             echo '<div class="mt-3 text-center">';
             echo '<div class="d-flex flex-wrap justify-content-center">';
             while ($row = $result->fetch_assoc()) {
-                echo '<button type="button" class="btn btn-outline-primary btn-sm mx-1 my-1 pricing-btn d-none" id="view_customer_pricing" data-id="' . $row['id'] . '">'
+                echo '<button type="button" class="btn btn-secondary btn-sm mx-1 my-1 pricing-btn d-none" style="color:#000;" id="view_customer_pricing" data-id="' . $row['id'] . '">'
                     . htmlspecialchars($row['pricing_name']) .
                     '</button>';
             }
@@ -348,7 +319,7 @@ function showCol($name) {
         <div class="mt-3 text-end">
             <button id="printBtn" class="btn btn-success me-2">Print</button>
             <button id="downloadBtn" class="btn btn-primary me-2">Download</button>
-            <button class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+            <button class="btn btn-danger" data-bs-dismiss="modal">Cancel</button>
         </div>
         </div>
 

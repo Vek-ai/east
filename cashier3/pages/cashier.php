@@ -4152,12 +4152,13 @@ $editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) :
                             alert('Process Failed.');
                             console.log(response);
                         } else {
-                            alert('Unexpected response from server.');
+                            alert('Process Failed.');
                             console.log(response);
                         }
                     },
                     error: function (jqXHR, textStatus, errorThrown) {
-                        alert('Error: ' + textStatus + ' - ' + jqXHR.responseText);
+                        alert('Process Failed.');
+                        console.log('Error: ' + textStatus + ' - ' + jqXHR.responseText);
                     }
                 });
 
@@ -4203,7 +4204,8 @@ $editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) :
                         }
                     },
                     error: function (jqXHR, textStatus, errorThrown) {
-                        alert('Error: ' + textStatus + ' - ' + errorThrown);
+                        alert('Process Failed.');
+                        console.log('Error: ' + textStatus + ' - ' + jqXHR.responseText);
                     }
                 });
             }
@@ -4298,6 +4300,9 @@ $editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) :
             var applyStoreCredit = $('#applyStoreCredit').is(':checked') ? $('#applyStoreCredit').val() : 0;
             var applyJobDeposit = $('#pay_via_job_deposit').is(':checked') ? $('#pay_via_job_deposit').val() : 0;
 
+            var scheduled_date = $('#scheduled-date').val();
+            var scheduled_time = $('#scheduled-time').val();
+
             var payment_method = $('[name="payMethod"]:checked').val();
             var deliver_method = $('input[name="order_delivery_method"]:checked').val();
 
@@ -4330,6 +4335,8 @@ $editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) :
                         payment_method: payment_method,
                         truck: truck,
                         contractor_id: contractor_id,
+                        scheduled_date: scheduled_date,
+                        scheduled_time: scheduled_time,
                         save_order: 'save_order'
                     },
                     success: function(response) {

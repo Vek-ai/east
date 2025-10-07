@@ -333,12 +333,10 @@ $permission = $_SESSION['permission'];
             <iframe id="pdfFrame" src="" style="height: 70vh; width: 100%;" class="mb-3 border rounded"></iframe>
 
             <div class="container-fluid border rounded p-3">
-                <h6 class="mb-3">Download Outputs</h6>
-
                 <div class="mt-3 d-flex flex-wrap justify-content-end gap-2">
                     <button id="printBtn" class="btn btn-success">Print</button>
                     <button id="downloadBtn" class="btn btn-primary">Download</button>
-                    <button class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button class="btn btn-danger" data-bs-dismiss="modal">Cancel</button>
                 </div>
             </div>
         </div>

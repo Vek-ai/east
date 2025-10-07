@@ -308,7 +308,7 @@ if ($permission === 'edit') {
                 </div>
 
                 <div class="mb-3">
-                    <label for="select-datetime" class="form-label">When do you want the new Paint Colors added?</label>
+                    <label for="select-date" class="form-label">When do you want the new Paint Colors added?</label>
                     <input type="date" id="select-date" class="form-control" name="select_date">
                 </div>
 

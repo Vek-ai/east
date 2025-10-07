@@ -220,9 +220,13 @@ if(isset($_POST['fetch_modal'])){
                         lengthFeetArr.push(lengthFeet);
                     });
 
-                    const color = parseInt($('#qty-color').val()) || 0;
-                    const grade = parseInt($('#qty-grade').val()) || 0;
-                    const gauge = parseInt($('#qty-gauge').val()) || 0;
+                    const color = parseInt($('#trim-color').val()) || 0;
+                    const grade = parseInt($('#trim-grade').val()) || 0;
+                    const gauge = parseInt($('#trim-gauge').val()) || 0;
+
+                    console.log(color);
+                    console.log(grade);
+                    console.log(gauge);
 
                     $.ajax({
                         url: 'pages/cashier_trim_modal.php',
@@ -243,7 +247,7 @@ if(isset($_POST['fetch_modal'])){
                 }
 
 
-                $(document).on('change', '.trim_length, .trim_qty, #qty-color, #qty-grade, #qty-gauge', function() {
+                $(document).on('change', '.trim_length, .trim_qty, #trim-color, #trim-grade, #trim-gauge', function() {
                     updatePrice();
                 });
 

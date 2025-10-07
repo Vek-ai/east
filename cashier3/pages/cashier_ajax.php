@@ -745,125 +745,65 @@ if (isset($_POST['save_estimate'])) {
     header('Content-Type: application/json');
     $response = [];
 
-    $credit_amt = floatval($_POST['credit_amt']);
-    $cash_amt = floatval($_POST['cash_amt']);
-    $job_id = intval($_POST['job_id']);
-    $job_name = mysqli_real_escape_string($conn, $_POST['job_name'] ?? '');
-    $job_po = mysqli_real_escape_string($conn, $_POST['job_po'] ?? '');
-    $deliver_method = mysqli_real_escape_string($conn, $_POST['deliver_method'] ?? 'pickup');
-    $deliver_address = mysqli_real_escape_string($conn, $_POST['deliver_address'] ?? '');
-    $deliver_city = mysqli_real_escape_string($conn, $_POST['deliver_city'] ?? '');
-    $deliver_state = mysqli_real_escape_string($conn, $_POST['deliver_state'] ?? '');
-    $deliver_zip = mysqli_real_escape_string($conn, $_POST['deliver_zip'] ?? '');
-    $delivery_amt = mysqli_real_escape_string($conn, $_POST['delivery_amt'] ?? '');
-    $deliver_fname = mysqli_real_escape_string($conn, $_POST['deliver_fname'] ?? '');
-    $deliver_lname = mysqli_real_escape_string($conn, $_POST['deliver_lname'] ?? '');
-    $pay_type = mysqli_real_escape_string($conn, $_POST['payment_method'] ?? '');
-    $customer_tax = mysqli_real_escape_string($conn, $_POST['customer_tax'] ?? '');
-    $contractor_id = mysqli_real_escape_string($conn, $_POST['contractor_id'] ?? '');
-    $truck = intval($_POST['truck']);
-
     if (!isset($_SESSION['customer_id']) || empty($_SESSION['cart'])) {
         $response['error'] = "Customer ID or cart is not set.";
         echo json_encode($response);
         exit;
     }
 
-    $applyStoreCredit = floatval($_POST['applyStoreCredit']);
-    $applyJobDeposit = floatval($_POST['applyJobDeposit']);
+    $credit_amt     = floatval($_POST['credit_amt'] ?? 0);
+    $cash_amt       = floatval($_POST['cash_amt'] ?? 0);
+    $job_id         = intval($_POST['job_id'] ?? 0);
+    $job_name       = mysqli_real_escape_string($conn, $_POST['job_name'] ?? '');
+    $job_po         = mysqli_real_escape_string($conn, $_POST['job_po'] ?? '');
+    $deliver_method = mysqli_real_escape_string($conn, $_POST['deliver_method'] ?? 'pickup');
+    $deliver_address= mysqli_real_escape_string($conn, $_POST['deliver_address'] ?? '');
+    $deliver_city   = mysqli_real_escape_string($conn, $_POST['deliver_city'] ?? '');
+    $deliver_state  = mysqli_real_escape_string($conn, $_POST['deliver_state'] ?? '');
+    $deliver_zip    = mysqli_real_escape_string($conn, $_POST['deliver_zip'] ?? '');
+    $delivery_amt   = floatval($_POST['delivery_amt'] ?? 0);
+    $deliver_fname  = mysqli_real_escape_string($conn, $_POST['deliver_fname'] ?? '');
+    $deliver_lname  = mysqli_real_escape_string($conn, $_POST['deliver_lname'] ?? '');
+    $pay_type       = mysqli_real_escape_string($conn, $_POST['payment_method'] ?? 'cash');
+    $customer_tax   = mysqli_real_escape_string($conn, $_POST['customer_tax'] ?? '');
+    $contractor_id  = mysqli_real_escape_string($conn, $_POST['contractor_id'] ?? '');
+    $truck          = intval($_POST['truck'] ?? 0);
 
-    $estimateid = intval($_SESSION['estimateid']);
-    $customerid = intval($_SESSION['customer_id']);
-    $cashierid = intval($_SESSION['userid']);
-    $cart = $_SESSION['cart'];
-    $order_date = date('Y-m-d H:i:s');
-    $discount_default = floatval(getCustomerDiscount($customerid)) / 100;
+    $applyStoreCredit = floatval($_POST['applyStoreCredit'] ?? 0);
+    $applyJobDeposit  = floatval($_POST['applyJobDeposit'] ?? 0);
 
-    $customer_details = getCustomerDetails($customerid);
+    $estimateid  = intval($_SESSION['estimateid'] ?? 0);
+    $customerid  = intval($_SESSION['customer_id']);
+    $cashierid   = intval($_SESSION['userid']);
+    $cart        = $_SESSION['cart'];
+    $order_date  = date('Y-m-d H:i:s');
+
+    $customer_details   = getCustomerDetails($customerid);
+    $discount_default   = floatval(getCustomerDiscount($customerid)) / 100;
+    $store_credit       = floatval($customer_details['store_credit']);
+    $charge_net_30      = floatval($customer_details['charge_net_30']);
+    $credit_limit       = floatval($customer_details['credit_limit'] ?? 0);
+    $credit_total       = getCustomerCreditTotal($customerid);
+    $tax_exempt_number  = $customer_details['tax_exempt_number'] ?? '';
 
     if (!empty($customer_tax)) {
-        $tax_rate = floatval(getCustomerTaxById($customer_tax)) / 100;
+        $tax_rate   = floatval(getCustomerTaxById($customer_tax)) / 100;
         $tax_status = $customer_tax;
     } else {
-        $tax_rate = floatval(getCustomerTaxById($customer_details['tax_status'])) / 100;
+        $tax_rate   = floatval(getCustomerTaxById($customer_details['tax_status'])) / 100;
         $tax_status = $customer_details['tax_status'];
     }
 
-    $tax_exempt_number = $customer_details['tax_exempt_number'];
-    $credit_limit = $customer_details['credit_limit'] ?? 0;
-    $credit_total = getCustomerCreditTotal($customerid);
-
     $total_price = 0;
     $total_discounted_price = 0;
-    $pre_orders = array();
+
     foreach ($cart as $item) {
-        $discount = 0;
-        if (isset($item['used_discount']) && is_numeric($item['used_discount'])) {
-            $discount = floatval($item['used_discount']) / 100;
-        } else {
-            $discount = isset($discount_default) ? $discount_default : 0.0;
-        }
-        
-        $product_id = intval($item['product_id']);
-        $product_details = getProductDetails($product_id);
-        $customer_pricing = getPricingCategory($product_details['product_category'], $customer_details['customer_pricing']) / 100;
-        $quantity_cart = intval($item['quantity_cart']);
-        $unit_price = floatval($item['unit_price']);
-        $estimate_length = floatval($item['estimate_length']);
-        $estimate_length_inch = floatval($item['estimate_length_inch']);
-        $amount_discount = !empty($item["amount_discount"]) ? floatval($item["amount_discount"]) : 0;
-
-        $total_length = $estimate_length + ($estimate_length_inch / 12);
-        if ($total_length == 0) {
-            $total_length = 1;
-        }
-        $actual_price = $unit_price * $quantity_cart * $total_length;
-
-        $price_after_discount = ($actual_price * (1 - $discount) * (1 - $customer_pricing)) - $amount_discount;
-        $price_after_discount = max(0, $price_after_discount);
-
-        $discounted_price = $price_after_discount * (1 + $tax_rate);
-
+        $calculated = calculateCartItem($item);
+        $actual_price = $calculated['product_price'];
+        $customer_price = $calculated['customer_price'];
+        $discounted_price = $customer_price * (1 + $tax_rate);
         $total_price += $actual_price;
         $total_discounted_price += $discounted_price;
-    }
-
-    $original_cash_amt = floatval($cash_amt);
-    $store_credit = floatval($customer_details['store_credit']);
-    $charge_net_30 = floatval($customer_details['charge_net_30']);
-
-    $job_balance = getJobDepositTotal($job_id);
-
-    $credit_to_apply = 0;
-    $job_deposit_applied = 0;
-    $new_store_credit = $store_credit;
-
-    if ($applyStoreCredit && $store_credit > 0) {
-        $credit_to_apply = min($store_credit, $original_cash_amt);
-        $new_store_credit = $store_credit - $credit_to_apply;
-        $cash_amt = $original_cash_amt - $credit_to_apply;
-    } else {
-        $cash_amt = $original_cash_amt;
-    }
-
-    if ($pay_type == 'net30' && $charge_net_30 > 0) {
-        $net30_applied = min($charge_net_30, $cash_amt);
-        $new_charge_net_30 = $charge_net_30 - $net30_applied;
-        $cash_amt = $cash_amt - $net30_applied;
-    }
-
-    if ($applyJobDeposit && $job_balance > 0) {
-        $job_deposit_applied = min($job_balance, $cash_amt);
-        $cash_amt -= $job_deposit_applied;
-    }
-
-    if ($pay_type == 'delivery' || $pay_type == 'pickup') {
-        $credit_amt = $cash_amt;
-        $cash_amt = 0;
-    }
-
-    if ($cash_amt == 0 && $credit_amt == 0 && $applyJobDeposit) {
-        $pay_type = 'job_deposit';
     }
 
     $query = "INSERT INTO estimates (
@@ -872,107 +812,80 @@ if (isset($_POST['save_estimate'])) {
         deliver_address, deliver_city, deliver_state, deliver_zip, delivery_amt, deliver_method, 
         deliver_fname, deliver_lname, pay_type, tax_status, tax_exempt_number, truck, contractor_id
     ) VALUES (
-        1, '$total_price', '$total_discounted_price', '".($discount * 100)."', '$cashierid', 
+        1, '$total_price', '$total_discounted_price', '".($discount_default * 100)."', '$cashierid',
         '$cash_amt', '$credit_amt', '$order_date', '$order_date', '$customerid', '$customerid',
         '$job_name', '$job_po', '$deliver_address', '$deliver_city', '$deliver_state', '$deliver_zip',
-        '$delivery_amt', '$deliver_method', '$deliver_fname', '$deliver_lname', '$pay_type', 
+        '$delivery_amt', '$deliver_method', '$deliver_fname', '$deliver_lname', '$pay_type',
         '$tax_status', '$tax_exempt_number', '$truck', '$contractor_id'
     )";
 
     if ($conn->query($query) === TRUE) {
         $estimateid = $conn->insert_id;
-        $job_id = intval($job_id);
-        $po_number = mysqli_real_escape_string($conn, $job_po);
-        $created_by = mysqli_real_escape_string($conn, $cashierid);
-        $reference_no = mysqli_real_escape_string($conn, $orderid);
-        $description = 'Materials Purchased';
-        $check_number = ($payment_method === 'check' && !empty($check_no)) ? "'".mysqli_real_escape_string($conn, $check_no)."'" : "NULL";
-        
-        $entry_type = ($pay_type == 'delivery' || $pay_type == 'pickup' || $pay_type == 'net30') ? 'credit' : 'usage';
-        $cash_amt = floatval($cash_amt);
-        $credit_amt = floatval($credit_amt);
-        $amount = $cash_amt != 0 ? $cash_amt : $credit_amt;
 
-        $values = [];
         foreach ($cart as $item) {
-            $discount = 0;
-            if (isset($item['used_discount']) && is_numeric($item['used_discount'])) {
-                $discount = floatval($item['used_discount']) / 100;
-            } else {
-                $discount = isset($discount_default) ? $discount_default : 0.0;
-            }
-            
-            $product_id = intval($item['product_id']);
+            $calc = calculateCartItem($item);
 
-            $product_item = $item['product_item'] ?? '';
+            $product_id        = $calc['data_id'];
+            $product_item      = $item['product_item'] ?? '';
+            $quantity          = $calc['quantity'];
+            $total_length      = $calc['total_length'];
+            $product_price     = $calc['product_price'];
+            $customer_price    = $calc['customer_price'];
+            $category_id       = $calc['category_id'];
+            $color_id          = $calc['color_id'];
+            $grade             = $calc['grade'];
+            $gauge             = $calc['gauge'];
+            $profile           = $calc['profile'];
+            $curr_discount     = intval(getCustomerDiscountProfile($customerid));
+            $loyalty_discount  = intval(getCustomerDiscountLoyalty($customerid));
+            $used_discount     = $item['used_discount'] ?? getCustomerDiscount($customerid);
+            $stiff_stand_seam  = $item['stiff_stand_seam'] ?? '0';
+            $stiff_board_batten= $item['stiff_board_batten'] ?? '0';
+            $panel_type        = $item['panel_type'] ?? '';
+            $panel_style       = $item['panel_style'] ?? '';
+            $custom_img_src    = $item['custom_trim_src'] ?? '';
+            $bundle_id         = $item['bundle_name'] ?? '';
+            $note              = $item['note'] ?? '';
 
-            $product_details = getProductDetails($product_id);
-            $customer_pricing = getPricingCategory($product_details['product_category'], $customer_details['customer_pricing']) / 100;
-            $quantity_cart = intval($item['quantity_cart']);
-            $unit_price = floatval($item['unit_price']);
-            $estimate_width = !empty($item['estimate_width']) ? floatval($item['estimate_width']) : floatval($product_details['width']);
-            $estimate_bend = floatval($item['estimate_bend']);
-            $estimate_hem = floatval($item['estimate_hem']);
-            $estimate_length = floatval($item['estimate_length']);
-            $estimate_length_inch = floatval($item['estimate_length_inch']);
-            $custom_color = $item['custom_color'];
-            $custom_grade = $item['custom_grade'];
-            $custom_profile = $item['custom_profile'];
-            $custom_gauge = $item['custom_gauge'];
+            $custom_width      = $item['estimate_width'] ?? $calc['product']['width'];
+            $custom_bend       = $item['estimate_bend'] ?? '';
+            $custom_hem        = $item['estimate_hem'] ?? '';
+            $custom_length     = $item['estimate_length'] ?? 0;
+            $custom_length2    = $item['estimate_length_inch'] ?? 0;
 
-            $total_length = $estimate_length + ($estimate_length_inch / 12);
-            if ($total_length == 0) {
-                $total_length = 1;
-            }
-
-            $amount_discount   = !empty($item["amount_discount"]) ? $item["amount_discount"] : 0;
-            $product_category  = intval($product_details['product_category']);
-            $actual_price = $unit_price * $quantity_cart * $total_length;
-            $price_after_discount = ($actual_price * (1 - $discount) * (1 - $customer_pricing)) - $amount_discount;
-            $price_after_discount = max(0, $price_after_discount);
-            $discounted_price = $price_after_discount;
-
-            $curr_discount = intval(getCustomerDiscountProfile($customerid));
-            $loyalty_discount = intval(getCustomerDiscountLoyalty($customerid));
-            $used_discount = !empty($item['used_discount']) ? $item['used_discount'] : getCustomerDiscount($customerid);
-
-            $stiff_stand_seam = !empty($item['stiff_stand_seam']) ? $item['stiff_stand_seam'] : '0';
-            $stiff_board_batten = !empty($item['stiff_board_batten']) ? $item['stiff_board_batten'] : '0';
-            $panel_type = !empty($item['panel_type']) ? $item['panel_type'] : '';
-            $panel_style = !empty($item['panel_style']) ? $item['panel_style'] : '';
-            $custom_img_src = $item['custom_trim_src'];
-            $bundle_id = $item['bundle_name'];
-            $note = $item['note'];
-
-            $query = "INSERT INTO estimate_prod (
+            $insert = "INSERT INTO estimate_prod (
                 estimateid, product_id, product_item, quantity, custom_width, custom_bend, custom_hem,
                 custom_length, custom_length2, actual_price, discounted_price, product_category,
-                custom_color, custom_grade, custom_profile, current_customer_discount, current_loyalty_discount,
-                used_discount, stiff_stand_seam, stiff_board_batten, panel_type, panel_style, custom_img_src, 
-                bundle_id, note
+                custom_color, custom_grade, custom_gauge, custom_profile, current_customer_discount, 
+                current_loyalty_discount, used_discount, stiff_stand_seam, stiff_board_batten, 
+                panel_type, panel_style, custom_img_src, bundle_id, note
             ) VALUES (
-                '$estimateid', '$product_id', '$product_item', '$quantity_cart', '$estimate_width',
-                '$estimate_bend', '$estimate_hem', '$estimate_length', '$estimate_length_inch',
-                '$actual_price', '$discounted_price', '$product_category', '$custom_color',
-                '$custom_grade', '$custom_profile', '$curr_discount', '$loyalty_discount', '$used_discount',
-                '$stiff_stand_seam', '$stiff_board_batten', '$panel_type', '$panel_style', '$custom_img_src',
+                '$estimateid', '$product_id', '$product_item', '$quantity', '$custom_width', '$custom_bend', '$custom_hem',
+                '$custom_length', '$custom_length2', '$product_price', '$customer_price', '$category_id',
+                '$color_id', '$grade', '$gauge', '$profile', '$curr_discount', '$loyalty_discount', '$used_discount',
+                '$stiff_stand_seam', '$stiff_board_batten', '$panel_type', '$panel_style', '$custom_img_src', 
                 '$bundle_id', '$note'
             )";
 
-            if ($conn->query($query) !== TRUE) {
-                echo "Error: " . $conn->error;
+            if (!$conn->query($insert)) {
+                $response['error'] = "Error inserting product: " . $conn->error;
+                echo json_encode($response);
+                exit;
             }
-
-            $order_prod_id = $conn->insert_id;
         }
 
         unset($_SESSION['customer_id']);
+        unset($_SESSION['cart']);
+
+        $response['success'] = true;
+        $response['estimate_id'] = $estimateid;
+
     } else {
-        $response['error'] = "Error inserting order: " . $conn->error;
+        $response['error'] = "Error inserting estimate: " . $conn->error;
     }
 
-    $conn->close();
     echo json_encode($response);
+    exit;
 }
 
 if (isset($_POST['load_estimate'])) {
@@ -1071,6 +984,23 @@ if (isset($_POST['save_order'])) {
     $customer_tax = mysqli_real_escape_string($conn, $_POST['customer_tax'] ?? '');
     $tax_exempt_number = mysqli_real_escape_string($conn, $_POST['tax_exempt_number'] ?? '');
     $isAddingCustomer = mysqli_real_escape_string($conn, $_POST['isAddingCustomer'] ?? 0);
+
+    $scheduled_date = mysqli_real_escape_string($conn, $_POST['scheduled_date'] ?? '');
+    $scheduled_time = mysqli_real_escape_string($conn, $_POST['scheduled_time'] ?? '');
+
+    if (empty($scheduled_date) && empty($scheduled_time)) {
+        $scheduled_datetime = '';
+    } else {
+        if (empty($scheduled_date) && !empty($scheduled_time)) {
+            $scheduled_date = date('Y-m-d');
+        }
+
+        if (!empty($scheduled_date) && empty($scheduled_time)) {
+            $scheduled_time = '06:00';
+        }
+
+        $scheduled_datetime = date('Y-m-d H:i:s', strtotime("$scheduled_date $scheduled_time"));
+    }
 
     $customer_id = $_SESSION['customer_id'] ?? null;
 
@@ -1218,8 +1148,8 @@ if (isset($_POST['save_order'])) {
         $pay_type = 'job_deposit';
     }
 
-    $query = "INSERT INTO orders (estimateid, cashier, total_price, discounted_price, discount_percent, order_date, customerid, originalcustomerid, cash_amt, credit_amt, job_name, job_po, deliver_address,  deliver_city,  deliver_state,  deliver_zip, delivery_amt, deliver_method, deliver_fname, deliver_lname, pay_type, tax_status, tax_exempt_number, truck, contractor_id) 
-              VALUES ('$estimateid', '$cashierid', '$total_price', '$total_discounted_price', '".($discount * 100)."', '$order_date', '$customerid', '$customerid', '$cash_amt', '$credit_amt' , '$job_name' , '$job_po' , '$deliver_address', '$deliver_city', '$deliver_state', '$deliver_zip' , '$delivery_amt', '$deliver_method' , '$deliver_fname' , '$deliver_lname', '$pay_type', '$tax_status', '$tax_exempt_number', '$truck', '$contractor_id')";
+    $query = "INSERT INTO orders (estimateid, cashier, total_price, discounted_price, discount_percent, order_date, scheduled_date, customerid, originalcustomerid, cash_amt, credit_amt, job_name, job_po, deliver_address,  deliver_city,  deliver_state,  deliver_zip, delivery_amt, deliver_method, deliver_fname, deliver_lname, pay_type, tax_status, tax_exempt_number, truck, contractor_id) 
+              VALUES ('$estimateid', '$cashierid', '$total_price', '$total_discounted_price', '".($discount * 100)."', '$order_date', '$scheduled_datetime', '$customerid', '$customerid', '$cash_amt', '$credit_amt' , '$job_name' , '$job_po' , '$deliver_address', '$deliver_city', '$deliver_state', '$deliver_zip' , '$delivery_amt', '$deliver_method' , '$deliver_fname' , '$deliver_lname', '$pay_type', '$tax_status', '$tax_exempt_number', '$truck', '$contractor_id')";
     
     if ($conn->query($query) === TRUE) {
         $orderid = $conn->insert_id;

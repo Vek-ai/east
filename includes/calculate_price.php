@@ -33,9 +33,8 @@ function calculateUnitPrice(
     $totalLength = $lengthFeet + ($lengthInch / 12);
     if ($totalLength <= 0) $totalLength = 1;
 
-    $baseTotal = ($soldByFeet == 1)
-        ? $basePrice * $totalLength
-        : $basePrice;
+    //$baseTotal = ($soldByFeet == 1) ? $basePrice * $totalLength : $basePrice;
+    $baseTotal = $basePrice * $totalLength;
 
     $multiplier = getMultiplierValue($color, $grade, $gauge) ?? 1;
     $priceWithMultipliers = $baseTotal * $multiplier;
@@ -47,6 +46,7 @@ function calculateUnitPrice(
 
     $totalPrice = $priceWithMultipliers + $panelExtraCost + $bendCost + $hemCost;
 
+    //return round($totalPrice, 2);
     return round($totalPrice, 2);
 }
 

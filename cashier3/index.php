@@ -36,6 +36,7 @@ $page_key = !empty($_REQUEST['page']) ? $_REQUEST['page'] : 'cashier';
   <link href="https://unpkg.com/dropzone@6.0.0-beta.1/dist/dropzone.css" rel="stylesheet" type="text/css" />
   <link rel="stylesheet" href="https://code.jquery.com/ui/1.13.1/themes/smoothness/jquery-ui.css">
   <link rel="stylesheet" href="https://cdn.datatables.net/responsive/2.4.1/css/responsive.dataTables.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
   
 
   <!-- Core Css -->
@@ -1396,6 +1397,7 @@ $page_key = !empty($_REQUEST['page']) ? $_REQUEST['page'] : 'cashier';
   <script src="https://unpkg.com/dropzone@6.0.0-beta.1/dist/dropzone-min.js"></script>
   <script src="https://cdn.datatables.net/responsive/2.4.1/js/dataTables.responsive.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-easing/1.3/jquery.easing.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
   
   <script>
   function handleTheme() {

@@ -503,16 +503,40 @@ if(isset($_POST['fetch_order'])){
                             <p class="mb-1"><?= getCustomerAddress($_SESSION["customer_id"]) ?></p>
                         </div>
                         <div class="mb-3">
-                            <label class="form-label">How would you like to pick up your order?</label>
+                            <div class="row align-items-start">
+                                <div class="col-6">
+                                    <label class="form-label fw-bold">How would you like to pick up your order?</label>
 
-                            <div class="form-check">
-                                <input class="form-check-input" type="radio" name="order_delivery_method" id="pickup_option" value="pickup" checked>
-                                <label class="form-check-label" for="pickup_option">Pickup</label>
-                            </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="order_delivery_method" id="pickup_option" value="pickup" checked>
+                                        <label class="form-check-label" for="pickup_option">Pickup</label>
+                                    </div>
 
-                            <div class="form-check">
-                                <input class="form-check-input" type="radio" name="order_delivery_method" id="deliver_option" value="deliver">
-                                <label class="form-check-label" for="delivery_option">Delivery</label>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="order_delivery_method" id="deliver_option" value="deliver">
+                                        <label class="form-check-label" for="deliver_option">Delivery</label>
+                                    </div>
+                                </div>
+
+                                <div class="col-6">
+                                    <label class="form-label fw-bold">Scheduled Pickup/Delivery</label>
+
+                                    <div class="row">
+                                        <div class="col-6">
+                                            <div class="mb-2">
+                                                <label for="scheduled-date" class="form-label">Date:</label>
+                                                <input type="text" id="scheduled-date" class="form-control" placeholder="YYYY-MM-DD">
+                                            </div>
+                                        </div>
+
+                                        <div class="col-6">
+                                            <div>
+                                                <label for="scheduled-time" class="form-label">Time:</label>
+                                                <select id="scheduled-time" class="form-control" name="select_time"></select>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
 
                             <div id="truck_div" class="col-md-3 mb-3 d-none">
@@ -741,6 +765,40 @@ if(isset($_POST['fetch_order'])){
     </div>
 
     <script>
+        function populateTimeSelect() {
+            const $timeSelect = $('#scheduled-time');
+            $timeSelect.empty();
+
+            const now = new Date();
+            const currentMinutes = now.getHours() * 60 + now.getMinutes();
+
+            let closestOption = null;
+            let smallestDiff = Infinity;
+
+            for (let h = 6; h <= 17; h++) {
+                const totalMinutes = h * 60;
+                const diff = Math.abs(totalMinutes - currentMinutes);
+
+                const hourStr = h.toString().padStart(2, '0');
+                const minStr = '00';
+                const ampm = h < 12 ? 'AM' : 'PM';
+                const displayHour = h % 12 === 0 ? 12 : h % 12;
+
+                const optionText = `${displayHour}:${minStr} ${ampm}`;
+                const optionValue = `${hourStr}:${minStr}`;
+
+                const $option = $('<option>', { value: optionValue, text: optionText });
+                $timeSelect.append($option);
+
+                if (diff < smallestDiff) {
+                    smallestDiff = diff;
+                    closestOption = optionValue;
+                }
+            }
+
+            $timeSelect.val(closestOption);
+        }
+
         function init_select_cash(){
             $("#customer_select_cash").autocomplete({
                 source: function(request, response) {
@@ -774,7 +832,26 @@ if(isset($_POST['fetch_order'])){
                 }
             });
         }
+
         $(document).ready(function() {
+            const year = new Date().getFullYear();
+
+            $('#scheduled-date').flatpickr({
+                dateFormat: 'Y-m-d',
+                minDate: `${year}-01-01`,
+                maxDate: `${year}-12-31`,
+                disable: [
+                    date => (date.getDay() === 0 || date.getDay() === 6)
+                ],
+                allowInput: true,
+                disableMobile: true,
+                clickOpens: true,
+                locale: {
+                    firstDayOfWeek: 0
+                }
+            });
+
+            populateTimeSelect();
             init_select_cash();
 
             $(document).on('change', '#customer_select_cash', function(event) {

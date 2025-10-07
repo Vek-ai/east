@@ -211,7 +211,7 @@ function showCol($name) {
                         <div class="mt-3 d-flex flex-wrap justify-content-end gap-2">
                             <button id="printBtn" class="btn btn-success">Print</button>
                             <button id="downloadBtn" class="btn btn-primary">Download</button>
-                            <button class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                            <button class="btn btn-danger" data-bs-dismiss="modal">Cancel</button>
                         </div>
                     </div>
                 </div>
