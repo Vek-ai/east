@@ -834,11 +834,15 @@ if(isset($_POST['fetch_order'])){
         }
 
         $(document).ready(function() {
-            const year = new Date().getFullYear();
+            const today = new Date();
+            const minSelectableDate = new Date(today);
+            minSelectableDate.setDate(today.getDate() + 2);
+
+            const year = today.getFullYear();
 
             $('#scheduled-date').flatpickr({
                 dateFormat: 'Y-m-d',
-                minDate: `${year}-01-01`,
+                minDate: minSelectableDate,
                 maxDate: `${year}-12-31`,
                 disable: [
                     date => (date.getDay() === 0 || date.getDay() === 6)
