@@ -869,24 +869,44 @@ function showCol($name) {
 
         $(document).on('click', '#addProductModalBtn', function(event) {
             event.preventDefault();
+
+            $('#product_form')[0].reset();
+            $('.hidden-field').addClass('d-none');
+
             $('#product_id').val($(this).data('id') || '');
             $('#product_category').val($(this).data('category') || '');
 
-            $('.hidden-field').addClass('d-none');
+            $('#profile').val($(this).data('profile') || '');
+            $('#product_type').val($(this).data('type') || '');
+            $('#grade').val($(this).data('grade') || '');
+            $('#gauge').val($(this).data('gauge') || '');
+            $('#color').val($(this).data('color') || '');
+            $('#product_line').val($(this).data('line') || '');
+            $('#product_system').val($(this).data('system') || '');
 
             updateSearchCategory();
-            $('#product_form')[0].reset();
-            $('#product_id').val("");
 
             const pid = parseInt($('#profile').val(), 10) || null;
             filterPanelOptions(pid);
-            
+
+            const category = parseInt($('#product_category').val(), 10) || 0;
+            if (category === 4) {
+                $('#product_type').removeAttr('multiple');
+            } else {
+                $('#product_type').attr('multiple', 'multiple');
+            }
+
             fetchProductABR();
+
             $('#addProductModal').modal('show');
         });
 
+
         $(document).on('click', '#edit_product_btn', function(event) {
             event.preventDefault();
+
+            $('#product_form')[0].reset();
+            $('.hidden-field').removeClass('d-none');
 
             $('#product_id').val($(this).data('id') || '');
             $('#product_category').val($(this).data('category') || '');
@@ -898,22 +918,23 @@ function showCol($name) {
             $('#profile').val($(this).data('profile') || '');
             $('#color').val($(this).data('color') || '');
 
-            $('.hidden-field').removeClass('d-none');
             updateSearchCategory();
 
             const pid = parseInt($('#profile').val(), 10) || null;
             filterPanelOptions(pid);
 
             const category = parseInt($('#product_category').val(), 10) || 0;
-            if (category == 4) {
+            if (category === 4) {
                 $('#product_type').removeAttr('multiple');
             } else {
                 $('#product_type').attr('multiple', 'multiple');
             }
 
             fetchProductABR();
+
             $('#addProductModal').modal('show');
         });
+
 
         $(document).on('click', '#duplicate_product_btn', function(event) {
             event.preventDefault();

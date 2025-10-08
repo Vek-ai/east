@@ -3402,6 +3402,8 @@ function generateProductAbrString($category_ids, $profile_ids, $grade_ids, $gaug
         if ($abbr !== '') $abrList[] = $abbr;
     }
 
+    $abrList = array_unique($abrList);
+
     return implode(',', $abrList);
 }
 
