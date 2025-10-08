@@ -1269,6 +1269,73 @@ $editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) :
     </div>
 </div>
 
+<div class="modal fade" id="add_new_customer_modal" tabindex="-1" aria-labelledby="add_new_customer_modal" aria-hidden="true" style="background-color: rgba(0, 0, 0, 0.5);">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="add_new_customer_modal">Add New Customer</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+
+            <div class="modal-body">
+                <div class="card-body">
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="order_deliver_fname" class="form-label">First Name</label>
+                            <input type="text" id="order_deliver_fname" class="form-control" placeholder="First Name">
+                        </div>
+                        <div class="col-md-6">
+                            <label for="order_deliver_lname" class="form-label">Last Name</label>
+                            <input type="text" id="order_deliver_lname" class="form-control" placeholder="Last Name">
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="order_deliver_phone" class="form-label">Contact Phone</label>
+                            <input type="text" id="order_deliver_phone" class="form-control" placeholder="Contact Phone">
+                        </div>
+                        <div class="col-md-6">
+                            <label for="order_deliver_email" class="form-label">Contact Email</label>
+                            <input type="text" id="order_deliver_email" class="form-control" placeholder="Contact Email">
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="customer_tax" class="form-label">Tax Status</label>
+                            <select class="form-control" id="customer_tax">
+                                <option value="">All Tax Status</option>
+                                <?php
+                                    $query_tax_status = "SELECT * FROM customer_tax WHERE status = 1 ORDER BY tax_status_desc ASC";
+                                    $result_tax_status = mysqli_query($conn, $query_tax_status);
+                                    while ($row_tax_status = mysqli_fetch_array($result_tax_status)) {
+                                        ?>
+                                        <option value="<?= $row_tax_status['taxid'] ?>">
+                                            (<?= $row_tax_status['percentage'] ?>%) <?= $row_tax_status['tax_status_desc'] ?>
+                                        </option>
+                                        <?php
+                                    }
+                                ?>
+                            </select>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label for="tax_exempt_number" class="form-label">Tax Exempt Number</label>
+                            <input type="text" id="tax_exempt_number" name="tax_exempt_number" class="form-control">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="btn btn-success" id="addNewCustomerSubmit">Add New Customer</button>
+                <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.0/fabric.min.js"></script>
 
 <script>
@@ -3424,6 +3491,32 @@ $editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) :
             });
         }
 
+        $(document).on('click', '.add_new_customer_btn', function() {
+            $('#add_new_customer_modal').modal('show');
+        });
+
+        $(document).on('click', '#addNewCustomerSubmit', function() {
+            const customerData = {
+                first_name: $('#order_deliver_fname').val().trim(),
+                last_name: $('#order_deliver_lname').val().trim(),
+                phone: $('#order_deliver_phone').val().trim(),
+                email: $('#order_deliver_email').val().trim(),
+                tax_status: $('#customer_tax').val(),
+                tax_exempt_number: $('#tax_exempt_number').val().trim()
+            };
+
+            if (!customerData.first_name || !customerData.last_name) {
+                alert('Please enter at least First Name and Last Name.');
+                return;
+            }
+
+            sessionStorage.setItem('new_customer', JSON.stringify(customerData));
+
+            alert('Customer details saved.');
+
+            $('#add_new_customer_modal').modal('hide');
+        });
+
         $(document).on('contextmenu', '#drawingCanvas', function (e) {
             e.preventDefault();
             e.stopPropagation();
@@ -4244,35 +4337,82 @@ $editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) :
             $('#save_order').click();
         });  
 
+        $(document).on('click', '.toggle_add_customer', function(e) {
+            e.preventDefault();
+
+            const $editForm = $('#edit_contact_info');
+            const $displayForm = $('#display_contact_info');
+            const $paymentOptions = $('#paymentOptions .form-check');
+
+            const isEditing = $editForm.hasClass('d-none');
+
+            const savedData = sessionStorage.getItem('new_customer');
+            if (savedData) {
+                const data = JSON.parse(savedData);
+
+                $('#order_deliver_fname').val(data.first_name || '');
+                $('#order_deliver_lname').val(data.last_name || '');
+                $('#order_deliver_phone').val(data.phone || '');
+                $('#order_deliver_email').val(data.email || '');
+                $('#customer_tax').val(data.tax_status || '');
+                $('#tax_exempt_number').val(data.tax_exempt_number || '');
+
+                if ($editForm.hasClass('d-none')) {
+                    $editForm.removeClass('d-none');
+                    $displayForm.addClass('d-none');
+                }
+            }
+
+            $editForm.toggleClass('d-none', !isEditing);
+            $displayForm.toggleClass('d-none', isEditing);
+
+            $editForm.find('input').prop('readonly', !isEditing)
+                .toggleClass('form-control', isEditing)
+                .toggleClass('form-control-plaintext', !isEditing);
+
+            $editForm.find('select').each(function() {
+                const $select = $(this);
+                if (isEditing) {
+                    if ($select.data('readonly')) {
+                        $select.select2();
+                        $select.removeClass('select-readonly');
+                        $select.data('readonly', false);
+                    }
+                } else {
+                    if (!$select.data('readonly')) {
+                        $select.select2('destroy');
+                        $select.addClass('select-readonly');
+                        $select.data('readonly', true);
+                    }
+                }
+            });
+        });
+
         var isAddingCustomer = 0;
         $(document).on('click', '#addCustomerFinalize', function() {
             const $editForm = $('#edit_contact_info');
             const $btn = $(this);
+            const isReadonly = $editForm.find('input').first().prop('readonly');
 
-            const isActive = !$editForm.find('input').first().prop('readonly'); // true if already editable
-
-            isAddingCustomer = !isActive ? 0 : 1;
-
-            $editForm.find('input').prop('readonly', isActive)
-                                .toggleClass('form-control', !isActive)
-                                .toggleClass('form-control-plaintext', isActive);
+            const toEditMode = isReadonly;
+            isAddingCustomer = toEditMode ? 1 : 0;
+            $editForm.find('input')
+                .prop('readonly', !toEditMode)
+                .toggleClass('form-control', toEditMode)
+                .toggleClass('form-control-plaintext', !toEditMode);
 
             $editForm.find('select').each(function () {
                 const $select = $(this);
-                if (isActive) {
-                    $select.addClass("readonly-select")
-                        .on("mousedown.readonly keydown.readonly", function(e) {
-                            e.preventDefault();
-                        });
+                if (toEditMode) {
+                    $select.removeClass("readonly-select").off(".readonly");
                 } else {
-                    $select.removeClass("readonly-select")
-                        .off(".readonly");
+                    $select.addClass("readonly-select")
+                        .on("mousedown.readonly keydown.readonly", e => e.preventDefault());
                 }
             });
 
-            $('#paymentOptions .form-check').toggleClass('d-none', !isActive);
-
-            $btn.text(isActive ? 'Add New Customer' : 'Change New Customer');
+            $('#paymentOptions .form-check').toggleClass('d-none', toEditMode);
+            $btn.text(toEditMode ? 'Change New Customer' : 'Add New Customer');
         });
 
 
@@ -4305,6 +4445,11 @@ $editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) :
 
             var payment_method = $('[name="payMethod"]:checked').val();
             var deliver_method = $('input[name="order_delivery_method"]:checked').val();
+
+            const savedData = sessionStorage.getItem('new_customer');
+            if (savedData) {
+                isAddingCustomer = 1;
+            }
 
             if(payment_method){
                 $.ajax({

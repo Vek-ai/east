@@ -120,6 +120,7 @@ if(isset($_POST['fetch_cart'])){
             padding-top: 20px;  
         }
     </style>
+    
     <div id="customer_cart_section">
         <?php 
             if(!empty($_SESSION["customer_id"])){
@@ -162,7 +163,7 @@ if(isset($_POST['fetch_cart'])){
                     <label>Customer Name</label>
                     <div class="input-group">
                         <input class="form-control" placeholder="Search Customer" type="text" id="customer_select_cart">
-                        <a class="input-group-text rounded-right m-0 p-0" href="/cashier/?page=customer" target="_blank">
+                        <a class="input-group-text rounded-right m-0 p-0 add_new_customer_btn" href="javascript:void(0)">
                             <span class="input-group-text"> + </span>
                         </a>
                     </div>

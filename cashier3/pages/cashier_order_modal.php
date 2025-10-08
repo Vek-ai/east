@@ -775,7 +775,7 @@ if(isset($_POST['fetch_order'])){
             let closestOption = null;
             let smallestDiff = Infinity;
 
-            for (let h = 6; h <= 17; h++) {
+            for (let h = 8; h <= 16; h++) {
                 const totalMinutes = h * 60;
                 const diff = Math.abs(totalMinutes - currentMinutes);
 
@@ -957,39 +957,14 @@ if(isset($_POST['fetch_order'])){
                 email: $('#order_deliver_email').val()
             };
 
-            $('.toggle_add_customer').on('click', function(e) {
-                e.preventDefault();
-
-                const $editForm = $('#edit_contact_info');
-                const $displayForm = $('#display_contact_info');
-                const $paymentOptions = $('#paymentOptions .form-check');
-
-                const isEditing = $editForm.hasClass('d-none');
-
-                $editForm.toggleClass('d-none', !isEditing);
-                $displayForm.toggleClass('d-none', isEditing);
-
-                $editForm.find('input').prop('readonly', !isEditing)
-                                    .toggleClass('form-control', isEditing)
-                                    .toggleClass('form-control-plaintext', !isEditing);
-
-                $editForm.find('select').each(function() {
-                    const $select = $(this);
-                    if (isEditing) {
-                        if ($select.data('readonly')) {
-                            $select.select2();
-                            $select.removeClass('select-readonly');
-                            $select.data('readonly', false);
-                        }
-                    } else {
-                        if (!$select.data('readonly')) {
-                            $select.select2('destroy');
-                            $select.addClass('select-readonly');
-                            $select.data('readonly', true);
-                        }
-                    }
-                });
-            });
+            const savedData = sessionStorage.getItem('new_customer');
+            if (savedData) {
+                isAddingCustomer = 1;
+                $('.toggle_add_customer').trigger('click');
+                $('#addCustomerFinalize')
+                    .trigger('click')
+                    .text('Change New Customer');
+            }
 
             $('.toggle_edit_info').on('click', function (e) {
                 e.preventDefault();
