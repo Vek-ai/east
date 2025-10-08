@@ -591,8 +591,8 @@ if (mysqli_num_rows($result) > 0) {
         $delivery_method = 'Deliver';
         $order_date = date("n/j/Y", strtotime($row_orders['order_date']));
         $scheduled_date = '';
-        if (!empty($row_orders['scheduled_date']) && strtotime($row_orders['scheduled_date']) !== false) {
-            $scheduled_date = date("n/j/Y", strtotime($row_orders['scheduled_date']));
+        if (isset($row_orders["scheduled_date"]) && !empty($row_orders["scheduled_date"]) && $row_orders["delivered_date"] !== '0000-00-00 00:00:00') {
+            $scheduled_date = date("m/d/Y || g:i A", strtotime($row_orders["scheduled_date"]));
         }
         if($delivery_price == 0){
             $delivery_method = 'Pickup';

@@ -150,7 +150,6 @@ if(isset($_POST['fetch_order'])){
             ]);
 
             $store_credit = number_format(floatval($customer_details['store_credit'] ?? 0),2);
-
             $customer_name = get_customer_name($_SESSION["customer_id"]);
         ?>
         <div class="form-group row align-items-center">
@@ -962,13 +961,59 @@ if(isset($_POST['fetch_order'])){
             };
 
             const savedData = sessionStorage.getItem('new_customer');
-            if (savedData) {
+            if (savedData && <?= empty($_SESSION["customer_id"]) ? 'true' : 'false' ?>) {
                 isAddingCustomer = 1;
                 $('.toggle_add_customer').trigger('click');
                 $('#addCustomerFinalize')
                     .trigger('click')
                     .text('Change New Customer');
+
+                const data = JSON.parse(savedData);
+
+                $('#customer_cash_section').html(`
+                    <div class="form-group row align-items-center">
+                        <div class="d-flex flex-column gap-2">
+                            <div>
+                                <label class="fw-bold fs-5">Customer Name: ${data.first_name} ${data.last_name}</label>
+                                <button class="btn btn-sm ripple btn-primary mt-1" type="button" id="customer_change_cash">
+                                    <i class="fe fe-reload"></i> Change
+                                </button>
+                            </div>
+                            <div class="d-flex flex-wrap gap-4">
+                                <div class="d-flex flex-column align-items-start">
+                                    <span class="fw-bold">Charge Net 30 Limit:</span>
+                                    <span class="text-primary fs-4 fw-bold">$0.00</span>
+                                </div>
+                                <div class="d-flex flex-column align-items-start">
+                                    <span class="fw-bold">Current Balance Due:</span>
+                                    <span class="text-primary fs-4 fw-bold">$0.00</span>
+                                </div>
+                                <div class="d-flex flex-column align-items-start">
+                                    <span class="fw-bold">Available Credit:</span>
+                                    <span class="text-primary fs-4 fw-bold">$0.00</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `);
             }
+
+            $(document).on('click', '#customer_change_cash', function() {
+                sessionStorage.removeItem('new_customer');
+                $('#customer_cash_section').html(`
+                    <div class="form-group row align-items-center">
+                        <div class="col-3">
+                            <label>Customer Name</label>
+                            <div class="input-group">
+                                <input class="form-control" placeholder="Search Customer" type="text" id="customer_select_cash">
+                                <a class="input-group-text rounded-right m-0 p-0 toggle_add_customer" href="javascript:void(0)">
+                                    <span class="input-group-text"> + </span>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                `);
+            });
 
             $('.toggle_edit_info').on('click', function (e) {
                 e.preventDefault();

@@ -123,15 +123,14 @@ if(isset($_POST['fetch_cart'])){
     
     <div id="customer_cart_section">
         <?php 
-            if(!empty($_SESSION["customer_id"])){
+            if (!empty($_SESSION["customer_id"])) {
                 $customer_id = $_SESSION["customer_id"];
                 $customer_details = getCustomerDetails($customer_id);
                 $charge_net_30 = floatval($customer_details['charge_net_30'] ?? 0);
                 $credit_total = getCustomerCreditTotal($customer_id);
                 $store_credit = floatval($customer_details['store_credit'] ?? 0);
-
                 $customer_name = get_customer_name($_SESSION["customer_id"]);
-            ?>
+        ?>
 
             <div class="form-group row align-items-center">
                 <div class="d-flex flex-column gap-2">
@@ -157,6 +156,7 @@ if(isset($_POST['fetch_cart'])){
                     </div>
                 </div>
             </div>
+
         <?php } else { ?>
             <div class="form-group row align-items-center">
                 <div class="col-6">
@@ -921,6 +921,57 @@ if(isset($_POST['fetch_cart'])){
         }
         $(document).ready(function() {
             initAutocomplete();
+
+            const savedData = sessionStorage.getItem('new_customer');
+            if (savedData && <?= empty($_SESSION["customer_id"]) ? 'true' : 'false' ?>) {
+                const data = JSON.parse(savedData);
+
+                $('#customer_cart_section').html(`
+                    <div class="form-group row align-items-center">
+                        <div class="d-flex flex-column gap-2">
+                            <div>
+                                <label class="fw-bold fs-5">Customer Name: ${data.first_name} ${data.last_name}</label>
+                                <button class="btn btn-primary btn-sm me-3" type="button" id="customer_change_cart">
+                                    <i class="fe fe-reload"></i> Change
+                                </button>
+                            </div>
+                            <div class="d-flex flex-wrap gap-5">
+                                <div class="d-flex flex-column align-items-start">
+                                    <span class="fw-bold">Charge Net 30 Limit:</span>
+                                    <span class="text-primary fs-4 fw-bold">$0.00</span>
+                                </div>
+                                <div class="d-flex flex-column align-items-start">
+                                    <span class="fw-bold">Current Balance Due:</span>
+                                    <span class="text-primary fs-4 fw-bold">$0.00</span>
+                                </div>
+                                <div class="d-flex flex-column align-items-start">
+                                    <span class="fw-bold">Available Credit:</span>
+                                    <span class="text-primary fs-4 fw-bold">$0.00</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `);
+            }
+
+            $(document).on('click', '#customer_change_cart', function() {
+                sessionStorage.removeItem('new_customer');
+                $('#customer_cart_section').html(`
+                    <div class="form-group row align-items-center">
+                        <div class="col-6">
+                            <label>Customer Name</label>
+                            <div class="input-group">
+                                <input class="form-control" placeholder="Search Customer" type="text" id="customer_select_cart">
+                                <a class="input-group-text rounded-right m-0 p-0 add_new_customer_btn" href="javascript:void(0)">
+                                    <span class="input-group-text"> + </span>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                `);
+
+                initAutocomplete();
+            });
 
             $(document).on('change', '#customer_select_cart', function(event) {
                 var customer_id = $('#customer_id_cart').val();

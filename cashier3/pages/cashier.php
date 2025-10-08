@@ -3514,6 +3514,8 @@ $editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) :
 
             alert('Customer details saved.');
 
+            loadCart();
+
             $('#add_new_customer_modal').modal('hide');
         });
 
