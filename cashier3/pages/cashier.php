@@ -3950,11 +3950,21 @@ $editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) :
 
         $(document).on('submit', '#trim_form', function (event) {
             event.preventDefault();
+
             var preselectedProfile = $('#select-profile').val();
             const formData = new FormData(this);
             formData.append('save_trim', 'save_trim');
             formData.append('profile', preselectedProfile);
-            
+
+            var dimension_ids = [];
+            $(this).find('select[name="length[]"]').each(function() {
+                var selectedOption = $(this).find('option:selected');
+                var dimId = selectedOption.data('id') || 0;
+                dimension_ids.push(dimId);
+            });
+
+            formData.append('dimension_ids', JSON.stringify(dimension_ids));
+
             $.ajax({
                 url: 'pages/cashier_ajax.php',
                 type: 'POST',

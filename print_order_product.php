@@ -112,8 +112,9 @@ function renderScrewCategory($pdf, $products, $conn) {
         $grade_details = getGradeDetails($row_product['custom_grade']);
 
         $row = [
-            $row_product['product_item'] . 
-                (!empty($row_product['note']) ? "\nNote: " . $row_product['note'] : ''),
+            $row_product['product_item'] 
+                . (!empty($row_product['product_id_abbrev']) ? "\n" . $row_product['product_id_abbrev'] : '') 
+                . (!empty($row_product['note']) ? "\nNote: " . $row_product['note'] : ''),
             getColorName($row_product['custom_color']),
             $grade_details['product_grade'] ?? '',
             $profile_details['profile_type'] ?? '',
@@ -283,7 +284,9 @@ function renderDefaultCategory($pdf, $products, $conn) {
         $len = $ft + ($in / 12);
 
         $row = [
-            $row_product['product_item'] . (!empty($row_product['note']) ? "\nNote: " . $row_product['note'] : ''),
+            $row_product['product_item'] 
+                . (!empty($row_product['product_id_abbrev']) ? "\n" . $row_product['product_id_abbrev'] : '') 
+                . (!empty($row_product['note']) ? "\nNote: " . $row_product['note'] : ''),
             getColorName($row_product['custom_color']),
             $grade_details['product_grade'] ?? '',
             $profile_details['profile_type'] ?? '',
@@ -329,7 +332,9 @@ function renderTrimCategory($pdf, $products, $conn) {
         $len = $ft + ($in / 12);
 
         $row = [
-            $row_product['product_item'] . (!empty($row_product['note']) ? "\nNote: " . $row_product['note'] : ''),
+            $row_product['product_item'] 
+            . (!empty($row_product['product_id_abbrev']) ? "\n" . $row_product['product_id_abbrev'] : '') 
+            . (!empty($row_product['note']) ? "\nNote: " . $row_product['note'] : ''),
             getColorName($row_product['custom_color']),
             $grade_details['product_grade'] ?? '',
             $profile_details['profile_type'] ?? '',
@@ -383,7 +388,9 @@ function renderLumberCategory($pdf, $products, $conn) {
         $len = $ft + ($in / 12);
 
         $row = [
-            $row_product['product_item'] . (!empty($row_product['note']) ? "\nNote: " . $row_product['note'] : ''),
+            $row_product['product_item'] 
+                . (!empty($row_product['product_id_abbrev']) ? "\n" . $row_product['product_id_abbrev'] : '') 
+                . (!empty($row_product['note']) ? "\nNote: " . $row_product['note'] : ''),
             getColorName($row_product['custom_color']),
             $grade_details['product_grade'] ?? '',
             $profile_details['profile_type'] ?? '',

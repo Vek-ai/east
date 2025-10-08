@@ -125,6 +125,7 @@ if ($permission === 'edit') {
                         <tr>
                             <th>Dimension</th>
                             <th>Category</th>
+                            <th>Abbreviation</th>
                             <th>Action</th>
                         </tr>
                     </thead>
@@ -206,13 +207,14 @@ if ($permission === 'edit') {
             data: { action: 'fetch_table' },
             error: function(xhr, status, error) {
                 alert('Failed');
-                console.error('DataTables AJAX error:', status, error);
-                console.error('Response text:', xhr.responseText);
+                console.log('DataTables AJAX error:', status, error);
+                console.log('Response text:', xhr.responseText);
             }
         },
         columns: [
             { data: 'dimension', title: 'Dimension' },
             { data: 'dimension_category', title: 'Category' },
+            { data: 'dimension_abbreviation', title: 'Abbreviation' },
             { data: 'action', title: 'Action', orderable: false, searchable: false }
         ],
         createdRow: function(row, data, dataIndex) {

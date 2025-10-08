@@ -1321,18 +1321,32 @@ if (isset($_POST['save_order'])) {
             $loyalty_discount = intval(getCustomerDiscountLoyalty($customerid));
             $used_discount    = $item['used_discount'] ?? getCustomerDiscount($customerid);
 
+            $product_id_abbrev = fetchSingleProductABR(
+                $category_id,
+                $profile,
+                $grade,
+                $gauge,
+                '',
+                $color_id,
+                $calc['length_id'] ?? ''
+            );
+
             $query = "INSERT INTO order_product (
                 orderid, productid, product_item, quantity, custom_width, custom_bend, custom_hem,
                 custom_length, custom_length2, actual_price, discounted_price, product_category,
                 custom_color, custom_grade, custom_gauge, custom_profile, current_customer_discount, current_loyalty_discount,
-                used_discount, stiff_stand_seam, stiff_board_batten, panel_type, panel_style, custom_img_src, bundle_id, note
+                used_discount, stiff_stand_seam, stiff_board_batten, panel_type, panel_style, custom_img_src, bundle_id, note,
+                product_id_abbrev
             ) VALUES (
                 '$orderid', '$product_id', '$product_item', '$quantity', '" . ($item['estimate_width'] ?? $calc['product']['width']) . "',
                 '" . ($item['estimate_bend'] ?? '') . "', '" . ($item['estimate_hem'] ?? '') . "', '$total_length', '" . ($item['estimate_length_inch'] ?? 0) . "',
                 '$product_price', '$customer_price', '$category_id',
                 '$color_id', '$grade', '$gauge', '$profile', '$curr_discount', '$loyalty_discount',
-                '$used_discount', '$stiff_stand_seam', '$stiff_board_batten', '$panel_type', '$panel_style', '$custom_img_src', '$bundle_id', '$note'
+                '$used_discount', '$stiff_stand_seam', '$stiff_board_batten', '$panel_type', '$panel_style', '$custom_img_src', '$bundle_id', '$note',
+                '$product_id_abbrev'
             )";
+
+            mysqli_query($conn, $query);
 
             if ($conn->query($query) !== TRUE) {
                 die("Error: " . $conn->error);
@@ -1695,6 +1709,10 @@ if (isset($_POST['save_trim'])) {
 
     $quantities = $_POST['quantity'] ?? [];
     $lengths    = $_POST['length'] ?? [];
+    $length_ids = $_POST['dimension_ids'] ?? [];
+    if (is_string($length_ids)) {
+        $length_ids = json_decode($length_ids, true);
+    }
     $notes      = $_POST['notes'] ?? [];
 
     if (!isset($_SESSION["cart"])) {
@@ -1713,6 +1731,7 @@ if (isset($_POST['save_trim'])) {
     foreach ($quantities as $i => $quantity) {
         $quantity = floatval($quantity);
         $length   = floatval($lengths[$i] ?? 0);
+        $length_id = intval($length_ids[$i] ?? 0);
         $note     = $notes[$i] ?? '';
 
         if ($quantity <= 0) continue;
@@ -1761,6 +1780,7 @@ if (isset($_POST['save_trim'])) {
                 'estimate_width'    => 0,
                 'estimate_length'   => $feet,
                 'estimate_length_inch' => $inches,
+                'length_id'         => $length_id,
                 'usage'             => 0,
                 'custom_color'      => $color,
                 'weight'            => 0,

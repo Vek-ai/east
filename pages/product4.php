@@ -771,7 +771,6 @@ function showCol($name) {
             "dom": 'lftp'
         });
 
-
         $('#productList_filter').hide();
 
         $(document).on('click', '.remove-image-btn', function(event) {
@@ -882,6 +881,7 @@ function showCol($name) {
             const pid = parseInt($('#profile').val(), 10) || null;
             filterPanelOptions(pid);
             
+            fetchProductABR();
             $('#addProductModal').modal('show');
         });
 
@@ -911,6 +911,7 @@ function showCol($name) {
                 $('#product_type').attr('multiple', 'multiple');
             }
 
+            fetchProductABR();
             $('#addProductModal').modal('show');
         });
 
@@ -1180,7 +1181,6 @@ function showCol($name) {
                     action: 'change_status'
                 },
                 success: function(response) {
-                    console.log(response);
                     if (response == 'success') {
                         table.ajax.reload(null, false);
                     } else {
@@ -1330,13 +1330,11 @@ function showCol($name) {
                         action: "fetch_color_multiplier"
                     },
                     success: function(response) {
-                        console.log(response);
                         if (response && !response.error && !isNaN(response.multiplier)) {
                             $('#color_multiplier').val(parseFloat(response.multiplier).toFixed(3));
                         } else {
                             $('#color_multiplier').val("0");
                             console.warn(response.error || 'No valid data found');
-                            console.log(colorGroup);
                         }
                     },
                     error: function(xhr, status, error) {
@@ -1638,6 +1636,68 @@ function showCol($name) {
         });
 
         filterTable();
+
+        function toIntArray(val) {
+            if (!val) return [];
+            return Array.isArray(val) ? val.map(Number) : [Number(val)];
+        }
+
+        function fetchProductABR() {
+            let category_ids = toIntArray($('#product_category').val());
+            let type_ids     = toIntArray($('#product_type').val());
+            let profile_ids  = toIntArray($('#profile').val());
+            let grade_ids    = toIntArray($('#grade').val());
+            let gauge_ids    = toIntArray($('#gauge').val());
+            let color_ids    = toIntArray($('#color_paint').val());
+            let length_ids   = toIntArray($('#available_lengths').val());
+
+            $.ajax({
+                url: 'pages/product4_ajax.php',
+                type: 'POST',
+                data: {
+                    category_ids,
+                    type_ids,
+                    profile_ids,
+                    grade_ids,
+                    gauge_ids,
+                    color_ids,
+                    length_ids,
+                    action: 'get_product_abr'
+                },
+                success: function(response) {
+                    let container = $('#product_ids_abbrev');
+                    container.empty();
+
+                    if (response.trim() !== '') {
+                        let items = response.split(',').map(item => item.trim());
+
+                        let ul = $('<ul></ul>').css({
+                            display: 'grid',
+                            'grid-template-columns': 'repeat(3, 1fr)',
+                            gap: '5px',
+                            padding: '0 20px',
+                            'list-style-position': 'inside'
+                        });
+
+                        items.forEach(function(id) {
+                            ul.append('<li>' + id + '</li>');
+                        });
+
+                        container.append(ul);
+                    } else {
+                        container.text('No product IDs generated.');
+                    }
+                },
+                error: function(xhr, status, error) {
+                    console.log('AJAX Error:', error);
+                    console.log('Response Text:', xhr.responseText);
+                }
+            });
+        }
+
+
+        $(document).on('change', '#product_category, #product_type, #profile, #grade, #gauge, #color_paint, #available_lengths', fetchProductABR);
+
     });
 </script>
 

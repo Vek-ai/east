@@ -22,6 +22,33 @@ if(isset($_REQUEST['action'])) {
 
     if ($action == "add_update") {
         $product_id = mysqli_real_escape_string($conn, $_POST['product_id']);
+
+        $product_category = intval($_POST['product_category'] ?? 0);
+        $product_type      = isset($_POST['product_type']) ? array_filter(array_map('intval', $_POST['product_type'])) : [];
+        $profile           = isset($_POST['profile']) ? array_filter(array_map('intval', $_POST['profile'])) : [];
+        $grade             = isset($_POST['grade']) ? array_filter(array_map('intval', $_POST['grade'])) : [];
+        $gauge             = isset($_POST['gauge']) ? array_filter(array_map('intval', $_POST['gauge'])) : [];
+        $color_paint       = isset($_POST['color_paint']) ? array_filter(array_map('intval', $_POST['color_paint'])) : [];
+        $available_lengths = isset($_POST['available_lengths']) ? array_filter(array_map('intval', $_POST['available_lengths'])) : [];
+
+        if (
+            !empty($product_type) ||
+            !empty($profile) ||
+            !empty($grade) ||
+            !empty($gauge) ||
+            !empty($color_paint) ||
+            !empty($available_lengths)
+        ) {
+            generateProductABR(
+                [$product_category],
+                $profile,
+                $grade,
+                $gauge,
+                $product_type,
+                $color_paint,
+                $available_lengths
+            );
+        }
         
         $fields = [];
         foreach ($_POST as $key => $value) {
@@ -149,6 +176,39 @@ if(isset($_REQUEST['action'])) {
                 }
             }
         }
+    }
+
+    if ($action == "get_product_abr") {
+        $category_ids = isset($_POST['category_ids']) ? array_map('intval', $_POST['category_ids']) : [];
+        $type_ids     = isset($_POST['type_ids'])     ? array_map('intval', $_POST['type_ids']) : [];
+        $profile_ids  = isset($_POST['profile_ids'])  ? array_map('intval', $_POST['profile_ids']) : [];
+        $grade_ids    = isset($_POST['grade_ids'])    ? array_map('intval', $_POST['grade_ids']) : [];
+        $gauge_ids    = isset($_POST['gauge_ids'])    ? array_map('intval', $_POST['gauge_ids']) : [];
+        $color_ids    = isset($_POST['color_ids'])    ? array_map('intval', $_POST['color_ids']) : [];
+        $length_ids   = isset($_POST['length_ids'])   ? array_map('intval', $_POST['length_ids']) : [];
+
+        $product_ids_string = '';
+        if (
+            !empty($category_ids) ||
+            !empty($type_ids) ||
+            !empty($profile_ids) ||
+            !empty($grade_ids) ||
+            !empty($gauge_ids) ||
+            !empty($color_ids) ||
+            !empty($length_ids)
+        ) {
+            $product_ids_string = generateProductAbrString(
+                $category_ids,
+                $profile_ids,
+                $grade_ids,
+                $gauge_ids,
+                $type_ids,
+                $color_ids,
+                $length_ids
+            );
+        }
+
+        echo $product_ids_string;
     }
 
     if ($action == "fetch_view_modal") {

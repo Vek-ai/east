@@ -419,6 +419,21 @@ if(isset($_REQUEST['action'])) {
                 </div>
             </div>
         </div>
+
+        <div class="card shadow-sm rounded-3 mb-3">
+            <div class="card-header bg-light border-bottom">
+                <h5 class="mb-0 fw-bold">Product IDs</h5>
+            </div>
+            <div class="card-body border rounded p-3">
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="mb-3">
+                            <h4 id="product_ids_abbrev"></h4>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
         
         <div class="modal-footer">
             <div class="form-actions">

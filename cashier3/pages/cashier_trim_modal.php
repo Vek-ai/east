@@ -144,14 +144,15 @@ if(isset($_POST['fetch_modal'])){
 
                 <div class="col-3 col-6-md">
                     <select class="form-control mb-0 trim_length_select" name="length[]">
-                        <option value="0" selected>Select Length</option>
+                        <option value="" selected>Select Length</option>
                         <?php
                         $lengths = getProductAvailableLengths($id);
                         foreach ($lengths as $entry) {
                             $product_length = htmlspecialchars($entry['length']);
                             $length_in_feet = htmlspecialchars($entry['feet']);
+                            $dimension_id   = htmlspecialchars($entry['dimension_id']);
                             $selected = ($length_in_feet == 1.0) ? 'selected' : '';
-                            echo "<option value=\"$length_in_feet\" $selected>$product_length</option>";
+                            echo "<option value=\"$length_in_feet\" data-id=\"$dimension_id\" $selected>$product_length</option>";
                         }
                         ?>
                     </select>
