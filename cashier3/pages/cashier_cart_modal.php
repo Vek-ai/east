@@ -381,7 +381,6 @@ if(isset($_POST['fetch_cart'])){
 
                                     $item = calculateCartItem($values);
                                     $product = $item['product'];
-                                    $base_price = $product['unit_price'];
                                     $line = $item['line'];
                                     $quantity = $item['quantity'];
                                     $unit_price = $item['unit_price'];
