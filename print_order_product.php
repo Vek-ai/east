@@ -166,9 +166,11 @@ function renderPanelCategory($pdf, $products, $conn) {
         $len = $ft + ($in / 12);
 
         $key = $productid;
+        $product_abbrev = $row_product['product_id_abbrev'] ?? '';
+
         if (!isset($grouped[$key])) {
             $grouped[$key] = [
-                'product_name'    => $row_product['product_item'],
+                'product_name'    => $row_product['product_item'] . (!empty($product_abbrev) ? "\n" . $product_abbrev : ''),
                 'color'           => getColorName($row_product['custom_color']),
                 'grade'           => $grade_details['grade_abbreviations'] ?? '',
                 'profile'         => $profile_details['profile_type'] ?? '',
@@ -176,7 +178,7 @@ function renderPanelCategory($pdf, $products, $conn) {
                 'length'          => 0,
                 'discounted_total'=> 0,
                 'actual_total'    => 0,
-                'note'            => $note,
+                'note'            => $row_product['note'] ?? '',
                 'bundles'         => []
             ];
         }
@@ -226,8 +228,13 @@ function renderPanelCategory($pdf, $products, $conn) {
         $totalActual += $g['actual_total'];
 
         foreach ($g['bundles'] as $bundle) {
+            $bundle_header = $bundle['bundle_name'];
+            if (!empty($product_abbrev)) {
+                $bundle_header .= "\n" . $product_abbrev;
+            }
+
             $subColumns = [
-                ['label' => $bundle['bundle_name'], 'width' => 45, 'align' => 'C'],
+                ['label' => $bundle_header, 'width' => 45, 'align' => 'C'],
                 ['label' => 'Qty', 'width' => 30, 'align' => 'C'],
                 ['label' => 'Ft', 'width' => 20, 'align' => 'C'],
                 ['label' => 'In', 'width' => 20, 'align' => 'C'],
