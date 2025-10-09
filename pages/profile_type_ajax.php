@@ -22,15 +22,18 @@ if(isset($_REQUEST['action'])) {
         $profile_abbreviations = mysqli_real_escape_string($conn, $_POST['profile_abbreviations']);
         
         $product_category_array = $_POST['product_category'] ?? [];
-        $product_category_json = mysqli_real_escape_string($conn, json_encode($product_category_array));
+        $product_category_json = mysqli_real_escape_string($conn, json_encode(array_map('intval', $product_category_array)));
 
         $notes = mysqli_real_escape_string($conn, $_POST['notes']);
         $userid = mysqli_real_escape_string($conn, $_POST['userid']);
 
-        $checkQuery = "SELECT * FROM profile_type WHERE profile_type_id = '$profile_type_id'";
+        $checkQuery = "SELECT profile_abbreviations FROM profile_type WHERE profile_type_id = '$profile_type_id'";
         $result = mysqli_query($conn, $checkQuery);
 
         if (mysqli_num_rows($result) > 0) {
+            $row = mysqli_fetch_assoc($result);
+            $old_abbr = $row['profile_abbreviations'];
+
             $updateQuery = "UPDATE profile_type 
                             SET profile_type = '$profile_type', 
                                 profile_abbreviations = '$profile_abbreviations', 
@@ -39,8 +42,12 @@ if(isset($_REQUEST['action'])) {
                                 last_edit = NOW(), 
                                 edited_by = '$userid'  
                             WHERE profile_type_id = '$profile_type_id'";
+
             if (mysqli_query($conn, $updateQuery)) {
                 echo "update-success";
+                if ($old_abbr !== $profile_abbreviations) {
+                    regenerateABR('profile_type', $profile_type_id);
+                }
             } else {
                 echo "Error updating profile type: " . mysqli_error($conn);
             }
@@ -55,6 +62,7 @@ if(isset($_REQUEST['action'])) {
             }
         }
     }
+
 
     if ($action == "change_status") {
         $profile_type_id = mysqli_real_escape_string($conn, $_POST['profile_type_id']);

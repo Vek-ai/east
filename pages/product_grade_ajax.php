@@ -20,36 +20,51 @@ if(isset($_REQUEST['action'])) {
         $product_grade_id = mysqli_real_escape_string($conn, $_POST['product_grade_id']);
         $product_grade = mysqli_real_escape_string($conn, $_POST['product_grade']);
         $grade_abbreviations = mysqli_real_escape_string($conn, $_POST['grade_abbreviations']);
-
         $product_category = mysqli_real_escape_string($conn, json_encode(array_map('intval', $_POST['product_category'] ?? [])));
-
         $defect_code = mysqli_real_escape_string($conn, $_POST['defect_code']);
         $defect_description = mysqli_real_escape_string($conn, $_POST['defect_description']);
         $multiplier = floatval(mysqli_real_escape_string($conn, $_POST['multiplier']));
         $notes = mysqli_real_escape_string($conn, $_POST['notes']);
-
         $userid = mysqli_real_escape_string($conn, $_POST['userid']);
 
-        // SQL query to check if the record exists
-        $checkQuery = "SELECT * FROM product_grade WHERE product_grade_id = '$product_grade_id'";
+        $checkQuery = "SELECT grade_abbreviations FROM product_grade WHERE product_grade_id = '$product_grade_id'";
         $result = mysqli_query($conn, $checkQuery);
 
         if (mysqli_num_rows($result) > 0) {
-            $updateQuery = "UPDATE product_grade SET product_grade = '$product_grade', grade_abbreviations = '$grade_abbreviations', product_category = '$product_category', multiplier = '$multiplier', notes = '$notes', defect_code = '$defect_code', defect_description = '$defect_description', last_edit = NOW(), edited_by = '$userid'  WHERE product_grade_id = '$product_grade_id'";
+            $row = mysqli_fetch_assoc($result);
+            $old_abbr = $row['grade_abbreviations'];
+
+            $updateQuery = "UPDATE product_grade 
+                            SET product_grade = '$product_grade', 
+                                grade_abbreviations = '$grade_abbreviations', 
+                                product_category = '$product_category', 
+                                multiplier = '$multiplier', 
+                                notes = '$notes', 
+                                defect_code = '$defect_code', 
+                                defect_description = '$defect_description', 
+                                last_edit = NOW(), 
+                                edited_by = '$userid'  
+                            WHERE product_grade_id = '$product_grade_id'";
+
             if (mysqli_query($conn, $updateQuery)) {
                 echo "update-success";
+                if ($old_abbr !== $grade_abbreviations) {
+                    regenerateABR('product_grade', $product_grade_id);
+                }
             } else {
                 echo "Error updating product grade: " . mysqli_error($conn);
             }
         } else {
-            $insertQuery = "INSERT INTO product_grade (product_grade, grade_abbreviations, product_category, multiplier, notes, defect_code, defect_description, added_date, added_by) VALUES ('$product_grade', '$grade_abbreviations', '$product_category', '$multiplier', '$notes', '$defect_code', '$defect_description', NOW(), '$userid')";
+            $insertQuery = "INSERT INTO product_grade 
+                            (product_grade, grade_abbreviations, product_category, multiplier, notes, defect_code, defect_description, added_date, added_by) 
+                            VALUES ('$product_grade', '$grade_abbreviations', '$product_category', '$multiplier', '$notes', '$defect_code', '$defect_description', NOW(), '$userid')";
             if (mysqli_query($conn, $insertQuery)) {
                 echo "add-success";
             } else {
                 echo "Error adding product grade: " . mysqli_error($conn);
             }
         }
-    } 
+    }
     
     if ($action == "change_status") {
         $product_grade_id = mysqli_real_escape_string($conn, $_POST['product_grade_id']);

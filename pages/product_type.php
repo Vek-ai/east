@@ -527,16 +527,16 @@ if ($permission === 'edit') {
             contentType: false,
             success: function(response) {
               $('.modal').modal("hide");
-              if (response === "Product type updated successfully.") {
+              if (response.trim() === "update-success") {
                   $('#responseHeader').text("Success");
-                  $('#responseMsg').text(response);
+                  $('#responseMsg').text("Product type updated successfully.");
                   $('#responseHeaderContainer').removeClass("bg-danger");
                   $('#responseHeaderContainer').addClass("bg-success");
                   $('#response-modal').modal("show");
                   table.ajax.reload(null, false);
-              } else if (response === "New product type added successfully.") {
+              } else if (response === "add-success") {
                   $('#responseHeader').text("Success");
-                  $('#responseMsg').text(response);
+                  $('#responseMsg').text("New product type added successfully.");
                   $('#responseHeaderContainer').removeClass("bg-danger");
                   $('#responseHeaderContainer').addClass("bg-success");
                   $('#response-modal').modal("show");

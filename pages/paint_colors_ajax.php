@@ -41,10 +41,13 @@ if(isset($_REQUEST['action'])) {
             $conn, json_encode(array_map('intval', $_POST['profile'] ?? []))
         );
 
-        $sql = "SELECT * FROM paint_colors WHERE color_id = '$color_id'";
-        $result = mysqli_query($conn, $sql);
+        $checkQuery = "SELECT color_abbreviation FROM paint_colors WHERE color_id = '$color_id'";
+        $result = mysqli_query($conn, $checkQuery);
 
         if (mysqli_num_rows($result) > 0) {
+            $row = mysqli_fetch_assoc($result);
+            $old_abbr = $row['color_abbreviation'];
+
             $updateQuery = "UPDATE paint_colors SET 
                 color_name = '$color_name', 
                 color_code = '$color_code', 
@@ -67,22 +70,28 @@ if(isset($_REQUEST['action'])) {
                 use_ekm_color_name = '$use_ekm_color_name'
                 WHERE color_id = '$color_id'";
 
-            echo mysqli_query($conn, $updateQuery) 
-                ? "Paint color updated successfully." 
-                : "Error updating paint color: " . mysqli_error($conn);
-
+            if (mysqli_query($conn, $updateQuery)) {
+                echo "update-success";
+                if ($old_abbr !== $color_abbreviation) {
+                    regenerateABR('paint_colors', $color_id);
+                }
+            } else {
+                echo "Error updating paint color: " . mysqli_error($conn);
+            }
         } else {
-            // ✅ Insert
             $insertQuery = "INSERT INTO paint_colors 
                 (color_name, color_code, ekm_color_no, ekm_paint_code, ekm_color_name, color_group, product_category, grade, gauge, profile, provider_id, added_date, added_by, ekm_color_code, color_abbreviation, stock_availability, multiplier_category, ranking, use_ekm_color_name) 
                 VALUES 
                 ('$color_name', '$color_code', '$ekm_color_no', '$ekm_paint_code', '$ekm_color_name', '$color_group', '$product_category', '$grade', '$gauge', '$profile', '$provider_id', NOW(), '$userid', '$ekm_color_code', '$color_abbreviation', '$stock_availability', '$multiplier_category', '$ranking', '$use_ekm_color_name')";
 
-            echo mysqli_query($conn, $insertQuery) 
-                ? "New paint color added successfully." 
-                : "Error adding paint color: " . mysqli_error($conn);
+            if (mysqli_query($conn, $insertQuery)) {
+                echo "add-success";
+            } else {
+                echo "Error adding paint color: " . mysqli_error($conn);
+            }
         }
     }
+
    
 
     if ($action == "fetch_update_modal") {

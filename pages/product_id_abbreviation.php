@@ -8,7 +8,7 @@ require 'includes/functions.php';
 
 $permission = $_SESSION['permission'];
 
-$page_title = "Dimensions";
+$page_title = "Product IDs";
 ?>
 <style>
     td.notes,  td.last-edit{
@@ -60,53 +60,114 @@ $page_title = "Dimensions";
   </div>
 </div>
 
-<?php                                                    
-if ($permission === 'edit') {
-?>
-
-<div class="card card-body">
-    <div class="row">
-      <div class="col-md-12 col-xl-12 text-end d-flex justify-content-md-end justify-content-center mt-3 mt-md-0 gap-3">
-          <button type="button" id="addModalBtn" class="btn btn-primary d-flex align-items-center" data-id="" data-type="add">
-              <i class="ti ti-plus text-white me-1 fs-5"></i> Add <?= $page_title ?>
-          </button>
-      </div>
-    </div>
-</div>
-
-<?php
-}
-?>
-
 <div class="card card-body">
   <div class="row">
       <div class="col-3">
-          <h3 class="card-title align-items-center mb-2">
-              Filter <?= $page_title ?>
-          </h3>
-          <div class="position-relative w-100 px-0 mr-0 mb-2">
-              <input type="text" class="form-control py-2 ps-5 " id="text-srh" placeholder="Search">
-              <i class="ti ti-search position-absolute top-50 start-0 translate-middle-y fs-6 text-dark ms-3"></i>
-          </div>
-          <div class="align-items-center">
-              <div class="position-relative w-100 px-1 mb-2">
-                  <select class="form-control py-0 ps-5 select2 filter-selection" id="filter-category" data-filter="category" data-filter-name="Product Category">
-                      <option value="">All Categories</option>
-                      <optgroup label="Category">
-                          <?php
-                          $query_category = "SELECT * FROM product_category WHERE hidden = '0' AND status = '1' ORDER BY `product_category` ASC";
-                          $result_category = mysqli_query($conn, $query_category);
-                          while ($row_category = mysqli_fetch_array($result_category)) {
-                              $selected = ($category_id == $row_category['product_category_id']) ? 'selected' : '';
-                          ?>
-                              <option value="<?= $row_category['product_category_id'] ?>" data-category="<?= $row_category['product_category'] ?>" <?= $selected ?>><?= $row_category['product_category'] ?></option>
-                          <?php
-                          }
-                          ?>
-                      </optgroup>
-                  </select>
-              </div>
-          </div>
+            <h3 class="card-title align-items-center mb-2">
+                Filter <?= $page_title ?>
+            </h3>
+            <div class="position-relative w-100 px-0 mr-0 mb-2">
+                <input type="text" class="form-control py-2 ps-5 " id="text-srh" placeholder="Search">
+                <i class="ti ti-search position-absolute top-50 start-0 translate-middle-y fs-6 text-dark ms-3"></i>
+            </div>
+            <div class="align-items-center">
+                <div class="position-relative w-100 px-1 mb-2">
+                    <select class="form-control py-0 ps-5 select2 filter-selection" id="select-category" data-filter="category" data-filter-name="Product Category">
+                        <option value="" data-category="">All Categories</option>
+                        <optgroup label="Category">
+                            <?php
+                            $query_category = "SELECT * FROM product_category WHERE hidden = '0' AND status = '1' ORDER BY `product_category` ASC";
+                            $result_category = mysqli_query($conn, $query_category);
+                            while ($row_category = mysqli_fetch_array($result_category)) {
+                            ?>
+                                <option value="<?= $row_category['product_category_id'] ?>" data-category="<?= $row_category['product_category'] ?>"><?= $row_category['product_category'] ?></option>
+                            <?php
+                            }
+                            ?>
+                        </optgroup>
+                    </select>
+                </div>
+                <div class="position-relative w-100 px-1 mb-2">
+                    <select class="form-control search-category py-0 ps-5 select2 filter-selection" id="select-profile" data-filter="profile" data-filter-name="Product Profile">
+                        <option value="" data-category="">All Profile Types</option>
+                        <optgroup label="Product Line">
+                            <?php
+                            $query_profile = "SELECT * FROM profile_type WHERE hidden = '0' AND status = '1' ORDER BY `profile_type` ASC";
+                            $result_profile = mysqli_query($conn, $query_profile);
+                            while ($row_profile = mysqli_fetch_array($result_profile)) {
+                            ?>
+                                <option value="<?= $row_profile['profile_type_id'] ?>" data-category="<?= $v['product_category'] ?>"><?= $row_profile['profile_type'] ?></option>
+                            <?php
+                            }
+                            ?>
+                        </optgroup>
+                    </select>
+                </div>
+                <div class="position-relative w-100 px-1 mb-2">
+                    <select class="form-control search-chat py-0 ps-5 select2 filter-selection" id="select-grade" data-filter="grade" data-filter-name="Product Grade">
+                        <option value="" data-category="">All Grades</option>
+                        <optgroup label="Product Grades">
+                            <?php
+                            $query_grade = "SELECT * FROM product_grade WHERE hidden = '0' AND status = '1' ORDER BY `product_grade` ASC";
+                            $result_grade = mysqli_query($conn, $query_grade);
+                            while ($row_grade = mysqli_fetch_array($result_grade)) {
+                            ?>
+                                <option value="<?= $row_grade['product_grade_id'] ?>" data-category="grade"><?= $row_grade['product_grade'] ?></option>
+                            <?php
+                            }
+                            ?>
+                        </optgroup>
+                    </select>
+                </div>
+                <div class="position-relative w-100 px-1 mb-2">
+                    <select class="form-control search-chat py-0 ps-5 select2 filter-selection" id="select-gauge" data-filter="gauge" data-filter-name="Product Gauge">
+                        <option value="" data-category="">All Gauges</option>
+                        <optgroup label="Product Gauges">
+                            <?php
+                            $query_gauge = "SELECT * FROM product_gauge WHERE hidden = '0' AND status = '1' ORDER BY `product_gauge` ASC";
+                            $result_gauge = mysqli_query($conn, $query_gauge);
+                            while ($row_gauge = mysqli_fetch_array($result_gauge)) {
+                            ?>
+                                <option value="<?= $row_gauge['product_gauge_id'] ?>" data-category="gauge"><?= $row_gauge['product_gauge'] ?></option>
+                            <?php
+                            }
+                            ?>
+                        </optgroup>
+                    </select>
+                </div>
+            </div>
+            <div class="position-relative w-100 px-1 mb-2">
+                <select class="form-control search-category py-0 ps-5 select2 filter-selection" id="select-type" data-filter="type" data-filter-name="Product Type">
+                    <option value="" data-category="">All Product Types</option>
+                    <optgroup label="Product Type">
+                        <?php
+                        $query_type = "SELECT * FROM product_type WHERE hidden = '0' AND status = '1' ORDER BY `product_type` ASC";
+                        $result_type = mysqli_query($conn, $query_type);
+                        while ($row_type = mysqli_fetch_array($result_type)) {
+                        ?>
+                            <option value="<?= $row_type['product_type_id'] ?>" data-category="<?= $row_type['product_category'] ?>"><?= $row_type['product_type'] ?></option>
+                        <?php
+                        }
+                        ?>
+                    </optgroup>
+                </select>
+            </div>
+            <div class="position-relative w-100 px-1 mb-2">
+                <select class="form-control search-chat py-0 ps-5 select2 filter-selection" id="select-color" data-filter="color" data-filter-name="Product Color">
+                    <option value="" data-category="">All Colors</option>
+                    <optgroup label="Product Colors">
+                        <?php
+                        $query_color = "SELECT * FROM paint_colors WHERE hidden = '0' AND color_status = '1' ORDER BY `color_name` ASC";
+                        $result_color = mysqli_query($conn, $query_color);
+                        while ($row_color = mysqli_fetch_array($result_color)) {
+                        ?>
+                            <option value="<?= $row_color['color_id'] ?>" data-category="category"><?= $row_color['color_name'] ?></option>
+                        <?php
+                        }
+                        ?>
+                    </optgroup>
+                </select>
+            </div>
             <div class="d-flex justify-content-end py-2">
                 <button type="button" class="btn btn-outline-primary reset_filters">
                     <i class="fas fa-sync-alt me-1"></i> Reset Filters
@@ -120,13 +181,17 @@ if ($permission === 'edit') {
               <div class="card-body">
                 <h4 class="card-title d-flex justify-content-between align-items-center"><?= $page_title ?> List</h4>
                 <div class="table-responsive">
-                  <table id="display_product_type" class="table table-striped table-bordered align-middle">
+                  <table id="display_product_id" class="table table-striped table-bordered align-middle">
                     <thead>
                         <tr>
-                            <th>Dimension</th>
+                            <th>Product ID</th>
                             <th>Category</th>
-                            <th>Abbreviation</th>
-                            <th>Action</th>
+                            <th>Profile</th>
+                            <th>Grade</th>
+                            <th>Gauge</th>
+                            <th>Type</th>
+                            <th>Color</th>
+                            <th>Length</th>
                         </tr>
                     </thead>
 
@@ -199,10 +264,11 @@ if ($permission === 'edit') {
 
     $.fn.dataTable.ext.errMode = 'none';
 
-    var table = $('#display_product_type').DataTable({
+    var table = $('#display_product_id').DataTable({
         pageLength: 100,
+        order: [],
         ajax: {
-            url: 'pages/dimensions_ajax.php',
+            url: 'pages/product_id_abbreviation_ajax.php',
             type: 'POST',
             data: { action: 'fetch_table' },
             error: function(xhr, status, error) {
@@ -212,17 +278,27 @@ if ($permission === 'edit') {
             }
         },
         columns: [
-            { data: 'dimension', title: 'Dimension' },
-            { data: 'dimension_category', title: 'Category' },
-            { data: 'dimension_abbreviation', title: 'Abbreviation' },
-            { data: 'action', title: 'Action', orderable: false, searchable: false }
+            { data: 'product_id', title: 'Product ID' },
+            { data: 'category', title: 'Category' },
+            { data: 'profile', title: 'Profile' },
+            { data: 'grade', title: 'Grade' },
+            { data: 'gauge', title: 'Gauge' },
+            { data: 'type', title: 'Type' },
+            { data: 'color', title: 'Color' },
+            { data: 'length', title: 'Length' }
         ],
-        createdRow: function(row, data, dataIndex) {
-            $(row).attr('data-category', data.dimension_category_id);
+        createdRow: function (row, data, dataIndex) {
+            $(row).attr('data-category', data.category_id);
+            $(row).attr('data-profile', data.profile_id);
+            $(row).attr('data-grade', data.grade_id);
+            $(row).attr('data-gauge', data.gauge_id);
+            $(row).attr('data-type', data.type_id);
+            $(row).attr('data-color', data.color_id);
+            $(row).attr('data-length', data.length_id);
         }
     });
 
-    $('#display_product_type_filter').hide();
+    $('#display_product_id_filter').hide();
 
     $(".select2").each(function () {
         $(this).select2({
@@ -236,21 +312,21 @@ if ($permission === 'edit') {
         var formData = new FormData(this);
         formData.append('action', 'add_update');
         $.ajax({
-            url: 'pages/dimensions_ajax.php',
+            url: 'pages/product_id_abbreviation_ajax.php',
             type: 'POST',
             data: formData,
             processData: false,
             contentType: false,
             success: function(response) {
               $('.modal').modal("hide");
-              if (response.trim() == "update-success") {
+              if (response.trim() == "success_update") {
                   $('#responseHeader').text("Success");
                   $('#responseMsg').text("<?= $page_title ?> updated successfully.");
                   $('#responseHeaderContainer').removeClass("bg-danger");
                   $('#responseHeaderContainer').addClass("bg-success");
                   $('#response-modal').modal("show");
                   table.ajax.reload(null, false);
-              } else if (response.trim() == "add-success") {
+              } else if (response.trim() == "success_add") {
                   $('#responseHeader').text("Success");
                   $('#responseMsg').text("New <?= $page_title ?> added successfully.");
                   $('#responseHeaderContainer').removeClass("bg-danger");
@@ -283,7 +359,7 @@ if ($permission === 'edit') {
         }
 
         $.ajax({
-            url: 'pages/dimensions_ajax.php',
+            url: 'pages/product_id_abbreviation_ajax.php',
             type: 'POST',
             data: {
               id : id,

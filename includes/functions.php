@@ -326,6 +326,20 @@ function getProductTypeName($product_type_id){
     return '';
 }
 
+function getDimensionName($dimension_id){
+    global $conn;
+    $dimension_id = intval($dimension_id);
+    $query = "SELECT * FROM dimensions WHERE dimension_id = '$dimension_id'";
+    $result = mysqli_query($conn, $query);
+
+    if ($result && mysqli_num_rows($result) > 0) {
+        $row = mysqli_fetch_assoc($result);
+        return $row['dimension'] .' ' .$row['dimension_unit'];
+    }
+
+    return '';
+}
+
 function getProductSystemName($id){
     global $conn;
     $query = "SELECT product_system FROM product_system WHERE product_system_id = '$id'";
@@ -3335,6 +3349,74 @@ function generateProductAbr($category_ids, $profile_ids, $grade_ids, $gauge_ids,
     return $inserted;
 }
 
+function regenerateABR($table, $id) {
+    global $conn;
+
+    $cfgs = [
+        'product_category' => ['col' => 'category', 'id' => 'product_category_id', 'abbr' => 'category_abreviations'],
+        'profile_type'     => ['col' => 'profile',  'id' => 'profile_type_id',     'abbr' => 'profile_abbreviations'],
+        'product_grade'    => ['col' => 'grade',    'id' => 'product_grade_id',    'abbr' => 'grade_abbreviations'],
+        'product_gauge'    => ['col' => 'gauge',    'id' => 'product_gauge_id',    'abbr' => 'gauge_abbreviations'],
+        'product_type'     => ['col' => 'type',     'id' => 'product_type_id',     'abbr' => 'type_abreviations'],
+        'paint_colors'     => ['col' => 'color',    'id' => 'color_id',            'abbr' => 'color_abbreviation'],
+        'dimensions'       => ['col' => 'length',   'id' => 'dimension_id',        'abbr' => 'dimension_abbreviation']
+    ];
+
+    if (!isset($cfgs[$table])) return;
+
+    $cfg = $cfgs[$table];
+    $col = $cfg['col'];
+    $res = mysqli_query($conn, "SELECT {$cfg['abbr']} FROM $table WHERE {$cfg['id']} = $id");
+    $new = mysqli_fetch_assoc($res)[$cfg['abbr']] ?? '';
+    if (!$new) return;
+
+    $rows = mysqli_query($conn, "SELECT * FROM product_abr WHERE $col = $id");
+    $inserted = 0;
+
+    $srcs = [
+        'category' => ['product_category','product_category_id','category_abreviations'],
+        'profile'  => ['profile_type','profile_type_id','profile_abbreviations'],
+        'grade'    => ['product_grade','product_grade_id','grade_abbreviations'],
+        'gauge'    => ['product_gauge','product_gauge_id','gauge_abbreviations'],
+        'type'     => ['product_type','product_type_id','type_abreviations'],
+        'color'    => ['paint_colors','color_id','color_abbreviation'],
+        'length'   => ['dimensions','dimension_id','dimension_abbreviation']
+    ];
+
+    while ($r = mysqli_fetch_assoc($rows)) {
+        $parts = [];
+        foreach ($srcs as $k => [$tbl, $idc, $abbrc]) {
+            $val = $r[$k];
+            if (!$val) continue;
+            if ($k === $col) $parts[] = $new;
+            else {
+                $s = mysqli_query($conn, "SELECT $abbrc FROM $tbl WHERE $idc = $val");
+                if ($sr = mysqli_fetch_assoc($s)) $parts[] = $sr[$abbrc];
+            }
+        }
+        $pid = implode('', $parts);
+        if (!$pid) continue;
+        $chk = mysqli_query($conn, "SELECT 1 FROM product_abr WHERE product_id = '" . mysqli_real_escape_string($conn, $pid) . "' LIMIT 1");
+        if (mysqli_num_rows($chk) > 0) continue;
+
+        $sql = sprintf(
+            "INSERT INTO product_abr (product_id, category, profile, grade, gauge, type, color, length)
+             VALUES ('%s', %s, %s, %s, %s, %s, %s, %s)",
+            mysqli_real_escape_string($conn, $pid),
+            $r['category'] ?: 'NULL',
+            $r['profile']  ?: 'NULL',
+            $r['grade']    ?: 'NULL',
+            $r['gauge']    ?: 'NULL',
+            $r['type']     ?: 'NULL',
+            $r['color']    ?: 'NULL',
+            $r['length']   ?: 'NULL'
+        );
+        mysqli_query($conn, $sql);
+        $inserted += mysqli_affected_rows($conn);
+    }
+
+    return $inserted;
+}
 
 function generateProductAbrString($category_ids, $profile_ids, $grade_ids, $gauge_ids, $type_ids, $color_ids, $length_ids) {
     global $conn;

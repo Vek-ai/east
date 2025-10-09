@@ -23,122 +23,72 @@ if(isset($_REQUEST['action'])) {
         $product_category = mysqli_real_escape_string($conn, $_POST['product_category']);
         $category_abreviations = mysqli_real_escape_string($conn, $_POST['category_abreviations']);
         $notes = mysqli_real_escape_string($conn, $_POST['notes']);
-        $multiplier = mysqli_real_escape_string($conn, floatval($_POST['multiplier'] ?? 0.00));
-        $custom_multiplier = mysqli_real_escape_string($conn, floatval($_POST['custom_multiplier'] ?? 0.00));
+        $multiplier = floatval(mysqli_real_escape_string($conn, $_POST['multiplier']));
+        $custom_multiplier = floatval(mysqli_real_escape_string($conn, $_POST['custom_multiplier']));
         $userid = mysqli_real_escape_string($conn, $_POST['userid']);
 
         $uploadDir = '../images/chart_images/';
-        if (!is_dir($uploadDir)) {
-            mkdir($uploadDir, 0775, true);
-        }
-
+        if (!is_dir($uploadDir)) mkdir($uploadDir, 0775, true);
         $custom_chart_image = '';
 
         if (isset($_FILES['custom_chart_image']) && $_FILES['custom_chart_image']['error'] === UPLOAD_ERR_OK) {
             $originalName = basename($_FILES['custom_chart_image']['name']);
             $extension = strtolower(pathinfo($originalName, PATHINFO_EXTENSION));
-            $allowedTypes = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
+            $allowed = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
 
-            if (in_array($extension, $allowedTypes)) {
+            if (in_array($extension, $allowed)) {
                 $uniqueName = time() . "_" . preg_replace("/[^a-zA-Z0-9_\.-]/", "_", $originalName);
                 $targetPath = $uploadDir . $uniqueName;
-
                 if (move_uploaded_file($_FILES['custom_chart_image']['tmp_name'], $targetPath)) {
                     $custom_chart_image = $uniqueName;
                 } else {
-                    echo "Failed to upload image.";
-                    exit;
+                    echo "upload-failed"; exit;
                 }
             } else {
-                echo "Only JPG, JPEG, PNG, GIF, and WEBP files are allowed.";
-                exit;
+                echo "invalid-image"; exit;
             }
         }
 
-        $checkQuery = "SELECT * FROM product_category WHERE product_category_id = '$product_category_id'";
+        $checkQuery = "SELECT category_abreviations, custom_chart_image FROM product_category WHERE product_category_id = '$product_category_id'";
         $result = mysqli_query($conn, $checkQuery);
 
         if (mysqli_num_rows($result) > 0) {
             $row = mysqli_fetch_assoc($result);
-            $current_product_category = $row['product_category'];
-            $current_category_abreviations = $row['category_abreviations'];
-            $current_chart_image = $row['custom_chart_image'];
+            $old_abbr = $row['category_abreviations'];
+            if (empty($custom_chart_image)) $custom_chart_image = $row['custom_chart_image'];
 
-            if (empty($custom_chart_image)) {
-                $custom_chart_image = $current_chart_image;
-            }
+            $updateQuery = "UPDATE product_category 
+                            SET product_category = '$product_category', 
+                                category_abreviations = '$category_abreviations', 
+                                notes = '$notes', 
+                                multiplier = '$multiplier', 
+                                custom_multiplier = '$custom_multiplier', 
+                                custom_chart_image = '$custom_chart_image', 
+                                last_edit = NOW(), 
+                                edited_by = '$userid'  
+                            WHERE product_category_id = '$product_category_id'";
 
-            $duplicates = [];
-
-            if ($product_category != $current_product_category) {
-                $checkCategory = "SELECT * FROM product_category WHERE product_category = '$product_category'";
-                $resultCategory = mysqli_query($conn, $checkCategory);
-                if (mysqli_num_rows($resultCategory) > 0) {
-                    $duplicates[] = "Product Category";
+            if (mysqli_query($conn, $updateQuery)) {
+                echo "update-success";
+                if ($old_abbr !== $category_abreviations) {
+                    regenerateABR('product_category', $product_category_id);
                 }
-            }
-
-            if ($category_abreviations != $current_category_abreviations) {
-                $checkAbreviations = "SELECT * FROM product_category WHERE category_abreviations = '$category_abreviations'";
-                $resultAbreviations = mysqli_query($conn, $checkAbreviations);
-                if (mysqli_num_rows($resultAbreviations) > 0) {
-                    $duplicates[] = "Category Abbreviations";
-                }
-            }
-
-            if (!empty($duplicates)) {
-                $msg = implode(", ", $duplicates);
-                echo "$msg already exist! Please change to a unique value";
             } else {
-                $updateQuery = "UPDATE product_category SET 
-                    product_category = '$product_category', 
-                    category_abreviations = '$category_abreviations', 
-                    notes = '$notes', 
-                    multiplier = '$multiplier', 
-                    custom_multiplier = '$custom_multiplier', 
-                    custom_chart_image = '$custom_chart_image', 
-                    last_edit = NOW(), 
-                    edited_by = '$userid' 
-                    WHERE product_category_id = '$product_category_id'";
-
-                if (mysqli_query($conn, $updateQuery)) {
-                    echo "Category updated successfully.";
-                } else {
-                    echo "Error updating category: " . mysqli_error($conn);
-                }
+                echo "Error updating category: " . mysqli_error($conn);
             }
         } else {
-            $duplicates = [];
+            $insertQuery = "INSERT INTO product_category 
+                            (product_category, category_abreviations, notes, multiplier, custom_multiplier, custom_chart_image, added_date, added_by) 
+                            VALUES ('$product_category', '$category_abreviations', '$notes', '$multiplier', '$custom_multiplier', '$custom_chart_image', NOW(), '$userid')";
 
-            $checkCategory = "SELECT * FROM product_category WHERE product_category = '$product_category'";
-            $resultCategory = mysqli_query($conn, $checkCategory);
-            if (mysqli_num_rows($resultCategory) > 0) {
-                $duplicates[] = "Product Category";
-            }
-
-            $checkAbreviations = "SELECT * FROM product_category WHERE category_abreviations = '$category_abreviations'";
-            $resultAbreviations = mysqli_query($conn, $checkAbreviations);
-            if (mysqli_num_rows($resultAbreviations) > 0) {
-                $duplicates[] = "Category Abbreviations";
-            }
-
-            if (!empty($duplicates)) {
-                $msg = implode(", ", $duplicates);
-                echo "$msg already exist! Please change to a unique value";
+            if (mysqli_query($conn, $insertQuery)) {
+                echo "add-success";
             } else {
-                $insertQuery = "INSERT INTO product_category 
-                    (product_category, category_abreviations, notes, multiplier, custom_multiplier, custom_chart_image, added_date, added_by) 
-                    VALUES 
-                    ('$product_category', '$category_abreviations', '$notes', '$multiplier', '$custom_multiplier', '$custom_chart_image', NOW(), '$userid')";
-
-                if (mysqli_query($conn, $insertQuery)) {
-                    echo "New category added successfully.";
-                } else {
-                    echo "Error adding category: " . mysqli_error($conn);
-                }
+                echo "Error adding category: " . mysqli_error($conn);
             }
         }
     }
+
 
     if ($action == "change_status") {
         $product_category_id = mysqli_real_escape_string($conn, $_POST['product_category_id']);

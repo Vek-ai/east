@@ -461,14 +461,14 @@ if ($permission === 'edit') {
             contentType: false,
             success: function(response) {
               $('.modal').modal("hide");
-              if (response === "update-success") {
+              if (response.trim() === "update-success") {
                   $('#responseHeader').text("Success");
                   $('#responseMsg').text("Product grade updated successfully.");
                   $('#responseHeaderContainer').removeClass("bg-danger");
                   $('#responseHeaderContainer').addClass("bg-success");
                   $('#response-modal').modal("show");
                   table.ajax.reload(null, false);
-              } else if (response === "add-success") {
+              } else if (response.trim() === "add-success") {
                   $('#responseHeader').text("Success");
                   $('#responseMsg').text("New product grade added successfully.");
                   $('#responseHeaderContainer').removeClass("bg-danger");

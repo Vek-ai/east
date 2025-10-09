@@ -19,24 +19,31 @@ if(isset($_REQUEST['action'])) {
     $action = $_REQUEST['action'];
 
     if ($action == "add_update") {
-        $dimension_id       = mysqli_real_escape_string($conn, $_POST['dimension_id']);
-        $dimension          = mysqli_real_escape_string($conn, $_POST['dimension']);
-        $dimension_unit     = mysqli_real_escape_string($conn, $_POST['dimension_unit']);
+        $dimension_id = mysqli_real_escape_string($conn, $_POST['dimension_id']);
+        $dimension = mysqli_real_escape_string($conn, $_POST['dimension']);
+        $dimension_unit = mysqli_real_escape_string($conn, $_POST['dimension_unit']);
         $dimension_category = mysqli_real_escape_string($conn, $_POST['dimension_category']);
         $dimension_abbreviation = mysqli_real_escape_string($conn, $_POST['dimension_abbreviation']);
 
-        $checkQuery = "SELECT * FROM dimensions WHERE dimension_id = '$dimension_id'";
+        $checkQuery = "SELECT dimension_abbreviation FROM dimensions WHERE dimension_id = '$dimension_id'";
         $result = mysqli_query($conn, $checkQuery);
 
         if (mysqli_num_rows($result) > 0) {
+            $row = mysqli_fetch_assoc($result);
+            $old_abbr = $row['dimension_abbreviation'];
+
             $updateQuery = "UPDATE dimensions 
                             SET dimension = '$dimension',
                                 dimension_unit = '$dimension_unit',
                                 dimension_category = '$dimension_category',
                                 dimension_abbreviation = '$dimension_abbreviation'
                             WHERE dimension_id = '$dimension_id'";
+
             if (mysqli_query($conn, $updateQuery)) {
-                echo "success_update";
+                echo "update-success";
+                if ($old_abbr !== $dimension_abbreviation) {
+                    regenerateABR('dimensions', $dimension_id);
+                }
             } else {
                 echo "Error updating dimension: " . mysqli_error($conn);
             }
@@ -44,7 +51,7 @@ if(isset($_REQUEST['action'])) {
             $insertQuery = "INSERT INTO dimensions (dimension, dimension_unit, dimension_category, dimension_abbreviation) 
                             VALUES ('$dimension', '$dimension_unit', '$dimension_category', '$dimension_abbreviation')";
             if (mysqli_query($conn, $insertQuery)) {
-                echo "success_add";
+                echo "add-success";
             } else {
                 echo "Error adding dimension: " . mysqli_error($conn);
             }

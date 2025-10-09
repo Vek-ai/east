@@ -811,16 +811,16 @@ $(document).ready(function() {
             contentType: false,
             success: function(response) {
               $('.modal').modal('hide');
-              if (response.trim() === "Paint color updated successfully.") {
+              if (response.trim() === "update-success") {
                   $('#responseHeader').text("Success");
                   $('#responseMsg').text("Paint color updated successfully.");
                   $('#responseHeaderContainer').removeClass("bg-danger");
                   $('#responseHeaderContainer').addClass("bg-success");
                   $('#response-modal').modal("show");
                   table.ajax.reload(null, false);
-              } else if (response.trim() === "New paint color added successfully.") {
+              } else if (response.trim() === "add-success") {
                   $('#responseHeader').text("Success");
-                  $('#responseMsg').text(response);
+                  $('#responseMsg').text("New paint color added successfully.");
                   $('#responseHeaderContainer').removeClass("bg-danger");
                   $('#responseHeaderContainer').addClass("bg-success");
                   $('#response-modal').modal("show");

@@ -26,11 +26,14 @@ if(isset($_REQUEST['action'])) {
         $no_per_sqin = mysqli_real_escape_string($conn, $_POST['no_per_sqin']);
         $notes = mysqli_real_escape_string($conn, $_POST['notes']);
         $userid = mysqli_real_escape_string($conn, $_POST['userid']);
-    
-        $checkQuery = "SELECT * FROM product_gauge WHERE product_gauge_id = '$product_gauge_id'";
+
+        $checkQuery = "SELECT gauge_abbreviations FROM product_gauge WHERE product_gauge_id = '$product_gauge_id'";
         $result = mysqli_query($conn, $checkQuery);
-    
+
         if (mysqli_num_rows($result) > 0) {
+            $row = mysqli_fetch_assoc($result);
+            $old_abbr = $row['gauge_abbreviations'];
+
             $updateQuery = "
                 UPDATE product_gauge SET 
                     product_gauge = '$product_gauge',
@@ -44,8 +47,13 @@ if(isset($_REQUEST['action'])) {
                     edited_by = '$userid'
                 WHERE product_gauge_id = '$product_gauge_id'
             ";
+
             if (mysqli_query($conn, $updateQuery)) {
                 echo "update-success";
+
+                if ($old_abbr !== $gauge_abbreviations) {
+                    regenerateABR('product_gauge', $product_gauge_id);
+                }
             } else {
                 echo "Error updating product gauge: " . mysqli_error($conn);
             }
@@ -73,13 +81,15 @@ if(isset($_REQUEST['action'])) {
                     '$userid'
                 )
             ";
+
             if (mysqli_query($conn, $insertQuery)) {
                 echo "add-success";
             } else {
                 echo "Error adding product gauge: " . mysqli_error($conn);
             }
         }
-    }    
+    }
+   
     
     if ($action == "change_status") {
         $product_gauge_id = mysqli_real_escape_string($conn, $_POST['product_gauge_id']);
