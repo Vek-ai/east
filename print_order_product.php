@@ -170,7 +170,8 @@ function renderPanelCategory($pdf, $products, $conn) {
 
         if (!isset($grouped[$key])) {
             $grouped[$key] = [
-                'product_name'    => $row_product['product_item'] . (!empty($product_abbrev) ? "\n" . $product_abbrev : ''),
+                'product_name'    => $row_product['product_item'],
+                'product_abbrev'  => $product_abbrev,
                 'color'           => getColorName($row_product['custom_color']),
                 'grade'           => $grade_details['grade_abbreviations'] ?? '',
                 'profile'         => $profile_details['profile_type'] ?? '',
@@ -229,9 +230,6 @@ function renderPanelCategory($pdf, $products, $conn) {
 
         foreach ($g['bundles'] as $bundle) {
             $bundle_header = $bundle['bundle_name'];
-            if (!empty($product_abbrev)) {
-                $bundle_header .= "\n" . $product_abbrev;
-            }
 
             $subColumns = [
                 ['label' => $bundle_header, 'width' => 45, 'align' => 'C'],
@@ -247,8 +245,16 @@ function renderPanelCategory($pdf, $products, $conn) {
             $pdf->SetFont('Arial', '', 7);
 
             foreach ($bundle['rows'] as $row) {
+                $row_text = '';
+                if (!empty($g['product_abbrev'])) {
+                    $row_text .= $g['product_abbrev'];
+                }
+                if (!empty($row['note'])) {
+                    $row_text .= "\nNote: " . $row['note'];
+                }
+
                 $subRow = [
-                    (!empty($row['note']) ? "Note: " . $row['note'] : ''),
+                    $row_text,
                     $row['qty'],
                     $row['ft'],
                     $row['inch'],
