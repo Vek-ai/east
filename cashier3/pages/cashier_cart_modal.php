@@ -352,7 +352,7 @@ if(isset($_POST['fetch_cart'])){
                                 </tr>
 
                                 <tr class="thick-border create_bundle_row">
-                                    <th class="text-center" colspan="3">
+                                    <th class="text-center" colspan="2">
                                         <?php if (!empty($bundle_name)) : ?>
                                             (<?= $bundle_name ?>)
                                         <?php else: ?>
@@ -366,10 +366,13 @@ if(isset($_POST['fetch_cart'])){
                                     <th class="text-center">Panel Type</th>
                                     <th class="text-center">Panel Style</th>
                                     <th class="text-center">
-                                        <?php if (!empty($bundle_name)) echo "($bundle_name)"; ?>
+                                        Linear Ft $
                                     </th>
-                                    <th class="text-center <?= $show_disc_price ? 'd-none price_col' : '' ?>">Line Item Price</th>
-                                    <th class="text-center <?= $show_disc_price ? '' : 'd-none' ?>">Line Item Price</th>
+                                    <th class="text-center">
+                                        Per Panel $
+                                    </th>
+                                    <th class="text-center <?= $show_disc_price ? 'd-none price_col' : '' ?>">Price</th>
+                                    <th class="text-center <?= $show_disc_price ? '' : 'd-none' ?>">Customer Price</th>
                                     <th class="text-center"></th>
                                 </tr>
 
@@ -378,6 +381,7 @@ if(isset($_POST['fetch_cart'])){
 
                                     $item = calculateCartItem($values);
                                     $product = $item['product'];
+                                    $base_price = $product['unit_price'];
                                     $line = $item['line'];
                                     $quantity = $item['quantity'];
                                     $unit_price = $item['unit_price'];
@@ -386,6 +390,8 @@ if(isset($_POST['fetch_cart'])){
                                     $customer_price = $item['customer_price'];
                                     $drawing_data = $item['drawing_data'];
                                     $sold_by_feet = $item['sold_by_feet'];
+                                    $linear_price = $base_price;
+                                    $panel_price = $item['panel_price'];
 
                                     $bundle_actual_price += $product_price;
                                     $bundle_customer_price += $customer_price;
@@ -427,9 +433,6 @@ if(isset($_POST['fetch_cart'])){
                                             <?php if (!empty($values["note"])): ?>
                                                 <br>Notes: <?= htmlspecialchars($values["note"]) ?>
                                             <?php endif; ?>
-                                        </td>
-                                        <td class="text-center">
-                                            
                                         </td>
                                         <td class="text-center">
                                             <div class="input-group d-inline-flex align-items-center flex-nowrap w-auto">
@@ -527,7 +530,14 @@ if(isset($_POST['fetch_cart'])){
                                             </select>
                                         </td>
                                         <td class="text-center">
-
+                                            <?php
+                                            echo number_format($linear_price, 2);
+                                            ?>
+                                        </td>
+                                        <td class="text-center">
+                                            <?php
+                                            echo number_format($panel_price, 2);
+                                            ?>
                                         </td>
                                         <td class="text-center pl-3 <?= $show_disc_price ? 'd-none price_col' : '' ?>">$
                                             <?php

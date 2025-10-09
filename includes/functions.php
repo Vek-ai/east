@@ -3078,6 +3078,9 @@ function calculateCartItem($values) {
         $gauge
     );
 
+    $linear_price = $product["unit_price"];
+    $panel_price  = $unit_price;
+
     $product_price = ($quantity * $unit_price) - $amount_discount;
 
     if (!empty($values["is_custom"])) {
@@ -3086,7 +3089,6 @@ function calculateCartItem($values) {
     }
 
     $multiplier = getMultiplierValue($color_id, $grade, $gauge);
-
     $discount = isset($values["used_discount"]) ? floatval($values["used_discount"]) / 100 : 0;
 
     $subtotal       = $product_price;
@@ -3105,6 +3107,8 @@ function calculateCartItem($values) {
         "images_directory" => "../images/drawing/",
         "quantity"       => $quantity,
         "unit_price"     => $unit_price,
+        "linear_price"   => $linear_price,
+        "panel_price"    => $panel_price,
         "total_length"   => $total_length,
         "amount_discount"=> $amount_discount,
         "product_price"  => $product_price,
