@@ -61,11 +61,178 @@ $page_title = "Product IDs";
 </div>
 
 <div class="card card-body">
+    <div class="row">
+      <div class="col-md-12 col-xl-12 text-end d-flex justify-content-md-end justify-content-center mt-3 mt-md-0 gap-3">
+            <button class="btn btn-primary open-product-filter">
+                Search Product ID
+            </button>
+      </div>
+    </div>
+</div>
+
+<div class="modal fade" id="productFilterModal" tabindex="-1" aria-labelledby="productFilterModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="productFilterModalLabel">Product ID Abbreviation Builder</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+
+      <div class="modal-body">
+        <div class="row">
+
+          <!-- Category -->
+          <div class="col-md-6 mb-3">
+            <label class="form-label">Product Category</label>
+            <div class="">
+                <select class="form-control select2" id="filter-category">
+                    <option value="">All Categories</option>
+                    <optgroup label="Category">
+                        <?php
+                        $query = "SELECT * FROM product_category WHERE hidden = 0 AND status = 1 ORDER BY product_category ASC";
+                        $result = mysqli_query($conn, $query);
+                        while ($r = mysqli_fetch_assoc($result)) {
+                            echo "<option value='{$r['product_category_id']}'>{$r['product_category']}</option>";
+                        }
+                        ?>
+                    </optgroup>
+                </select>
+            </div>
+            
+          </div>
+
+          <!-- Profile -->
+          <div class="col-md-6 mb-3">
+            <label class="form-label">Product Profile</label>
+            <div class="">
+                <select class="form-control select2" id="filter-profile">
+                    <option value="">All Profile Types</option>
+                    <optgroup label="Profile">
+                        <?php
+                        $query = "SELECT * FROM profile_type WHERE hidden = 0 AND status = 1 ORDER BY profile_type ASC";
+                        $result = mysqli_query($conn, $query);
+                        while ($r = mysqli_fetch_assoc($result)) {
+                            echo "<option value='{$r['profile_type_id']}'>{$r['profile_type']}</option>";
+                        }
+                        ?>
+                    </optgroup>
+                </select>
+            </div>
+          </div>
+
+          <!-- Grade -->
+          <div class="col-md-6 mb-3">
+            <label class="form-label">Product Grade</label>
+            <div class="">
+                <select class="form-control select2" id="filter-grade">
+                    <option value="">All Grades</option>
+                    <optgroup label="Grade">
+                        <?php
+                        $query = "SELECT * FROM product_grade WHERE hidden = 0 AND status = 1 ORDER BY product_grade ASC";
+                        $result = mysqli_query($conn, $query);
+                        while ($r = mysqli_fetch_assoc($result)) {
+                            echo "<option value='{$r['product_grade_id']}'>{$r['product_grade']}</option>";
+                        }
+                        ?>
+                    </optgroup>
+                </select>
+            </div>
+          </div>
+
+          <!-- Gauge -->
+          <div class="col-md-6 mb-3">
+            <label class="form-label">Product Gauge</label>
+            <div class="">
+                <select class="form-control select2" id="filter-gauge">
+                    <option value="">All Gauges</option>
+                    <optgroup label="Gauge">
+                        <?php
+                        $query = "SELECT * FROM product_gauge WHERE hidden = 0 AND status = 1 ORDER BY product_gauge ASC";
+                        $result = mysqli_query($conn, $query);
+                        while ($r = mysqli_fetch_assoc($result)) {
+                            echo "<option value='{$r['product_gauge_id']}'>{$r['product_gauge']}</option>";
+                        }
+                        ?>
+                    </optgroup>
+                </select>
+            </div>
+          </div>
+
+          <!-- Type -->
+          <div class="col-md-6 mb-3">
+            <label class="form-label">Product Type</label>
+            <div class="">
+                <select class="form-control select2" id="filter-type">
+                    <option value="">All Types</option>
+                    <optgroup label="Type">
+                        <?php
+                        $query = "SELECT * FROM product_type WHERE hidden = 0 AND status = 1 ORDER BY product_type ASC";
+                        $result = mysqli_query($conn, $query);
+                        while ($r = mysqli_fetch_assoc($result)) {
+                            echo "<option value='{$r['product_type_id']}'>{$r['product_type']}</option>";
+                        }
+                        ?>
+                    </optgroup>
+                </select>
+            </div>
+          </div>
+
+          <!-- Length -->
+          <div class="col-md-6 mb-3">
+            <label class="form-label">Length</label>
+            <div class="">
+                <select class="form-control select2" id="filter-length">
+                    <option value="">All Lengths</option>
+                    <optgroup label="Dimensions">
+                        <?php
+                        $query = "SELECT * FROM dimensions ORDER BY dimension ASC";
+                        $result = mysqli_query($conn, $query);
+                        while ($r = mysqli_fetch_assoc($result)) {
+                            $label = $r['dimension'] . ' ' . $r['dimension_unit'];
+                            echo "<option value='{$r['dimension_id']}'>{$label}</option>";
+                        }
+                        ?>
+                    </optgroup>
+                </select>
+            </div>
+          </div>
+
+          <!-- Color -->
+          <div class="col-md-12 mb-3">
+            <label class="form-label">Color</label>
+            <div class="">
+                <select class="form-control select2" id="filter-color">
+                    <option value="">All Colors</option>
+                    <optgroup label="Colors">
+                        <?php
+                        $query = "SELECT * FROM paint_colors WHERE hidden = 0 AND color_status = 1 ORDER BY color_name ASC";
+                        $result = mysqli_query($conn, $query);
+                        while ($r = mysqli_fetch_assoc($result)) {
+                            echo "<option value='{$r['color_id']}'>{$r['color_name']}</option>";
+                        }
+                        ?>
+                    </optgroup>
+                </select>
+            </div>
+          </div>
+        </div>
+
+        <div class="text-center mt-3">
+          <h4 id="abbr-display" class="fw-bold text-primary"></h4>
+        </div>
+
+        <div id="product-results" class="mt-4"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="card card-body">
   <div class="row">
       <div class="col-3">
-            <h3 class="card-title align-items-center mb-2">
-                Filter <?= $page_title ?>
-            </h3>
+            <div class="d-flex justify-content-start align-items-center mb-2">
+                <h3 class="card-title mb-0">Filter <?= $page_title ?></h3>
+            </div>
             <div class="position-relative w-100 px-0 mr-0 mb-2">
                 <input type="text" class="form-control py-2 ps-5 " id="text-srh" placeholder="Search">
                 <i class="ti ti-search position-absolute top-50 start-0 translate-middle-y fs-6 text-dark ms-3"></i>
@@ -307,76 +474,43 @@ $page_title = "Product IDs";
         });
     });
 
-    $('#dimensionForm').on('submit', function(event) {
-        event.preventDefault(); 
-        var formData = new FormData(this);
-        formData.append('action', 'add_update');
-        $.ajax({
-            url: 'pages/product_id_abbreviation_ajax.php',
-            type: 'POST',
-            data: formData,
-            processData: false,
-            contentType: false,
-            success: function(response) {
-              $('.modal').modal("hide");
-              if (response.trim() == "success_update") {
-                  $('#responseHeader').text("Success");
-                  $('#responseMsg').text("<?= $page_title ?> updated successfully.");
-                  $('#responseHeaderContainer').removeClass("bg-danger");
-                  $('#responseHeaderContainer').addClass("bg-success");
-                  $('#response-modal').modal("show");
-                  table.ajax.reload(null, false);
-              } else if (response.trim() == "success_add") {
-                  $('#responseHeader').text("Success");
-                  $('#responseMsg').text("New <?= $page_title ?> added successfully.");
-                  $('#responseHeaderContainer').removeClass("bg-danger");
-                  $('#responseHeaderContainer').addClass("bg-success");
-                  $('#response-modal').modal("show");
-                  table.ajax.reload(null, false);
-              } else {
-                  $('#responseHeader').text("Failed");
-                  $('#responseMsg').text(response);
-                  $('#responseHeaderContainer').removeClass("bg-success");
-                  $('#responseHeaderContainer').addClass("bg-danger");
-                  $('#response-modal').modal("show");
-              }
-            },
-            error: function(jqXHR, textStatus, errorThrown) {
-                alert('Error: ' + textStatus + ' - ' + errorThrown);
-            }
-        });
+    $(document).on('click', '.open-product-filter', function (e) {
+        e.preventDefault();
+
+        $('#productFilterModal select').val('').trigger('change');
+        $('#abbr-display').text('');
+
+        $('#productFilterModal').modal('show');
     });
 
-    $(document).on('click', '#addModalBtn', function(event) {
-        event.preventDefault();
-        var id = $(this).data('id') || '';
-        var type = $(this).data('type') || '';
-
-        if(type == 'edit'){
-          $('#add-header').html('Update <?= $page_title ?>');
-        }else{
-          $('#add-header').html('Add <?= $page_title ?>');
-        }
+    $('#filter-category, #filter-profile, #filter-grade, #filter-gauge, #filter-type, #filter-length, #filter-color').on('change', function() {
+        const category = $('#filter-category').val();
+        const profile  = $('#filter-profile').val();
+        const grade    = $('#filter-grade').val();
+        const gauge    = $('#filter-gauge').val();
+        const type     = $('#filter-type').val();
+        const length   = $('#filter-length').val();
+        const color    = $('#filter-color').val();
 
         $.ajax({
             url: 'pages/product_id_abbreviation_ajax.php',
-            type: 'POST',
+            method: 'POST',
             data: {
-              id : id,
-              action: 'fetch_modal_content'
+                action: 'fetch_product_id',
+                category: category,
+                profile: profile,
+                grade: grade,
+                gauge: gauge,
+                type: type,
+                length: length,
+                color: color
             },
-            success: function (response) {
-                $('#add-fields').html(response);
-                $('#addModal').modal('show');
+            success: function(response) {
+                $('#abbr-display').text(response);
             },
-            error: function (jqXHR, textStatus, errorThrown) {
-                console.error('AJAX Error:', textStatus, errorThrown);
-                console.error('Response:', jqXHR.responseText);
-
-                $('#responseHeader').text("Error");
-                $('#responseMsg').text("An error occurred while processing your request.");
-                $('#responseHeaderContainer').removeClass("bg-success").addClass("bg-danger");
-                $('#response-modal').modal("show");
+            error: function(xhr, status, error) {
+                console.log(xhr.responseText);
+                $('#abbr-display').text('Error: ' + xhr.responseText);
             }
         });
     });

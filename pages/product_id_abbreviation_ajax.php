@@ -59,6 +59,39 @@ if(isset($_REQUEST['action'])) {
         exit;
     }
 
+    if ($action === 'fetch_product_id') {
+        $where = [];
+
+        $fields = ['category', 'profile', 'grade', 'gauge', 'type', 'color', 'length'];
+        foreach ($fields as $f) {
+            if (!empty($_POST[$f])) {
+                $value = mysqli_real_escape_string($conn, $_POST[$f]);
+                $where[] = "$f = '$value'";
+            }
+        }
+
+        if (!empty($where)) {
+            $query = "
+                SELECT product_id 
+                FROM product_abr 
+                WHERE " . implode(' AND ', $where) . "
+                ORDER BY date_added DESC 
+                LIMIT 1
+            ";
+
+            $result = mysqli_query($conn, $query);
+            if ($result && mysqli_num_rows($result) > 0) {
+                $row = mysqli_fetch_assoc($result);
+                echo $row['product_id'];
+            } else {
+                echo 'Not Found';
+            }
+        } else {
+            echo '';
+        }
+    }
+
+
 
     mysqli_close($conn);
 }
