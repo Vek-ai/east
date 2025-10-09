@@ -896,8 +896,6 @@ function showCol($name) {
                 $('#product_type').attr('multiple', 'multiple');
             }
 
-            fetchProductABR();
-
             $('#addProductModal').modal('show');
         });
 
@@ -930,9 +928,10 @@ function showCol($name) {
                 $('#product_type').attr('multiple', 'multiple');
             }
 
-            fetchProductABR();
-
-            $('#addProductModal').modal('show');
+            setTimeout(() => {
+                fetchProductABR();
+                $('#addProductModal').modal('show');
+            }, 100);
         });
 
 
