@@ -931,7 +931,7 @@ function showCol($name) {
             setTimeout(() => {
                 fetchProductABR();
                 $('#addProductModal').modal('show');
-            }, 100);
+            }, 1000);
         });
 
 
