@@ -7,9 +7,31 @@ error_reporting(E_ERROR | E_PARSE | E_CORE_ERROR | E_CORE_WARNING | E_COMPILE_ER
 require '../../includes/dbconn.php';
 require '../../includes/functions.php';
 
-$trim_id = 4;
-$panel_id = 3;
-$screw_id = 16;
+$lumber_id = 1;
+$trim_id   = 4;
+$panel_id  = 3;
+$screw_id  = 16;
+
+$staff_id = $_SESSION['userid'] ?? 0;
+$show_unit_price = 0;
+$show_product_price = 0;
+$show_total_price = 0;
+
+if ($staff_id) {
+    $query = "SELECT show_unit_price, show_product_price, show_total_price 
+            FROM staff_settings 
+            WHERE staff_id = '$staff_id' 
+            ORDER BY id DESC 
+            LIMIT 1";
+    $result = $conn->query($query);
+
+    if ($result && $result->num_rows > 0) {
+        $settings = $result->fetch_assoc();
+        $show_unit_price = $settings['show_unit_price'];
+        $show_product_price = $settings['show_product_price'];
+        $show_total_price = $settings['show_total_price'];
+    }
+}
 
 if(isset($_POST['fetch_cart'])){
     $discount = 0;
@@ -69,9 +91,9 @@ if(isset($_POST['fetch_cart'])){
         .table-fixed th:nth-child(3),
         .table-fixed td:nth-child(3) { width: 7%; }
         .table-fixed th:nth-child(4),
-        .table-fixed td:nth-child(4) { width: 8%; }
+        .table-fixed td:nth-child(4) { width: 12%; }
         .table-fixed th:nth-child(5),
-        .table-fixed td:nth-child(5) { width: 15%; }
+        .table-fixed td:nth-child(5) { width: 13%; }
         .table-fixed th:nth-child(6),
         .table-fixed td:nth-child(6) { width: 7%; }
         .table-fixed th:nth-child(7),
@@ -121,6 +143,12 @@ if(isset($_POST['fetch_cart'])){
         }
     </style>
     
+    <div class="">
+        <button id="change_cart_column" class="btn btn-primary btn-sm" style="width: 150px;">
+            Change Cart
+        </button>
+    </div>
+
     <div id="customer_cart_section">
         <?php 
             if (!empty($_SESSION["customer_id"])) {
@@ -131,7 +159,6 @@ if(isset($_POST['fetch_cart'])){
                 $store_credit = floatval($customer_details['store_credit'] ?? 0);
                 $customer_name = get_customer_name($_SESSION["customer_id"]);
         ?>
-
             <div class="form-group row align-items-center">
                 <div class="d-flex flex-column gap-2">
                     <div>
@@ -200,20 +227,40 @@ if(isset($_POST['fetch_cart'])){
                     $grand_actual_price = 0;
                     $grand_customer_price = 0;
                     $is_panel_present = 0;
+
+                    $lumber_cart = [];
+                    $trim_cart   = [];
+                    $panel_cart  = [];
+                    $screw_cart  = [];
+                    $others_cart = [];
                     
                     if (!empty($_SESSION["cart"])) {
-                        $panel_cart = []; 
-
                         foreach ($_SESSION["cart"] as $values) {
                             $pid = $values["product_id"];
                             $product_details = getProductDetails($pid);
                             $category = $product_details['product_category'];
-                            if ($category != $panel_id) continue;
 
-                            if (!isset($panel_cart[$pid])) {
-                                $panel_cart[$pid] = [];
+                            switch ($category) {
+                                case $lumber_id:
+                                    $lumber_cart[$pid][] = $values;
+                                    break;
+
+                                case $trim_id:
+                                    $trim_cart[$pid][] = $values;
+                                    break;
+
+                                case $panel_id:
+                                    $panel_cart[$pid][] = $values;
+                                    break;
+
+                                case $screw_id:
+                                    $screw_cart[$pid][] = $values;
+                                    break;
+
+                                default:
+                                    $others_cart[$pid][] = $values;
+                                    break;
                             }
-                            $panel_cart[$pid][] = $values;
                         }
 
                         foreach ($panel_cart as $product_id => $items) {
@@ -366,13 +413,13 @@ if(isset($_POST['fetch_cart'])){
                                     <th class="text-center">Panel Type</th>
                                     <th class="text-center">Panel Style</th>
                                     <th class="text-center">
-                                        Linear Ft $
+                                        <span class="<?= $show_unit_price ? '' : 'd-none' ?>">Linear Ft $</span>
                                     </th>
                                     <th class="text-center">
-                                        Per Panel $
+                                        <span class="<?= $show_product_price ? '' : 'd-none' ?>">Per Panel $</span>
                                     </th>
-                                    <th class="text-center <?= $show_disc_price ? 'd-none price_col' : '' ?>">Price</th>
-                                    <th class="text-center <?= $show_disc_price ? '' : 'd-none' ?>">Customer Price</th>
+                                    <th class="text-center <?= $show_disc_price ? 'd-none price_col' : '' ?> <?= $show_total_price ? '' : 'd-none' ?>">Price</th>
+                                    <th class="text-center <?= $show_disc_price ? '' : 'd-none' ?> <?= $show_total_price ? '' : 'd-none' ?>">Customer Price</th>
                                     <th class="text-center"></th>
                                 </tr>
 
@@ -389,7 +436,7 @@ if(isset($_POST['fetch_cart'])){
                                     $customer_price = $item['customer_price'];
                                     $drawing_data = $item['drawing_data'];
                                     $sold_by_feet = $item['sold_by_feet'];
-                                    $linear_price = $base_price;
+                                    $linear_price =$item['linear_price'];
                                     $panel_price = $item['panel_price'];
 
                                     $bundle_actual_price += $product_price;
@@ -529,24 +576,34 @@ if(isset($_POST['fetch_cart'])){
                                             </select>
                                         </td>
                                         <td class="text-center">
-                                            <?php
-                                            echo number_format($linear_price, 2);
-                                            ?>
+                                            <span class="<?= $show_unit_price ? '' : 'd-none' ?>">
+                                                <?php
+                                                echo number_format($linear_price, 2);
+                                                ?>
+                                            </span>
                                         </td>
                                         <td class="text-center">
-                                            <?php
-                                            echo number_format($panel_price, 2);
-                                            ?>
+                                            <span class="<?= $show_product_price ? '' : 'd-none' ?>">
+                                                <?php
+                                                echo number_format($panel_price, 2);
+                                                ?>
+                                            </span>
                                         </td>
-                                        <td class="text-center pl-3 <?= $show_disc_price ? 'd-none price_col' : '' ?>">$
-                                            <?php
-                                            echo number_format($product_price, 2);
-                                            ?>
+                                        <td class="text-center pl-3 <?= $show_disc_price ? 'd-none price_col' : '' ?>">
+                                            <span class="<?= $show_total_price ? '' : 'd-none' ?>">
+                                                $
+                                                <?php
+                                                echo number_format($product_price, 2);
+                                                ?>
+                                            </span>
                                         </td>
-                                        <td class="text-end pl-3 <?= $show_disc_price ? '' : 'd-none' ?>">$
-                                            <?php
-                                            echo number_format($customer_price, 2);
-                                            ?>
+                                        <td class="text-end pl-3 <?= $show_disc_price ? '' : 'd-none' ?>">
+                                            <span class="<?= $show_total_price ? '' : 'd-none' ?>">
+                                                $
+                                                <?php
+                                                echo number_format($customer_price, 2);
+                                                ?>
+                                            </span>
                                         </td>
                                         <td class="text-center">
                                             <a href="javascript:void(0)" 
@@ -608,237 +665,503 @@ if(isset($_POST['fetch_cart'])){
                                 <?php
                                 }
                             }
+                        }
+
+                        foreach ($trim_cart as $product_id => $items) {
+                            $total_qty = 0;
+                            $total_length_cart = 0;
+                            $total_price_actual = 0;
+                            $total_customer_price = 0;
+
+                            foreach ($items as $values) {
+                                $calc = calculateCartItem($values);
+
+                                $total_qty += $calc['quantity'];
+                                $total_length_cart += $calc['quantity'] * $calc['total_length'];
+                                $total_price_actual += $calc['product_price'];
+                                $total_customer_price += $calc['customer_price'];
                             }
 
-
-                        foreach ($_SESSION["cart"] as $keys => $values): ?>
-                            <?php
-                            $item = calculateCartItem($values);
-                            $product = $item["product"];
-                            $category_id = $item["category_id"];
-                            $multiplier = $item['multiplier'];
+                            $first_calc = calculateCartItem($items[0]);
+                            $product = $first_calc['product'];
+                            $picture_path = $first_calc['picture_path'];
+                            $stock_text = $first_calc['stock_text'];
+                            $multiplier = $first_calc['multiplier'];
                             ?>
 
-                            <?php if ($category_id != $panel_id): ?>
-                                <tr data-mult="<?= $multiplier ?>">
-                                    <td data-color="<?= getColorName($item["color_id"]) ?>"
-                                        data-pricing="<?= $item["customer_pricing_rate"] ?>"
-                                        data-category="<?= $category_id ?>"
-                                        data-customer-pricing="<?= $item["customer_pricing_rate"] ?>">
+                            <tr class="thick-border" data-mult="<?= $multiplier ?>">
+                                <td class="text-center">
+                                    <img src="<?= $picture_path ?>" class="rounded-circle" width="56" height="56" alt="product-img">
+                                </td>
+                                <td>
+                                    <a href="javascript:void(0);" data-id="<?= $product_id ?>" class="d-flex align-items-center view_product_details">
+                                        <h6 class="fw-semibold mb-0 fs-4"><?= htmlspecialchars($items[0]['product_item']) ?></h6>
+                                    </a>
+                                </td>
 
-                                        <?php if ($category_id == $trim_id): ?>
-                                            <?php if (!empty($values["custom_trim_src"])): ?>
-                                                <a href="javascript:void(0);" class="drawingContainer" id="custom_trim_draw"
-                                                data-line="<?= $item["line"] ?>" data-id="<?= $item["data_id"] ?>"
-                                                data-drawing="<?= htmlspecialchars($values["drawing_data"] ?? '') ?>">
+                                <td class="text-center">
+                                    <select id="color_cart<?= $items[0]['line'] ?>" class="form-control color-cart" 
+                                            name="color" onchange="updateColor(this)" 
+                                            data-line="<?= $items[0]['line'] ?>" data-id="<?= $product_id ?>">
+                                        <option value="">Select Color...</option>
+                                        <?php
+                                        $query_colors = "SELECT Product_id, color_id FROM inventory WHERE Product_id = '$product_id'";
+                                        $result_colors = mysqli_query($conn, $query_colors);
+                                        while ($row_colors = mysqli_fetch_array($result_colors)) {
+                                            $selected = ($first_calc['color_id'] == $row_colors['color_id']) ? 'selected' : '';
+                                            $colorDetails = getColorDetails($row_colors['color_id']);
+                                            $colorHex = getColorHexFromColorID($row_colors['color_id']);
+                                            $colorName = $colorDetails['color_name'] ?? '';
+                                            echo "<option value='{$row_colors['color_id']}' data-color='{$colorHex}' {$selected}>{$colorName}</option>";
+                                        }
+                                        ?>
+                                    </select>
+                                </td>
+
+                                <td class="text-center">
+                                    <select id="grade<?= $items[0]['line'] ?>" class="form-control grade-cart" 
+                                            name="grade" onchange="updateGrade(this)" 
+                                            data-line="<?= $items[0]['line'] ?>" data-id="<?= $product_id ?>">
+                                        <option value="">Select Grade...</option>
+                                        <?php
+                                        $query_grade = "SELECT * FROM product_grade WHERE status = 1";
+                                        $result_grade = mysqli_query($conn, $query_grade);
+                                        while ($row_grade = mysqli_fetch_array($result_grade)) {
+                                            $selected = ($first_calc['grade'] == $row_grade['product_grade_id']) ? 'selected' : '';
+                                            echo "<option value='{$row_grade['product_grade_id']}' {$selected}>{$row_grade['product_grade']}</option>";
+                                        }
+                                        ?>
+                                    </select>
+                                </td>
+
+                                <td class="text-center"><?= getProfileTypeName($first_calc['profile']) ?></td>
+
+                                <td class="text-center"><?= $total_qty ?></td>
+
+                                <td class="text-center">
+                                    <div class="mt-1"><?= number_format($total_length_cart,2) ?> ft</div>
+                                </td>
+
+                                <td class="text-center"><?= $stock_text ?></td>
+
+                                <td class="text-center <?= $show_disc_price ? 'd-none price_col' : '' ?>">
+                                    $ <?= number_format($total_price_actual,2) ?>
+                                </td>
+                                <td class="text-center <?= $show_disc_price ? '' : 'd-none' ?>">
+                                    $ <?= number_format($total_customer_price,2) ?>
+                                </td>
+
+                                <td class="text-center">
+                                    <a href="javascript:void(0)" class="text-decoration-none me-2 toggleSortBtn" data-id="<?= $product_id ?>"><i class="fa fs-6 fa-sort"></i></a>
+                                    <a href="javascript:void(0)" data-id="<?= $product_id ?>" onClick="delete_product(this)"><i class="fa fs-6 fa-trash"></i></a>
+                                </td>
+                            </tr>
+
+                            <tr class="thick-border create_bundle_row">
+                                <th class="text-center" colspan="2"></th>
+                                <th class="text-center">Qty</th>
+                                <th class="text-center">Length</th>
+                                <th class="text-center"></th>
+                                <th class="text-center"></th>
+                                <th class="text-center">
+                                    <span class="<?= $show_unit_price ? '' : 'd-none' ?>">Per Ft $</span>
+                                </th>
+                                <th class="text-center">
+                                    <span class="<?= $show_product_price ? '' : 'd-none' ?>">Per Each $</span>
+                                </th>
+                                <th class="text-center <?= $show_disc_price ? 'd-none price_col' : '' ?> <?= $show_total_price ? '' : 'd-none' ?>">Price</th>
+                                <th class="text-center <?= $show_disc_price ? '' : 'd-none' ?> <?= $show_total_price ? '' : 'd-none' ?>">Customer Price</th>
+                                <th class="text-center"></th>
+                            </tr>
+
+                            <?php
+                            foreach ($items as $values) {
+                                $item = calculateCartItem($values);
+                                $product = $item['product'];
+                                $line = $item['line'];
+                                $quantity = $item['quantity'];
+                                $unit_price = $item['unit_price'];
+                                $total_length = $item['total_length'];
+                                $product_price = $item['product_price'];
+                                $customer_price = $item['customer_price'];
+                                $drawing_data = $item['drawing_data'];
+                                $sold_by_feet = $item['sold_by_feet'];
+                                $linear_price =$item['linear_price'];
+                                $panel_price = $item['panel_price'];
+                                ?>
+
+                                <tr>
+                                    <td>
+                                        <?php if($category_id == $trim_id): ?>
+                                            <?php if(!empty($values["custom_trim_src"])): ?>
+                                                <a href="javascript:void(0);" class="drawingContainer" id="custom_trim_draw" data-line="<?= $line; ?>" data-id="<?= $product_id; ?>" data-drawing="<?= $drawing_data ?>">
                                                     <div class="align-items-center text-center w-100">
-                                                        <img src="<?= '../images/drawing/' . htmlspecialchars($values["custom_trim_src"], ENT_QUOTES) ?>"
-                                                            class="rounded-circle" width="56" height="56" alt="">
+                                                        <img src="<?= $images_directory.$values["custom_trim_src"] ?>" class="rounded-circle" width="56" height="56">
                                                     </div>
                                                 </a>
                                             <?php else: ?>
-                                                <a href="javascript:void(0);" id="custom_trim_draw"
-                                                class="drawingContainer btn btn-primary py-1 px-2 d-flex justify-content-center align-items-center"
-                                                data-drawing="<?= htmlspecialchars($values["drawing_data"] ?? '') ?>"
-                                                data-line="<?= $item["line"] ?>" data-id="<?= $item["data_id"] ?>">
+                                                <a href="javascript:void(0);" id="custom_trim_draw" class="drawingContainer btn btn-primary py-1 px-2 d-flex justify-content-center align-items-center" data-drawing="<?= $drawing_data ?>" data-line="<?= $line; ?>" data-id="<?= $product_id; ?>">
                                                     Draw Here
                                                 </a>
                                             <?php endif; ?>
-                                        <?php else: ?>
-                                            <div class="align-items-center text-center w-100">
-                                                <img src="<?= !empty($product['main_image']) ? '../'.$product['main_image'] : '../images/product/product.jpg' ?>"
-                                                    class="rounded-circle" width="56" height="56" alt="">
-                                            </div>
                                         <?php endif; ?>
                                     </td>
-
                                     <td>
-                                        <a href="javascript:void(0);" data-id="<?= $item["data_id"] ?>"
-                                        class="d-flex align-items-center view_product_details">
-                                            <h6 class="fw-semibold mb-0 fs-4">
-                                                <?= htmlspecialchars($values["product_item"]) ?>
-                                                <?php if (!empty($values["is_pre_order"]) && $values["is_pre_order"] == 1): ?><br>(PREORDER)<?php endif; ?>
-                                                <?php if (!empty($values["note"])): ?><br>Notes: <?= htmlspecialchars($values["note"]) ?><?php endif; ?>
-                                            </h6>
-                                        </a>
-                                    </td>
-
-                                    <!-- Color -->
-                                    <td class="text-center">
-                                        <select id="color_cart<?= $item["line"] ?>" class="form-control color-cart"
-                                                data-line="<?= $item["line"] ?>" data-id="<?= $item["data_id"] ?>" onchange="updateColor(this)">
-                                            <option value="">Select Color...</option>
-                                            <?php if (!empty($item["color_id"])): ?>
-                                                <option value="<?= $item["color_id"] ?>" selected
-                                                        data-color="<?= getColorHexFromColorID($item["color_id"]) ?>">
-                                                    <?= getColorName($item["color_id"]) ?>
-                                                </option>
-                                            <?php endif; ?>
-                                            <?php
-                                            $result_colors = mysqli_query($conn, "SELECT Product_id, color_id FROM inventory WHERE Product_id = '{$item["data_id"]}'");
-                                            while ($row_colors = mysqli_fetch_assoc($result_colors)) {
-                                                if ($item["color_id"] == $row_colors['color_id']) continue;
-                                                $prod = getProductDetails($row_colors['Product_id']);
-                                                $disabled = ($values['custom_grade'] ?? '') != ($prod['grade'] ?? '') ? 'disabled' : '';
-                                                echo '<option value="' . $row_colors['color_id'] . '" ' . $disabled . '>' . getColorName($row_colors['color_id']) . '</option>';
-                                            }
-                                            ?>
-                                        </select>
-                                    </td>
-
-                                    <!-- Grade -->
-                                    <td class="text-center">
-                                        <?php if (!empty($product['grade'])): ?>
-                                            <div class="input-group text-start">
-                                                <select id="grade<?= $item["line"] ?>" class="form-control grade-cart"
-                                                        data-line="<?= $item["line"] ?>" data-id="<?= $item["data_id"] ?>" onchange="updateGrade(this)">
-                                                    <option value="">Select Grade...</option>
-                                                    <?php
-                                                    $grades = mysqli_query($conn, "SELECT * FROM product_grade WHERE status = 1");
-                                                    while ($row_grade = mysqli_fetch_assoc($grades)) {
-                                                        $selected = (($values['custom_grade'] ?? '') == $row_grade['product_grade_id']) ? 'selected' : '';
-                                                        echo '<option value="'.$row_grade['product_grade_id'].'" '.$selected.'>'.$row_grade['product_grade'].'</option>';
-                                                    }
-                                                    ?>
-                                                </select>
-                                            </div>
+                                        <?php if (!empty($values["note"])): ?>
+                                            <br>Notes: <?= htmlspecialchars($values["note"]) ?>
                                         <?php endif; ?>
                                     </td>
-
-                                    <!-- Profile -->
-                                    <td class="text-center"><?= getProfileTypeName($item["profile"]); ?></td>
-
-                                    <!-- Quantity -->
                                     <td class="text-center">
-                                        <div class="input-group d-inline-flex align-items-center">
-                                            <button class="btn btn-primary btn-sm p-1" type="button"
-                                                    data-line="<?= $item["line"] ?>" data-id="<?= $item["data_id"] ?>"
-                                                    onclick="deductquantity(this)"><i class="fa fa-minus"></i></button>
+                                        <div class="input-group d-inline-flex align-items-center flex-nowrap w-auto">
+                                            <button class="btn btn-primary btn-sm p-1" type="button" data-line="<?= $line; ?>" data-id="<?= $product_id; ?>" onClick="deductquantity(this)">
+                                                <i class="fa fa-minus"></i>
+                                            </button>
 
                                             <input class="form-control form-control-sm text-center mx-0"
-                                                type="text" value="<?= htmlspecialchars($item['quantity']) ?>"
+                                                type="text"
+                                                value="<?= $values['quantity_cart']; ?>"
                                                 onchange="updatequantity(this)"
-                                                data-line="<?= $item["line"] ?>" data-id="<?= $item["data_id"] ?>"
-                                                id="item_quantity<?= $item["data_id"] ?>" style="width: 45px;">
+                                                data-line="<?= $line; ?>"
+                                                data-id="<?= $product_id; ?>"
+                                                style="width: 45px;">
 
-                                            <button class="btn btn-primary btn-sm p-1" type="button"
-                                                    data-line="<?= $item["line"] ?>" data-id="<?= $item["data_id"] ?>"
-                                                    onclick="addquantity(this)"><i class="fa fa-plus"></i></button>
+                                            <button class="btn btn-primary btn-sm p-1" type="button" data-line="<?= $line; ?>" data-id="<?= $product_id; ?>" onClick="addquantity(this)">
+                                                <i class="fa fa-plus"></i>
+                                            </button>
                                         </div>
                                     </td>
-
-                                    <!-- Length column (preserved behavior) -->
                                     <td class="text-center">
-                                        <?php if ($category_id == $screw_id): ?>
-                                            <div class="d-flex flex-column align-items-center d-none">
-                                                <input class="form-control text-center mb-1" type="text"
-                                                    value="<?= htmlspecialchars($values["estimate_width"] ?? $product["width"]) ?>"
-                                                    placeholder="Width" size="5"
-                                                    data-line="<?= $item['line'] ?>" data-id="<?= $item['data_id'] ?>"
-                                                    onchange="updateEstimateWidth(this)">
-                                                <span class="mx-1 text-center mb-1">X</span>
-                                                <fieldset class="border p-1 position-relative">
-                                                    <div class="input-group d-flex align-items-center">
-                                                        <input class="form-control pr-0 pl-1 mr-1" type="text"
-                                                            value="<?= round(floatval($values["estimate_length"] ?? 0),2) ?>" step="0.001"
-                                                            placeholder="FT" size="5" data-line="<?= $item['line'] ?>"
-                                                            data-id="<?= $item['data_id'] ?>" onchange="updateEstimateLength(this)">
-                                                        <input class="form-control pr-0 pl-1" type="text"
-                                                            value="<?= round(floatval($values["estimate_length_inch"] ?? 0),2) ?>" step="0.001"
-                                                            placeholder="IN" size="5" data-line="<?= $item['line'] ?>"
-                                                            data-id="<?= $item['data_id'] ?>" onchange="updateEstimateLengthInch(this)">
-                                                    </div>
-                                                </fieldset>
-                                            </div>
-                                            <?= htmlspecialchars($values["estimate_length"] ?? '') ?> pack (<?= htmlspecialchars($values["estimate_length"] ?? '') ?> pcs)
+                                        <div class="d-flex flex-row align-items-center flex-nowrap w-auto">
+                                            <input class="form-control form-control-sm text-center px-1" 
+                                                type="text" 
+                                                value="<?= $product['width'] ?? ''; ?>" 
+                                                placeholder="W" 
+                                                style="width: 40px;" 
+                                                data-line="<?= $line; ?>" 
+                                                data-id="<?= $product_id; ?>" 
+                                                <?= !empty($product['width']) ? 'readonly' : '' ?>>
 
-                                        <?php elseif ($category_id == $trim_id): ?>
-                                            <div class="d-flex flex-row align-items-center flex-nowrap w-auto">
-                                                <input class="form-control form-control-sm text-center px-1" type="text"
-                                                    value="<?= htmlspecialchars($product['width'] ?? '') ?>" placeholder="W" size="5"
-                                                    style="width:40px;" data-line="<?= $item['line'] ?>" data-id="<?= $item['data_id'] ?>"
-                                                    <?= !empty($product['width']) ? 'readonly' : '' ?>>
-                                                <span class="mx-1">X</span>
-                                                <fieldset class="border p-1 d-inline-flex align-items-center flex-nowrap">
-                                                    <div class="input-group d-flex align-items-center flex-nowrap w-auto">
-                                                        <input class="form-control form-control-sm text-center px-1 mr-1" type="text"
-                                                            value="<?= round(floatval($values['estimate_length'] ?? 0),2) ?>" step="0.001"
-                                                            placeholder="FT" size="5" style="width:40px;" data-line="<?= $item['line'] ?>"
-                                                            data-id="<?= $item['data_id'] ?>" onchange="updateEstimateLength(this)">
-                                                        <input class="form-control form-control-sm text-center px-1" type="text"
-                                                            value="<?= round(floatval($values['estimate_length_inch'] ?? 0),2) ?>" step="0.001"
-                                                            placeholder="IN" size="5" style="width:40px;" data-line="<?= $item['line'] ?>"
-                                                            data-id="<?= $item['data_id'] ?>" onchange="updateEstimateLengthInch(this)">
-                                                    </div>
-                                                </fieldset>
-                                            </div>
+                                            <span class="mx-1">X</span>
 
-                                        <?php elseif (hasProductVariantLength($item['data_id'])): ?>
-                                            <fieldset class="border p-1 position-relative">
-                                                <div class="input-group d-flex align-items-center">
-                                                    <input class="form-control pr-0 pl-1 mr-1" type="text"
-                                                        value="<?= round(floatval($values["estimate_length"] ?? 0),2) ?>"
-                                                        placeholder="FT" size="5" data-line="<?= $item['line'] ?>" data-id="<?= $item['data_id'] ?>"
+                                            <fieldset class="border p-1 d-inline-flex align-items-center flex-nowrap">
+                                                <div class="input-group d-flex align-items-center flex-nowrap w-auto">
+                                                    <input class="form-control form-control-sm text-center px-1" 
+                                                        type="text" 
+                                                        value="<?= round(floatval($values['estimate_length']),2) ?>" 
+                                                        placeholder="FT" 
+                                                        style="width: 40px;" 
+                                                        data-line="<?= $line; ?>" 
+                                                        data-id="<?= $product_id; ?>" 
                                                         onchange="updateEstimateLength(this)">
-                                                    <input class="form-control pr-0 pl-1" type="text"
-                                                        value="<?= round(floatval($values["estimate_length_inch"] ?? 0),2) ?>"
-                                                        placeholder="IN" size="5" data-line="<?= $item['line'] ?>" data-id="<?= $item['data_id'] ?>"
+                                                    
+                                                    <input class="form-control form-control-sm text-center px-1" 
+                                                        type="text" 
+                                                        value="<?= round(floatval($values['estimate_length_inch']),2) ?>" 
+                                                        placeholder="IN" 
+                                                        style="width: 40px;" 
+                                                        data-line="<?= $line; ?>" 
+                                                        data-id="<?= $product_id; ?>" 
                                                         onchange="updateEstimateLengthInch(this)">
                                                 </div>
                                             </fieldset>
-                                        <?php else: ?>
-                                            <!-- no length inputs -->
-                                        <?php endif; ?>
+                                        </div>
                                     </td>
-
-                                    <!-- Stock -->
-                                    <td class="text-center"><?= $item["stock_text"] ?></td>
-
-                                    <!-- Prices -->
-                                    <td class="text-center pl-3 <?= $show_disc_price ? 'd-none price_col' : '' ?>">$
-                                        <?= number_format($item["subtotal"], 2) ?>
-                                    </td>
-                                    <td class="text-end pl-3 <?= $show_disc_price ? '' : 'd-none' ?>">$
-                                        <?= number_format($item["customer_price"], 2) ?>
-                                    </td>
-
-                                    <!-- Actions -->
+                                    <td class="text-center"></td>
+                                    <td class="text-center"></td>
                                     <td class="text-center">
-                                        <button class="btn btn-danger-gradient btn-sm" type="button"
-                                                data-line="<?= $item["line"] ?>" data-id="<?= $item["data_id"] ?>"
-                                                onclick="delete_item(this)"><i class="fa fa-trash"></i></button>
-                                        <button class="btn btn-danger-gradient btn-sm" type="button"
-                                                data-line="<?= $item["line"] ?>" data-id="<?= $item["data_id"] ?>"
-                                                onclick="duplicate_item(this)"><i class="fa fa-plus"></i></button>
+                                        <span class="<?= $show_unit_price ? '' : 'd-none' ?>">
+                                            <?php
+                                            echo number_format($linear_price, 2);
+                                            ?>
+                                        </span>
+                                    </td>
+                                    <td class="text-center">
+                                        <span class="<?= $show_product_price ? '' : 'd-none' ?>">
+                                            <?php
+                                            echo number_format($panel_price, 2);
+                                            ?>
+                                        </span>
+                                    </td>
+                                    <td class="text-center pl-3 <?= $show_disc_price ? 'd-none price_col' : '' ?>">
+                                        <span class="<?= $show_total_price ? '' : 'd-none' ?>">
+                                            $
+                                            <?php
+                                            echo number_format($product_price, 2);
+                                            ?>
+                                        </span>
+                                    </td>
+                                    <td class="text-end pl-3 <?= $show_disc_price ? '' : 'd-none' ?>">
+                                        <span class="<?= $show_total_price ? '' : 'd-none' ?>">
+                                            $
+                                            <?php
+                                            echo number_format($customer_price, 2);
+                                            ?>
+                                        </span>
+                                    </td>
+                                    <td class="text-center">
+                                        <a href="javascript:void(0)" class="text-decoration-none btn-sm me-1 delete-item-btn" data-line="<?= $line; ?>" data-id="<?= $product_id; ?>" onClick="delete_item(this)">
+                                            <i class="fa fa-trash fs-6"></i>
+                                        </a>
+                                        <a href="javascript:void(0)" class="text-decoration-none btn-sm duplicate-item-btn" data-line="<?= $line; ?>" data-id="<?= $product_id; ?>" onClick="duplicate_item(this)">
+                                            <i class="fa fa-plus fs-6"></i>
+                                        </a>
+                                        <a href="javascript:void(0)" 
+                                            class="text-decoration-none btn-sm me-1 sortArrowSec sort-up d-none"
+                                            data-id="<?php echo $product_id; ?>" 
+                                            data-line="<?php echo $line; ?>">
+                                            <i class="fa fs-6 fa-arrow-up"></i>
+                                        </a>
 
-                                        <input type="hidden" id="item_id<?= $item['data_id'] ?>" value="<?= $item["data_id"]; ?>">
-                                        <input type="hidden" id="warehouse_stock<?= $item['data_id'] ?>" value="<?= htmlspecialchars($values["quantity_ttl"] ?? '') ; ?>">
-                                        <input type="hidden" id="line<?= $item['data_id'] ?>" value="<?= $item['line']; ?>">
-                                        <input type="hidden" id="store_stock<?= $item['data_id'] ?>" value="<?= htmlspecialchars($values["quantity_in_stock"] ?? '') ; ?>">
+                                        <a href="javascript:void(0)" 
+                                            class="text-decoration-none btn-sm sortArrowSec sort-down d-none"
+                                            data-id="<?php echo $product_id; ?>" 
+                                            data-line="<?php echo $line; ?>">
+                                            <i class="fa fs-6 fa-arrow-down"></i>
+                                        </a>
                                     </td>
                                 </tr>
+                            <?php
+                            }
+                        }
 
-                                <?php
-                                // Totals update (using item values)
-                                $total_qty           += $item["quantity"];
-                                $total_length_cart   += $item["quantity"] * $item["total_length"];
-                                $totalquantity       += $item["quantity"];
-                                $total_price_actual  += $item["subtotal"];
-                                $total_customer_price+= $item["customer_price"];
-                                $total_weight        += ($product["weight"] ?? 0) * $item["quantity"];
-                                $customer_savings    += $item["savings"];
-                                $grand_actual_price  += $item["subtotal"];
-                                $grand_customer_price+= $item["customer_price"];
+                        foreach ($screw_cart as $product_id => $items) {
+                            $total_qty = 0;
+                            $total_length_cart = 0;
+                            $total_price_actual = 0;
+                            $total_customer_price = 0;
 
-                                // mark panel presence
-                                if ($category_id == $panel_id || $category_id == $trim_id) {
-                                    $is_panel_present = 1;
-                                }
+                            foreach ($items as $values) {
+                                $calc = calculateCartItem($values);
+
+                                $total_qty += $calc['quantity'];
+                                $total_length_cart += $calc['quantity'] * $calc['total_length'];
+                                $total_price_actual += $calc['product_price'];
+                                $total_customer_price += $calc['customer_price'];
+                            }
+
+                            $first_calc = calculateCartItem($items[0]);
+                            $product = $first_calc['product'];
+                            $picture_path = $first_calc['picture_path'];
+                            $stock_text = $first_calc['stock_text'];
+                            $multiplier = $first_calc['multiplier'];
+                            ?>
+
+                            <tr class="thick-border" data-mult="<?= $multiplier ?>">
+                                <td class="text-center">
+                                    <img src="<?= $picture_path ?>" class="rounded-circle" width="56" height="56" alt="product-img">
+                                </td>
+                                <td>
+                                    <a href="javascript:void(0);" data-id="<?= $product_id ?>" class="d-flex align-items-center view_product_details">
+                                        <h6 class="fw-semibold mb-0 fs-4"><?= htmlspecialchars($items[0]['product_item']) ?></h6>
+                                    </a>
+                                </td>
+
+                                <td class="text-center">
+                                    <select id="color_cart<?= $items[0]['line'] ?>" class="form-control color-cart" 
+                                            name="color" onchange="updateColor(this)" 
+                                            data-line="<?= $items[0]['line'] ?>" data-id="<?= $product_id ?>">
+                                        <option value="">Select Color...</option>
+                                        <?php
+                                        $query_colors = "SELECT Product_id, color_id FROM inventory WHERE Product_id = '$product_id'";
+                                        $result_colors = mysqli_query($conn, $query_colors);
+                                        while ($row_colors = mysqli_fetch_array($result_colors)) {
+                                            $selected = ($first_calc['color_id'] == $row_colors['color_id']) ? 'selected' : '';
+                                            $colorDetails = getColorDetails($row_colors['color_id']);
+                                            $colorHex = getColorHexFromColorID($row_colors['color_id']);
+                                            $colorName = $colorDetails['color_name'] ?? '';
+                                            echo "<option value='{$row_colors['color_id']}' data-color='{$colorHex}' {$selected}>{$colorName}</option>";
+                                        }
+                                        ?>
+                                    </select>
+                                </td>
+
+                                <td class="text-center">
+                                    <select id="grade<?= $items[0]['line'] ?>" class="form-control grade-cart" 
+                                            name="grade" onchange="updateGrade(this)" 
+                                            data-line="<?= $items[0]['line'] ?>" data-id="<?= $product_id ?>">
+                                        <option value="">Select Grade...</option>
+                                        <?php
+                                        $query_grade = "SELECT * FROM product_grade WHERE status = 1";
+                                        $result_grade = mysqli_query($conn, $query_grade);
+                                        while ($row_grade = mysqli_fetch_array($result_grade)) {
+                                            $selected = ($first_calc['grade'] == $row_grade['product_grade_id']) ? 'selected' : '';
+                                            echo "<option value='{$row_grade['product_grade_id']}' {$selected}>{$row_grade['product_grade']}</option>";
+                                        }
+                                        ?>
+                                    </select>
+                                </td>
+
+                                <td class="text-center"><?= getProfileTypeName($first_calc['profile']) ?></td>
+
+                                <td class="text-center"><?= $total_qty ?></td>
+
+                                <td class="text-center">
+                                    <div class="mt-1"><?= number_format($total_length_cart,2) ?> ft</div>
+                                </td>
+
+                                <td class="text-center"><?= $stock_text ?></td>
+
+                                <td class="text-center <?= $show_disc_price ? 'd-none price_col' : '' ?>">
+                                    $ <?= number_format($total_price_actual,2) ?>
+                                </td>
+                                <td class="text-center <?= $show_disc_price ? '' : 'd-none' ?>">
+                                    $ <?= number_format($total_customer_price,2) ?>
+                                </td>
+
+                                <td class="text-center">
+                                    <a href="javascript:void(0)" class="text-decoration-none me-2 toggleSortBtn" data-id="<?= $product_id ?>"><i class="fa fs-6 fa-sort"></i></a>
+                                    <a href="javascript:void(0)" data-id="<?= $product_id ?>" onClick="delete_product(this)"><i class="fa fs-6 fa-trash"></i></a>
+                                </td>
+                            </tr>
+
+                            <tr class="thick-border create_bundle_row">
+                                <th class="text-center" colspan="2"></th>
+                                <th class="text-center">Qty</th>
+                                <th class="text-center">Length</th>
+                                <th class="text-center">Type</th>
+                                <th class="text-center">Pack Size</th>
+                                <th class="text-center">
+                                    <span class="<?= $show_unit_price ? '' : 'd-none' ?>">Per Screw $</span>
+                                </th>
+                                <th class="text-center">
+                                    <span class="<?= $show_product_price ? '' : 'd-none' ?>">Per Pack $</span>
+                                </th>
+                                <th class="text-center <?= $show_disc_price ? 'd-none price_col' : '' ?> <?= $show_total_price ? '' : 'd-none' ?>">Price</th>
+                                <th class="text-center <?= $show_disc_price ? '' : 'd-none' ?> <?= $show_total_price ? '' : 'd-none' ?>">Customer Price</th>
+                                <th class="text-center"></th>
+                            </tr>
+
+                            <?php
+                            foreach ($items as $values) {
+                                $item = calculateCartItem($values);
+                                $product = $item['product'];
+                                $line = $item['line'];
+                                $quantity = $item['quantity'];
+                                $unit_price = $item['unit_price'];
+                                $total_length = $item['total_length'];
+                                $product_price = $item['product_price'];
+                                $customer_price = $item['customer_price'];
+                                $drawing_data = $item['drawing_data'];
+                                $sold_by_feet = $item['sold_by_feet'];
+                                $linear_price =$item['linear_price'];
+                                $panel_price = $item['panel_price'];
                                 ?>
-                            <?php endif; ?>
-                        <?php endforeach;
 
+                                <tr>
+                                    <td>
+                                        <?php if($category_id == $trim_id): ?>
+                                            <?php if(!empty($values["custom_trim_src"])): ?>
+                                                <a href="javascript:void(0);" class="drawingContainer" id="custom_trim_draw" data-line="<?= $line; ?>" data-id="<?= $product_id; ?>" data-drawing="<?= $drawing_data ?>">
+                                                    <div class="align-items-center text-center w-100">
+                                                        <img src="<?= $images_directory.$values["custom_trim_src"] ?>" class="rounded-circle" width="56" height="56">
+                                                    </div>
+                                                </a>
+                                            <?php else: ?>
+                                                <a href="javascript:void(0);" id="custom_trim_draw" class="drawingContainer btn btn-primary py-1 px-2 d-flex justify-content-center align-items-center" data-drawing="<?= $drawing_data ?>" data-line="<?= $line; ?>" data-id="<?= $product_id; ?>">
+                                                    Draw Here
+                                                </a>
+                                            <?php endif; ?>
+                                        <?php endif; ?>
+                                    </td>
+                                    <td>
+                                        <?php if (!empty($values["note"])): ?>
+                                            <br>Notes: <?= htmlspecialchars($values["note"]) ?>
+                                        <?php endif; ?>
+                                    </td>
+                                    <td class="text-center">
+                                        <div class="input-group d-inline-flex align-items-center flex-nowrap w-auto">
+                                            <button class="btn btn-primary btn-sm p-1" type="button" data-line="<?= $line; ?>" data-id="<?= $product_id; ?>" onClick="deductquantity(this)">
+                                                <i class="fa fa-minus"></i>
+                                            </button>
 
+                                            <input class="form-control form-control-sm text-center mx-0"
+                                                type="text"
+                                                value="<?= $values['quantity_cart']; ?>"
+                                                onchange="updatequantity(this)"
+                                                data-line="<?= $line; ?>"
+                                                data-id="<?= $product_id; ?>"
+                                                style="width: 45px;">
+
+                                            <button class="btn btn-primary btn-sm p-1" type="button" data-line="<?= $line; ?>" data-id="<?= $product_id; ?>" onClick="addquantity(this)">
+                                                <i class="fa fa-plus"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                    <td class="text-center">
+                                        
+                                    </td>
+                                    <td class="text-center"></td>
+                                    <td class="text-center">
+                                        <div class="d-flex flex-row align-items-center flex-nowrap w-auto">
+                                            <fieldset class="border p-1 d-inline-flex align-items-center flex-nowrap">
+                                                <div class="input-group d-flex align-items-center flex-nowrap w-auto">
+                                                    <input class="form-control form-control-sm text-center px-1" 
+                                                        type="text" 
+                                                        value="<?= round(floatval($values['estimate_length']),2) ?>" 
+                                                        placeholder="PCS" 
+                                                        style="" 
+                                                        data-line="<?= $line; ?>" 
+                                                        data-id="<?= $product_id; ?>" 
+                                                        onchange="updateEstimateLength(this)">
+                                                </div>
+                                            </fieldset>
+                                        </div>
+                                    </td>
+                                    <td class="text-center">
+                                        <span class="<?= $show_unit_price ? '' : 'd-none' ?>">
+                                            <?php
+                                            echo number_format($linear_price, 2);
+                                            ?>
+                                        </span>
+                                    </td>
+                                    <td class="text-center">
+                                        <span class="<?= $show_product_price ? '' : 'd-none' ?>">
+                                            <?php
+                                            echo number_format($panel_price, 2);
+                                            ?>
+                                        </span>
+                                    </td>
+                                    <td class="text-center pl-3 <?= $show_disc_price ? 'd-none price_col' : '' ?>">
+                                        <span class="<?= $show_total_price ? '' : 'd-none' ?>">
+                                            $
+                                            <?php
+                                            echo number_format($product_price, 2);
+                                            ?>
+                                        </span>
+                                    </td>
+                                    <td class="text-end pl-3 <?= $show_disc_price ? '' : 'd-none' ?>">
+                                        <span class="<?= $show_total_price ? '' : 'd-none' ?>">
+                                            $
+                                            <?php
+                                            echo number_format($customer_price, 2);
+                                            ?>
+                                        </span>
+                                    </td>
+                                    <td class="text-center">
+                                        <a href="javascript:void(0)" class="text-decoration-none btn-sm me-1 delete-item-btn" data-line="<?= $line; ?>" data-id="<?= $product_id; ?>" onClick="delete_item(this)">
+                                            <i class="fa fa-trash fs-6"></i>
+                                        </a>
+                                        <a href="javascript:void(0)" class="text-decoration-none btn-sm duplicate-item-btn" data-line="<?= $line; ?>" data-id="<?= $product_id; ?>" onClick="duplicate_item(this)">
+                                            <i class="fa fa-plus fs-6"></i>
+                                        </a>
+                                        <a href="javascript:void(0)" 
+                                            class="text-decoration-none btn-sm me-1 sortArrowSec sort-up d-none"
+                                            data-id="<?php echo $product_id; ?>" 
+                                            data-line="<?php echo $line; ?>">
+                                            <i class="fa fs-6 fa-arrow-up"></i>
+                                        </a>
+
+                                        <a href="javascript:void(0)" 
+                                            class="text-decoration-none btn-sm sortArrowSec sort-down d-none"
+                                            data-id="<?php echo $product_id; ?>" 
+                                            data-line="<?php echo $line; ?>">
+                                            <i class="fa fs-6 fa-arrow-down"></i>
+                                        </a>
+                                    </td>
+                                </tr>
+                            <?php
+                            }
+                        }
                     }
                     
                     ?>
@@ -894,6 +1217,45 @@ if(isset($_POST['fetch_cart'])){
             </table>
         </div>
     </div>   
+
+    <div class="modal fade" id="cartColumnModal" tabindex="-1" aria-labelledby="cartColumnModalLabel" aria-hidden="true" style="background-color: rgba(0, 0, 0, 0.5);">
+        <div class="modal-dialog modal-md modal-dialog-centered">
+            <div class="modal-content">
+            <form id="cartColumnForm" method="POST" action="pages/cashier_ajax.php">
+                <div class="modal-header">
+                <h5 class="modal-title" id="cartColumnModalLabel">Cart Content Show/Hide</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+
+                <div class="modal-body">
+                <div class="form-check mb-2">
+                    <input class="form-check-input" type="checkbox" id="show_unit_price" name="show_unit_price" value="1" 
+                    <?php if ($show_unit_price) echo 'checked'; ?>>
+                    <label class="form-check-label" for="show_unit_price">Show Per Unit Price</label>
+                </div>
+
+                <div class="form-check mb-2">
+                    <input class="form-check-input" type="checkbox" id="show_product_price" name="show_product_price" value="1" 
+                    <?php if ($show_product_price) echo 'checked'; ?>>
+                    <label class="form-check-label" for="show_product_price">Show Per Product Price</label>
+                </div>
+
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" id="show_total_price" name="show_total_price" value="1" 
+                    <?php if ($show_total_price) echo 'checked'; ?>>
+                    <label class="form-check-label" for="show_total_price">Show Total Price</label>
+                </div>
+                </div>
+
+                <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="submit" class="btn btn-primary">Save</button>
+                </div>
+            </form>
+            </div>
+        </div>
+    </div>
+
     <script>
         function initAutocomplete(){
             $("#customer_select_cart").autocomplete({

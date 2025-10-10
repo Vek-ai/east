@@ -3491,6 +3491,33 @@ $editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) :
             });
         }
 
+        $(document).on('click', '#change_cart_column', function(event) {
+            $('#cartColumnModal').modal('show');
+        }); 
+
+        $(document).on('submit', '#cartColumnForm', function(e) {
+            e.preventDefault();
+
+            const formData = new FormData(this);
+            formData.append('change_cart_columns', 'change_cart_columns');
+
+            $.ajax({
+                url: 'pages/cashier_ajax.php',
+                type: 'POST',
+                data: formData,
+                processData: false,
+                contentType: false,
+                success: function(response) {
+                    console.log('Response:', response);
+                    $('#cartColumnModal').modal('hide');
+                    loadCart();
+                },
+                error: function(jqXHR, textStatus, errorThrown) {
+                    console.log('Error:', jqXHR.responseText + ' - ' + errorThrown);
+                }
+            });
+        });
+
         $(document).on('click', '.add_new_customer_btn', function() {
             $('#add_new_customer_modal').modal('show');
         });

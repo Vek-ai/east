@@ -3035,5 +3035,41 @@ if (isset($_POST['set_contractor'])) {
     $_SESSION['contractor_id']   = $_POST['contractor_id'];
 }
 
+if (isset($_POST['change_cart_columns'])) {
+    $staff_id = $_SESSION['userid'] ?? 0;
+    if (!$staff_id) {
+        echo "No staff ID found.";
+        exit;
+    }
+
+    $show_unit_price    = isset($_POST['show_unit_price']) ? 1 : 0;
+    $show_product_price = isset($_POST['show_product_price']) ? 1 : 0;
+    $show_total_price   = isset($_POST['show_total_price']) ? 1 : 0;
+
+    $check = mysqli_query($conn, "SELECT id FROM staff_settings WHERE staff_id = '$staff_id' LIMIT 1");
+
+    if ($check && mysqli_num_rows($check) > 0) {
+        $update = "
+            UPDATE staff_settings 
+            SET 
+                show_unit_price = '$show_unit_price',
+                show_product_price = '$show_product_price',
+                show_total_price = '$show_total_price',
+                updated_at = NOW()
+            WHERE staff_id = '$staff_id'
+        ";
+        mysqli_query($conn, $update);
+    } else {
+        $insert = "
+            INSERT INTO staff_settings (staff_id, show_unit_price, show_product_price, show_total_price, created_at, updated_at)
+            VALUES ('$staff_id', '$show_unit_price', '$show_product_price', '$show_total_price', NOW(), NOW())
+        ";
+        mysqli_query($conn, $insert);
+    }
+
+    echo "success";
+    exit;
+}
+
 ?>
 
