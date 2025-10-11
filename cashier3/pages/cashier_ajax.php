@@ -1346,8 +1346,6 @@ if (isset($_POST['save_order'])) {
                 '$product_id_abbrev'
             )";
 
-            mysqli_query($conn, $query);
-
             if ($conn->query($query) !== TRUE) {
                 die("Error: " . $conn->error);
             }

@@ -36,6 +36,19 @@ if(isset($_POST['fetch_prompt_quantity'])){
             z-index: 10;
             margin-top: 5px;
         }
+        .drag-handle {
+            cursor: move;
+            font-size: 18px;
+            user-select: none;
+        }
+
+        .sortable-placeholder {
+            background: #f8f9fa;
+            border: 2px dashed #ccc;
+            height: 3rem;
+            margin: 5px 0;
+            border-radius: 5px;
+        }
     </style>
     <?php
         if (!empty($product_details)) {
@@ -338,13 +351,49 @@ if(isset($_POST['fetch_prompt_quantity'])){
                     $('#productFormCol').removeClass('col-12').addClass('col-9');
                     $('#bundleSection').removeClass('d-none');
                     $('.bundle-checkbox-wrapper, .bundle-checkbox-header').removeClass('d-none');
+                    $('body').addClass('bundle-mode');
                 } else {
                     $('#productFormCol').removeClass('col-9').addClass('col-12');
                     $('#bundleSection').addClass('d-none');
                     $('.bundle-checkbox-wrapper, .bundle-checkbox-header').addClass('d-none');
                     $('.bundle-checkbox').prop('checked', false);
+                    $('body').removeClass('bundle-mode');
                 }
             });
+
+            function enableBundleDragDrop() {
+                
+                $("#unbundledRows, #bundleGroups .bundle-group").each(function () {
+                    if ($(this).data("ui-sortable")) {
+                        $(this).sortable("destroy");
+                    }
+                });
+
+                $("#unbundledRows, .bundle-rows").sortable({
+                    connectWith: "#unbundledRows, .bundle-rows",
+                    handle: ".drag-handle",
+                    placeholder: "sortable-placeholder",
+                    tolerance: "pointer",
+                    revert: 150,
+                    start: function (event, ui) {
+                        ui.placeholder.height(ui.item.outerHeight());
+                    },
+                    update: function (event, ui) {
+                        const $item = ui.item;
+                        const $bundleWrapper = $item.closest(".bundle-wrapper");
+
+                        if ($bundleWrapper.length) {
+                            const bundleName = $bundleWrapper.find("h6").text().replace(/^Bundle \d+: /, "");
+                            $item.find('input[name="bundle_name[]"]').val(bundleName);
+                        } else {
+                            $item.find('input[name="bundle_name[]"]').val('');
+                        }
+                    }
+                }).disableSelection();
+            }
+
+
+            enableBundleDragDrop();
 
             $(document).off('click', '#addToBundleBtn').on('click', '#addToBundleBtn', function () {
                 const bundleName = $('#bundleName').val().trim();
@@ -353,14 +402,7 @@ if(isset($_POST['fetch_prompt_quantity'])){
                     return;
                 }
 
-                $('.bundle-checkbox:checked').each(function () {
-                    $(this)
-                        .closest('.quantity-length-container')
-                        .find('input[name="bundle_name[]"]')
-                        .val(bundleName);
-                });
-
-                let $selectedRows = $('.bundle-checkbox:checked').closest('.quantity-length-container');
+                const $selectedRows = $('.bundle-checkbox:checked').closest('.quantity-length-container');
                 if ($selectedRows.length === 0) {
                     alert("Please select at least one row to add to the bundle");
                     return;
@@ -376,13 +418,19 @@ if(isset($_POST['fetch_prompt_quantity'])){
                     </div>
                 `);
 
-                $selectedRows.appendTo($bundleWrapper.find('.bundle-rows'));
+                $selectedRows.each(function () {
+                    $(this)
+                        .find('input[name="bundle_name[]"]').val(bundleName)
+                        .end()
+                        .appendTo($bundleWrapper.find('.bundle-rows'));
+                });
 
                 $('#bundleGroups').append($bundleWrapper);
 
+                enableBundleDragDrop();
+
                 $('#bundleName').val('');
                 $('#bundleCounter').text(++bundleCount);
-
                 $('#bundleSection').addClass('d-none');
                 $('.bundle-checkbox-wrapper, .bundle-checkbox-header').addClass('d-none');
                 $('.bundle-checkbox').prop('checked', false);

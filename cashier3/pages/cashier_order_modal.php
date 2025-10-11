@@ -205,80 +205,34 @@ if(isset($_POST['fetch_order'])){
     $customer_savings = 0;
     if (!empty($_SESSION["cart"])) {
         foreach ($_SESSION["cart"] as $keys => $values) {
-            $data_id = $values["product_id"];
-            $product = getProductDetails($data_id);
-            $totalstockquantity = getProductStockTotal($data_id);
-            $category_id = $product["product_category"];
-            if ($totalstockquantity > 0) {
-                $stock_text = '
-                    <a href="javascript:void(0);" id="view_in_stock" data-id="' . htmlspecialchars($data_id, ENT_QUOTES, 'UTF-8') . '" class="d-flex align-items-center">
-                        <span class="text-bg-success p-1 rounded-circle"></span>
-                        <span class="ms-2">In Stock</span>
-                    </a>';
-            } else {
-                $stock_text = '
-                    <a href="javascript:void(0);" id="view_out_of_stock" data-id="' . htmlspecialchars($data_id, ENT_QUOTES, 'UTF-8') . '" class="d-flex align-items-center">
-                        <span class="text-bg-danger p-1 rounded-circle"></span>
-                        <span class="ms-2 fs-3">Out of Stock</span>
-                    </a>';
-            } 
+            $calc = calculateCartItem($values);
 
-            $default_image = '../images/product/product.jpg';
+            $stock_text = $calc["stock_text"];
+            $picture_path = $calc["picture_path"];
+            $product = $calc["product"];
+            $category_id = $calc["category_id"];
+            $quantity = $calc["quantity"];
+            $unit_price = $calc["unit_price"];
+            $subtotal = $calc["subtotal"];
+            $customer_price = $calc["customer_price"];
+            $total_length = $calc["total_length"];
+            $customer_pricing_rate = $calc["customer_pricing_rate"];
+            $discount = $calc["discount"];
+            $product_price = $calc["product_price"];
+            $savings = $calc["savings"];
+            $stock_qty = $calc["stock_qty"];
 
-            $picture_path = !empty($product['main_image'])
-            ? "../" .$product['main_image']
-            : $default_image;
-
-            $images_directory = "../images/drawing/";
-
-            $customer_pricing = getPricingCategory($category_id, $customer_details_pricing) / 100;
-
-            $estimate_length = isset($values["estimate_length"]) && is_numeric($values["estimate_length"]) ? floatval($values["estimate_length"]) : 1;
-            $estimate_length_inch = isset($values["estimate_length_inch"]) && is_numeric($values["estimate_length_inch"]) ? floatval($values["estimate_length_inch"]) : 0;
-
-            $total_length = $estimate_length + ($estimate_length_inch / 12);
-            if($total_length == 0){
-                $total_length = 1;
-            }
-
-            $amount_discount = isset($values["amount_discount"]) && is_numeric($values["amount_discount"]) ? floatval($values["amount_discount"]) : 0;
-
-            $quantity = isset($values["quantity_cart"]) && is_numeric($values["quantity_cart"]) ? floatval($values["quantity_cart"]) : 0;
-            $unit_price = isset($values["unit_price"]) && is_numeric($values["unit_price"]) ? floatval($values["unit_price"]) : 0;
-
-            $product_price = ($quantity * $unit_price * $total_length) - $amount_discount;
-
-            if (!empty($values["is_custom"]) && $values["is_custom"] == 1) {
-                $custom_multiplier = floatval(getCustomMultiplier($category_id));
-                $product_price += $product_price * $custom_multiplier;
-            }
-
-            if (isset($values["used_discount"])){
-                $discount = isset($values["used_discount"]) ? floatval($values["used_discount"]) / 100 : 0;
-            }
-
-            $color_id      = $values["custom_color"];
-            $grade         = intval($values["custom_grade"]);
-            $gauge         = intval($values["custom_gauge"]);
-            $profile       = intval($values["custom_profile"]);
-
-            $multiplier = getMultiplierValue($color_id, $grade, $gauge);
-            $product_price *= $multiplier;
-
-            $sold_by_feet = $product['sold_by_feet'];
-
-            $subtotal = $product_price;
-            $customer_price = $product_price * (1 - $discount) * (1 - $customer_pricing);
-            $customer_savings += $product_price - $customer_price;
-            $totalquantity += $values["quantity_cart"];
+            $customer_savings += $savings;
+            $totalquantity += $quantity;
             $total += $subtotal;
             $total_customer_price += $customer_price;
             $total_tax = number_format((floatval($total_customer_price)) * $tax, 2);
+            $total_weight += $product["weight"] * $quantity;
 
-            $total_weight += $product["weight"] * $values["quantity_cart"];
             $no++;
         }
     }
+
     $_SESSION["total_quantity"] = $totalquantity;
     $_SESSION["grandtotal"] = $total;
     $total_customer_price = floatval(str_replace(',', '', $total_customer_price));
