@@ -261,7 +261,9 @@ if ($permission === 'edit') {
                                 <th>Profile</th>
                                 <th>Grade</th>
                                 <th>Gauge</th>
-                                <th>Last Edit</th>
+                                <th>Note</th>
+                                <th>Last Edit By</th>
+                                <th>Last Time Edited</th>
                                 <th>Status</th>
                                 <th>Action</th>
                             </tr>
@@ -607,6 +609,8 @@ $(document).ready(function() {
             { data: 'product_profile_names' },
             { data: 'product_grade_names' },
             { data: 'product_gauge_names' },
+            { data: 'notes' },
+            { data: 'last_edit_by' },
             { data: 'last_edit' },
             { data: 'status_html' },
             { data: 'action_html' }

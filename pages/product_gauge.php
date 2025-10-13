@@ -106,8 +106,11 @@ if ($permission === 'edit') {
                     <tr>
                       <th>Gauge</th>
                       <th>Abbrev.</th>
+                      <th>Gauge ID #</th>
                       <th>Mult.</th>
-                      <th>Details</th>
+                      <th>Notes</th>
+                      <th>Last Edit By</th>
+                      <th>Last Time Edited</th>
                       <th>Status</th>
                       <th>Action</th>
                     </tr>
@@ -271,8 +274,11 @@ if ($permission === 'edit') {
         columns: [
             { data: 'product_gauge' },
             { data: 'gauge_abbreviations' },
+            { data: 'gauge_id_no' },
             { data: 'multiplier' },
-            { data: 'details' },
+            { data: 'notes' },
+            { data: 'last_edit_by' },
+            { data: 'last_edit' },
             { data: 'status_html' },
             { data: 'action_html' }
         ]

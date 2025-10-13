@@ -25,6 +25,7 @@ if(isset($_REQUEST['action'])) {
         $stock_availability  = mysqli_real_escape_string($conn, $_POST['stock_availability'] ?? '');
         $multiplier_category = mysqli_real_escape_string($conn, $_POST['multiplier_category'] ?? '');
         $ranking             = mysqli_real_escape_string($conn, $_POST['ranking'] ?? '');
+        $notes               = mysqli_real_escape_string($conn, $_POST['notes'] ?? '');
         $userid              = mysqli_real_escape_string($conn, $_POST['userid']);
         $use_ekm_color_name  = isset($_POST['use_ekm_color_name']) ? 1 : 0;
 
@@ -67,6 +68,7 @@ if(isset($_REQUEST['action'])) {
                 stock_availability = '$stock_availability', 
                 multiplier_category = '$multiplier_category', 
                 ranking = '$ranking',
+                notes = '$notes',
                 use_ekm_color_name = '$use_ekm_color_name'
                 WHERE color_id = '$color_id'";
 
@@ -80,9 +82,9 @@ if(isset($_REQUEST['action'])) {
             }
         } else {
             $insertQuery = "INSERT INTO paint_colors 
-                (color_name, color_code, ekm_color_no, ekm_paint_code, ekm_color_name, color_group, product_category, grade, gauge, profile, provider_id, added_date, added_by, ekm_color_code, color_abbreviation, stock_availability, multiplier_category, ranking, use_ekm_color_name) 
+                (color_name, color_code, ekm_color_no, ekm_paint_code, ekm_color_name, color_group, product_category, grade, gauge, profile, provider_id, added_date, added_by, ekm_color_code, color_abbreviation, stock_availability, multiplier_category, ranking, notes, use_ekm_color_name) 
                 VALUES 
-                ('$color_name', '$color_code', '$ekm_color_no', '$ekm_paint_code', '$ekm_color_name', '$color_group', '$product_category', '$grade', '$gauge', '$profile', '$provider_id', NOW(), '$userid', '$ekm_color_code', '$color_abbreviation', '$stock_availability', '$multiplier_category', '$ranking', '$use_ekm_color_name')";
+                ('$color_name', '$color_code', '$ekm_color_no', '$ekm_paint_code', '$ekm_color_name', '$color_group', '$product_category', '$grade', '$gauge', '$profile', '$provider_id', NOW(), '$userid', '$ekm_color_code', '$color_abbreviation', '$stock_availability', '$multiplier_category', '$ranking', '$notes', '$use_ekm_color_name')";
 
             if (mysqli_query($conn, $insertQuery)) {
                 echo "add-success";
@@ -329,6 +331,27 @@ if(isset($_REQUEST['action'])) {
                 </div>
             </div>
         </div>
+
+        <div class="card shadow-sm rounded-3 mb-3">
+            <div class="card-header bg-light border-bottom">
+                <h5 class="mb-0 fw-bold">Color Notes</h5>
+            </div>
+            <div class="card-body border rounded p-3">
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="mb-3">
+                            <textarea 
+                                id="notes" 
+                                name="notes" 
+                                class="form-control" 
+                                rows="5"
+                            ><?= htmlspecialchars($color_details['notes'] ?? '') ?></textarea>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
     <?php
     }
     
@@ -776,8 +799,6 @@ if(isset($_REQUEST['action'])) {
             $availability_details = getAvailabilityDetails($row['stock_availability']);
             $availability = $availability_details['product_availability'] ?? '';
     
-            $last_edit = !empty($row['last_edit']) ? (new DateTime($row['last_edit']))->format('m-d-Y') : '';
-    
             $added_by = $row['added_by'];
             $edited_by = $row['edited_by'];
     
@@ -794,6 +815,10 @@ if(isset($_REQUEST['action'])) {
                 $dt = new DateTime($row['last_edit']);
                 $last_edit = $dt->format('m/d/Y');
             }
+
+            $notes = !empty($row['notes']) 
+            ? (strlen($row['notes']) > 30 ? substr($row['notes'], 0, 30) . '...' : $row['notes']) 
+            : '';
     
             if ($isAssigned) {
                 $status_html = "<div class='alert alert-success border-0 text-center py-1 px-2 my-0' style='border-radius: 5%;'>Assigned</div>";
@@ -821,10 +846,16 @@ if(isset($_REQUEST['action'])) {
                     </a>";
             }
 
-            $product_category_names = getColumnFromTable("product_category","product_category",$row['product_category']);
-            $product_profile_names = getColumnFromTable("profile_type","profile_type",$row['profile']);
-            $product_grade_names = getColumnFromTable("product_grade","product_grade",$row['grade']);
-            $product_gauge_names = getColumnFromTable("product_gauge","product_gauge",$row['gauge']);
+            $product_category_names = getColumnFromTable("product_category", "product_category", $row['product_category']);
+            $product_profile_names  = getColumnFromTable("profile_type", "profile_type", $row['profile']);
+            $product_grade_names    = getColumnFromTable("product_grade", "product_grade", $row['grade']);
+            $product_gauge_names    = getColumnFromTable("product_gauge", "product_gauge", $row['gauge']);
+
+            $product_category_names = (strpos($product_category_names, ',') !== false) ? 'Multiple Categories' : $product_category_names;
+            $product_profile_names  = (strpos($product_profile_names, ',') !== false)  ? 'Multiple Profiles'  : $product_profile_names;
+            $product_grade_names    = (strpos($product_grade_names, ',') !== false)    ? 'Multiple Grades'    : $product_grade_names;
+            $product_gauge_names    = (strpos($product_gauge_names, ',') !== false)    ? 'Multiple Gauges'    : $product_gauge_names;
+
     
             $data[] = [
                 'color_id' => $no,
@@ -837,9 +868,11 @@ if(isset($_REQUEST['action'])) {
                 'provider' => $provider,
                 'availability' => $availability,
                 'product_category_names' => $product_category_names,
-                'product_profile_names' => $product_category_names,
+                'product_profile_names' => $product_profile_names,
                 'product_grade_names' => $product_grade_names,
                 'product_gauge_names' => $product_gauge_names,
+                'notes' => $notes,
+                'last_edit_by' => $last_user_name,
                 'last_edit' => $last_edit,
                 'status' => $status_html,
                 'status_html' => $status_html,

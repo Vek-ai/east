@@ -430,6 +430,27 @@ $page_title = "Product IDs";
     </div>
 </div>
 
+<div class="modal fade" id="historyModal" tabindex="-1" aria-labelledby="historyModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-xl modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="historyModalLabel">Product History</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <div id="historyModalBody" class="p-2 text-center">
+          <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Loading...</span>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <script>
   $(document).ready(function() {
     document.title = "Product Type";
@@ -450,7 +471,7 @@ $page_title = "Product IDs";
             }
         },
         columns: [
-            { data: 'product_id', title: 'Product ID' },
+            { data: 'product_ids_html', title: 'Product ID' },
             { data: 'category', title: 'Category' },
             { data: 'profile', title: 'Profile' },
             { data: 'grade', title: 'Grade' },
@@ -469,6 +490,44 @@ $page_title = "Product IDs";
             $(row).attr('data-length', data.length_id);
         }
     });
+
+    $(document).on('click', '.show_id_history', function (e) {
+        e.preventDefault();
+
+        const data = {
+            action: 'fetch_history',
+            category: $(this).data('category'),
+            profile: $(this).data('profile'),
+            grade: $(this).data('grade'),
+            gauge: $(this).data('gauge'),
+            type: $(this).data('type'),
+            color: $(this).data('color'),
+            length: $(this).data('length')
+        };
+
+        $('#historyModal').modal('show');
+        $('#historyModalBody').html(`
+            <div class="p-3 text-center">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+            </div>
+        `);
+
+        $.ajax({
+            url: 'pages/product_id_abbreviation_ajax.php',
+            type: 'POST',
+            data: data,
+            success: function (response) {
+                $('#historyModalBody').html(response);
+            },
+            error: function (xhr, status, error) {
+                console.error("AJAX Error:", xhr.responseText);
+                $('#historyModalBody').html(`<div class="text-danger p-3">Error loading data.</div>`);
+            }
+        });
+    });
+
 
     $('#display_product_id_filter').hide();
 
@@ -514,7 +573,7 @@ $page_title = "Product IDs";
                 $('#abbr-display').text(response);
             },
             error: function(xhr, status, error) {
-                console.log(xhr.responseText);
+                //console.log(xhr.responseText);
                 $('#abbr-display').text('Error: ' + xhr.responseText);
             }
         });

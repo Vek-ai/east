@@ -20,10 +20,9 @@ if(isset($_REQUEST['action'])) {
         $product_gauge_id = mysqli_real_escape_string($conn, $_POST['product_gauge_id']);
         $product_gauge = mysqli_real_escape_string($conn, $_POST['product_gauge']);
         $gauge_abbreviations = mysqli_real_escape_string($conn, $_POST['gauge_abbreviations']);
+        $gauge_id_no = mysqli_real_escape_string($conn, $_POST['gauge_id_no']);
         $multiplier = mysqli_real_escape_string($conn, $_POST['multiplier']);
-        $thickness = mysqli_real_escape_string($conn, $_POST['thickness']);
-        $no_per_sqft = mysqli_real_escape_string($conn, $_POST['no_per_sqft']);
-        $no_per_sqin = mysqli_real_escape_string($conn, $_POST['no_per_sqin']);
+        
         $notes = mysqli_real_escape_string($conn, $_POST['notes']);
         $userid = mysqli_real_escape_string($conn, $_POST['userid']);
 
@@ -38,10 +37,8 @@ if(isset($_REQUEST['action'])) {
                 UPDATE product_gauge SET 
                     product_gauge = '$product_gauge',
                     gauge_abbreviations = '$gauge_abbreviations',
+                    gauge_id_no = '$gauge_id_no',
                     multiplier = '$multiplier',
-                    thickness = '$thickness',
-                    no_per_sqft = '$no_per_sqft',
-                    no_per_sqin = '$no_per_sqin',
                     notes = '$notes',
                     last_edit = NOW(),
                     edited_by = '$userid'
@@ -62,20 +59,16 @@ if(isset($_REQUEST['action'])) {
                 INSERT INTO product_gauge (
                     product_gauge,
                     gauge_abbreviations,
+                    gauge_id_no,
                     multiplier,
-                    thickness,
-                    no_per_sqft,
-                    no_per_sqin,
                     notes,
                     added_date,
                     added_by
                 ) VALUES (
                     '$product_gauge',
                     '$gauge_abbreviations',
+                    '$gauge_id_no',
                     '$multiplier',
-                    '$thickness',
-                    '$no_per_sqft',
-                    '$no_per_sqin',
                     '$notes',
                     NOW(),
                     '$userid'
@@ -123,50 +116,32 @@ if(isset($_REQUEST['action'])) {
 
         ?>
             <div class="row pt-3">
-                <div class="col-md-6">
-                <div class="mb-3">
-                    <label class="form-label">Product gauge</label>
-                    <input type="text" id="product_gauge" name="product_gauge" class="form-control"  value="<?= $row['product_gauge'] ?? '' ?>"/>
+                <div class="col-md-4">
+                    <div class="mb-3">
+                        <label class="form-label">Product gauge</label>
+                        <input type="text" id="product_gauge" name="product_gauge" class="form-control"  value="<?= $row['product_gauge'] ?? '' ?>"/>
+                    </div>
                 </div>
+                <div class="col-md-4">
+                    <div class="mb-3">
+                        <label class="form-label">Gauge Abreviations</label>
+                        <input type="text" id="gauge_abbreviations" name="gauge_abbreviations" class="form-control" value="<?= $row['gauge_abbreviations'] ?? '' ?>" />
+                    </div>
                 </div>
-                <div class="col-md-6">
-                
-                </div>
-            </div>
-
-            <div class="row pt-3">
-                <div class="col-md-6">
-                <div class="mb-3">
-                    <label class="form-label">Gauge Abreviations</label>
-                    <input type="text" id="gauge_abbreviations" name="gauge_abbreviations" class="form-control" value="<?= $row['gauge_abbreviations'] ?? '' ?>" />
-                </div>
-                </div>
-                <div class="col-md-6">
-                <div class="mb-3">
-                    <label class="form-label">Multiplier</label>
-                    <input type="text" id="multiplier" name="multiplier" class="form-control" value="<?= $row['multiplier'] ?? '' ?>" />
-                </div>
+                <div class="col-md-4">
+                    <div class="mb-3">
+                        <label class="form-label">Gauge ID #</label>
+                        <input type="text" id="gauge_id_no" name="gauge_id_no" class="form-control" value="<?= $row['gauge_id_no'] ?? '' ?>" />
+                    </div>
                 </div>
             </div>
 
             <div class="row pt-3">
                 <div class="col-md-4">
-                <div class="mb-3">
-                    <label class="form-label">Thickness</label>
-                    <input type="number" step="0.00001" id="thickness" name="thickness" class="form-control"  value="<?= $row['thickness'] ?? '' ?>"/>
-                </div>
-                </div>
-                <div class="col-md-4">
-                <div class="mb-3">
-                    <label class="form-label">#/SQFT</label>
-                    <input type="text" id="no_per_sqft" name="no_per_sqft" class="form-control" value="<?= $row['no_per_sqft'] ?? '' ?>" />
-                </div>
-                </div>
-                <div class="col-md-4">
-                <div class="mb-3">
-                    <label class="form-label">#/SQFT</label>
-                    <input type="text" id="no_per_sqin" name="no_per_sqin" class="form-control" value="<?= $row['no_per_sqin'] ?? '' ?>" />
-                </div>
+                    <div class="mb-3">
+                        <label class="form-label">Multiplier</label>
+                        <input type="text" id="multiplier" name="multiplier" class="form-control" value="<?= $row['multiplier'] ?? '' ?>" />
+                    </div>
                 </div>
             </div>
 
@@ -492,10 +467,9 @@ if(isset($_REQUEST['action'])) {
     
             $rowData['product_gauge'] = '<span class="product' . $no . ($row['status'] == '0' ? ' emphasize-strike' : '') . '">' . $row['product_gauge'] . '</span>';
             $rowData['gauge_abbreviations'] = $row['gauge_abbreviations'];
+            $rowData['notes'] = !empty($row['notes']) ? (strlen($row['notes']) > 30 ? substr($row['notes'], 0, 30) . '...' : $row['notes']) : '';
             $rowData['multiplier'] = $row['multiplier'];
-            $rowData['thickness'] = floatval($row['thickness']);
-            $rowData['no_per_sqft'] = floatval($row['no_per_sqft']);
-            $rowData['no_per_sqin'] = floatval($row['no_per_sqin']);
+            $rowData['gauge_id_no'] = $row['gauge_id_no'];
     
             $last_edit = '';
             if (!empty($row['last_edit'])) {
@@ -505,7 +479,8 @@ if(isset($_REQUEST['action'])) {
     
             $user_id = $row['edited_by'] != 0 ? $row['edited_by'] : $row['added_by'];
             $last_user_name = $user_id ? get_name($user_id) : '';
-            $rowData['details'] = "Last Edited $last_edit by $last_user_name";
+            $rowData['last_edit_by'] = $last_user_name;
+            $rowData['last_edit'] = $last_edit;
     
             $status = $row['status'];
             $rowData['status_html'] = '<a href="javascript:void(0)" class="changeStatus" data-no="' . $no . '" data-id="' . $row['product_gauge_id'] . '" data-status="' . $status . '"><div id="status-alert' . $no . '" class="alert ' . ($status == '0' ? 'alert-danger bg-danger' : 'alert-success bg-success') . ' text-white border-0 text-center py-1 px-2 my-0" style="border-radius: 5%;">' . ($status == '0' ? 'Inactive' : 'Active') . '</div></a>';
