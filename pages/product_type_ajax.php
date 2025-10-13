@@ -538,7 +538,9 @@ if(isset($_REQUEST['action'])) {
             $type_abreviations = $row['type_abreviations'];
             $product_category_name = getProductCategoryName($row['product_category']);
             $multiplier = $row['multiplier'];
-            $notes = strlen($row['notes']) > 30 ? substr($row['notes'], 0, 30) . '...' : $row['notes'];
+            $notes = !empty($row['notes']) 
+            ? (strlen($row['notes']) > 30 ? substr($row['notes'], 0, 30) . '...' : $row['notes']) 
+            : '';
             $special = $row['special'] == 1 ? 'Yes' : 'No';
     
             $last_edit = !empty($row['last_edit']) ? (new DateTime($row['last_edit']))->format('m/d/Y') : '';
