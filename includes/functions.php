@@ -3029,8 +3029,8 @@ function calculateCartItem($values) {
     $customer_details = getCustomerDetails($customer_id);
     $customer_details_pricing = $customer_details['customer_pricing'];
 
-    $data_id     = $values["product_id"];
-    $line        = $values["line"];
+    $data_id     = $values["product_id"] ?? '';
+    $line        = $values["line"] ?? '';
     $length_id   = $values["length_id"] ?? '';
     $product     = getProductDetails($data_id);
     $stock_qty   = getProductStockTotal($data_id);
@@ -3078,6 +3078,16 @@ function calculateCartItem($values) {
         $gauge
     );
 
+    $product_id_abbrev = fetchSingleProductABR(
+        $category_id,
+        $profile,
+        $grade,
+        $gauge,
+        '',
+        $color_id,
+        $length_id
+    );
+
     $linear_price = $product["unit_price"];
     $panel_price  = $unit_price;
 
@@ -3096,37 +3106,39 @@ function calculateCartItem($values) {
     $savings        = $product_price - $customer_price;
 
     return [
-        "data_id"        => $data_id,
-        "line"           => $line,
-        "product"        => $product,
-        "category_id"    => $category_id,
-        "stock_qty"      => $stock_qty,
-        "stock_text"     => $stock_text,
-        "default_image"  => '../images/product/product.jpg',
-        "picture_path"   => !empty($product['main_image']) ? "../" . $product['main_image'] : "../images/product/product.jpg",
-        "images_directory" => "../images/drawing/",
-        "quantity"       => $quantity,
-        "unit_price"     => $unit_price,
-        "linear_price"   => $linear_price,
-        "panel_price"    => $panel_price,
-        "total_length"   => $total_length,
-        "amount_discount"=> $amount_discount,
-        "product_price"  => $product_price,
-        "subtotal"       => $subtotal,
-        "customer_price" => $customer_price,
-        "savings"        => $savings,
-        "color_id"       => $color_id,
-        "grade"          => $grade,
-        "gauge"          => $gauge,
-        "profile"        => $profile,
-        "discount"       => $discount,
-        "multiplier"     => $multiplier,
+        "data_id"           => $data_id,
+        "line"              => $line,
+        "product"           => $product,
+        "category_id"       => $category_id,
+        "stock_qty"         => $stock_qty,
+        "stock_text"        => $stock_text,
+        "default_image"     => '../images/product/product.jpg',
+        "picture_path"      => !empty($product['main_image']) ? "../" . $product['main_image'] : "../images/product/product.jpg",
+        "images_directory"  => "../images/drawing/",
+        "quantity"          => $quantity,
+        "unit_price"        => $unit_price,
+        "linear_price"      => $linear_price,
+        "panel_price"       => $panel_price,
+        "total_length"      => $total_length,
+        "amount_discount"   => $amount_discount,
+        "product_price"     => $product_price,
+        "subtotal"          => $subtotal,
+        "customer_price"    => $customer_price,
+        "savings"           => $savings,
+        "color_id"          => $color_id,
+        "grade"             => $grade,
+        "gauge"             => $gauge,
+        "profile"           => $profile,
+        "discount"          => $discount,
+        "multiplier"        => $multiplier,
         "customer_pricing_rate" => $customer_pricing_rate,
-        "sold_by_feet"   => $product["sold_by_feet"] ?? 0,
-        "drawing_data"   => $values["drawing_data"] ?? '',
-        "panel_type"     => $panel_type,
-        "bends"          => $bends,
-        "hems"           => $hems,
+        "sold_by_feet"      => $product["sold_by_feet"] ?? 0,
+        "drawing_data"      => $values["drawing_data"] ?? '',
+        "panel_type"        => $panel_type,
+        "bends"             => $bends,
+        "hems"              => $hems,
+        "length_id"         => $length_id,
+        "product_id_abbrev" => $product_id_abbrev,
     ];
 }
 

@@ -128,11 +128,13 @@ if ($permission === 'edit') {
                   <thead>
                     <tr>
                       <th>Product grade</th>
-                      <th>Grade Abreviations</th>
+                      <th>Abreviations</th>
+                      <th>Grade ID #</th>
                       <th>Category</th>
                       <th>Multiplier</th>
                       <th>Notes</th>
-                      <th>Details</th>
+                      <th>Last Edit By</th>
+                      <th>Last Time Edited</th>
                       <th>Status</th>
                       <th>Action</th>
                     </tr>
@@ -336,10 +338,12 @@ if ($permission === 'edit') {
         columns: [
             { data: 'product_grade' },
             { data: 'grade_abbreviations' },
+            { data: 'grade_id_no' },
             { data: 'product_category_name' },
             { data: 'multiplier' },
             { data: 'notes' },
-            { data: 'details' },
+            { data: 'last_edit_by' },
+            { data: 'last_edit' },
             { data: 'status_html' },
             { data: 'action_html' }
         ],

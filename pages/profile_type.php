@@ -136,9 +136,12 @@ if ($permission === 'edit') {
                       <tr>
                         <th>Profile type</th>
                         <th>Abreviations</th>
-                        <th>Category</th>
+                        <th>Categories</th>
+                        <th>Panel Type</th>
+                        <th>Panel Style</th>
                         <th>Notes</th>
-                        <th>Details</th>
+                        <th>Last Edit By</th>
+                        <th>Last Time Edited</th>
                         <th>Status</th>
                         <th>Action</th>
                       </tr>
@@ -343,7 +346,10 @@ if ($permission === 'edit') {
             { data: 'profile_type' },
             { data: 'profile_abbreviations' },
             { data: 'product_category_name' },
+            { data: 'panel_type' },
+            { data: 'panel_style' },
             { data: 'notes' },
+            { data: 'last_edit_by' },
             { data: 'last_edit' },
             { data: 'status_html' },
             { data: 'action_html' }

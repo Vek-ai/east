@@ -13,12 +13,13 @@ $panel_id  = 3;
 $screw_id  = 16;
 
 $staff_id = $_SESSION['userid'] ?? 0;
+$show_prod_id_abbrev = 0;
 $show_unit_price = 0;
 $show_product_price = 0;
 $show_total_price = 0;
 
 if ($staff_id) {
-    $query = "SELECT show_unit_price, show_product_price, show_total_price 
+    $query = "SELECT * 
             FROM staff_settings 
             WHERE staff_id = '$staff_id' 
             ORDER BY id DESC 
@@ -27,6 +28,7 @@ if ($staff_id) {
 
     if ($result && $result->num_rows > 0) {
         $settings = $result->fetch_assoc();
+        $show_prod_id_abbrev = $settings['show_prod_id_abbrev'];
         $show_unit_price = $settings['show_unit_price'];
         $show_product_price = $settings['show_product_price'];
         $show_total_price = $settings['show_total_price'];
@@ -438,6 +440,7 @@ if(isset($_POST['fetch_cart'])){
                                     $sold_by_feet = $item['sold_by_feet'];
                                     $linear_price =$item['linear_price'];
                                     $panel_price = $item['panel_price'];
+                                    $product_id_abbrev = $item['product_id_abbrev'];
 
                                     $bundle_actual_price += $product_price;
                                     $bundle_customer_price += $customer_price;
@@ -476,6 +479,9 @@ if(isset($_POST['fetch_cart'])){
                                                             value="<?= $line; ?>">
                                                 </div>
                                             </div>
+                                            <span class="<?= $show_prod_id_abbrev ? '' : 'd-none' ?>">
+                                                <?= htmlspecialchars($product_id_abbrev) ?>
+                                            <span>
                                             <?php if (!empty($values["note"])): ?>
                                                 <br>Notes: <?= htmlspecialchars($values["note"]) ?>
                                             <?php endif; ?>
@@ -788,6 +794,7 @@ if(isset($_POST['fetch_cart'])){
                                 $sold_by_feet = $item['sold_by_feet'];
                                 $linear_price =$item['linear_price'];
                                 $panel_price = $item['panel_price'];
+                                $product_id_abbrev = $item['product_id_abbrev'];
                                 ?>
 
                                 <tr>
@@ -807,6 +814,9 @@ if(isset($_POST['fetch_cart'])){
                                         <?php endif; ?>
                                     </td>
                                     <td>
+                                        <span class="<?= $show_prod_id_abbrev ? '' : 'd-none' ?>">
+                                            <?= htmlspecialchars($product_id_abbrev) ?>
+                                        <span>
                                         <?php if (!empty($values["note"])): ?>
                                             <br>Notes: <?= htmlspecialchars($values["note"]) ?>
                                         <?php endif; ?>
@@ -1045,6 +1055,7 @@ if(isset($_POST['fetch_cart'])){
                                 $sold_by_feet = $item['sold_by_feet'];
                                 $linear_price =$item['linear_price'];
                                 $panel_price = $item['panel_price'];
+                                $product_id_abbrev = $item['product_id_abbrev'];
                                 ?>
 
                                 <tr>
@@ -1064,6 +1075,9 @@ if(isset($_POST['fetch_cart'])){
                                         <?php endif; ?>
                                     </td>
                                     <td>
+                                        <span class="<?= $show_prod_id_abbrev ? '' : 'd-none' ?>">
+                                            <?= htmlspecialchars($product_id_abbrev) ?>
+                                        <span>
                                         <?php if (!empty($values["note"])): ?>
                                             <br>Notes: <?= htmlspecialchars($values["note"]) ?>
                                         <?php endif; ?>
@@ -1284,6 +1298,7 @@ if(isset($_POST['fetch_cart'])){
                                 $sold_by_feet = $item['sold_by_feet'];
                                 $linear_price =$item['linear_price'];
                                 $panel_price = $item['panel_price'];
+                                $product_id_abbrev = $item['product_id_abbrev'];
                                 ?>
 
                                 <tr>
@@ -1303,6 +1318,9 @@ if(isset($_POST['fetch_cart'])){
                                         <?php endif; ?>
                                     </td>
                                     <td>
+                                        <span class="<?= $show_prod_id_abbrev ? '' : 'd-none' ?>">
+                                            <?= htmlspecialchars($product_id_abbrev) ?>
+                                        <span>
                                         <?php if (!empty($values["note"])): ?>
                                             <br>Notes: <?= htmlspecialchars($values["note"]) ?>
                                         <?php endif; ?>
@@ -1521,6 +1539,7 @@ if(isset($_POST['fetch_cart'])){
                                 $sold_by_feet = $item['sold_by_feet'];
                                 $linear_price =$item['linear_price'];
                                 $panel_price = $item['panel_price'];
+                                $product_id_abbrev = $item['product_id_abbrev'];
                                 ?>
 
                                 <tr>
@@ -1540,6 +1559,9 @@ if(isset($_POST['fetch_cart'])){
                                         <?php endif; ?>
                                     </td>
                                     <td>
+                                        <span class="<?= $show_prod_id_abbrev ? '' : 'd-none' ?>">
+                                            <?= htmlspecialchars($product_id_abbrev) ?>
+                                        <span>
                                         <?php if (!empty($values["note"])): ?>
                                             <br>Notes: <?= htmlspecialchars($values["note"]) ?>
                                         <?php endif; ?>
@@ -1702,6 +1724,13 @@ if(isset($_POST['fetch_cart'])){
                 </div>
 
                 <div class="modal-body">
+
+                <div class="form-check mb-2">
+                    <input class="form-check-input" type="checkbox" id="show_prod_id_abbrev" name="show_prod_id_abbrev" value="1" 
+                    <?php if ($show_prod_id_abbrev) echo 'checked'; ?>>
+                    <label class="form-check-label" for="show_prod_id_abbrev">Show Product ID Abbreviation</label>
+                </div>
+
                 <div class="form-check mb-2">
                     <input class="form-check-input" type="checkbox" id="show_unit_price" name="show_unit_price" value="1" 
                     <?php if ($show_unit_price) echo 'checked'; ?>>

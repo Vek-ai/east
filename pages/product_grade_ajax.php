@@ -18,13 +18,14 @@ if(isset($_REQUEST['action'])) {
 
     if ($action == "add_update") {
         $product_grade_id = mysqli_real_escape_string($conn, $_POST['product_grade_id']);
-        $product_grade = mysqli_real_escape_string($conn, $_POST['product_grade']);
-        $grade_abbreviations = mysqli_real_escape_string($conn, $_POST['grade_abbreviations']);
+        $product_grade = mysqli_real_escape_string($conn, $_POST['product_grade'] ?? '');
+        $grade_abbreviations = mysqli_real_escape_string($conn, $_POST['grade_abbreviations'] ?? '');
+        $grade_id_no = mysqli_real_escape_string($conn, $_POST['grade_id_no'] ?? '');
         $product_category = mysqli_real_escape_string($conn, json_encode(array_map('intval', $_POST['product_category'] ?? [])));
-        $defect_code = mysqli_real_escape_string($conn, $_POST['defect_code']);
-        $defect_description = mysqli_real_escape_string($conn, $_POST['defect_description']);
-        $multiplier = floatval(mysqli_real_escape_string($conn, $_POST['multiplier']));
-        $notes = mysqli_real_escape_string($conn, $_POST['notes']);
+        $defect_code = mysqli_real_escape_string($conn, $_POST['defect_code'] ?? '');
+        $defect_description = mysqli_real_escape_string($conn, $_POST['defect_description'] ?? '');
+        $multiplier = floatval(mysqli_real_escape_string($conn, $_POST['multiplier'] ?? ''));
+        $notes = mysqli_real_escape_string($conn, $_POST['notes'] ?? '');
         $userid = mysqli_real_escape_string($conn, $_POST['userid']);
 
         $checkQuery = "SELECT grade_abbreviations FROM product_grade WHERE product_grade_id = '$product_grade_id'";
@@ -37,6 +38,7 @@ if(isset($_REQUEST['action'])) {
             $updateQuery = "UPDATE product_grade 
                             SET product_grade = '$product_grade', 
                                 grade_abbreviations = '$grade_abbreviations', 
+                                grade_id_no = '$grade_id_no', 
                                 product_category = '$product_category', 
                                 multiplier = '$multiplier', 
                                 notes = '$notes', 
@@ -56,8 +58,8 @@ if(isset($_REQUEST['action'])) {
             }
         } else {
             $insertQuery = "INSERT INTO product_grade 
-                            (product_grade, grade_abbreviations, product_category, multiplier, notes, defect_code, defect_description, added_date, added_by) 
-                            VALUES ('$product_grade', '$grade_abbreviations', '$product_category', '$multiplier', '$notes', '$defect_code', '$defect_description', NOW(), '$userid')";
+                            (product_grade, grade_abbreviations, grade_id_no, product_category, multiplier, notes, defect_code, defect_description, added_date, added_by) 
+                            VALUES ('$product_grade', '$grade_abbreviations', '$grade_id_no', '$product_category', '$multiplier', '$notes', '$defect_code', '$defect_description', NOW(), '$userid')";
             if (mysqli_query($conn, $insertQuery)) {
                 echo "add-success";
             } else {
@@ -108,13 +110,26 @@ if(isset($_REQUEST['action'])) {
         }
         ?>
             <div class="row pt-3">
-                <div class="col-md-6">
+                <div class="col-md-4">
                     <div class="mb-3">
                         <label class="form-label">Product grade</label>
                         <input type="text" id="product_grade" name="product_grade" class="form-control"  value="<?= $row['product_grade'] ?? '' ?>"/>
                     </div>
                 </div>
-                <div class="col-md-6">
+                <div class="col-md-4">
+                    <div class="mb-3">
+                        <label class="form-label">Grade Abreviations</label>
+                        <input type="text" id="grade_abbreviations" name="grade_abbreviations" class="form-control" value="<?= $row['grade_abbreviations'] ?? '' ?>" />
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="mb-3">
+                        <label class="form-label">Grade ID #</label>
+                        <input type="text" id="grade_id_no" name="grade_id_no" class="form-control" value="<?= $row['grade_id_no'] ?? '' ?>" />
+                    </div>
+                </div>
+
+                <div class="col-md-4">
                     <div class="mb-3">
                         <label class="form-label">Product Category</label>
                         <select id="product_category" class="form-control select2" name="product_category[]" multiple required>
@@ -134,13 +149,8 @@ if(isset($_REQUEST['action'])) {
                     </select>
                     </div>
                 </div>
-                <div class="col-md-6">
-                    <div class="mb-3">
-                        <label class="form-label">Grade Abreviations</label>
-                        <input type="text" id="grade_abbreviations" name="grade_abbreviations" class="form-control" value="<?= $row['grade_abbreviations'] ?? '' ?>" />
-                    </div>
-                </div>
-                <div class="col-md-6">
+                
+                <div class="col-md-4">
                     <div class="mb-3">
                         <label class="form-label">Multiplier</label>
                         <input type="text" id="multiplier" name="multiplier" class="form-control" value="<?= $row['multiplier'] ?? '' ?>" />
@@ -150,18 +160,6 @@ if(isset($_REQUEST['action'])) {
                     <div class="mb-3">
                         <label class="form-label">Notes</label>
                         <textarea class="form-control" id="notes" name="notes" rows="5"><?= $row['notes'] ?? '' ?></textarea>
-                    </div>
-                </div>
-                <div class="col-md-12">
-                    <div class="mb-3">
-                        <label class="form-label">Defect Code</label>
-                        <input type="text" id="defect_code" name="defect_code" class="form-control" value="<?= $row['defect_code'] ?? '' ?>" />
-                    </div>
-                </div>
-                <div class="col-md-12">
-                    <div class="mb-3">
-                        <label class="form-label">Defect Description</label>
-                        <textarea class="form-control" id="defect_description" name="defect_description" rows="5"><?= $row['defect_description'] ?? '' ?></textarea>
                     </div>
                 </div>
             </div>
@@ -554,12 +552,13 @@ if(isset($_REQUEST['action'])) {
     
             $rowData['product_grade'] = '<span class="product' . $no . ($row['status'] == '0' ? ' emphasize-strike' : '') . '">' . $row['product_grade'] . '</span>';
             $rowData['grade_abbreviations'] = $row['grade_abbreviations'];
+            $rowData['grade_id_no'] = $row['grade_id_no'];
             $rowData['multiplier'] = $row['multiplier'];
 
             $category_ids = json_decode($row['product_category'], true);
             $category_ids = is_array($category_ids) ? $category_ids : [];
             $rowData['product_category_name'] = implode(', ', array_unique(array_map('getProductCategoryName', $category_ids)));
-            $rowData['notes'] = $row['notes'];
+            $rowData['notes'] = strlen($row['notes']) > 30 ? substr($row['notes'], 0, 30) . '...' : $row['notes'];
             
             $last_edit = '';
             if (!empty($row['last_edit'])) {
@@ -569,7 +568,8 @@ if(isset($_REQUEST['action'])) {
     
             $user_id = $row['edited_by'] != 0 ? $row['edited_by'] : $row['added_by'];
             $last_user_name = $user_id ? get_name($user_id) : '';
-            $rowData['details'] = "Last Edited $last_edit by $last_user_name";
+            $rowData['last_edit_by'] = $last_user_name;
+            $rowData['last_edit'] = $last_edit;
     
             $status = $row['status'];
             $rowData['status_html'] = '<a href="javascript:void(0)" class="changeStatus" data-no="' . $no . '" data-id="' . $row['product_grade_id'] . '" data-status="' . $status . '"><div id="status-alert' . $no . '" class="alert ' . ($status == '0' ? 'alert-danger bg-danger' : 'alert-success bg-success') . ' text-white border-0 text-center py-1 px-2 my-0" style="border-radius: 5%;">' . ($status == '0' ? 'Inactive' : 'Active') . '</div></a>';

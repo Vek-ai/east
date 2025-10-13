@@ -145,7 +145,8 @@ if ($permission === 'edit') {
                             <?php endif; ?>
 
                             <?php if (showCol('details')): ?>
-                                <th>Details</th>
+                                <th>Last Edit By</th>
+                                <th>Last Time Edited</th>
                             <?php endif; ?>
 
                             <?php if (showCol('status')): ?>
@@ -308,6 +309,7 @@ $(document).ready(function() {
     <?php endif; ?>
 
     <?php if (showCol('details')): ?>
+    columns.push({ data: 'last_edit_by' });
     columns.push({ data: 'last_edit' });
     <?php endif; ?>
 

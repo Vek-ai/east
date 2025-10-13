@@ -3040,6 +3040,7 @@ if (isset($_POST['change_cart_columns'])) {
         exit;
     }
 
+    $show_prod_id_abbrev    = isset($_POST['show_prod_id_abbrev']) ? 1 : 0;
     $show_unit_price    = isset($_POST['show_unit_price']) ? 1 : 0;
     $show_product_price = isset($_POST['show_product_price']) ? 1 : 0;
     $show_total_price   = isset($_POST['show_total_price']) ? 1 : 0;
@@ -3050,6 +3051,7 @@ if (isset($_POST['change_cart_columns'])) {
         $update = "
             UPDATE staff_settings 
             SET 
+                show_prod_id_abbrev = '$show_prod_id_abbrev',
                 show_unit_price = '$show_unit_price',
                 show_product_price = '$show_product_price',
                 show_total_price = '$show_total_price',
@@ -3059,8 +3061,8 @@ if (isset($_POST['change_cart_columns'])) {
         mysqli_query($conn, $update);
     } else {
         $insert = "
-            INSERT INTO staff_settings (staff_id, show_unit_price, show_product_price, show_total_price, created_at, updated_at)
-            VALUES ('$staff_id', '$show_unit_price', '$show_product_price', '$show_total_price', NOW(), NOW())
+            INSERT INTO staff_settings (staff_id, show_prod_id_abbrev, show_unit_price, show_product_price, show_total_price, created_at, updated_at)
+            VALUES ('$staff_id', '$show_prod_id_abbrev', '$show_unit_price', '$show_product_price', '$show_total_price', NOW(), NOW())
         ";
         mysqli_query($conn, $insert);
     }

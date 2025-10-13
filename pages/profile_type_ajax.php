@@ -27,6 +27,20 @@ if(isset($_REQUEST['action'])) {
         $notes = mysqli_real_escape_string($conn, $_POST['notes']);
         $userid = mysqli_real_escape_string($conn, $_POST['userid']);
 
+        $panel_type_1 = mysqli_real_escape_string($conn, $_POST['panel_type_1'] ?? '');
+        $panel_type_abbrev_1 = mysqli_real_escape_string($conn, $_POST['panel_type_abbrev_1'] ?? '');
+        $panel_type_2 = mysqli_real_escape_string($conn, $_POST['panel_type_2'] ?? '');
+        $panel_type_abbrev_2 = mysqli_real_escape_string($conn, $_POST['panel_type_abbrev_2'] ?? '');
+        $panel_type_3 = mysqli_real_escape_string($conn, $_POST['panel_type_3'] ?? '');
+        $panel_type_abbrev_3 = mysqli_real_escape_string($conn, $_POST['panel_type_abbrev_3'] ?? '');
+
+        $panel_style_1 = mysqli_real_escape_string($conn, $_POST['panel_style_1'] ?? '');
+        $panel_style_abbrev_1 = mysqli_real_escape_string($conn, $_POST['panel_style_abbrev_1'] ?? '');
+        $panel_style_2 = mysqli_real_escape_string($conn, $_POST['panel_style_2'] ?? '');
+        $panel_style_abbrev_2 = mysqli_real_escape_string($conn, $_POST['panel_style_abbrev_2'] ?? '');
+        $panel_style_3 = mysqli_real_escape_string($conn, $_POST['panel_style_3'] ?? '');
+        $panel_style_abbrev_3 = mysqli_real_escape_string($conn, $_POST['panel_style_abbrev_3'] ?? '');
+
         $checkQuery = "SELECT profile_abbreviations FROM profile_type WHERE profile_type_id = '$profile_type_id'";
         $result = mysqli_query($conn, $checkQuery);
 
@@ -39,8 +53,20 @@ if(isset($_REQUEST['action'])) {
                                 profile_abbreviations = '$profile_abbreviations', 
                                 product_category = '$product_category_json', 
                                 notes = '$notes', 
+                                panel_type_1 = '$panel_type_1',
+                                panel_type_abbrev_1 = '$panel_type_abbrev_1',
+                                panel_type_2 = '$panel_type_2',
+                                panel_type_abbrev_2 = '$panel_type_abbrev_2',
+                                panel_type_3 = '$panel_type_3',
+                                panel_type_abbrev_3 = '$panel_type_abbrev_3',
+                                panel_style_1 = '$panel_style_1',
+                                panel_style_abbrev_1 = '$panel_style_abbrev_1',
+                                panel_style_2 = '$panel_style_2',
+                                panel_style_abbrev_2 = '$panel_style_abbrev_2',
+                                panel_style_3 = '$panel_style_3',
+                                panel_style_abbrev_3 = '$panel_style_abbrev_3',
                                 last_edit = NOW(), 
-                                edited_by = '$userid'  
+                                edited_by = '$userid'
                             WHERE profile_type_id = '$profile_type_id'";
 
             if (mysqli_query($conn, $updateQuery)) {
@@ -53,8 +79,16 @@ if(isset($_REQUEST['action'])) {
             }
         } else {
             $insertQuery = "INSERT INTO profile_type 
-                            (profile_type, profile_abbreviations, product_category, notes, added_date, added_by) 
-                            VALUES ('$profile_type', '$profile_abbreviations', '$product_category_json', '$notes', NOW(), '$userid')";
+                            (profile_type, profile_abbreviations, product_category, notes, 
+                            panel_type_1, panel_type_abbrev_1, panel_type_2, panel_type_abbrev_2, panel_type_3, panel_type_abbrev_3,
+                            panel_style_1, panel_style_abbrev_1, panel_style_2, panel_style_abbrev_2, panel_style_3, panel_style_abbrev_3,
+                            added_date, added_by) 
+                            VALUES 
+                            ('$profile_type', '$profile_abbreviations', '$product_category_json', '$notes',
+                            '$panel_type_1', '$panel_type_abbrev_1', '$panel_type_2', '$panel_type_abbrev_2', '$panel_type_3', '$panel_type_abbrev_3',
+                            '$panel_style_1', '$panel_style_abbrev_1', '$panel_style_2', '$panel_style_abbrev_2', '$panel_style_3', '$panel_style_abbrev_3',
+                            NOW(), '$userid')";
+
             if (mysqli_query($conn, $insertQuery)) {
                 echo "add-success";
             } else {
@@ -62,7 +96,6 @@ if(isset($_REQUEST['action'])) {
             }
         }
     }
-
 
     if ($action == "change_status") {
         $profile_type_id = mysqli_real_escape_string($conn, $_POST['profile_type_id']);
@@ -101,44 +134,171 @@ if(isset($_REQUEST['action'])) {
         }
         $selected_categories = array_map('intval', $selected_categories);
         ?>
-        <div class="row pt-3">
-            <div class="col-md-6">
-                <div class="mb-3">
-                    <label class="form-label">Product Type</label>
-                    <input type="text" id="profile_type" name="profile_type" class="form-control" value="<?= htmlspecialchars($row['profile_type'] ?? '') ?>"/>
+        <div class="card">
+            <div class="card shadow-sm rounded-3 mb-3">
+                <div class="card-header bg-light border-bottom">
+                    <h5 class="mb-0 fw-bold">Profile Name Information</h5>
                 </div>
-            </div>
-            <div class="col-md-6">
-                <div class="mb-3">
-                    <label class="form-label">Profile Type Abbreviations</label>
-                    <input type="text" id="profile_abbreviations" name="profile_abbreviations" class="form-control" value="<?= htmlspecialchars($row['profile_abbreviations'] ?? '') ?>"/>
-                </div>
-            </div>
-            <div class="col-md-12">
-                <label class="form-label">Product Category</label>
-                <div class="mb-3">
-                    <select id="product_category" class="form-control select2" name="product_category[]" multiple required>
-                        <?php
-                        $query_roles = "SELECT * FROM product_category WHERE hidden = '0' AND status = '1' ORDER BY `product_category` ASC";
-                        $result_roles = mysqli_query($conn, $query_roles);
-                        while ($row_product_category = mysqli_fetch_array($result_roles)) {
-                            $cat_id = intval($row_product_category['product_category_id']);
-                            $selected = in_array($cat_id, $selected_categories) ? 'selected' : '';
-                            ?>
-                            <option value="<?= $cat_id ?>" <?= $selected ?>>
-                                <?= htmlspecialchars($row_product_category['product_category']) ?>
-                            </option>
-                            <?php
-                        }
-                        ?>
-                    </select>
+                <div class="card-body border rounded p-3">
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label class="form-label">Product Type</label>
+                                <input type="text" id="profile_type" name="profile_type" class="form-control" value="<?= htmlspecialchars($row['profile_type'] ?? '') ?>"/>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label class="form-label">Profile Type Abbreviations</label>
+                                <input type="text" id="profile_abbreviations" name="profile_abbreviations" class="form-control" value="<?= htmlspecialchars($row['profile_abbreviations'] ?? '') ?>"/>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Product Category</label>
+                            <div class="mb-3">
+                                <select id="product_category" class="form-control select2" name="product_category[]" multiple required>
+                                    <?php
+                                    $query_roles = "SELECT * FROM product_category WHERE hidden = '0' AND status = '1' ORDER BY `product_category` ASC";
+                                    $result_roles = mysqli_query($conn, $query_roles);
+                                    while ($row_product_category = mysqli_fetch_array($result_roles)) {
+                                        $cat_id = intval($row_product_category['product_category_id']);
+                                        $selected = in_array($cat_id, $selected_categories) ? 'selected' : '';
+                                        ?>
+                                        <option value="<?= $cat_id ?>" <?= $selected ?>>
+                                            <?= htmlspecialchars($row_product_category['product_category']) ?>
+                                        </option>
+                                        <?php
+                                    }
+                                    ?>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
 
-        <div class="mb-3">
-            <label class="form-label">Notes</label>
-            <textarea class="form-control" id="notes" name="notes" rows="5"><?= htmlspecialchars($row['notes'] ?? '') ?></textarea>
+        <div class="card">
+            <div class="card shadow-sm rounded-3 mb-3">
+                <div class="card-header bg-light border-bottom">
+                    <h5 class="mb-0 fw-bold">Available Panel Types</h5>
+                </div>
+                <div class="card-body border rounded p-3">
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label class="form-label">Panel Type #1</label>
+                                <input type="text" id="panel_type_1" name="panel_type_1" class="form-control" value="<?= htmlspecialchars($row['panel_type_1'] ?? '') ?>"/>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label class="form-label">Panel Type Abreviation #1</label>
+                                <input type="text" id="panel_type_abbrev_1" name="panel_type_abbrev_1" class="form-control" value="<?= htmlspecialchars($row['panel_type_abbrev_1'] ?? '') ?>"/>
+                            </div>
+                        </div>
+                        <div class="col-md-4"></div>
+
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label class="form-label">Panel Type #2</label>
+                                <input type="text" id="panel_type_2" name="panel_type_2" class="form-control" value="<?= htmlspecialchars($row['panel_type_2'] ?? '') ?>"/>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label class="form-label">Panel Type Abreviation #2</label>
+                                <input type="text" id="panel_type_abbrev_2" name="panel_type_abbrev_2" class="form-control" value="<?= htmlspecialchars($row['panel_type_abbrev_2'] ?? '') ?>"/>
+                            </div>
+                        </div>
+                        <div class="col-md-4"></div>
+
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label class="form-label">Panel Type #3</label>
+                                <input type="text" id="panel_type_3" name="panel_type_3" class="form-control" value="<?= htmlspecialchars($row['panel_type_3'] ?? '') ?>"/>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label class="form-label">Panel Type Abreviation #3</label>
+                                <input type="text" id="panel_type_abbrev_3" name="panel_type_abbrev_3" class="form-control" value="<?= htmlspecialchars($row['panel_type_abbrev_3'] ?? '') ?>"/>
+                            </div>
+                        </div>
+                        <div class="col-md-4"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card shadow-sm rounded-3 mb-3">
+                <div class="card-header bg-light border-bottom">
+                    <h5 class="mb-0 fw-bold">Available Panel Styles</h5>
+                </div>
+                <div class="card-body border rounded p-3">
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label class="form-label">Panel Style #1</label>
+                                <input type="text" id="panel_style_1" name="panel_style_1" class="form-control" value="<?= htmlspecialchars($row['panel_style_1'] ?? '') ?>"/>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label class="form-label">Panel Style Abreviation #1</label>
+                                <input type="text" id="panel_style_abbrev_1" name="panel_style_abbrev_1" class="form-control" value="<?= htmlspecialchars($row['panel_style_abbrev_1'] ?? '') ?>"/>
+                            </div>
+                        </div>
+                        <div class="col-md-4"></div>
+
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label class="form-label">Panel Style #2</label>
+                                <input type="text" id="panel_style_2" name="panel_style_2" class="form-control" value="<?= htmlspecialchars($row['panel_style_2'] ?? '') ?>"/>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label class="form-label">Panel Style Abreviation #2</label>
+                                <input type="text" id="panel_style_abbrev_2" name="panel_style_abbrev_2" class="form-control" value="<?= htmlspecialchars($row['panel_style_abbrev_2'] ?? '') ?>"/>
+                            </div>
+                        </div>
+                        <div class="col-md-4"></div>
+
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label class="form-label">Panel Style #3</label>
+                                <input type="text" id="panel_style_3" name="panel_style_3" class="form-control" value="<?= htmlspecialchars($row['panel_style_3'] ?? '') ?>"/>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label class="form-label">Panel Style Abreviation #3</label>
+                                <input type="text" id="panel_style_abbrev_3" name="panel_style_abbrev_3" class="form-control" value="<?= htmlspecialchars($row['panel_style_abbrev_3'] ?? '') ?>"/>
+                            </div>
+                        </div>
+                        <div class="col-md-4"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card shadow-sm rounded-3 mb-3">
+                <div class="card-header bg-light border-bottom">
+                    <h5 class="mb-0 fw-bold">Notes</h5>
+                </div>
+                <div class="card-body border rounded p-3">
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="mb-3">
+                                <textarea class="form-control" id="notes" name="notes" rows="5"><?= htmlspecialchars($row['notes'] ?? '') ?></textarea>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
 
         <input type="hidden" id="profile_type_id" name="profile_type_id" value="<?= intval($profile_type_id) ?>"/>
@@ -522,14 +682,28 @@ if(isset($_REQUEST['action'])) {
             $no = $row['profile_type_id'];
             $profile_type = $row['profile_type'];
             $abbreviations = $row['profile_abbreviations'];
-            $notes = $row['notes'];
+            $notes = strlen($row['notes']) > 30 ? substr($row['notes'], 0, 30) . '...' : $row['notes'];
+
+            $panel_types = array_filter([
+                $row['panel_type_1'] ?? '',
+                $row['panel_type_2'] ?? '',
+                $row['panel_type_3'] ?? ''
+            ]);
+            $panel_type = implode(', ', $panel_types);
+
+            $panel_styles = array_filter([
+                $row['panel_style_1'] ?? '',
+                $row['panel_style_2'] ?? '',
+                $row['panel_style_3'] ?? ''
+            ]);
+            $panel_style = implode(', ', $panel_styles);
 
             $category_ids = json_decode($row['product_category'], true);
             $category_ids = is_array($category_ids) ? $category_ids : [];
 
             $category_name_str = implode(', ', array_unique(array_map('getProductCategoryName', $category_ids)));
 
-            $last_edit = !empty($row['last_edit']) ? (new DateTime($row['last_edit']))->format('m-d-Y') : '';
+            $last_edit = !empty($row['last_edit']) ? (new DateTime($row['last_edit']))->format('m/d/Y') : '';
             $added_by = $row['added_by'];
             $edited_by = $row['edited_by'];
 
@@ -541,8 +715,6 @@ if(isset($_REQUEST['action'])) {
                 $last_user_name = "";
             }
 
-            $last_edit_text = "Last Edited $last_edit by $last_user_name";
-
             $status_html = $row['status'] == '0'
                 ? "<a href='javascript:void(0)' class='changeStatus' data-no='$no' data-id='$no' data-name='$profile_type' data-status='0'>
                         <div id='status-alert$no' class='alert alert-danger bg-danger text-white border-0 text-center py-1 px-2 my-0' style='border-radius: 5%;'>Inactive</div>
@@ -553,7 +725,6 @@ if(isset($_REQUEST['action'])) {
 
             $action_html = '';
             if ($permission === 'edit') {
-
                 $action_html = $row['status'] == '0'
                     ? "<a href='javascript:void(0)' class='py-1 text-dark hideProfileType' title='Archive' data-id='$no' data-row='$no' style='border-radius: 10%;'>
                             <i class='text-danger ti ti-trash fs-7'></i>
@@ -567,8 +738,11 @@ if(isset($_REQUEST['action'])) {
                 'profile_type' => $profile_type,
                 'profile_abbreviations' => $abbreviations,
                 'product_category_name' => $category_name_str,
+                'panel_type' => $panel_type,
+                'panel_style' => $panel_style,
                 'notes' => $notes,
-                'last_edit' => $last_edit_text,
+                'last_edit' => $last_edit,
+                'last_edit_by' => $last_user_name,
                 'status_html' => $status_html,
                 'action_html' => $action_html
             ];
@@ -577,6 +751,7 @@ if(isset($_REQUEST['action'])) {
         echo json_encode(['data' => $data]);
         exit;
     }
+
 
     mysqli_close($conn);
 }

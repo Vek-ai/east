@@ -479,9 +479,9 @@ if(isset($_REQUEST['action'])) {
             $product_category = $row['product_category'];
             $category_abreviations = $row['category_abreviations'];
             $multiplier = $row['multiplier'];
-            $notes = $row['notes'];
+            $notes = strlen($row['notes']) > 30 ? substr($row['notes'], 0, 30) . '...' : $row['notes'];
     
-            $last_edit = !empty($row['last_edit']) ? (new DateTime($row['last_edit']))->format('m-d-Y') : '';
+            $last_edit = !empty($row['last_edit']) ? (new DateTime($row['last_edit']))->format('m/d/Y') : '';
     
             $added_by = $row['added_by'];
             $edited_by = $row['edited_by'];
@@ -518,7 +518,8 @@ if(isset($_REQUEST['action'])) {
                 'category_abreviations' => $category_abreviations,
                 'multiplier' => $multiplier,
                 'notes' => $notes,
-                'last_edit' => "Last Edited $last_edit by $last_user_name",
+                'last_edit' => $last_edit,
+                'last_edit_by' => $last_user_name,
                 'status_html' => $status_html,
                 'action_html' => $action_html
             ];

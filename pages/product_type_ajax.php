@@ -538,10 +538,10 @@ if(isset($_REQUEST['action'])) {
             $type_abreviations = $row['type_abreviations'];
             $product_category_name = getProductCategoryName($row['product_category']);
             $multiplier = $row['multiplier'];
-            $notes = $row['notes'];
+            $notes = strlen($row['notes']) > 30 ? substr($row['notes'], 0, 30) . '...' : $row['notes'];
             $special = $row['special'] == 1 ? 'Yes' : 'No';
     
-            $last_edit = !empty($row['last_edit']) ? (new DateTime($row['last_edit']))->format('m-d-Y') : '';
+            $last_edit = !empty($row['last_edit']) ? (new DateTime($row['last_edit']))->format('m/d/Y') : '';
     
             $added_by = $row['added_by'];
             $edited_by = $row['edited_by'];
@@ -580,7 +580,8 @@ if(isset($_REQUEST['action'])) {
                 'multiplier' => $multiplier,
                 'special' => $special,
                 'notes' => $notes,
-                'last_edit' => "Last Edited $last_edit by $last_user_name",
+                'last_edit_by' => $last_user_name,
+                'last_edit' => $last_edit,
                 'status_html' => $status_html,
                 'action_html' => $action_html
             ];

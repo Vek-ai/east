@@ -335,10 +335,15 @@ $page_title = "Product IDs";
                     </optgroup>
                 </select>
             </div>
-            <div class="d-flex justify-content-end py-2">
-                <button type="button" class="btn btn-outline-primary reset_filters">
-                    <i class="fas fa-sync-alt me-1"></i> Reset Filters
-                </button>
+            <div class="px-3 mb-2"> 
+                <input type="checkbox" id="show_history"> Show History
+            </div>
+            <div class="d-flex justify-content-end px-3 mb-2">
+                <div class="py-2">
+                    <button type="button" class="btn btn-outline-primary reset_filters">
+                        <i class="fas fa-sync-alt me-1"></i> Reset Filters
+                    </button>
+                </div>
             </div>
       </div>
       <div class="col-9">
@@ -432,7 +437,7 @@ $page_title = "Product IDs";
     $.fn.dataTable.ext.errMode = 'none';
 
     var table = $('#display_product_id').DataTable({
-        pageLength: 100,
+        pageLength: 10,
         order: [],
         ajax: {
             url: 'pages/product_id_abbreviation_ajax.php',
@@ -517,9 +522,9 @@ $page_title = "Product IDs";
 
     function filterTable() {
         var textSearch = $('#text-srh').val().toLowerCase();
+        var showHistory = $('#show_history').is(':checked');
 
         $.fn.dataTable.ext.search = [];
-
         if (textSearch) {
             $.fn.dataTable.ext.search.push(function(settings, data, dataIndex) {
                 return $(table.row(dataIndex).node()).text().toLowerCase().includes(textSearch);
@@ -545,9 +550,34 @@ $page_title = "Product IDs";
             return match;
         });
 
+        if (!showHistory) {
+            var seenCombos = new Set();
+
+            $.fn.dataTable.ext.search.push(function(settings, data, dataIndex) {
+                var row = $(table.row(dataIndex).node());
+
+                var comboKey = [
+                    row.data('profile'),
+                    row.data('grade'),
+                    row.data('gauge'),
+                    row.data('type'),
+                    row.data('color'),
+                    row.data('length')
+                ].join('-');
+
+                if (seenCombos.has(comboKey)) {
+                    return false;
+                } else {
+                    seenCombos.add(comboKey);
+                    return true;
+                }
+            });
+        }
+
         table.draw();
         updateSelectedTags();
     }
+
 
     function updateSelectedTags() {
         var displayDiv = $('#selected-tags');
@@ -556,7 +586,7 @@ $page_title = "Product IDs";
         $('.filter-selection').each(function() {
             var selectedOption = $(this).find('option:selected');
             var selectedText = selectedOption.text().trim();
-            var filterName = $(this).data('filter-name'); // Custom attribute for display
+            var filterName = $(this).data('filter-name');
 
             if ($(this).val()) {
                 displayDiv.append(`
@@ -579,7 +609,7 @@ $page_title = "Product IDs";
         });
     }
 
-    $(document).on('input change', '#text-srh, #toggleActive, .filter-selection', filterTable);
+    $(document).on('input change', '#text-srh, #show_history, .filter-selection', filterTable);
 
     $(document).on('click', '.reset_filters', function () {
         $('.filter-selection').each(function () {
@@ -590,6 +620,8 @@ $page_title = "Product IDs";
 
         filterTable();
     });
+
+    filterTable();
     
 });
 </script>
