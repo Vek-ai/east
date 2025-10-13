@@ -420,8 +420,15 @@ if ($permission === 'edit') {
             url: 'pages/product_type_ajax.php',
             type: 'POST',
             data: { action: 'fetch_table' },
-            error: function (xhr, error, thrown) {
-                console.error("DataTable AJAX Error:", xhr.responseText);
+            dataSrc: function (json) {
+                console.log("✅ DataTable AJAX Success Response:", json);
+                return json.data || [];
+            },
+            error: function (xhr, status, error) {
+                console.error("❌ DataTable AJAX Error:");
+                console.log("Status:", status);
+                console.log("Error:", error);
+                console.log("Response Text:", xhr.responseText);
             }
         },
         columns: columns
