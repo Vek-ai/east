@@ -419,7 +419,10 @@ if ($permission === 'edit') {
         ajax: {
             url: 'pages/product_type_ajax.php',
             type: 'POST',
-            data: { action: 'fetch_table' }
+            data: { action: 'fetch_table' },
+            error: function (xhr, error, thrown) {
+                console.error("DataTable AJAX Error:", xhr.responseText);
+            }
         },
         columns: columns
     });
