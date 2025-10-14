@@ -650,41 +650,6 @@ $editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) :
     </div>
 </div>
 
-<div class="modal" id="view_estimate_modal">
-    <div class="modal-dialog modal-fullscreen" role="document">
-        <div class="modal-content modal-content-demo">
-            <div class="modal-header">
-                <h6 class="modal-title">Save Estimate</h6>
-                <button aria-label="Close" class="close" data-bs-dismiss="modal" type="button">
-                    <span aria-hidden="true">&times;</span>
-                </button>
-            </div>
-            <div class="modal-body">
-                <div id="estimate-tbl"></div>
-            </div>
-            <div class="modal-footer">
-                <button class="btn ripple btn-primary next" type="button" id="next_page_est">
-                    <i class="fe fe-hard-drive"></i> Next
-                </button>
-                <button class="btn ripple btn-danger previous d-none" type="button" id="prev_page_est">
-                    <i class="fe fe-hard-drive"></i> Previous
-                </button>
-                <button class="btn ripple btn-success d-none" type="button" id="save_estimate_modal">
-                    <i class="fe fe-hard-drive"></i> Save
-                </button>
-                <a href="#" class="btn btn-light text-dark d-none" 
-                    type="button" id="print_estimate_category" target="_blank">
-                        <i class="fe fe-print"></i> Print Details
-                </a>
-                <a href="#" class="btn ripple btn-warning text-dark d-none" type="button" id="print_estimate" target="_blank">
-                    <i class="fe fe-print"></i> Print Summary Total
-                </a>
-                <button class="btn ripple btn-danger" data-bs-dismiss="modal" type="button">Close</button>
-            </div>
-        </div>
-    </div>
-</div>
-
 <div class="modal" id="viewInStockmodal">
     <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
         <div class="modal-content modal-content-demo">
@@ -793,15 +758,15 @@ $editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) :
                 <button class="btn ripple btn-danger previous d-none" type="button" id="prev_page_order">
                     <i class="fe fe-hard-drive"></i> Previous
                 </button>
-                <a href="#" 
+                <a href="javascript:void(0)" 
                     class="btn btn-light" 
                     style="color: #000 !important; background-color: #f8f9fa !important"
                     type="button" 
-                    id="print_order_category" target="_blank">
+                    id="print_order_category">
                     <i class="fe fe-print"></i> Print Details
                 </a>
                 <a href="#" class="btn btn-warning" style="color: #000 !important;" type="button" id="print_order" target="_blank">
-                    <i class="fe fe-print"></i> Print Total
+                    <i class="fa fe-print"></i> Print Total
                 </a>
                 <a href="#" class="btn btn-info " type="button" id="print_deliver" target="_blank">
                     <i class="fe fe-print"></i> Print Delivery
@@ -1335,6 +1300,40 @@ $editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) :
         </div>
     </div>
 </div>
+
+<div class="modal fade" id="printCustomerModal" tabindex="-1" aria-labelledby="printCustomerModalLabel" aria-hidden="true" style="background-color: rgba(0, 0, 0, 0.5);">
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content">
+      
+      <div class="modal-header">
+        <h5 class="modal-title" id="printCustomerModalLabel">Customer Print/Download</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      
+      <div class="modal-body text-center">
+        <div class="d-flex flex-wrap justify-content-center gap-2 mb-3">
+          <a id="print_base" target="_blank" class="btn btn-primary">Base Printout</a>
+          <a id="print_perft" target="_blank" class="btn btn-success">w/ Per Ft $</a>
+          <a id="print_pereach" target="_blank" class="btn btn-info">w/ Per Each $</a>
+          <a id="print_all" target="_blank" class="btn btn-warning">w/ All $</a>
+          <a id="print_summary" target="_blank" class="btn btn-danger">Summary Cost</a>
+        </div>
+
+        <div class="d-flex flex-wrap justify-content-center gap-2">
+          <a id="print_load" target="_blank" class="btn btn-secondary">Load Copy</a>
+          <a id="print_delivery" target="_blank" class="btn btn-dark">Delivery</a>
+        </div>
+      </div>
+
+      <div class="modal-footer justify-content-end">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.0/fabric.min.js"></script>
 
@@ -4526,17 +4525,48 @@ $editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) :
                     success: function(response) {
                         if (response.success) {
                             alert("Order successfully saved.");
-                            $('#print_order_category').attr('href', '/print_order_product.php?id=' + response.order_id);
-                            $('#print_order').attr('href', '/print_order_total.php?id=' + response.order_id);
-                            $('#print_deliver').attr('href', '/print_order_delivery.php?id=' + response.order_id);
+
+                            $('#print_order').attr('href', '../print_order_total.php?id=' + response.order_id);
+                            $('#print_deliver').attr('href', '../print_order_delivery.php?id=' + response.order_id);
+
                             $('#print_order_category').removeClass('d-none');
                             $('#print_order').removeClass('d-none');
                             $('#print_deliver').removeClass('d-none');
 
-                            
+                            $('#print_base').attr({
+                                'href': '../print_order_product.php?id=' + response.order_id,
+                                'target': '_blank'
+                            });
+                            $('#print_perft').attr({
+                                'href': '../print_order_product_per_ft.php?id=' + response.order_id,
+                                'target': '_blank'
+                            });
+                            $('#print_pereach').attr({
+                                'href': '../print_order_product_per_each.php?id=' + response.order_id,
+                                'target': '_blank'
+                            });
+                            $('#print_all').attr({
+                                'href': '../print_order_product_all.php?id=' + response.order_id,
+                                'target': '_blank'
+                            });
+                            $('#print_summary').attr({
+                                'href': '../print_order_total.php?id=' + response.order_id,
+                                'target': '_blank'
+                            });
+                            $('#print_load').attr({
+                                'href': '../print_load_copy.php?id=' + response.order_id,
+                                'target': '_blank'
+                            });
+                            $('#print_delivery').attr({
+                                'href': '../print_order_delivery.php?id=' + response.order_id,
+                                'target': '_blank'
+                            });
+
+                            $('#order_id_print').val(response.order_id);
                         } else if (response.error) {
                             alert(response.error);
                         }
+
 
                         console.log(response);
 
@@ -4878,17 +4908,6 @@ $editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) :
             });
         });
 
-        $(document).on('click', '#view_estimate', function(event) {
-            $('.modal').modal('hide');
-            loadEstimateContents();
-            $('#next_page_est').removeClass("d-none");
-            $('#prev_page_est').addClass("d-none");
-            $('#save_estimate').addClass("d-none");
-            $('#print_estimate_category').addClass('d-none');
-            $('#print_estimate').addClass('d-none');
-            $('#view_estimate_modal').modal('show');
-        });
-
         $(document).on('click', '#view_order', function(event) {
             $('.modal').modal('hide');
             loadOrderContents();
@@ -4898,6 +4917,10 @@ $editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) :
             $('#print_order').addClass('d-none');
             $('#print_deliver').addClass('d-none');
             $('#cashmodal').modal('show');
+        });
+
+        $(document).on('click', '#print_order_category', function() {
+            $('#printCustomerModal').modal('show');
         });
 
         $(document).on('click', '#prev_page_order', function(event) {
