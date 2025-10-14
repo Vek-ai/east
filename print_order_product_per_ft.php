@@ -196,7 +196,7 @@ function renderPanelCategory($pdf, $products, $conn) {
                 ['label' => 'In',            'width' => 15, 'align' => 'C'],
                 ['label' => 'Panel Type',    'width' => 15, 'align' => 'C'],
                 ['label' => 'Panel Style',   'width' => 15, 'align' => 'C'],
-                
+                ['label' => 'Linear Ft $',   'width' => 15, 'align' => 'C'],
             ];
 
             renderTableHeader($pdf, $subColumns);
@@ -232,6 +232,7 @@ function renderPanelCategory($pdf, $products, $conn) {
                     $row['inch_text'],
                     $row['panel_type'],
                     $row['panel_style'],
+                    '$ ' . number_format($product_unit_price, 2),
                     
                 ];
                 renderSubRow($pdf, $subColumns, $subRow);
@@ -343,7 +344,7 @@ function renderTrimCategory($pdf, $products, $conn) {
                 ['label' => 'In',            'width' => 15, 'align' => 'C'],
                 ['label' => '',    'width' => 15, 'align' => 'C'],
                 ['label' => '',   'width' => 15, 'align' => 'C'],
-                
+                ['label' => 'Per Ft $',   'width' => 15, 'align' => 'C'],
             ];
 
             renderTableHeader($pdf, $subColumns);
@@ -378,7 +379,9 @@ function renderTrimCategory($pdf, $products, $conn) {
                     $row['ft'] . '\'',
                     $row['inch_text'],
                     '',
-                    ''
+                    '',
+                    '$ ' . number_format($product_unit_price, 2),
+                    
                 ];
                 renderSubRow($pdf, $subColumns, $subRow);
             }
@@ -489,7 +492,7 @@ function renderScrewCategory($pdf, $products, $conn) {
                 ['label' => 'Type',            'width' => 15, 'align' => 'C'],
                 ['label' => 'Pack Size',    'width' => 15, 'align' => 'C'],
                 ['label' => '',   'width' => 15, 'align' => 'C'],
-                
+                ['label' => 'Per Screw $',   'width' => 15, 'align' => 'C'],
             ];
 
             renderTableHeader($pdf, $subColumns);
@@ -525,6 +528,7 @@ function renderScrewCategory($pdf, $products, $conn) {
                     '',
                     $row['ft'],
                     '',
+                    '$ ' . number_format($product_unit_price, 2),
                     
                 ];
                 renderSubRow($pdf, $subColumns, $subRow);
@@ -636,7 +640,7 @@ function renderLumberCategory($pdf, $products, $conn) {
                 ['label' => 'Pack Size',            'width' => 15, 'align' => 'C'],
                 ['label' => '',    'width' => 15, 'align' => 'C'],
                 ['label' => '',   'width' => 15, 'align' => 'C'],
-                
+                ['label' => 'Per Each $',   'width' => 15, 'align' => 'C'],
             ];
 
             renderTableHeader($pdf, $subColumns);
@@ -669,7 +673,10 @@ function renderLumberCategory($pdf, $products, $conn) {
                     $row_text,
                     $row['qty'],
                     $row['ft'],
-                    
+                    '',
+                    '',
+                    '',
+                    '$ ' . number_format($product_unit_price, 2),
                     
                 ];
                 renderSubRow($pdf, $subColumns, $subRow);
@@ -781,7 +788,7 @@ function renderDefaultCategory($pdf, $products, $conn) {
                 ['label' => 'Pack Size',            'width' => 15, 'align' => 'C'],
                 ['label' => '',    'width' => 15, 'align' => 'C'],
                 ['label' => '',   'width' => 15, 'align' => 'C'],
-                
+                ['label' => 'Per Each $',   'width' => 15, 'align' => 'C'],
             ];
 
             renderTableHeader($pdf, $subColumns);
@@ -815,7 +822,9 @@ function renderDefaultCategory($pdf, $products, $conn) {
                     $row['qty'],
                     $row['ft'],
                     '',
-                    
+                    '',
+                    '',
+                    '$ ' . number_format($product_unit_price, 2),
                     
                 ];
                 renderSubRow($pdf, $subColumns, $subRow);

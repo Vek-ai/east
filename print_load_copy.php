@@ -22,7 +22,7 @@ $columns = [
     ['label' => 'PROFILE', 'width' => 15, 'align' => 'C'],
     ['label' => 'QTY', 'width' => 15, 'align' => 'C'],
     ['label' => 'LENGTH', 'width' => 20, 'align' => 'C'],
-    ['label' => 'CUSTOMER PRICE', 'width' => 28, 'align' => 'R'],
+    ['label' => 'LOADED BY', 'width' => 28, 'align' => 'C'],
 ];
 
 function NbLines($pdf, $w, $txt) {
@@ -35,7 +35,7 @@ function NbLines($pdf, $w, $txt) {
 
     $lines = 1;
     $lineWidth = 0;
-    $maxWidth = $w; // don’t use $pdf->cMargin
+    $maxWidth = $w;
     $spaceWidth = $pdf->GetStringWidth(' ');
 
     for ($i = 0; $i < $nb; $i++) {
@@ -177,7 +177,7 @@ function renderPanelCategory($pdf, $products, $conn) {
             $g['profile'],
             $g['quantity'],
             number_format($g['length'], 2),
-            '$ ' . number_format($g['discounted_total'], 2)
+            ''
         ];
         renderRow($pdf, $columns, $summaryRow, true);
 
@@ -196,7 +196,9 @@ function renderPanelCategory($pdf, $products, $conn) {
                 ['label' => 'In',            'width' => 15, 'align' => 'C'],
                 ['label' => 'Panel Type',    'width' => 15, 'align' => 'C'],
                 ['label' => 'Panel Style',   'width' => 15, 'align' => 'C'],
-                
+                ['label' => '',    'width' => .01, 'align' => 'C'],
+                ['label' => '',   'width' => .01, 'align' => 'C'],
+                ['label' => '',   'width' => 48, 'align' => 'C'],
             ];
 
             renderTableHeader($pdf, $subColumns);
@@ -232,7 +234,9 @@ function renderPanelCategory($pdf, $products, $conn) {
                     $row['inch_text'],
                     $row['panel_type'],
                     $row['panel_style'],
-                    
+                    '',
+                    '',
+                    '',
                 ];
                 renderSubRow($pdf, $subColumns, $subRow);
             }
@@ -324,7 +328,7 @@ function renderTrimCategory($pdf, $products, $conn) {
             $g['profile'],
             $g['quantity'],
             number_format($g['length'], 2),
-            '$ ' . number_format($g['discounted_total'], 2)
+            ''
         ];
         renderRow($pdf, $columns, $summaryRow, true);
 
@@ -343,7 +347,9 @@ function renderTrimCategory($pdf, $products, $conn) {
                 ['label' => 'In',            'width' => 15, 'align' => 'C'],
                 ['label' => '',    'width' => 15, 'align' => 'C'],
                 ['label' => '',   'width' => 15, 'align' => 'C'],
-                
+                ['label' => '',    'width' => .01, 'align' => 'C'],
+                ['label' => '',   'width' => .01, 'align' => 'C'],
+                ['label' => '',   'width' => 48, 'align' => 'C'],
             ];
 
             renderTableHeader($pdf, $subColumns);
@@ -378,7 +384,10 @@ function renderTrimCategory($pdf, $products, $conn) {
                     $row['ft'] . '\'',
                     $row['inch_text'],
                     '',
-                    ''
+                    '',
+                    '',
+                    '',
+                    '',
                 ];
                 renderSubRow($pdf, $subColumns, $subRow);
             }
@@ -470,7 +479,7 @@ function renderScrewCategory($pdf, $products, $conn) {
             $g['profile'],
             $g['quantity'],
             number_format($g['length'], 2),
-            '$ ' . number_format($g['discounted_total'], 2)
+            ''
         ];
         renderRow($pdf, $columns, $summaryRow, true);
 
@@ -489,7 +498,9 @@ function renderScrewCategory($pdf, $products, $conn) {
                 ['label' => 'Type',            'width' => 15, 'align' => 'C'],
                 ['label' => 'Pack Size',    'width' => 15, 'align' => 'C'],
                 ['label' => '',   'width' => 15, 'align' => 'C'],
-                
+                ['label' => '',    'width' => .01, 'align' => 'C'],
+                ['label' => '',   'width' => .01, 'align' => 'C'],
+                ['label' => '',   'width' => 48, 'align' => 'C'],
             ];
 
             renderTableHeader($pdf, $subColumns);
@@ -524,6 +535,9 @@ function renderScrewCategory($pdf, $products, $conn) {
                     '',
                     '',
                     $row['ft'],
+                    '',
+                    '',
+                    '',
                     '',
                     
                 ];
@@ -617,7 +631,7 @@ function renderLumberCategory($pdf, $products, $conn) {
             $g['profile'],
             $g['quantity'],
             number_format($g['length'], 2),
-            '$ ' . number_format($g['discounted_total'], 2)
+            ''
         ];
         renderRow($pdf, $columns, $summaryRow, true);
 
@@ -636,7 +650,9 @@ function renderLumberCategory($pdf, $products, $conn) {
                 ['label' => 'Pack Size',            'width' => 15, 'align' => 'C'],
                 ['label' => '',    'width' => 15, 'align' => 'C'],
                 ['label' => '',   'width' => 15, 'align' => 'C'],
-                
+                ['label' => '',    'width' => .01, 'align' => 'C'],
+                ['label' => '',   'width' => .01, 'align' => 'C'],
+                ['label' => '',   'width' => 48, 'align' => 'C'],
             ];
 
             renderTableHeader($pdf, $subColumns);
@@ -669,7 +685,9 @@ function renderLumberCategory($pdf, $products, $conn) {
                     $row_text,
                     $row['qty'],
                     $row['ft'],
-                    
+                    '',
+                    '',
+                    '',
                     
                 ];
                 renderSubRow($pdf, $subColumns, $subRow);
@@ -762,7 +780,7 @@ function renderDefaultCategory($pdf, $products, $conn) {
             $g['profile'],
             $g['quantity'],
             number_format($g['length'], 2),
-            '$ ' . number_format($g['discounted_total'], 2)
+            ''
         ];
         renderRow($pdf, $columns, $summaryRow, true);
 
@@ -781,6 +799,9 @@ function renderDefaultCategory($pdf, $products, $conn) {
                 ['label' => 'Pack Size',            'width' => 15, 'align' => 'C'],
                 ['label' => '',    'width' => 15, 'align' => 'C'],
                 ['label' => '',   'width' => 15, 'align' => 'C'],
+                ['label' => '',    'width' => .01, 'align' => 'C'],
+                ['label' => '',   'width' => .01, 'align' => 'C'],
+                ['label' => '',   'width' => 48, 'align' => 'C'],
                 
             ];
 
@@ -815,8 +836,11 @@ function renderDefaultCategory($pdf, $products, $conn) {
                     $row['qty'],
                     $row['ft'],
                     '',
-                    
-                    
+                    '',
+                    '',
+                    '',
+                    '',
+                    '',
                 ];
                 renderSubRow($pdf, $subColumns, $subRow);
             }
@@ -920,53 +944,15 @@ class PDF extends FPDF {
         $colWidthRight = 70;
         $this->SetY(-40);
 
-        $colWidth = ($this->w - 2 * $marginLeft) / 3;
-
-        $this->SetFont('Arial', '', 10);
-        $this->SetTextColor(0, 51, 153);
-        $this->Cell($this->w - 2 * $marginLeft, 5, 'We appreciate your continued business with East Kentucky Metal!', 0, 1, 'C');
-
-        $this->SetTextColor(0, 0, 0);
-        $this->SetY($this->GetY() + 1);
-        $gpsIcon = 'assets/images/gps.png';
-        $text = '977 E. Hal Rogers Parkway';
-        $iconWidth = 5;
-        $spacing = 2;
-
-        $totalWidth = $iconWidth + $spacing + $this->GetStringWidth($text);
-        $x = ($this->w - $totalWidth) / 2;
-
-        $this->Image($gpsIcon, $x, $this->GetY(), $iconWidth, 5);
-        $this->SetXY($x + $iconWidth + $spacing, $this->GetY());
-        $this->Cell($this->GetStringWidth($text), 5, $text, 0, 1, 'L');
-
-        $this->SetY(-20);
-        $this->SetFont('Arial', '', 9);
-
-        $phoneIcon = 'assets/images/phone.png';
-        $this->Image($phoneIcon, $marginLeft, $this->GetY(), 5, 5);
-        $this->SetXY($marginLeft + 7, $this->GetY());
-        $this->Cell($colWidth, 5, '(606) 877-1848 | Fax: (606) 864-4280', 0, 0, 'L');
-
-        $emailIcon = 'assets/images/email.png';
-        $this->Image($emailIcon, $marginLeft + $colWidth + 10, $this->GetY(), 5, 5);
-        $this->SetXY($marginLeft + $colWidth + 17, $this->GetY());
-        $this->Cell($colWidth, 5, 'Sales@Eastkentuckymetal.com', 0, 0, 'L');
-
-        $webIcon = 'assets/images/web.png';
-        $this->Image($webIcon, $marginLeft + 2 * $colWidth + 10, $this->GetY(), 5, 5);
-        $this->SetXY($marginLeft + 2 * $colWidth + 17, $this->GetY());
-        $this->Cell($colWidth, 5, 'Eastkentuckymetal.com', 0, 0, 'L');
-
         $yStart = $this->GetY() - 35;
         $this->SetFont('Arial', '', 10);
         $this->SetXY($marginLeft, $yStart);
         $this->MultiCell($colWidthRight, 5,
-            "Scan me for a Digtal copy of this receipt", 0, 'C');
+            "Scan me for a Digtal copy of this Load Copy", 0, 'C');
 
         $qrX = 20;
         $qrY = $this->GetY();
-        $this->Image('assets/images/qr_rickroll.png', $qrX, $qrY, 25, 25);
+        $this->Image('assets/images/qr_rickroll.png', $qrX, $qrY, 50, 50);
     }
 
     public function GetMultiCellHeight($w, $h, $txt)
@@ -1202,85 +1188,6 @@ if (mysqli_num_rows($result) > 0) {
 
             $pdf->Ln(3);
         }
-
-        $lineheight = 6;
-
-        $pdf->SetX(130);
-        $pdf->SetFillColor(211, 211, 211);
-        $pdf->SetFont('Arial', 'B', 9);
-        $pdf->Cell(40, $lineheight, 'Customer Savings:', 1, 0, 'L', true);
-
-        $pdf->SetFillColor(255, 255, 255);
-        $pdf->Cell(28, $lineheight, '$ ' . number_format(max(0, $total_saved), 2), 1, 1, 'R', true);
-
-        $pdf->Ln(5);
-
-        $col1_x = 10;
-        $col2_x = 140;
-        $col_y = $pdf->GetY();
-
-        
-
-        $pdf->SetFont('Arial', '', 10);
-
-        $disclaimer = "Customer is solely responsible for accuracy of order and for verifying accuracy of materials before leaving EKMS or at time of delivery. If an agent orders or takes materials on customer's behalf, EKMS is entitled to rely upon the agent as if s/he has full authority to act on customer's behalf. No returns on metal panels or special trim. All other materials returned undamaged within 60 days of invoice date are subject to a restocking fee equal to 25% of current retail price.";
-
-        $savings_note = "*Customer Savings represent your savings on this Order by being an EKM Member.*";
-
-        $disclaimerHeight = $pdf->GetMultiCellHeight(120, 4, $disclaimer); 
-
-        $savingsHeight = 0;
-        if ($total_saved > 0) {
-            $savingsHeight = $pdf->GetMultiCellHeight(120, 4, $savings_note) + 3;
-        }
-
-        $lineheight = 6;
-        $summaryHeight = (5 * $lineheight) + 2;
-
-        $blockHeight = $disclaimerHeight + $savingsHeight + $summaryHeight;
-        if ($pdf->GetY() + $blockHeight > $pdf->GetPageHeight() - 20) {
-            $pdf->AddPage();
-            $col_y = $pdf->GetY();
-        } else {
-            $col_y = $pdf->GetY();
-        }
-
-        $pdf->SetXY($col1_x, $col_y);
-        $pdf->MultiCell(120, 4, $disclaimer, 0, 'L');
-
-        if ($total_saved > 0) {
-            $pdf->Ln(3);
-            $pdf->MultiCell(120, 4, $savings_note, 0, 'L');
-        }
-
-        $pdf->SetFont('Arial', '', 9);
-
-        $subtotal   = $total_price;
-        $sales_tax  = $subtotal * $tax;
-        $grand_total = $subtotal + $delivery_price + $sales_tax;
-
-        $pdf->SetXY($col2_x, $col_y);
-        $pdf->Cell(40, $lineheight, 'MISC:', 0, 0);
-        $pdf->Cell(20, $lineheight, ($discount < 0 ? '-' : '') . $discount * 100 .'%', 0, 1, 'R');
-
-        $pdf->SetXY($col2_x, $pdf->GetY());
-        $pdf->Cell(40, $lineheight, 'SUBTOTAL:', 0, 0);
-        $pdf->Cell(20, $lineheight, '$ ' . number_format($subtotal, 2), 0, 1 , 'R');
-
-        $pdf->SetXY($col2_x, $pdf->GetY());
-        $pdf->Cell(40, $lineheight, 'DELIVERY:', 0, 0);
-        $pdf->Cell(20, $lineheight, '$ ' . number_format($delivery_price, 2), 0, 1 , 'R');
-
-        $pdf->SetXY($col2_x, $pdf->GetY());
-        $pdf->Cell(40, $lineheight, 'SALES TAX:', 0, 0);
-        $pdf->Cell(20, $lineheight, '$ ' . number_format($sales_tax, 2), 0, 1, 'R');
-
-        $pdf->SetFont('Arial', 'B', 10);
-        $pdf->SetXY($col2_x, $pdf->GetY());
-        $pdf->Cell(40, $lineheight, 'GRAND TOTAL:', 0, 0);
-        $pdf->Cell(20, $lineheight, '$ ' . number_format($grand_total, 2), 0, 1, 'R');
-
-        $pdf->Ln(5);
 
         $pdf->SetTitle('Receipt');
         $pdf->Output('Receipt.pdf', 'I');

@@ -45,7 +45,7 @@ function NbLines($pdf, $w, $txt) {
     return $lines;
 }
 
-function renderTableRows($rows, $textColor = [0, 0, 0], $bold = false, $fontSize = 8) {
+function renderTableRows($rows, $textColor = [0, 0, 0], $bold = false, $fontSize = 10) {
     global $pdf, $widths;
 
     $pdf->SetFont('Arial', $bold ? 'B' : '', $fontSize);
@@ -55,21 +55,36 @@ function renderTableRows($rows, $textColor = [0, 0, 0], $bold = false, $fontSize
         $y_initial = $pdf->GetY();
 
         foreach ($widths as $i => $w) {
-            $height = NbLines($pdf, $w, $row[$i]) * 5;
             $x = $pdf->GetX();
             $y = $pdf->GetY();
 
             $align = ($i === array_key_last($widths)) ? 'R' : 'L';
+            $text = $row[$i];
 
-            $pdf->MultiCell($w, 5, $row[$i], 'TLR', $align);
-            $pdf->SetXY($x + $w, $y);
+            if ($i === 0) {
+                // Dotted leader for first column (prevent wrapping)
+                $textWidth = $pdf->GetStringWidth($text);
+                $available = $w - $textWidth - 3;
+                $dotWidth = $pdf->GetStringWidth('.');
+                $numDots = max(0, floor($available / $dotWidth));
+                $dots = str_repeat('.', $numDots);
+                $lineText = $text . ' ' . $dots;
+
+                // Draw single-line cell (no wrapping)
+                $pdf->Cell($w, 5, $lineText, 'TLR', 0, 'L');
+            } else {
+                // Use MultiCell for other columns (wrapping okay)
+                $pdf->MultiCell($w, 5, $text, 'TLR', $align);
+                $pdf->SetXY($x + $w, $y);
+            }
         }
 
-        $pdf->Ln();
+        $pdf->Ln(5);
         $y_bottom = $pdf->GetY();
-        $pdf->Line(10, $y_initial + $height, 200, $y_initial + $height);
+        $pdf->Line(10, $y_bottom, 200, $y_bottom);
     }
 }
+
 
 class PDF extends FPDF {
     public $orderid;
@@ -221,9 +236,13 @@ if (mysqli_num_rows($result) > 0) {
         $customerDetails = getCustomerDetails($customer_id);
         $tax = floatval(getCustomerTax($customer_id)) / 100;
         $delivery_method = 'Deliver';
-        $order_date = date("n/j/Y", strtotime($row_orders['order_date']));
+        $order_date = '';
+        if (!empty($row_orders['order_date']) && $row_orders['order_date'] !== '0000-00-00 00:00:00') {
+            $order_date = date("m/d/Y || g:i A", strtotime($row_orders['order_date']));
+        }
+
         $scheduled_date = '';
-        if (isset($row_orders["scheduled_date"]) && !empty($row_orders["scheduled_date"]) && $row_orders["delivered_date"] !== '0000-00-00 00:00:00') {
+        if (!empty($row_orders["scheduled_date"]) && $row_orders["delivered_date"] !== '0000-00-00 00:00:00') {
             $scheduled_date = date("m/d/Y || g:i A", strtotime($row_orders["scheduled_date"]));
         }
         if($delivery_price == 0){
@@ -317,28 +336,28 @@ if (mysqli_num_rows($result) > 0) {
             $pdf->SetFont('Arial', 'B', 9);
             $widths = [138, 53];
             $headers = ['PRODUCT CATEGORY' , 'PRICE'];
-            
+
             for ($i = 0; $i < count($headers); $i++) {
                 $pdf->Cell($widths[$i], 10, $headers[$i], 1, 0, 'C');
             }
             $pdf->Ln();
+
             while ($row_category = mysqli_fetch_assoc($result_category)) {
                 $product_category_id = $row_category['product_category_id'];
 
-                $qty_per_component = 0;
-                $total_per_component = 0;
-                $undisc_total_per_component = 0;
+                $qty_per_component = 0.0;
+                $total_per_component = 0.0;
+                $undisc_total_per_component = 0.0;
 
                 $data = array();
-                $query_product="SELECT
-                                    p.product_category,
-                                    op.*
-                                FROM
-                                    `order_product` AS op
-                                LEFT JOIN product AS p
-                                ON
-                                    p.product_id = op.`productid`
-                                WHERE orderid = '$orderid' AND p.product_category = '$product_category_id'";
+
+                $query_product = "
+                    SELECT p.product_category, op.*
+                    FROM `order_product` AS op
+                    LEFT JOIN product AS p ON p.product_id = op.`productid`
+                    WHERE op.orderid = '" . mysqli_real_escape_string($conn, $orderid) . "'
+                    AND p.product_category = '" . mysqli_real_escape_string($conn, $product_category_id) . "'";
+
                 $result_product = mysqli_query($conn, $query_product);
                 if (mysqli_num_rows($result_product) > 0) {
                     while ($row_product = mysqli_fetch_assoc($result_product)) {
@@ -346,7 +365,7 @@ if (mysqli_num_rows($result) > 0) {
                         $product_details = getProductDetails($productid);
                         $grade_details = getGradeDetails($product_details['grade']);
 
-                        $quantity = is_numeric($row_product['quantity']) ? floatval($row_product['quantity']) : 0;
+                        $quantity = is_numeric($row_product['quantity']) ? floatval($row_product['quantity']) : 0.0;
 
                         $price = floatval($row_product['discounted_price']);
                         $price_undisc = floatval($row_product['actual_price']);
@@ -360,57 +379,50 @@ if (mysqli_num_rows($result) > 0) {
                         $qty_per_component += $quantity;
                     }
 
-                    
                     $data[] = [
                         getProductCategoryName($product_category_id),
-                        '$ ' .number_format($total_per_component,2) ,
+                        '$ ' . number_format($total_per_component, 2),
                     ];
-        
+
                     $pdf->SetFont('Arial', '', 8);
-        
                     renderTableRows($data);
-
-                    $pdf->Ln(5);
-
-                    $subtotal = $total_price; 
-                    $sales_tax = $subtotal * $tax; 
-                    $grand_total = $subtotal + $delivery_price + $sales_tax;
-
-                    $miscRows = [
-                        ['Job Site Fees', '$ 0.00'],
-                        ['Delivery Charge', '$ ' . number_format($delivery_price, 2)],
-                    ];
-
-                    renderTableRows($miscRows);
-
-                    $pdf->Ln(5);
-
-                    $subtotalRows = [
-                        ['Subtotal', '$ ' . number_format($subtotal, 2)]
-                    ];
-
-                    renderTableRows($subtotalRows);
-
-                    $pdf->Ln(5);
-
-                    $grandTotalRows = [
-                        ['Total Price (includes Sales Tax)', '$ ' . number_format($grand_total, 2)],
-                    ];
-
-                    renderTableRows($grandTotalRows, [0, 0, 139], true, 11);
-
-                    $pdf->SetFont('Arial', '', '8');
-                    $pdf->SetTextColor(0, 0, 0);
                 }
-
-                    
-                
-                
             }
-            
-        }else{
+
+            $subtotal = $total_price;
+
+            $tax = isset($tax) ? floatval($tax) : 0.0;
+            $sales_tax = $subtotal * $tax;
+
+            $delivery_price = isset($delivery_price) ? floatval($delivery_price) : 0.0;
+
+            $grand_total = $subtotal + $delivery_price + $sales_tax;
+            $miscRows = [
+                ['Job Site Fees', '$ 0.00'],
+                ['Delivery Charge', '$ ' . number_format($delivery_price, 2)],
+            ];
+            $pdf->Ln(5);
+            renderTableRows($miscRows);
+            $pdf->Ln(5);
+
+            $subtotalRows = [
+                ['Subtotal', '$ ' . number_format($subtotal, 2)]
+            ];
+            renderTableRows($subtotalRows);
+            $pdf->Ln(5);
+
+            $grandTotalRows = [
+                ['Total Price (includes Sales Tax)', '$ ' . number_format($grand_total, 2)],
+            ];
+            renderTableRows($grandTotalRows, [0, 0, 139], true, 11);
+
+            $pdf->SetFont('Arial', '', 8);
+            $pdf->SetTextColor(0, 0, 0);
+
+        } else {
             echo "No key components found";
         }
+
         $pdf->Ln(5);
 
         $col1_x = 10;
