@@ -107,6 +107,9 @@
 
         <div id="unbundledRows">
             <div class="quantity-length-container row justify-content-center mx-0 align-items-center mb-2">
+                <div class="col-1 text-center">
+                    <span class="drag-handle me-2" style="cursor: move;">☰</span>
+                </div>
                 <div class="col-1 text-center bundle-checkbox-wrapper d-none">
                     <input type="checkbox" class="bundle-checkbox">
                     <input type="hidden" name="bundle_name[]" value="">
