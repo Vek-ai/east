@@ -191,7 +191,7 @@ if (mysqli_num_rows($result) > 0) {
                     $product_details['product_item']
                 ];
 
-                $total_price += ($product_details['unit_price'] * (1 - $discount)) * $row_product['quantity'];
+                $total_price += $row_product['discounted_price'];
                 $total_qty += $row_product['quantity'];
             }
 
