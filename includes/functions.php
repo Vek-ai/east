@@ -454,6 +454,18 @@ function getGradeDetails($product_grade_id) {
     return $product_grade;
 }
 
+function getGaugeDetails($product_gauge_id) {
+    global $conn;
+    $product_gauge_id = mysqli_real_escape_string($conn, $product_gauge_id);
+    $query = "SELECT * FROM product_gauge WHERE product_gauge_id = '$product_gauge_id'";
+    $result = mysqli_query($conn, $query);
+    $product_gauge = [];
+    if ($row = mysqli_fetch_assoc($result)) {
+        $product_gauge = $row;
+    }
+    return $product_gauge;
+}
+
 function getProductSystemDetails($product_system_id) {
     global $conn;
     $product_system_id = mysqli_real_escape_string($conn, $product_system_id);
@@ -2950,10 +2962,9 @@ function getMultiplierValue($color_id, $grade_id, $gauge_id) {
     $color_id    = intval($color_id);
     $grade_id    = intval($grade_id);
     $gauge_id    = intval($gauge_id);
-    $category_id = intval($category_id);
 
     $color_details = getColorDetails($color_id);
-    $color_group = $color_details['color_group'];
+    $color_group = $color_details['color_group'] ?? '';
 
     $multiplier = 1.0;
 
