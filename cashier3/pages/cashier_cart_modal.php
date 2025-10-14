@@ -19,19 +19,37 @@ $show_product_price = 0;
 $show_total_price = 0;
 
 if ($staff_id) {
-    $query = "SELECT * 
-            FROM staff_settings 
-            WHERE staff_id = '$staff_id' 
-            ORDER BY id DESC 
-            LIMIT 1";
+    $query = "SELECT setting_key, setting_value 
+              FROM staff_settings 
+              WHERE staff_id = '$staff_id'";
     $result = $conn->query($query);
 
+    $show_prod_id_abbrev    = 0;
+    $show_unique_product_id = 0;
+
+    $show_linear_ft   = 0;
+    $show_per_panel   = 0;
+    $show_panel_price = 0;
+
+    $show_trim_per_ft   = 0;
+    $show_trim_per_each = 0;
+    $show_trim_price    = 0;
+
+    $show_screw_per_each = 0;
+    $show_screw_per_pack = 0;
+    $show_screw_price    = 0;
+
+    $show_each_per_each = 0;
+    $show_each_per_pack = 0;
+    $show_each_price    = 0;
+
+    $show_retail_price  = 0;
+    $show_total_price = 1;
+
     if ($result && $result->num_rows > 0) {
-        $settings = $result->fetch_assoc();
-        $show_prod_id_abbrev = $settings['show_prod_id_abbrev'];
-        $show_unit_price = $settings['show_unit_price'];
-        $show_product_price = $settings['show_product_price'];
-        $show_total_price = $settings['show_total_price'];
+        while ($row = $result->fetch_assoc()) {
+            ${$row['setting_key']} = (int)$row['setting_value'];
+        }
     }
 }
 
@@ -39,7 +57,6 @@ if(isset($_POST['fetch_cart'])){
     $discount = 0;
     $tax = 0;
     $customer_details_pricing = 0;
-    $show_disc_price = 0;
     if(isset($_SESSION['customer_id'])){
         $customer_id = $_SESSION['customer_id'];
         $customer_details = getCustomerDetails($customer_id);
@@ -54,8 +71,6 @@ if(isset($_POST['fetch_cart'])){
         $discount = is_numeric(getCustomerDiscount($customer_id)) ? floatval(getCustomerDiscount($customer_id)) / 100 : 0;
         $tax = is_numeric(getCustomerTax($customer_id)) ? floatval(getCustomerTax($customer_id)) / 100 : 0;
         $customer_details_pricing = $customer_details['customer_pricing'];
-
-        $show_disc_price = 1;
     }
     $delivery_price = is_numeric(getDeliveryCost()) ? floatval(getDeliveryCost()) : 0;
     ?>
@@ -214,8 +229,12 @@ if(isset($_POST['fetch_cart'])){
                         <th class="text-center pl-3">Quantity</th>
                         <th class="text-center">Length</th>
                         <th class="text-center">Stock</th>
-                        <th class="text-center <?= $show_disc_price ? 'd-none price_col' : '' ?>">Price</th>
-                        <th class="text-center <?= $show_disc_price ? 'customer_price_col' : 'd-none' ?>" style="cursor: pointer;">Customer<br>Price</th>
+                        <th class="text-center">
+                            <span class="<?= $show_retail_price ? '' : 'd-none' ?>">
+                                Price
+                            </span>
+                        </th>
+                        <th class="text-center ">Customer<br>Price</th>
                         <th class="text-center"> </th>
                     </tr>
                 </thead>
@@ -285,6 +304,7 @@ if(isset($_POST['fetch_cart'])){
                             $picture_path = $first_calc['picture_path'];
                             $stock_text = $first_calc['stock_text'];
                             $multiplier = $first_calc['multiplier'];
+                            $product_id_abbrev = $first_calc['product_id_abbrev'];
                             ?>
 
                             <tr class="thick-border" data-mult="<?= $multiplier ?>">
@@ -295,6 +315,10 @@ if(isset($_POST['fetch_cart'])){
                                     <a href="javascript:void(0);" data-id="<?= $product_id ?>" class="d-flex align-items-center view_product_details">
                                         <h6 class="fw-semibold mb-0 fs-4"><?= htmlspecialchars($items[0]['product_item']) ?></h6>
                                     </a>
+                                    <br>
+                                    <span class="<?= $show_prod_id_abbrev ? '' : 'd-none' ?>">
+                                        <?= htmlspecialchars($product_id_abbrev) ?>
+                                    <span>
                                 </td>
 
                                 <td class="text-center">
@@ -344,13 +368,14 @@ if(isset($_POST['fetch_cart'])){
 
                                 <td class="text-center"><?= $stock_text ?></td>
 
-                                <td class="text-center <?= $show_disc_price ? 'd-none price_col' : '' ?>">
-                                    $ <?= number_format($total_price_actual,2) ?>
+                                <td class="text-center">
+                                    <span class="<?= $show_retail_price ? '' : 'd-none' ?>">
+                                        $ <?= number_format($total_price_actual,2) ?>
+                                    </span>
                                 </td>
-                                <td class="text-center <?= $show_disc_price ? '' : 'd-none' ?>">
+                                <td class="text-center <?= $show_total_price ? '' : 'd-none' ?>">
                                     $ <?= number_format($total_customer_price,2) ?>
                                 </td>
-
                                 <td class="text-center">
                                     <a href="javascript:void(0)" class="text-decoration-none me-2 toggleSortBtn" data-id="<?= $product_id ?>"><i class="fa fs-6 fa-sort"></i></a>
                                     <a href="javascript:void(0)" data-id="<?= $product_id ?>" onClick="delete_product(this)"><i class="fa fs-6 fa-trash"></i></a>
@@ -415,13 +440,17 @@ if(isset($_POST['fetch_cart'])){
                                     <th class="text-center">Panel Type</th>
                                     <th class="text-center">Panel Style</th>
                                     <th class="text-center">
-                                        <span class="<?= $show_unit_price ? '' : 'd-none' ?>">Linear Ft $</span>
+                                        <span class="<?= $show_linear_ft ? '' : 'd-none' ?>">Linear Ft $</span>
                                     </th>
                                     <th class="text-center">
-                                        <span class="<?= $show_product_price ? '' : 'd-none' ?>">Per Panel $</span>
+                                        <span class="<?= $show_per_panel ? '' : 'd-none' ?>">Per Panel $</span>
                                     </th>
-                                    <th class="text-center <?= $show_disc_price ? 'd-none price_col' : '' ?> <?= $show_total_price ? '' : 'd-none' ?>">Price</th>
-                                    <th class="text-center <?= $show_disc_price ? '' : 'd-none' ?> <?= $show_total_price ? '' : 'd-none' ?>">Customer Price</th>
+                                    <th class="text-center">
+                                        <span class="<?= $show_retail_price ? '' : 'd-none' ?>">
+                                            Price
+                                        </span>
+                                    </th>
+                                    <th class="text-center <?= $show_panel_price ? '' : 'd-none' ?>">Customer Price</th>
                                     <th class="text-center"></th>
                                 </tr>
 
@@ -479,7 +508,7 @@ if(isset($_POST['fetch_cart'])){
                                                             value="<?= $line; ?>">
                                                 </div>
                                             </div>
-                                            <span class="<?= $show_prod_id_abbrev ? '' : 'd-none' ?>">
+                                            <span class="<?= $show_unique_product_id ? '' : 'd-none' ?>">
                                                 <?= htmlspecialchars($product_id_abbrev) ?>
                                             <span>
                                             <?php if (!empty($values["note"])): ?>
@@ -582,29 +611,30 @@ if(isset($_POST['fetch_cart'])){
                                             </select>
                                         </td>
                                         <td class="text-center">
-                                            <span class="<?= $show_unit_price ? '' : 'd-none' ?>">
+                                            <span class="<?= $show_linear_ft ? '' : 'd-none' ?>">
                                                 <?php
                                                 echo number_format($linear_price, 2);
                                                 ?>
                                             </span>
                                         </td>
                                         <td class="text-center">
-                                            <span class="<?= $show_product_price ? '' : 'd-none' ?>">
+                                            <span class="<?= $show_per_panel ? '' : 'd-none' ?>">
                                                 <?php
                                                 echo number_format($panel_price, 2);
                                                 ?>
                                             </span>
                                         </td>
-                                        <td class="text-center pl-3 <?= $show_disc_price ? 'd-none price_col' : '' ?>">
-                                            <span class="<?= $show_total_price ? '' : 'd-none' ?>">
+                                        <td class="text-center pl-3">
+                                            <span class="<?= $show_retail_price ? '' : 'd-none' ?>">
                                                 $
                                                 <?php
                                                 echo number_format($product_price, 2);
                                                 ?>
                                             </span>
                                         </td>
-                                        <td class="text-end pl-3 <?= $show_disc_price ? '' : 'd-none' ?>">
-                                            <span class="<?= $show_total_price ? '' : 'd-none' ?>">
+                                        
+                                        <td class="text-end pl-3 <?= $show_panel_price ? '' : 'd-none' ?>">
+                                            <span class="">
                                                 $
                                                 <?php
                                                 echo number_format($customer_price, 2);
@@ -693,6 +723,7 @@ if(isset($_POST['fetch_cart'])){
                             $picture_path = $first_calc['picture_path'];
                             $stock_text = $first_calc['stock_text'];
                             $multiplier = $first_calc['multiplier'];
+                            $product_id_abbrev = $first_calc['product_id_abbrev'];
                             ?>
 
                             <tr class="thick-border" data-mult="<?= $multiplier ?>">
@@ -703,6 +734,10 @@ if(isset($_POST['fetch_cart'])){
                                     <a href="javascript:void(0);" data-id="<?= $product_id ?>" class="d-flex align-items-center view_product_details">
                                         <h6 class="fw-semibold mb-0 fs-4"><?= htmlspecialchars($items[0]['product_item']) ?></h6>
                                     </a>
+                                    <br>
+                                    <span class="<?= $show_prod_id_abbrev ? '' : 'd-none' ?>">
+                                        <?= htmlspecialchars($product_id_abbrev) ?>
+                                    <span>
                                 </td>
 
                                 <td class="text-center">
@@ -750,10 +785,12 @@ if(isset($_POST['fetch_cart'])){
 
                                 <td class="text-center"><?= $stock_text ?></td>
 
-                                <td class="text-center <?= $show_disc_price ? 'd-none price_col' : '' ?>">
-                                    $ <?= number_format($total_price_actual,2) ?>
+                                <td class="text-center">
+                                    <span class="<?= $show_retail_price ? '' : 'd-none' ?>">
+                                        $ <?= number_format($total_price_actual,2) ?>
+                                    </span>
                                 </td>
-                                <td class="text-center <?= $show_disc_price ? '' : 'd-none' ?>">
+                                <td class="text-center <?= $show_total_price ? '' : 'd-none' ?>">
                                     $ <?= number_format($total_customer_price,2) ?>
                                 </td>
 
@@ -770,13 +807,17 @@ if(isset($_POST['fetch_cart'])){
                                 <th class="text-center"></th>
                                 <th class="text-center"></th>
                                 <th class="text-center">
-                                    <span class="<?= $show_unit_price ? '' : 'd-none' ?>">Per Ft $</span>
+                                    <span class="<?= $show_trim_per_ft ? '' : 'd-none' ?>">Per Ft $</span>
                                 </th>
                                 <th class="text-center">
-                                    <span class="<?= $show_product_price ? '' : 'd-none' ?>">Per Each $</span>
+                                    <span class="<?= $show_trim_per_each ? '' : 'd-none' ?>">Per Each $</span>
                                 </th>
-                                <th class="text-center <?= $show_disc_price ? 'd-none price_col' : '' ?> <?= $show_total_price ? '' : 'd-none' ?>">Price</th>
-                                <th class="text-center <?= $show_disc_price ? '' : 'd-none' ?> <?= $show_total_price ? '' : 'd-none' ?>">Customer Price</th>
+                                <th class="text-center">
+                                    <span class="<?= $show_retail_price ? '' : 'd-none' ?>">
+                                        Price
+                                    </span>
+                                </th>
+                                <th class="text-center <?= $show_trim_price ? '' : 'd-none' ?>">Customer Price</th>
                                 <th class="text-center"></th>
                             </tr>
 
@@ -814,7 +855,7 @@ if(isset($_POST['fetch_cart'])){
                                         <?php endif; ?>
                                     </td>
                                     <td>
-                                        <span class="<?= $show_prod_id_abbrev ? '' : 'd-none' ?>">
+                                        <span class="<?= $show_unique_product_id ? '' : 'd-none' ?>">
                                             <?= htmlspecialchars($product_id_abbrev) ?>
                                         <span>
                                         <?php if (!empty($values["note"])): ?>
@@ -879,29 +920,29 @@ if(isset($_POST['fetch_cart'])){
                                     <td class="text-center"></td>
                                     <td class="text-center"></td>
                                     <td class="text-center">
-                                        <span class="<?= $show_unit_price ? '' : 'd-none' ?>">
+                                        <span class="<?= $show_trim_price ? '' : 'd-none' ?>">
                                             <?php
                                             echo number_format($linear_price, 2);
                                             ?>
                                         </span>
                                     </td>
                                     <td class="text-center">
-                                        <span class="<?= $show_product_price ? '' : 'd-none' ?>">
+                                        <span class="<?= $show_trim_per_each ? '' : 'd-none' ?>">
                                             <?php
                                             echo number_format($panel_price, 2);
                                             ?>
                                         </span>
                                     </td>
-                                    <td class="text-center pl-3 <?= $show_disc_price ? 'd-none price_col' : '' ?>">
-                                        <span class="<?= $show_total_price ? '' : 'd-none' ?>">
+                                    <td class="text-center pl-3">
+                                        <span class=" <?= $show_retail_price ? '' : 'd-none' ?>">
                                             $
                                             <?php
                                             echo number_format($product_price, 2);
                                             ?>
                                         </span>
                                     </td>
-                                    <td class="text-end pl-3 <?= $show_disc_price ? '' : 'd-none' ?>">
-                                        <span class="<?= $show_total_price ? '' : 'd-none' ?>">
+                                    <td class="text-end pl-3 <?= $show_trim_price ? '' : 'd-none' ?>">
+                                        <span class="">
                                             $
                                             <?php
                                             echo number_format($customer_price, 2);
@@ -954,6 +995,7 @@ if(isset($_POST['fetch_cart'])){
                             $picture_path = $first_calc['picture_path'];
                             $stock_text = $first_calc['stock_text'];
                             $multiplier = $first_calc['multiplier'];
+                            $product_id_abbrev = $first_calc['product_id_abbrev'];
                             ?>
 
                             <tr class="thick-border" data-mult="<?= $multiplier ?>">
@@ -964,6 +1006,10 @@ if(isset($_POST['fetch_cart'])){
                                     <a href="javascript:void(0);" data-id="<?= $product_id ?>" class="d-flex align-items-center view_product_details">
                                         <h6 class="fw-semibold mb-0 fs-4"><?= htmlspecialchars($items[0]['product_item']) ?></h6>
                                     </a>
+                                    <br>
+                                    <span class="<?= $show_prod_id_abbrev ? '' : 'd-none' ?>">
+                                        <?= htmlspecialchars($product_id_abbrev) ?>
+                                    <span>
                                 </td>
 
                                 <td class="text-center">
@@ -1011,10 +1057,12 @@ if(isset($_POST['fetch_cart'])){
 
                                 <td class="text-center"><?= $stock_text ?></td>
 
-                                <td class="text-center <?= $show_disc_price ? 'd-none price_col' : '' ?>">
-                                    $ <?= number_format($total_price_actual,2) ?>
+                                <td class="text-center">
+                                    <span class="<?= $show_each_per_each ? '' : 'd-none' ?>">
+                                        $ <?= number_format($total_price_actual,2) ?>
+                                    </span>
                                 </td>
-                                <td class="text-center <?= $show_disc_price ? '' : 'd-none' ?>">
+                                <td class="text-center <?= $show_total_price ? '' : 'd-none' ?>">
                                     $ <?= number_format($total_customer_price,2) ?>
                                 </td>
 
@@ -1031,13 +1079,17 @@ if(isset($_POST['fetch_cart'])){
                                 <th class="text-center">Type</th>
                                 <th class="text-center">Pack Size</th>
                                 <th class="text-center">
-                                    <span class="<?= $show_unit_price ? '' : 'd-none' ?>">Per Screw $</span>
+                                    <span class="<?= $show_screw_per_each ? '' : 'd-none' ?>">Per Screw $</span>
                                 </th>
                                 <th class="text-center">
-                                    <span class="<?= $show_product_price ? '' : 'd-none' ?>">Per Pack $</span>
+                                    <span class="<?= $show_screw_per_pack ? '' : 'd-none' ?>">Per Pack $</span>
                                 </th>
-                                <th class="text-center <?= $show_disc_price ? 'd-none price_col' : '' ?> <?= $show_total_price ? '' : 'd-none' ?>">Price</th>
-                                <th class="text-center <?= $show_disc_price ? '' : 'd-none' ?> <?= $show_total_price ? '' : 'd-none' ?>">Customer Price</th>
+                                <th class="text-center">
+                                    <span class="<?= $show_retail_price ? '' : 'd-none' ?>">
+                                        Price
+                                    </span>
+                                </th>
+                                <th class="text-center <?= $show_screw_price ? '' : 'd-none' ?>">Customer Price</th>
                                 <th class="text-center"></th>
                             </tr>
 
@@ -1075,7 +1127,7 @@ if(isset($_POST['fetch_cart'])){
                                         <?php endif; ?>
                                     </td>
                                     <td>
-                                        <span class="<?= $show_prod_id_abbrev ? '' : 'd-none' ?>">
+                                        <span class="<?= $show_unique_product_id ? '' : 'd-none' ?>">
                                             <?= htmlspecialchars($product_id_abbrev) ?>
                                         <span>
                                         <?php if (!empty($values["note"])): ?>
@@ -1122,29 +1174,29 @@ if(isset($_POST['fetch_cart'])){
                                         </div>
                                     </td>
                                     <td class="text-center">
-                                        <span class="<?= $show_unit_price ? '' : 'd-none' ?>">
+                                        <span class="<?= $show_screw_per_each ? '' : 'd-none' ?>">
                                             <?php
                                             echo number_format($linear_price, 2);
                                             ?>
                                         </span>
                                     </td>
                                     <td class="text-center">
-                                        <span class="<?= $show_product_price ? '' : 'd-none' ?>">
+                                        <span class="<?= $show_screw_per_pack ? '' : 'd-none' ?>">
                                             <?php
                                             echo number_format($panel_price, 2);
                                             ?>
                                         </span>
                                     </td>
-                                    <td class="text-center pl-3 <?= $show_disc_price ? 'd-none price_col' : '' ?>">
-                                        <span class="<?= $show_total_price ? '' : 'd-none' ?>">
+                                    <td class="text-center pl-3">
+                                        <span class="<?= $show_retail_price ? '' : 'd-none' ?>">
                                             $
                                             <?php
                                             echo number_format($product_price, 2);
                                             ?>
                                         </span>
                                     </td>
-                                    <td class="text-end pl-3 <?= $show_disc_price ? '' : 'd-none' ?>">
-                                        <span class="<?= $show_total_price ? '' : 'd-none' ?>">
+                                    <td class="text-end pl-3 <?= $show_total_price ? '' : 'd-none' ?>">
+                                        <span class="">
                                             $
                                             <?php
                                             echo number_format($customer_price, 2);
@@ -1197,6 +1249,7 @@ if(isset($_POST['fetch_cart'])){
                             $picture_path = $first_calc['picture_path'];
                             $stock_text = $first_calc['stock_text'];
                             $multiplier = $first_calc['multiplier'];
+                            $product_id_abbrev = $first_calc['product_id_abbrev'];
                             ?>
 
                             <tr class="thick-border" data-mult="<?= $multiplier ?>">
@@ -1207,6 +1260,10 @@ if(isset($_POST['fetch_cart'])){
                                     <a href="javascript:void(0);" data-id="<?= $product_id ?>" class="d-flex align-items-center view_product_details">
                                         <h6 class="fw-semibold mb-0 fs-4"><?= htmlspecialchars($items[0]['product_item']) ?></h6>
                                     </a>
+                                    <br>
+                                    <span class="<?= $show_prod_id_abbrev ? '' : 'd-none' ?>">
+                                        <?= htmlspecialchars($product_id_abbrev) ?>
+                                    <span>
                                 </td>
 
                                 <td class="text-center">
@@ -1254,10 +1311,12 @@ if(isset($_POST['fetch_cart'])){
 
                                 <td class="text-center"><?= $stock_text ?></td>
 
-                                <td class="text-center <?= $show_disc_price ? 'd-none price_col' : '' ?>">
-                                    $ <?= number_format($total_price_actual,2) ?>
+                                <td class="text-center">
+                                    <span class="<?= $show_retail_price ? '' : 'd-none' ?>">
+                                        $ <?= number_format($total_price_actual,2) ?>
+                                    </span>
                                 </td>
-                                <td class="text-center <?= $show_disc_price ? '' : 'd-none' ?>">
+                                <td class="text-center <?= $show_total_price ? '' : 'd-none' ?>">
                                     $ <?= number_format($total_customer_price,2) ?>
                                 </td>
 
@@ -1274,13 +1333,17 @@ if(isset($_POST['fetch_cart'])){
                                 <th class="text-center"></th>
                                 <th class="text-center">Pack Size</th>
                                 <th class="text-center">
-                                    <span class="<?= $show_unit_price ? '' : 'd-none' ?>">Per Each $</span>
+                                    <span class="<?= $show_each_per_each ? '' : 'd-none' ?>">Per Each $</span>
                                 </th>
                                 <th class="text-center">
-                                    <span class="<?= $show_product_price ? '' : 'd-none' ?>">Per Pack $</span>
+                                    <span class="<?= $show_each_per_pack ? '' : 'd-none' ?>">Per Pack $</span>
                                 </th>
-                                <th class="text-center <?= $show_disc_price ? 'd-none price_col' : '' ?> <?= $show_total_price ? '' : 'd-none' ?>">Price</th>
-                                <th class="text-center <?= $show_disc_price ? '' : 'd-none' ?> <?= $show_total_price ? '' : 'd-none' ?>">Customer Price</th>
+                                <th class="text-center">
+                                    <span class="<?= $show_retail_price ? '' : 'd-none' ?>">
+                                        Price
+                                    </span>
+                                </th>
+                                <th class="text-center <?= $show_each_price ? '' : 'd-none' ?>">Customer Price</th>
                                 <th class="text-center"></th>
                             </tr>
 
@@ -1318,7 +1381,7 @@ if(isset($_POST['fetch_cart'])){
                                         <?php endif; ?>
                                     </td>
                                     <td>
-                                        <span class="<?= $show_prod_id_abbrev ? '' : 'd-none' ?>">
+                                        <span class="<?= $show_unique_product_id ? '' : 'd-none' ?>">
                                             <?= htmlspecialchars($product_id_abbrev) ?>
                                         <span>
                                         <?php if (!empty($values["note"])): ?>
@@ -1370,22 +1433,22 @@ if(isset($_POST['fetch_cart'])){
                                         </span>
                                     </td>
                                     <td class="text-center">
-                                        <span class="<?= $show_product_price ? '' : 'd-none' ?>">
+                                        <span class="<?= $show_each_per_each ? '' : 'd-none' ?>">
                                             <?php
                                             echo number_format($panel_price, 2);
                                             ?>
                                         </span>
                                     </td>
-                                    <td class="text-center pl-3 <?= $show_disc_price ? 'd-none price_col' : '' ?>">
-                                        <span class="<?= $show_total_price ? '' : 'd-none' ?>">
+                                    <td class="text-center pl-3 <?= $show_each_per_pack ? '' : 'd-none' ?>">
+                                        <span class="">
                                             $
                                             <?php
                                             echo number_format($product_price, 2);
                                             ?>
                                         </span>
                                     </td>
-                                    <td class="text-end pl-3 <?= $show_disc_price ? '' : 'd-none' ?>">
-                                        <span class="<?= $show_total_price ? '' : 'd-none' ?>">
+                                    <td class="text-end pl-3 <?= $show_each_price ? '' : 'd-none' ?>">
+                                        <span class="">
                                             $
                                             <?php
                                             echo number_format($customer_price, 2);
@@ -1438,6 +1501,7 @@ if(isset($_POST['fetch_cart'])){
                             $picture_path = $first_calc['picture_path'];
                             $stock_text = $first_calc['stock_text'];
                             $multiplier = $first_calc['multiplier'];
+                            $product_id_abbrev = $first_calc['product_id_abbrev'];
                             ?>
 
                             <tr class="thick-border" data-mult="<?= $multiplier ?>">
@@ -1448,6 +1512,10 @@ if(isset($_POST['fetch_cart'])){
                                     <a href="javascript:void(0);" data-id="<?= $product_id ?>" class="d-flex align-items-center view_product_details">
                                         <h6 class="fw-semibold mb-0 fs-4"><?= htmlspecialchars($items[0]['product_item']) ?></h6>
                                     </a>
+                                    <br>
+                                    <span class="<?= $show_prod_id_abbrev ? '' : 'd-none' ?>">
+                                        <?= htmlspecialchars($product_id_abbrev) ?>
+                                    <span>
                                 </td>
 
                                 <td class="text-center">
@@ -1495,10 +1563,12 @@ if(isset($_POST['fetch_cart'])){
 
                                 <td class="text-center"><?= $stock_text ?></td>
 
-                                <td class="text-center <?= $show_disc_price ? 'd-none price_col' : '' ?>">
-                                    $ <?= number_format($total_price_actual,2) ?>
+                                <td class="text-center">
+                                    <span class="<?= $show_retail_price ? '' : 'd-none' ?>">
+                                        $ <?= number_format($total_price_actual,2) ?>
+                                    </span>
                                 </td>
-                                <td class="text-center <?= $show_disc_price ? '' : 'd-none' ?>">
+                                <td class="text-center <?= $show_total_price ? '' : 'd-none' ?>">
                                     $ <?= number_format($total_customer_price,2) ?>
                                 </td>
 
@@ -1515,13 +1585,17 @@ if(isset($_POST['fetch_cart'])){
                                 <th class="text-center"></th>
                                 <th class="text-center">Pack Size</th>
                                 <th class="text-center">
-                                    <span class="<?= $show_unit_price ? '' : 'd-none' ?>">Per Each $</span>
+                                    <span class="<?= $show_each_per_each ? '' : 'd-none' ?>">Per Each $</span>
                                 </th>
                                 <th class="text-center">
-                                    <span class="<?= $show_product_price ? '' : 'd-none' ?>">Per Pack $</span>
+                                    <span class="<?= $show_each_per_pack ? '' : 'd-none' ?>">Per Pack $</span>
                                 </th>
-                                <th class="text-center <?= $show_disc_price ? 'd-none price_col' : '' ?> <?= $show_total_price ? '' : 'd-none' ?>">Price</th>
-                                <th class="text-center <?= $show_disc_price ? '' : 'd-none' ?> <?= $show_total_price ? '' : 'd-none' ?>">Customer Price</th>
+                                <th class="text-center">
+                                    <span class="<?= $show_retail_price ? '' : 'd-none' ?>">
+                                        Price
+                                    </span>
+                                </th>
+                                <th class="text-center <?= $show_each_price ? '' : 'd-none' ?>">Customer Price</th>
                                 <th class="text-center"></th>
                             </tr>
 
@@ -1559,7 +1633,7 @@ if(isset($_POST['fetch_cart'])){
                                         <?php endif; ?>
                                     </td>
                                     <td>
-                                        <span class="<?= $show_prod_id_abbrev ? '' : 'd-none' ?>">
+                                        <span class="<?= $show_unique_product_id ? '' : 'd-none' ?>">
                                             <?= htmlspecialchars($product_id_abbrev) ?>
                                         <span>
                                         <?php if (!empty($values["note"])): ?>
@@ -1604,29 +1678,29 @@ if(isset($_POST['fetch_cart'])){
                                     <td class="text-center"></td>
                                     <td class="text-center"></td>
                                     <td class="text-center">
-                                        <span class="<?= $show_unit_price ? '' : 'd-none' ?>">
+                                        <span class="<?= $show_each_per_each ? '' : 'd-none' ?>">
                                             <?php
                                             echo number_format($linear_price, 2);
                                             ?>
                                         </span>
                                     </td>
                                     <td class="text-center">
-                                        <span class="<?= $show_product_price ? '' : 'd-none' ?>">
+                                        <span class="<?= $show_each_per_pack ? '' : 'd-none' ?>">
                                             <?php
                                             echo number_format($panel_price, 2);
                                             ?>
                                         </span>
                                     </td>
-                                    <td class="text-center pl-3 <?= $show_disc_price ? 'd-none price_col' : '' ?>">
-                                        <span class="<?= $show_total_price ? '' : 'd-none' ?>">
+                                    <td class="text-center pl-3">
+                                        <span class="<?= $show_retail_price ? '' : 'd-none' ?>">
                                             $
                                             <?php
                                             echo number_format($product_price, 2);
                                             ?>
                                         </span>
                                     </td>
-                                    <td class="text-end pl-3 <?= $show_disc_price ? '' : 'd-none' ?>">
-                                        <span class="<?= $show_total_price ? '' : 'd-none' ?>">
+                                    <td class="text-end pl-3 <?= $show_each_price  ? '' : 'd-none' ?>">
+                                        <span class="">
                                             $
                                             <?php
                                             echo number_format($customer_price, 2);
@@ -1714,47 +1788,173 @@ if(isset($_POST['fetch_cart'])){
         </div>
     </div>   
 
-    <div class="modal fade" id="cartColumnModal" tabindex="-1" aria-labelledby="cartColumnModalLabel" aria-hidden="true" style="background-color: rgba(0, 0, 0, 0.5);">
-        <div class="modal-dialog modal-md modal-dialog-centered">
+    <div class="modal fade" id="cartColumnModal" tabindex="-1" aria-labelledby="cartColumnModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
             <div class="modal-content">
-            <form id="cartColumnForm" method="POST" action="pages/cashier_ajax.php">
-                <div class="modal-header">
-                <h5 class="modal-title" id="cartColumnModalLabel">Cart Content Show/Hide</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
+                <form id="cartColumnForm" method="POST" action="pages/cashier_ajax.php">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="cartColumnModalLabel">Cart Content Settings</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
 
-                <div class="modal-body">
+                    <div class="modal-body">
 
-                <div class="form-check mb-2">
-                    <input class="form-check-input" type="checkbox" id="show_prod_id_abbrev" name="show_prod_id_abbrev" value="1" 
-                    <?php if ($show_prod_id_abbrev) echo 'checked'; ?>>
-                    <label class="form-check-label" for="show_prod_id_abbrev">Show Product ID Abbreviation</label>
-                </div>
+                        <div class="card shadow-sm rounded-3 mb-3">
+                            <div class="card-header bg-light border-bottom">
+                                <h5 class="mb-0 fw-bold">Product ID</h5>
+                            </div>
+                            <div class="card-body border rounded p-3">
+                                <div class="row">
+                                    <div class="col-md-6 mb-2">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" id="show_prod_id_abbrev" name="show_prod_id_abbrev" value="1" <?php if ($show_prod_id_abbrev) echo 'checked'; ?>>
+                                            <label class="form-check-label" for="show_prod_id_abbrev">Parent ID #</label>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6 mb-2">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" id="show_unique_product_id" name="show_unique_product_id" value="1" <?php if ($show_unique_product_id) echo 'checked'; ?>>
+                                            <label class="form-check-label" for="show_unique_product_id">Unique Product ID #</label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
 
-                <div class="form-check mb-2">
-                    <input class="form-check-input" type="checkbox" id="show_unit_price" name="show_unit_price" value="1" 
-                    <?php if ($show_unit_price) echo 'checked'; ?>>
-                    <label class="form-check-label" for="show_unit_price">Show Per Unit Price</label>
-                </div>
+                        <div class="card shadow-sm rounded-3 mb-3">
+                            <div class="card-header bg-light border-bottom">
+                                <h5 class="mb-0 fw-bold">Metal Panels</h5>
+                            </div>
+                            <div class="card-body border rounded p-3">
+                                <div class="row">
+                                    <div class="col-md-4 mb-2">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" id="show_linear_ft" name="show_linear_ft" value="1" <?php if ($show_linear_ft) echo 'checked'; ?>>
+                                            <label class="form-check-label" for="show_linear_ft">Linear Ft $</label>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4 mb-2">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" id="show_per_panel" name="show_per_panel" value="1" <?php if ($show_per_panel) echo 'checked'; ?>>
+                                            <label class="form-check-label" for="show_per_panel">Per Panel $</label>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4 mb-2">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" id="show_panel_price" name="show_panel_price" value="1" <?php if ($show_panel_price) echo 'checked'; ?>>
+                                            <label class="form-check-label" for="show_panel_price">Price</label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
 
-                <div class="form-check mb-2">
-                    <input class="form-check-input" type="checkbox" id="show_product_price" name="show_product_price" value="1" 
-                    <?php if ($show_product_price) echo 'checked'; ?>>
-                    <label class="form-check-label" for="show_product_price">Show Per Product Price</label>
-                </div>
+                        <div class="card shadow-sm rounded-3 mb-3">
+                            <div class="card-header bg-light border-bottom">
+                                <h5 class="mb-0 fw-bold">Trim</h5>
+                            </div>
+                            <div class="card-body border rounded p-3">
+                                <div class="row">
+                                    <div class="col-md-4 mb-2">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" id="show_trim_per_ft" name="show_trim_per_ft" value="1" <?php if ($show_trim_per_ft) echo 'checked'; ?>>
+                                            <label class="form-check-label" for="show_trim_per_ft">Per Ft $</label>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4 mb-2">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" id="show_trim_per_each" name="show_trim_per_each" value="1" <?php if ($show_trim_per_each) echo 'checked'; ?>>
+                                            <label class="form-check-label" for="show_trim_per_each">Per Each $</label>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4 mb-2">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" id="show_trim_price" name="show_trim_price" value="1" <?php if ($show_trim_price) echo 'checked'; ?>>
+                                            <label class="form-check-label" for="show_trim_price">Price</label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
 
-                <div class="form-check">
-                    <input class="form-check-input" type="checkbox" id="show_total_price" name="show_total_price" value="1" 
-                    <?php if ($show_total_price) echo 'checked'; ?>>
-                    <label class="form-check-label" for="show_total_price">Show Total Price</label>
-                </div>
-                </div>
+                        <div class="card shadow-sm rounded-3 mb-3">
+                            <div class="card-header bg-light border-bottom">
+                                <h5 class="mb-0 fw-bold">Screws</h5>
+                            </div>
+                            <div class="card-body border rounded p-3">
+                                <div class="row">
+                                    <div class="col-md-4 mb-2">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" id="show_screw_per_each" name="show_screw_per_each" value="1" <?php if ($show_screw_per_each) echo 'checked'; ?>>
+                                            <label class="form-check-label" for="show_screw_per_each">Per Screw $</label>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4 mb-2">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" id="show_screw_per_pack" name="show_screw_per_pack" value="1" <?php if ($show_screw_per_pack) echo 'checked'; ?>>
+                                            <label class="form-check-label" for="show_screw_per_pack">Per Pack $</label>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4 mb-2">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" id="show_screw_price" name="show_screw_price" value="1" <?php if ($show_screw_price) echo 'checked'; ?>>
+                                            <label class="form-check-label" for="show_screw_price">Price</label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
 
-                <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                <button type="submit" class="btn btn-primary">Save</button>
-                </div>
-            </form>
+                        <div class="card shadow-sm rounded-3 mb-3">
+                            <div class="card-header bg-light border-bottom">
+                                <h5 class="mb-0 fw-bold">Each Items</h5>
+                            </div>
+                            <div class="card-body border rounded p-3">
+                                <div class="row">
+                                    <div class="col-md-4 mb-2">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" id="show_each_per_each" name="show_each_per_each" value="1" <?php if ($show_each_per_each) echo 'checked'; ?>>
+                                            <label class="form-check-label" for="show_each_per_each">Per Each $</label>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4 mb-2">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" id="show_each_per_pack" name="show_each_per_pack" value="1" <?php if ($show_each_per_pack) echo 'checked'; ?>>
+                                            <label class="form-check-label" for="show_each_per_pack">Per Pack $</label>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4 mb-2">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" id="show_each_price" name="show_each_price" value="1" <?php if ($show_each_price) echo 'checked'; ?>>
+                                            <label class="form-check-label" for="show_each_price">Price</label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="card shadow-sm rounded-3 mb-3">
+                            <div class="card-header bg-light border-bottom">
+                                <h5 class="mb-0 fw-bold">Customer Settings</h5>
+                            </div>
+                            <div class="card-body border rounded p-3">
+                                <div class="row">
+                                    <div class="col-md-12 mb-2">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" id="show_retail_price" name="show_retail_price" value="1" <?php if ($show_retail_price) echo 'checked'; ?>>
+                                            <label class="form-check-label" for="show_retail_price">Always Show Retail Price Column</label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-primary">Save</button>
+                    </div>
+                </form>
             </div>
         </div>
     </div>

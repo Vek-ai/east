@@ -3040,31 +3040,48 @@ if (isset($_POST['change_cart_columns'])) {
         exit;
     }
 
-    $show_prod_id_abbrev    = isset($_POST['show_prod_id_abbrev']) ? 1 : 0;
-    $show_unit_price    = isset($_POST['show_unit_price']) ? 1 : 0;
-    $show_product_price = isset($_POST['show_product_price']) ? 1 : 0;
-    $show_total_price   = isset($_POST['show_total_price']) ? 1 : 0;
+    $all_settings = [
+        'show_prod_id_abbrev',
+        'show_unique_product_id',
+        'show_linear_ft',
+        'show_per_panel',
+        'show_panel_price',
+        'show_trim_per_ft',
+        'show_trim_per_each',
+        'show_trim_price',
+        'show_screw_per_each',
+        'show_screw_per_pack',
+        'show_screw_price',
+        'show_each_per_each',
+        'show_each_per_pack',
+        'show_each_price',
+        'show_retail_price'
+    ];
 
-    $check = mysqli_query($conn, "SELECT id FROM staff_settings WHERE staff_id = '$staff_id' LIMIT 1");
+    foreach ($all_settings as $key) {
+        $setting_key   = mysqli_real_escape_string($conn, $key);
+        $setting_value = isset($_POST[$key]) ? 1 : 0;
 
-    if ($check && mysqli_num_rows($check) > 0) {
-        $update = "
-            UPDATE staff_settings 
-            SET 
-                show_prod_id_abbrev = '$show_prod_id_abbrev',
-                show_unit_price = '$show_unit_price',
-                show_product_price = '$show_product_price',
-                show_total_price = '$show_total_price',
-                updated_at = NOW()
-            WHERE staff_id = '$staff_id'
-        ";
-        mysqli_query($conn, $update);
-    } else {
-        $insert = "
-            INSERT INTO staff_settings (staff_id, show_prod_id_abbrev, show_unit_price, show_product_price, show_total_price, created_at, updated_at)
-            VALUES ('$staff_id', '$show_prod_id_abbrev', '$show_unit_price', '$show_product_price', '$show_total_price', NOW(), NOW())
-        ";
-        mysqli_query($conn, $insert);
+        $check = mysqli_query($conn, "
+            SELECT id FROM staff_settings 
+            WHERE staff_id = '$staff_id' AND setting_key = '$setting_key' 
+            LIMIT 1
+        ");
+
+        if ($check && mysqli_num_rows($check) > 0) {
+            $update = "
+                UPDATE staff_settings 
+                SET setting_value = '$setting_value', updated_at = NOW()
+                WHERE staff_id = '$staff_id' AND setting_key = '$setting_key'
+            ";
+            mysqli_query($conn, $update);
+        } else {
+            $insert = "
+                INSERT INTO staff_settings (staff_id, setting_key, setting_value, created_at, updated_at)
+                VALUES ('$staff_id', '$setting_key', '$setting_value', NOW(), NOW())
+            ";
+            mysqli_query($conn, $insert);
+        }
     }
 
     echo "success";
