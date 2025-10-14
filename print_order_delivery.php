@@ -260,9 +260,11 @@ if (mysqli_num_rows($result) > 0) {
         
         $pdf->SetFont('Arial', '', 9);
 
-        $subtotal   = $total_price;
-        $sales_tax  = $subtotal * $tax;
-        $grand_total = $subtotal + $delivery_price + $sales_tax;
+        $subtotal = $total_price;
+        $discount_amount = $subtotal * $discount;
+        $subtotal_after_discount = $subtotal - $discount_amount;
+        $sales_tax = $subtotal_after_discount * $tax;
+        $grand_total = $subtotal_after_discount + $delivery_price + $sales_tax;
 
         $pdf->SetXY($col2_x, $col_y);
         $pdf->Cell(40, $lineheight, 'MISC:', 0, 0);
@@ -270,21 +272,20 @@ if (mysqli_num_rows($result) > 0) {
 
         $pdf->SetXY($col2_x, $pdf->GetY());
         $pdf->Cell(40, $lineheight, 'DELIVERY:', 0, 0);
-        $pdf->Cell(20, $lineheight, '$ ' . number_format($delivery_price, 2), 0, 1 , 'R');
+        $pdf->Cell(20, $lineheight, '$ ' . number_format($delivery_price, 2), 0, 1, 'R');
 
         $pdf->SetXY($col2_x, $pdf->GetY());
         $pdf->Cell(40, $lineheight, 'SUBTOTAL:', 0, 0);
-        $pdf->Cell(20, $lineheight, '$ ' . number_format($subtotal, 2), 0, 1 , 'R');
+        $pdf->Cell(20, $lineheight, '$ ' . number_format($subtotal_after_discount, 2), 0, 1, 'R');
 
         $pdf->SetXY($col2_x, $pdf->GetY());
-        $pdf->Cell(40, $lineheight, 'SALES TAX:', 0, 0);
+        $pdf->Cell(40, $lineheight, 'SALES TAX (' . ($tax * 100) . '%):', 0, 0);
         $pdf->Cell(20, $lineheight, '$ ' . number_format($sales_tax, 2), 0, 1, 'R');
 
         $pdf->SetFont('Arial', 'B', 10);
         $pdf->SetXY($col2_x, $pdf->GetY());
         $pdf->Cell(40, $lineheight, 'GRAND TOTAL:', 0, 0);
         $pdf->Cell(20, $lineheight, '$ ' . number_format($grand_total, 2), 0, 1, 'R');
-
 
         $pdf->Ln(5);
 
