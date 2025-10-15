@@ -36,10 +36,10 @@ class PDF extends FPDF {
         $this->Cell($colWidth, 5, 'Phone: (606) 877-1848 | Fax: (606) 864-4280', 0, 0, 'L');
 
         $this->SetX($marginLeft + $colWidth + 10);
-        $this->Cell($colWidth, 5, 'Sales@Eastkentuckymetal.com', 0, 0, 'C');
+        $this->Cell($colWidth, 5, 'Sales@EastKentuckyMetal.com', 0, 0, 'C');
 
         $this->SetX($marginLeft + 2 * $colWidth);
-        $this->Cell($colWidth, 5, 'Eastkentuckymetal.com', 0, 0, 'R');
+        $this->Cell($colWidth, 5, 'EastKentuckyMetal.com', 0, 0, 'R');
     }
 }
 

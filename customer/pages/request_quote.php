@@ -479,8 +479,8 @@ if (!empty($id) && $id > 0) {
 
             <div class="footer">
                 MADE TO ORDER | METAL ROOFING & SIDING | FACTORY DIRECT PRICING<br>
-                977 E. Hal Rogers Pkwy, London, KY | Mon-Fri 8am – 4:30pm | eastkentuckymetal.com<br>
-                (606) 877-1848 | (606) 864-4280 (Fax) | sales@eastkentuckymetal.com<br>
+                977 E. Hal Rogers Pkwy, London, KY | Mon-Fri 8am – 4:30pm | EastKentuckyMetal.com<br>
+                (606) 877-1848 | (606) 864-4280 (Fax) | Sales@EastKentuckyMetal.com<br>
                 Homeowner 2025
             </div>
 

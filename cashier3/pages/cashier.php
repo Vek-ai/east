@@ -759,17 +759,11 @@ $editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) :
                     <i class="fe fe-hard-drive"></i> Previous
                 </button>
                 <a href="javascript:void(0)" 
-                    class="btn btn-light" 
-                    style="color: #000 !important; background-color: #f8f9fa !important"
+                    class="btn btn-warning" 
+                    style="color: #000 !important;"
                     type="button" 
                     id="print_order_category">
-                    <i class="fe fe-print"></i> Print Details
-                </a>
-                <a href="#" class="btn btn-warning" style="color: #000 !important;" type="button" id="print_order" target="_blank">
-                    <i class="fa fe-print"></i> Print Total
-                </a>
-                <a href="#" class="btn btn-info " type="button" id="print_deliver" target="_blank">
-                    <i class="fe fe-print"></i> Print Delivery
+                    <i class="fa fa-print"></i> Print
                 </a>
             </div>
         </div>
@@ -1301,39 +1295,104 @@ $editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) :
     </div>
 </div>
 
-<div class="modal fade" id="printCustomerModal" tabindex="-1" aria-labelledby="printCustomerModalLabel" aria-hidden="true" style="background-color: rgba(0, 0, 0, 0.5);">
-  <div class="modal-dialog modal-lg modal-dialog-centered">
+<div class="modal fade custom-size" id="pdfModal" tabindex="-1" role="dialog" style="background-color: rgba(0, 0, 0, 0.5);">
+  <div class="modal-dialog modal-dialog modal-lg modal-dialog-centered">
     <div class="modal-content">
-      
       <div class="modal-header">
-        <h5 class="modal-title" id="printCustomerModalLabel">Customer Print/Download</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        <h5 class="modal-title">Print/View Outputs</h5>
+        <button type="button" class="close" data-bs-dismiss="modal">
+          <span>&times;</span>
+        </button>
       </div>
-      
-      <div class="modal-body text-center">
-        <div class="d-flex flex-wrap justify-content-center gap-2 mb-3">
-          <a id="print_base" target="_blank" class="btn btn-primary">Base Printout</a>
-          <a id="print_perft" target="_blank" class="btn btn-success">w/ Per Ft $</a>
-          <a id="print_pereach" target="_blank" class="btn btn-info">w/ Per Each $</a>
-          <a id="print_all" target="_blank" class="btn btn-warning">w/ All $</a>
-          <a id="print_summary" target="_blank" class="btn btn-danger">Summary Cost</a>
+        <div class="modal-body" style="overflow: auto;">
+            <iframe id="pdfFrame" src="" style="height: 70vh; width: 100%;" class="mb-3 border rounded"></iframe>
+
+            <div class="container-fluid border rounded p-3">
+                <div class="print-tabs">
+                    <ul class="nav nav-tabs justify-content-center mb-3" role="tablist">
+                        <li class="nav-item">
+                        <a class="nav-link active" data-bs-toggle="tab" href="#customerPrint" role="tab">
+                            Customer Print-out
+                        </a>
+                        </li>
+                        <li class="nav-item">
+                        <a class="nav-link" data-bs-toggle="tab" href="#retailPrint" role="tab">
+                            Retail Print-out
+                        </a>
+                        </li>
+                        <li class="nav-item">
+                        <a class="nav-link" data-bs-toggle="tab" href="#ekmPrint" role="tab">
+                            EKM Print-out
+                        </a>
+                        </li>
+                    </ul>
+
+                    <div class="tab-content text-center">
+                        <div class="tab-pane fade show active" id="customerPrint" role="tabpanel">
+                            <div class="d-flex flex-wrap justify-content-center gap-2 p-2">
+                                <a id="print_base_customer" class="btn btn-warning btn-sm btn-show-pdf">Base Printout</a>
+                                <a id="print_perft_customer" class="btn btn-primary btn-sm btn-show-pdf">w/ Per Ft $</a>
+                                <a id="print_pereach_customer" class="btn btn-primary btn-sm btn-show-pdf">w/ Per Each $</a>
+                                <a id="print_all_customer" class="btn btn-primary btn-sm btn-show-pdf">w/ All $</a>
+                                <a id="print_summary_customer" class="btn btn-primary btn-sm btn-show-pdf">Summary Cost</a>
+                            </div>
+                        </div>
+
+                        <div class="tab-pane fade" id="retailPrint" role="tabpanel">
+                            <div class="d-flex flex-wrap justify-content-center gap-2 p-2">
+                                <a id="print_base_retail" class="btn btn-warning btn-sm btn-show-pdf">Base Printout</a>
+                                <a id="print_perft_retail" class="btn btn-primary btn-sm btn-show-pdf">w/ Per Ft $</a>
+                                <a id="print_pereach_retail" class="btn btn-primary btn-sm btn-show-pdf">w/ Per Each $</a>
+                                <a id="print_all_retail" class="btn btn-primary btn-sm btn-show-pdf">w/ All $</a>
+                                <a id="print_summary_retail" class="btn btn-primary btn-sm btn-show-pdf">Summary Cost</a>
+                            </div>
+                        </div>
+
+                        <div class="tab-pane fade" id="ekmPrint" role="tabpanel">
+                            <div class="d-flex flex-wrap justify-content-center gap-2 p-2">
+                                <a id="print_load_ekm" class="btn btn-primary btn-sm btn-show-pdf">Load Copy</a>
+                                <a id="print_delivery_ekm" class="btn btn-primary btn-sm btn-show-pdf">Delivery</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+
+                <div class="mt-3 d-flex flex-wrap justify-content-end gap-2">
+                    <button id="email_order_btn" class="btn btn-success">Email</button>
+                    <button id="printBtn" class="btn btn-success">Print</button>
+                    <button id="downloadBtn" class="btn btn-primary">Download</button>
+                    <button class="btn btn-danger" data-bs-dismiss="modal">Cancel</button>
+                </div>
+            </div>
         </div>
 
-        <div class="d-flex flex-wrap justify-content-center gap-2">
-          <a id="print_load" target="_blank" class="btn btn-secondary">Load Copy</a>
-          <a id="print_delivery" target="_blank" class="btn btn-dark">Delivery</a>
-        </div>
       </div>
-
-      <div class="modal-footer justify-content-end">
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-      </div>
-
     </div>
   </div>
 </div>
 
+<div class="modal fade" id="sendOrderModal" tabindex="-1" aria-labelledby="sendOrderModalLabel" aria-hidden="true" style="background-color: rgba(0, 0, 0, 0.5);">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="sendOrderModalLabel">Send Email to Customer</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body text-center">
+                <h6 class="mb-3">Are you sure you want to send this to customer?</h6>
 
+                <form class="send_order_form d-flex flex-column flex-md-row align-items-center justify-content-center gap-2" method="post">
+                    <input id="send_order_id" type="hidden" name="send_order_id" value="">
+                    <input id="send_order_customer" type="hidden" name="send_order_customer" value="">
+
+                    <button type="submit" class="btn btn-sm btn-primary">Send</button>
+                    <button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.0/fabric.min.js"></script>
 
@@ -4453,6 +4512,40 @@ $editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) :
             $btn.text(toEditMode ? 'Change New Customer' : 'Add New Customer');
         });
 
+        var orderIdSaved = '';
+        var customerIdSaved = '';
+
+        function updatePrintLinks(orderId) {
+            const links = {
+                'print_order': '../print_order_total.php',
+                'print_deliver': '../print_order_delivery.php',
+
+                'print_base_customer': '../print_order_product.php',
+                'print_perft_customer': '../print_order_product_per_ft.php',
+                'print_pereach_customer': '../print_order_product_per_each.php',
+                'print_all_customer': '../print_order_product_all.php',
+                'print_summary_customer': '../print_order_total.php',
+
+                'print_base_retail': '../print_order_product.php',
+                'print_perft_retail': '../print_order_product_per_ft.php',
+                'print_pereach_retail': '../print_order_product_per_each.php',
+                'print_all_retail': '../print_order_product_all.php',
+                'print_summary_retail': '../print_order_total.php',
+
+                'print_load_ekm': '../print_load_copy.php',
+                'print_delivery_ekm': '../print_order_delivery.php'
+            };
+
+            for (const id in links) {
+                const $btn = $('#' + id);
+                if ($btn.length) {
+                    $btn.attr({
+                        href: links[id] + '?id=' + orderId,
+                        target: '_blank'
+                    });
+                }
+            }
+        }
 
         $(document).on('click', '#save_order', function(event) {
             event.preventDefault();
@@ -4526,55 +4619,16 @@ $editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) :
                         if (response.success) {
                             alert("Order successfully saved.");
 
-                            $('#print_order').attr('href', '../print_order_total.php?id=' + response.order_id);
-                            $('#print_deliver').attr('href', '../print_order_delivery.php?id=' + response.order_id);
+                            const orderIdSaved = response.order_id;
+                            const customerIdSaved = response.customer_id;
 
-                            $('#print_order_category').removeClass('d-none');
-                            $('#print_order').removeClass('d-none');
-                            $('#print_deliver').removeClass('d-none');
+                            $('#print_order_category, #print_order, #print_deliver').removeClass('d-none');
+                            updatePrintLinks(orderIdSaved);
 
-                            $('#print_base').attr({
-                                'href': '../print_order_product.php?id=' + response.order_id,
-                                'target': '_blank'
-                            });
-                            $('#print_perft').attr({
-                                'href': '../print_order_product_per_ft.php?id=' + response.order_id,
-                                'target': '_blank'
-                            });
-                            $('#print_pereach').attr({
-                                'href': '../print_order_product_per_each.php?id=' + response.order_id,
-                                'target': '_blank'
-                            });
-                            $('#print_all').attr({
-                                'href': '../print_order_product_all.php?id=' + response.order_id,
-                                'target': '_blank'
-                            });
-                            $('#print_summary').attr({
-                                'href': '../print_order_total.php?id=' + response.order_id,
-                                'target': '_blank'
-                            });
-                            $('#print_load').attr({
-                                'href': '../print_load_copy.php?id=' + response.order_id,
-                                'target': '_blank'
-                            });
-                            $('#print_delivery').attr({
-                                'href': '../print_order_delivery.php?id=' + response.order_id,
-                                'target': '_blank'
-                            });
-
-                            $('#order_id_print').val(response.order_id);
+                            $('#btnApprovalModal, #save_order, #save_order_alt, #save_estimate, #prev_page_order').addClass('d-none');
                         } else if (response.error) {
                             alert(response.error);
                         }
-
-
-                        console.log(response);
-
-                        $('#btnApprovalModal').addClass('d-none');
-                        $('#save_order').addClass('d-none');
-                        $('#save_order_alt').addClass('d-none');
-                        $('#save_estimate').addClass('d-none');
-                        $('#prev_page_order').addClass('d-none');
                     },
                     error: function(jqXHR, textStatus, errorThrown) {
                         console.log('Response Text: ' + jqXHR.responseText);
@@ -4919,9 +4973,126 @@ $editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) :
             $('#cashmodal').modal('show');
         });
 
-        $(document).on('click', '#print_order_category', function() {
-            $('#printCustomerModal').modal('show');
+        $(document).on('click', '#print_order_category', function () {
+            const $baseBtn = $('#print_base_customer');
+
+            $('.btn-show-pdf').removeClass('btn-warning').addClass('btn-primary');
+            $baseBtn.addClass('btn-warning').removeClass('btn-primary');
+
+            pdfUrl = $baseBtn.attr('href');
+            $('#pdfFrame').attr('src', pdfUrl);
+            $('#pdfModal').modal('show');
         });
+
+        var pdfUrl = '';
+        var isPrinting = false;
+
+        $(document).on('click', '.btn-show-pdf', function (e) {
+            e.preventDefault();
+
+            $('.btn-show-pdf')
+                .removeClass('btn-warning')
+                .addClass('btn-primary');
+
+            $(this)
+                .removeClass('btn-primary')
+                .addClass('btn-warning');
+
+            pdfUrl = $(this).attr('href');
+            $('#pdfFrame').attr('src', pdfUrl);
+            $('#pdfModal').modal('show');
+        });
+
+        $(document).on('click', '#printBtn', function (e) {
+            e.preventDefault();
+
+            if (isPrinting) return;
+            isPrinting = true;
+
+            const $iframe = $('#pdfFrame');
+            $iframe.off('load').one('load', function () {
+                try {
+                    this.contentWindow.focus();
+                    this.contentWindow.print();
+                } catch (err) {
+                    alert("Failed to print PDF.");
+                }
+                isPrinting = false;
+            });
+
+            $iframe.attr('src', pdfUrl);
+            $('#pdfModal').modal('show');
+        });
+
+        $(document).on('click', '#downloadBtn', function (e) {
+            e.preventDefault();
+
+            const link = $('<a>')
+                .attr('href', pdfUrl)
+                .attr('download', '')
+                .appendTo('body');
+
+            link[0].click();
+            link.remove();
+        });
+
+        $(document).on('click', '#email_order_btn', function () {
+            $('#send_order_id').val(orderIdSaved);
+            $('#send_order_customer').val(customerIdSaved);
+
+            $('#sendOrderModal').modal('show');
+        });
+
+        $(document).on('submit', '.send_order_form', function (e) {
+            e.preventDefault();
+
+            const $form = $(this);
+            const $button = $form.find('button[type="submit"]');
+            const originalText = $button.text();
+
+            const formData = new FormData(this);
+            formData.append('send_order', 'send_order');
+
+            $.ajax({
+                url: 'pages/cashier_ajax.php',
+                type: 'POST',
+                data: formData,
+                processData: false,
+                contentType: false,
+                beforeSend: function () {
+                    $button.prop('disabled', true).text('Sending...');
+                },
+                success: function (response) {
+                    console.log(response);
+                    let res = {};
+                    try {
+                        res = JSON.parse(response);
+                    } catch (e) {
+                        alert('Invalid response from server.');
+                        return;
+                    }
+
+                    let msg = '';
+                    if (res.results) {
+                        if (res.results.email) {
+                            msg += 'Email: ' + res.results.email.message + '\n';
+                        }
+                    } else {
+                        msg = res.message || 'Operation complete.';
+                    }
+
+                    alert(msg);
+                },
+                error: function () {
+                    alert('Failed to send message.');
+                },
+                complete: function () {
+                    $button.prop('disabled', false).text(originalText);
+                    $('.modal').modal('hide');
+                }
+            });
+        });
+
 
         $(document).on('click', '#prev_page_order', function(event) {
             $('.modal').modal('hide');

@@ -52,12 +52,12 @@ class PDF extends FPDF {
         $emailIcon = 'assets/images/email.png';
         $this->Image($emailIcon, $marginLeft + $colWidth + 10, $this->GetY(), 5, 5);
         $this->SetXY($marginLeft + $colWidth + 17, $this->GetY());
-        $this->Cell($colWidth, 5, 'Sales@Eastkentuckymetal.com', 0, 0, 'L');
+        $this->Cell($colWidth, 5, 'Sales@EastKentuckyMetal.com', 0, 0, 'L');
 
         $webIcon = 'assets/images/web.png';
         $this->Image($webIcon, $marginLeft + 2 * $colWidth + 10, $this->GetY(), 5, 5);
         $this->SetXY($marginLeft + 2 * $colWidth + 17, $this->GetY());
-        $this->Cell($colWidth, 5, 'Eastkentuckymetal.com', 0, 0, 'L');
+        $this->Cell($colWidth, 5, 'EastKentuckyMetal.com', 0, 0, 'L');
 
         $yStart = $this->GetY() - 35;
         $this->SetFont('Arial', '', 10);
@@ -96,8 +96,8 @@ if (!empty($_REQUEST['id'])) {
 
     $pdf->SetFont('Arial', 'B', 10);
     $pdf->Cell(0, 5, 'Phone: (606) 877-1848 | Fax: (606) 864-4280', 0, 1);
-    $pdf->Cell(0, 5, 'Email: Sales@Eastkentuckymetal.com', 0, 1);
-    $pdf->Cell(0, 5, 'Website: Eastkentuckymetal.com', 0, 1);
+    $pdf->Cell(0, 5, 'Email: Sales@EastKentuckyMetal.com', 0, 1);
+    $pdf->Cell(0, 5, 'Website: EastKentuckyMetal.com', 0, 1);
 
     $pdf->Ln(5);
 

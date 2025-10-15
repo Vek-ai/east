@@ -951,12 +951,12 @@ class PDF extends FPDF {
         $emailIcon = 'assets/images/email.png';
         $this->Image($emailIcon, $marginLeft + $colWidth + 10, $this->GetY(), 5, 5);
         $this->SetXY($marginLeft + $colWidth + 17, $this->GetY());
-        $this->Cell($colWidth, 5, 'Sales@Eastkentuckymetal.com', 0, 0, 'L');
+        $this->Cell($colWidth, 5, 'Sales@EastKentuckyMetal.com', 0, 0, 'L');
 
         $webIcon = 'assets/images/web.png';
         $this->Image($webIcon, $marginLeft + 2 * $colWidth + 10, $this->GetY(), 5, 5);
         $this->SetXY($marginLeft + 2 * $colWidth + 17, $this->GetY());
-        $this->Cell($colWidth, 5, 'Eastkentuckymetal.com', 0, 0, 'L');
+        $this->Cell($colWidth, 5, 'EastKentuckyMetal.com', 0, 0, 'L');
 
         $yStart = $this->GetY() - 35;
         $this->SetFont('Arial', '', 10);

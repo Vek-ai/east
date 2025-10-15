@@ -1456,6 +1456,7 @@ if (isset($_POST['save_order'])) {
 
             $response['success'] = true;
             $response['order_id'] = $orderid;
+            $response['customer_id'] = $_SESSION['customer_id'];
 
             unset($_SESSION['cart']);
 
@@ -3086,6 +3087,40 @@ if (isset($_POST['change_cart_columns'])) {
 
     echo "success";
     exit;
+}
+
+if (isset($_POST['send_order'])) {
+    $orderid = mysqli_real_escape_string($conn, $_POST['send_order_id']);
+    $customer_id = mysqli_real_escape_string($conn, $_POST['send_order_customer']);
+
+    if (empty($customer_id)) {
+        echo json_encode(['success' => false, 'message' => 'No customer ID found in session.']);
+        exit;
+    }
+
+    $customer_details = getCustomerDetails($customer_id);
+    $customer_name = get_customer_name($customer_id);
+    $customer_email = $customer_details['contact_email'] ?? null;
+
+    if (empty($customer_email)) {
+        echo json_encode(['success' => false, 'message' => 'Customer email not found.']);
+        exit;
+    }
+
+    $send_option = mysqli_real_escape_string($conn, $_POST['send_option']);
+    $order_url = "https://metal.ilearnwebtech.com/print_order_product.php?id=" . urlencode($orderid);
+    $subject = "Order Invoice";
+
+    $results = [];
+    $results['email'] = $emailSender->sendInvoiceToCustomer($customer_email, $subject, $order_url);
+
+    $response = [
+        'success' => true,
+        'message' => "Successfully sent to Customer",
+        'results' => $results
+    ];
+
+    echo json_encode($response);
 }
 
 ?>
