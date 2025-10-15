@@ -3093,6 +3093,12 @@ if (isset($_POST['send_order'])) {
     $orderid = mysqli_real_escape_string($conn, $_POST['send_order_id']);
     $customer_id = mysqli_real_escape_string($conn, $_POST['send_order_customer']);
 
+    if (!empty($_POST['order_url'])) {
+        $order_url = $_POST['order_url'];
+    } else {
+        $order_url = "https://metal.ilearnwebtech.com/print_order_product.php?id=" . urlencode($orderid);
+    }
+
     if (empty($customer_id)) {
         echo json_encode(['success' => false, 'message' => 'No customer ID found in session.']);
         exit;
@@ -3108,7 +3114,6 @@ if (isset($_POST['send_order'])) {
     }
 
     $send_option = mysqli_real_escape_string($conn, $_POST['send_option']);
-    $order_url = "https://metal.ilearnwebtech.com/print_order_product.php?id=" . urlencode($orderid);
     $subject = "Order Invoice";
 
     $results = [];

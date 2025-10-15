@@ -1385,6 +1385,7 @@ $editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) :
                 <form class="send_order_form d-flex flex-column flex-md-row align-items-center justify-content-center gap-2" method="post">
                     <input id="send_order_id" type="hidden" name="send_order_id" value="">
                     <input id="send_order_customer" type="hidden" name="send_order_customer" value="">
+                    <input id="order_url" type="hidden" name="order_url" value="">
 
                     <button type="submit" class="btn btn-sm btn-primary">Send</button>
                     <button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">Cancel</button>
@@ -4516,31 +4517,34 @@ $editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) :
         var customerIdSaved = '';
 
         function updatePrintLinks(orderId) {
+            const baseUrl = window.location.origin + '/';
+            //const baseUrl = window.location.origin + '/temps/east/';
+
             const links = {
-                'print_order': '../print_order_total.php',
-                'print_deliver': '../print_order_delivery.php',
+                'print_order': 'print_order_total.php',
+                'print_deliver': 'print_order_delivery.php',
 
-                'print_base_customer': '../print_order_product.php',
-                'print_perft_customer': '../print_order_product_per_ft.php',
-                'print_pereach_customer': '../print_order_product_per_each.php',
-                'print_all_customer': '../print_order_product_all.php',
-                'print_summary_customer': '../print_order_total.php',
+                'print_base_customer': 'print_order_product.php',
+                'print_perft_customer': 'print_order_product_per_ft.php',
+                'print_pereach_customer': 'print_order_product_per_each.php',
+                'print_all_customer': 'print_order_product_all.php',
+                'print_summary_customer': 'print_order_total.php',
 
-                'print_base_retail': '../print_order_product.php',
-                'print_perft_retail': '../print_order_product_per_ft.php',
-                'print_pereach_retail': '../print_order_product_per_each.php',
-                'print_all_retail': '../print_order_product_all.php',
-                'print_summary_retail': '../print_order_total.php',
+                'print_base_retail': 'print_order_product.php',
+                'print_perft_retail': 'print_order_product_per_ft.php',
+                'print_pereach_retail': 'print_order_product_per_each.php',
+                'print_all_retail': 'print_order_product_all.php',
+                'print_summary_retail': 'print_order_total.php',
 
-                'print_load_ekm': '../print_load_copy.php',
-                'print_delivery_ekm': '../print_order_delivery.php'
+                'print_load_ekm': 'print_load_copy.php',
+                'print_delivery_ekm': 'print_order_delivery.php'
             };
 
             for (const id in links) {
                 const $btn = $('#' + id);
                 if ($btn.length) {
                     $btn.attr({
-                        href: links[id] + '?id=' + orderId,
+                        href: baseUrl + links[id] + '?id=' + orderId,
                         target: '_blank'
                     });
                 }
@@ -4616,11 +4620,12 @@ $editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) :
                         save_order: 'save_order'
                     },
                     success: function(response) {
+                        console.log(response);
                         if (response.success) {
                             alert("Order successfully saved.");
 
-                            const orderIdSaved = response.order_id;
-                            const customerIdSaved = response.customer_id;
+                            orderIdSaved = response.order_id;
+                            customerIdSaved = response.customer_id;
 
                             $('#print_order_category, #print_order, #print_deliver').removeClass('d-none');
                             updatePrintLinks(orderIdSaved);
@@ -4973,6 +4978,8 @@ $editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) :
             $('#cashmodal').modal('show');
         });
 
+        var order_url = '';
+
         $(document).on('click', '#print_order_category', function () {
             const $baseBtn = $('#print_base_customer');
 
@@ -4980,6 +4987,8 @@ $editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) :
             $baseBtn.addClass('btn-warning').removeClass('btn-primary');
 
             pdfUrl = $baseBtn.attr('href');
+            order_url = pdfUrl;
+
             $('#pdfFrame').attr('src', pdfUrl);
             $('#pdfModal').modal('show');
         });
@@ -5039,6 +5048,7 @@ $editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) :
         $(document).on('click', '#email_order_btn', function () {
             $('#send_order_id').val(orderIdSaved);
             $('#send_order_customer').val(customerIdSaved);
+            $('#order_url').val(order_url);
 
             $('#sendOrderModal').modal('show');
         });
