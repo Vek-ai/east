@@ -159,12 +159,6 @@ if(isset($_POST['fetch_cart'])){
             padding-top: 20px;  
         }
     </style>
-    
-    <div class="">
-        <button id="change_cart_column" class="btn btn-primary btn-sm" style="width: 150px;">
-            Change Cart
-        </button>
-    </div>
 
     <div id="customer_cart_section">
         <?php 
@@ -1788,7 +1782,7 @@ if(isset($_POST['fetch_cart'])){
         </div>
     </div>   
 
-    <div class="modal fade" id="cartColumnModal" tabindex="-1" aria-labelledby="cartColumnModalLabel" aria-hidden="true">
+    <div class="modal fade" id="cartColumnModal" tabindex="-1" aria-labelledby="cartColumnModalLabel" aria-hidden="true" style="background-color: rgba(0, 0, 0, 0.5);">
         <div class="modal-dialog modal-lg modal-dialog-centered">
             <div class="modal-content">
                 <form id="cartColumnForm" method="POST" action="pages/cashier_ajax.php">

@@ -468,7 +468,10 @@ $editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) :
     <div class="modal-dialog modal-fullscreen" role="document">
         <div class="modal-content modal-content-demo">
             <div class="modal-header">
-                <h6 class="modal-title">Cart Contents</h6>
+                <a href="javascript:void(0)" id="change_cart_column">
+                    <h5 class="modal-title">Cart Contents</h5>
+                </a>
+                
                 <button aria-label="Close" class="close text-light" data-bs-dismiss="modal" type="button">
                     <span aria-hidden="true">&times;</span>
                 </button>
