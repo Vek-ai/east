@@ -428,7 +428,28 @@ if(isset($_REQUEST['action'])) {
                 <div class="row">
                     <div class="col-md-12">
                         <div class="mb-3">
-                            <h4 id="product_ids_abbrev"></h4>
+                            <h4 id="product_ids_abbrev">
+                                <?php
+                                $productIDsString = fetchProductIDs($product_id);
+                                $items = array_filter(array_map('trim', explode(',', $productIDsString)));
+                                ?>
+
+                                <?php if (!empty($items)): ?>
+                                    <ul style="
+                                        display: grid;
+                                        grid-template-columns: repeat(3, 1fr);
+                                        gap: 5px;
+                                        padding: 0 20px;
+                                        list-style-position: inside;
+                                    ">
+                                        <?php foreach ($items as $id): ?>
+                                            <li><?= htmlspecialchars($id) ?></li>
+                                        <?php endforeach; ?>
+                                    </ul>
+                                <?php else: ?>
+                                    <p>No product IDs found.</p>
+                                <?php endif; ?>
+                            </h4>
                         </div>
                     </div>
                 </div>

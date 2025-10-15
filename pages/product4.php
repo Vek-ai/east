@@ -928,10 +928,7 @@ function showCol($name) {
                 $('#product_type').attr('multiple', 'multiple');
             }
 
-            setTimeout(() => {
-                fetchProductABR();
-                $('#addProductModal').modal('show');
-            }, 1000);
+            $('#addProductModal').modal('show');
         });
 
 

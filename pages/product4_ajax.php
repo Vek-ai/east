@@ -31,32 +31,12 @@ if(isset($_REQUEST['action'])) {
         $color_paint       = isset($_POST['color_paint']) ? array_filter(array_map('intval', $_POST['color_paint'])) : [];
         $available_lengths = isset($_POST['available_lengths']) ? array_filter(array_map('intval', $_POST['available_lengths'])) : [];
 
-        if (
-            !empty($product_type) ||
-            !empty($profile) ||
-            !empty($grade) ||
-            !empty($gauge) ||
-            !empty($color_paint) ||
-            !empty($available_lengths)
-        ) {
-            generateProductABR(
-                [$product_category],
-                $profile,
-                $grade,
-                $gauge,
-                $product_type,
-                $color_paint,
-                $available_lengths
-            );
-        }
-        
         $fields = [];
         foreach ($_POST as $key => $value) {
             if (is_array($value)) {
                 $allNumeric = array_reduce($value, function($carry, $item) {
                     return $carry && is_numeric($item);
                 }, true);
-
                 if ($allNumeric) {
                     $value = array_map('intval', $value);
                 }
@@ -64,11 +44,9 @@ if(isset($_REQUEST['action'])) {
             }
 
             $escapedValue = mysqli_real_escape_string($conn, $value);
-
             if ($key != 'product_id') {
                 $fields[$key] = $escapedValue;
             }
-
             if ($key == 'color_paint') {
                 $fields['color'] = $escapedValue;
             }
@@ -85,32 +63,46 @@ if(isset($_REQUEST['action'])) {
         }
         $fields['standing_seam'] = $standing_seam;
         $fields['board_batten']  = $board_batten;
-        
+
         $checkQuery = "SELECT * FROM product WHERE product_id = '$product_id'";
         $result = mysqli_query($conn, $checkQuery);
-        
+
         if (mysqli_num_rows($result) > 0) {
             $updateQuery = "UPDATE product SET ";
-            
             foreach ($fields as $column => $value) {
                 $columnExists = mysqli_query($conn, "SHOW COLUMNS FROM product LIKE '$column'");
                 if (mysqli_num_rows($columnExists) > 0) {
                     $updateQuery .= "$column = '$value', ";
                 }
             }
-            
             $updateQuery = rtrim($updateQuery, ", ");
             $updateQuery .= " WHERE product_id = '$product_id'";
-            
+
             if (mysqli_query($conn, $updateQuery)) {
                 echo "success_update";
+
+                if (
+                    !empty($product_type) || !empty($profile) ||
+                    !empty($grade) || !empty($gauge) ||
+                    !empty($color_paint) || !empty($available_lengths)
+                ) {
+                    generateProductAbr(
+                        [$product_category],
+                        $profile,
+                        $grade,
+                        $gauge,
+                        $product_type,
+                        $color_paint,
+                        $available_lengths,
+                        $product_id
+                    );
+                }
             } else {
                 echo "Error updating product: " . mysqli_error($conn);
             }
         } else {
             $columns = [];
             $values = [];
-            
             foreach ($fields as $column => $value) {
                 $columnExists = mysqli_query($conn, "SHOW COLUMNS FROM product LIKE '$column'");
                 if (mysqli_num_rows($columnExists) > 0) {
@@ -118,58 +110,61 @@ if(isset($_REQUEST['action'])) {
                     $values[] = "'$value'";
                 }
             }
-            
+
             $columnsStr = implode(", ", $columns);
             $valuesStr = implode(", ", $values);
-            
             $insertQuery = "INSERT INTO product (product_id, $columnsStr) VALUES ('$product_id', $valuesStr)";
-            
+
             if (mysqli_query($conn, $insertQuery)) {
                 $product_id = $conn->insert_id;
 
                 $sql = "UPDATE product SET main_image='images/product/product.jpg' WHERE product_id='$product_id'";
-                if (!$conn->query($sql)) {
-                    echo "Error updating record: " . $conn->error;
-                }
+                $conn->query($sql);
 
                 echo "success_add";
+
+                if (
+                    !empty($product_type) || !empty($profile) ||
+                    !empty($grade) || !empty($gauge) ||
+                    !empty($color_paint) || !empty($available_lengths)
+                ) {
+                    generateProductAbr(
+                        [$product_category],
+                        $profile,
+                        $grade,
+                        $gauge,
+                        $product_type,
+                        $color_paint,
+                        $available_lengths,
+                        $product_id
+                    );
+                }
+
             } else {
                 echo "Error adding product: " . mysqli_error($conn);
             }
-        }    
+        }
 
         if (!empty($_FILES['picture_path']['name'][0])) {
             if (is_array($_FILES['picture_path']['name']) && count($_FILES['picture_path']['name']) > 0) {
                 $uploadFileDir = '../images/product/';
-                
                 for ($i = 0; $i < count($_FILES['picture_path']['name']); $i++) {
                     $fileTmpPath = $_FILES['picture_path']['tmp_name'][$i];
                     $fileName = $_FILES['picture_path']['name'][$i];
-                    
-                    if (empty($fileName)) {
-                        continue;
-                    }
-        
-                    $fileNameCmps = explode(".", $fileName);
-                    $fileExtension = strtolower(end($fileNameCmps));
-                    
+                    if (empty($fileName)) continue;
+
+                    $fileExtension = strtolower(pathinfo($fileName, PATHINFO_EXTENSION));
                     $newFileName = md5(time() . $fileName) . '.' . $fileExtension;
                     $dest_path = $uploadFileDir . $newFileName;
-        
+
                     if (move_uploaded_file($fileTmpPath, $dest_path)) {
-                        $picture_path = mysqli_real_escape_string($conn, $dest_path);
-        
                         if ($i == 0) {
                             $sql = "UPDATE product SET main_image='images/product/$newFileName' WHERE product_id='$product_id'";
-                            if (!$conn->query($sql)) {
-                                echo "Error updating record: " . $conn->error;
-                            }
+                            $conn->query($sql);
                         }
-        
+
                         $sql = "INSERT INTO product_images (productid, image_url) VALUES ('$product_id', 'images/product/$newFileName')";
-                        if (!$conn->query($sql)) {
-                            echo "Error updating record: " . $conn->error;
-                        }
+                        $conn->query($sql);
                     } else {
                         echo 'Error moving the file to the upload directory.';
                     }
@@ -177,6 +172,7 @@ if(isset($_REQUEST['action'])) {
             }
         }
     }
+
 
     if ($action == "get_product_abr") {
         $category_ids = isset($_POST['category_ids']) ? array_map('intval', $_POST['category_ids']) : [];

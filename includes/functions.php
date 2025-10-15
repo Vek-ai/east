@@ -3287,94 +3287,112 @@ function createNet30Approval($customerid, $cashierid, $pay_type, $charge_net_30,
     ];
 }
 
-function generateProductAbr($category_ids, $profile_ids, $grade_ids, $gauge_ids, $type_ids, $color_ids, $length_ids) {
-    global $conn;
-
-    if (
-        empty($category_ids) && empty($profile_ids) && empty($grade_ids) &&
-        empty($gauge_ids) && empty($type_ids) && empty($color_ids) && empty($length_ids)
+function generateProductAbr(
+        $category_ids, 
+        $profile_ids, 
+        $grade_ids, 
+        $gauge_ids, 
+        $type_ids, 
+        $color_ids, 
+        $length_ids, 
+        $product_id_from_table = null
     ) {
-        return 0;
-    }
-
-    function getAbbrMap($table, $id_col, $abbr_col, $ids = []) {
         global $conn;
-        $map = [];
-        if (empty($ids)) return $map;
 
-        $ids = array_map('intval', $ids);
-        $res = mysqli_query($conn, "SELECT `$id_col`, `$abbr_col` FROM `$table` WHERE `$id_col` IN (" . implode(',', $ids) . ")");
-        while ($row = mysqli_fetch_assoc($res)) {
-            $map[$row[$id_col]] = $row[$abbr_col] ?? '';
+        if (
+            empty($category_ids) && empty($profile_ids) && empty($grade_ids) &&
+            empty($gauge_ids) && empty($type_ids) && empty($color_ids) && empty($length_ids)
+        ) {
+            return 0;
         }
-        return $map;
-    }
 
-    $maps = [
-        'category' => getAbbrMap('product_category', 'product_category_id', 'category_abreviations', $category_ids),
-        'profile'  => getAbbrMap('profile_type', 'profile_type_id', 'profile_abbreviations', $profile_ids),
-        'grade'    => getAbbrMap('product_grade', 'product_grade_id', 'grade_abbreviations', $grade_ids),
-        'gauge'    => getAbbrMap('product_gauge', 'product_gauge_id', 'gauge_abbreviations', $gauge_ids),
-        'type'     => getAbbrMap('product_type', 'product_type_id', 'type_abreviations', $type_ids),
-        'color'    => getAbbrMap('paint_colors', 'color_id', 'color_abbreviation', $color_ids),
-        'length'   => getAbbrMap('dimensions', 'dimension_id', 'dimension_abbreviation', $length_ids)
-    ];
+        function getAbbrMap($table, $id_col, $abbr_col, $ids = []) {
+            global $conn;
+            $map = [];
+            if (empty($ids)) return $map;
 
-    $idGroups = [
-        'category' => !empty($category_ids) ? $category_ids : [null],
-        'profile'  => !empty($profile_ids) ? $profile_ids : [null],
-        'grade'    => !empty($grade_ids) ? $grade_ids : [null],
-        'gauge'    => !empty($gauge_ids) ? $gauge_ids : [null],
-        'type'     => !empty($type_ids) ? $type_ids : [null],
-        'color'    => !empty($color_ids) ? $color_ids : [null],
-        'length'   => !empty($length_ids) ? $length_ids : [null],
-    ];
-
-    $combinations = [[]];
-    foreach ($idGroups as $key => $ids) {
-        $new = [];
-        foreach ($combinations as $combo) {
-            foreach ($ids as $id) {
-                $combo[$key] = $id;
-                $new[] = $combo;
+            $ids = array_map('intval', $ids);
+            $res = mysqli_query($conn, "SELECT `$id_col`, `$abbr_col` FROM `$table` WHERE `$id_col` IN (" . implode(',', $ids) . ")");
+            while ($row = mysqli_fetch_assoc($res)) {
+                $map[$row[$id_col]] = $row[$abbr_col] ?? '';
             }
+            return $map;
         }
-        $combinations = $new;
-    }
 
-    $inserted = 0;
+        $maps = [
+            'category' => getAbbrMap('product_category', 'product_category_id', 'category_abreviations', $category_ids),
+            'profile'  => getAbbrMap('profile_type', 'profile_type_id', 'profile_abbreviations', $profile_ids),
+            'grade'    => getAbbrMap('product_grade', 'product_grade_id', 'grade_abbreviations', $grade_ids),
+            'gauge'    => getAbbrMap('product_gauge', 'product_gauge_id', 'gauge_abbreviations', $gauge_ids),
+            'type'     => getAbbrMap('product_type', 'product_type_id', 'type_abreviations', $type_ids),
+            'color'    => getAbbrMap('paint_colors', 'color_id', 'color_abbreviation', $color_ids),
+            'length'   => getAbbrMap('dimensions', 'dimension_id', 'dimension_abbreviation', $length_ids)
+        ];
 
-    foreach ($combinations as $c) {
-        $abbr = '';
-        foreach ($maps as $k => $map) {
-            $id = $c[$k];
-            if ($id && isset($map[$id])) $abbr .= $map[$id];
+        $idGroups = [
+            'category' => !empty($category_ids) ? $category_ids : [null],
+            'profile'  => !empty($profile_ids) ? $profile_ids : [null],
+            'grade'    => !empty($grade_ids) ? $grade_ids : [null],
+            'gauge'    => !empty($gauge_ids) ? $gauge_ids : [null],
+            'type'     => !empty($type_ids) ? $type_ids : [null],
+            'color'    => !empty($color_ids) ? $color_ids : [null],
+            'length'   => !empty($length_ids) ? $length_ids : [null],
+        ];
+
+        $combinations = [[]];
+        foreach ($idGroups as $key => $ids) {
+            $new = [];
+            foreach ($combinations as $combo) {
+                foreach ($ids as $id) {
+                    $combo[$key] = $id;
+                    $new[] = $combo;
+                }
+            }
+            $combinations = $new;
         }
-        if ($abbr === '') continue;
 
-        $product_id = mysqli_real_escape_string($conn, $abbr);
+        $inserted = 0;
+        $product_id_from_table_sql = is_numeric($product_id_from_table) ? intval($product_id_from_table) : 'NULL'; // ✅ safe default
 
-        $check = mysqli_query($conn, "SELECT 1 FROM product_abr WHERE product_id='$product_id' LIMIT 1");
-        if (mysqli_num_rows($check) > 0) continue;
+        foreach ($combinations as $c) {
+            $abbr = '';
+            foreach ($maps as $k => $map) {
+                $id = $c[$k];
+                if ($id && isset($map[$id])) $abbr .= $map[$id];
+            }
+            if ($abbr === '') continue;
 
-        $sql = sprintf(
-            "INSERT INTO product_abr (product_id, category, profile, grade, gauge, type, color, length)
-             VALUES ('%s', %s, %s, %s, %s, %s, %s, %s)",
-            $product_id,
-            $c['category'] ? intval($c['category']) : 'NULL',
-            $c['profile']  ? intval($c['profile'])  : 'NULL',
-            $c['grade']    ? intval($c['grade'])    : 'NULL',
-            $c['gauge']    ? intval($c['gauge'])    : 'NULL',
-            $c['type']     ? intval($c['type'])     : 'NULL',
-            $c['color']    ? intval($c['color'])    : 'NULL',
-            $c['length']   ? intval($c['length'])   : 'NULL'
-        );
-        mysqli_query($conn, $sql);
-        $inserted += mysqli_affected_rows($conn);
-    }
+            $abbr_escaped = mysqli_real_escape_string($conn, $abbr);
 
-    return $inserted;
+            $check_sql = "SELECT 1 FROM product_abr WHERE product_id='$abbr_escaped'";
+            if ($product_id_from_table_sql !== 'NULL') {
+                $check_sql .= " AND product_id_from_table=$product_id_from_table_sql";
+            }
+            $check_sql .= " LIMIT 1";
+            $check = mysqli_query($conn, $check_sql);
+            if (mysqli_num_rows($check) > 0) continue;
+
+            $sql = sprintf(
+                "INSERT INTO product_abr (product_id, product_id_from_table, category, profile, grade, gauge, type, color, length)
+                VALUES ('%s', %s, %s, %s, %s, %s, %s, %s, %s)",
+                $abbr_escaped,
+                $product_id_from_table_sql,
+                $c['category'] ? intval($c['category']) : 'NULL',
+                $c['profile']  ? intval($c['profile'])  : 'NULL',
+                $c['grade']    ? intval($c['grade'])    : 'NULL',
+                $c['gauge']    ? intval($c['gauge'])    : 'NULL',
+                $c['type']     ? intval($c['type'])     : 'NULL',
+                $c['color']    ? intval($c['color'])    : 'NULL',
+                $c['length']   ? intval($c['length'])   : 'NULL'
+            );
+
+            mysqli_query($conn, $sql);
+            $inserted += mysqli_affected_rows($conn);
+        }
+
+        return $inserted;
 }
+
 
 function regenerateABR($table, $id) {
     global $conn;
@@ -3515,6 +3533,42 @@ function generateProductAbrString($category_ids, $profile_ids, $grade_ids, $gaug
 
     return implode(',', $abrList);
 }
+
+function fetchProductIDs($product_id_from_table) {
+    global $conn;
+
+    if (empty($product_id_from_table) || !is_numeric($product_id_from_table)) {
+        return '';
+    }
+
+    $product_id_from_table = intval($product_id_from_table);
+
+    $sql = "
+        SELECT pa.product_id
+        FROM product_abr pa
+        WHERE pa.id IN (
+            SELECT MAX(id)
+            FROM product_abr
+            WHERE product_id_from_table = $product_id_from_table
+            GROUP BY category, profile, grade, gauge, type, color, length
+        )
+        ORDER BY pa.date_added DESC
+    ";
+
+    $result = mysqli_query($conn, $sql);
+
+    if (!$result) {
+        return '';
+    }
+
+    $ids = [];
+    while ($row = mysqli_fetch_assoc($result)) {
+        $ids[] = $row['product_id'];
+    }
+
+    return implode(',', $ids);
+}
+
 
 function fetchSingleProductABR($category_id = null, $profile_id = null, $grade_id = null, $gauge_id = null, $type_id = null, $color_id = null, $length_id = null) {
     global $conn;
