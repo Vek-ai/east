@@ -160,7 +160,7 @@ $panel_id = 46;
                             alert('Successfully merged!');
                             location.reload();
                         } else {
-                            console.log(data);
+                            alert(data);
                         }
                     },
                     error: function(xhr, status, error) {

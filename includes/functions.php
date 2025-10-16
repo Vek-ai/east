@@ -3035,6 +3035,31 @@ function getColumnFromTable($table, $column, $ids = null) {
     return implode(', ', $data);
 }
 
+function getDimensions($ids) {
+    global $conn;
+
+    if (empty($ids)) return '';
+
+    if (is_string($ids) && $ids[0] === '[') $ids = json_decode($ids, true);
+    elseif (!is_array($ids)) $ids = [$ids];
+
+    $ids = array_filter($ids, 'is_numeric');
+    if (!$ids) return '';
+
+    $idList = implode(',', array_map('intval', $ids));
+    $query = "SELECT dimension, dimension_unit FROM dimensions WHERE dimension_id IN ($idList)";
+    $result = mysqli_query($conn, $query);
+
+    $data = [];
+    while ($row = mysqli_fetch_assoc($result)) {
+        $dim = trim($row['dimension'] ?? '');
+        $unit = trim($row['dimension_unit'] ?? '');
+        if ($dim !== '') $data[] = "$dim $unit";
+    }
+
+    return implode(', ', $data);
+}
+
 function calculateCartItem($values) {
     $customer_id = $_SESSION['customer_id'];
     $customer_details = getCustomerDetails($customer_id);
