@@ -492,9 +492,9 @@ if(isset($_POST['fetch_cart'])){
                                                 
                                             <?php } ?>
                                         </td>
-                                        <td class="text-center">
+                                        <td class="text-center align-middle">
                                             <div class="d-flex align-items-center gap-2 justify-content-start">
-                                                <i class="fa fa-arrows drag-handle" style="cursor:move;"></i>
+                                                <i class="fa fa-bars fa-lg drag-handle" style="cursor: move;"></i>
 
                                                 <div class="bundle-checkbox-cart d-none">
                                                     <div class="form-check m-0">
@@ -844,7 +844,7 @@ if(isset($_POST['fetch_cart'])){
                                     </td>
                                     <td class="text-center">
                                         <div class="d-flex align-items-center gap-2 justify-content-start">
-                                            <i class="fa fa-arrows drag-handle" style="cursor:move;"></i>
+                                            <i class="fa fa-bars fa-lg drag-handle" style="cursor: move;"></i>
 
                                             <div class="bundle-checkbox-cart d-none">
                                                 <div class="form-check m-0">
@@ -1120,7 +1120,7 @@ if(isset($_POST['fetch_cart'])){
                                     </td>
                                     <td class="text-center">
                                         <div class="d-flex align-items-center gap-2 justify-content-start">
-                                            <i class="fa fa-arrows drag-handle" style="cursor:move;"></i>
+                                            <i class="fa fa-bars fa-lg drag-handle" style="cursor: move;"></i>
 
                                             <div class="bundle-checkbox-cart d-none">
                                                 <div class="form-check m-0">
@@ -1378,7 +1378,7 @@ if(isset($_POST['fetch_cart'])){
                                     </td>
                                     <td class="text-center">
                                         <div class="d-flex align-items-center gap-2 justify-content-start">
-                                            <i class="fa fa-arrows drag-handle" style="cursor:move;"></i>
+                                            <i class="fa fa-bars fa-lg drag-handle" style="cursor: move;"></i>
 
                                             <div class="bundle-checkbox-cart d-none">
                                                 <div class="form-check m-0">
@@ -1634,7 +1634,7 @@ if(isset($_POST['fetch_cart'])){
                                     </td>
                                     <td class="text-center">
                                         <div class="d-flex align-items-center gap-2 justify-content-start">
-                                            <i class="fa fa-arrows drag-handle" style="cursor:move;"></i>
+                                            <i class="fa fa-bars fa-lg drag-handle" style="cursor: move;"></i>
 
                                             <div class="bundle-checkbox-cart d-none">
                                                 <div class="form-check m-0">
