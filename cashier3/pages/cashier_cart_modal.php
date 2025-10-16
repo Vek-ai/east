@@ -279,6 +279,7 @@ if(isset($_POST['fetch_cart'])){
                         }
 
                         foreach ($panel_cart as $product_id => $items) {
+                            $group_id = uniqid('group_');
                             $total_qty = 0;
                             $total_length_cart = 0;
                             $total_price_actual = 0;
@@ -371,7 +372,6 @@ if(isset($_POST['fetch_cart'])){
                                     $ <?= number_format($total_customer_price,2) ?>
                                 </td>
                                 <td class="text-center">
-                                    <a href="javascript:void(0)" class="text-decoration-none me-2 toggleSortBtn" data-id="<?= $product_id ?>"><i class="fa fs-6 fa-sort"></i></a>
                                     <a href="javascript:void(0)" data-id="<?= $product_id ?>" onClick="delete_product(this)"><i class="fa fs-6 fa-trash"></i></a>
                                 </td>
                             </tr>
@@ -469,7 +469,7 @@ if(isset($_POST['fetch_cart'])){
                                     $bundle_customer_price += $customer_price;
                                     ?>
 
-                                    <tr>
+                                    <tr data-id="<?= $product_id ?>" data-line="<?= $line ?>" data-line="<?= $line ?>" data-bundle="<?= $values['bundle_name'] ?? '' ?>">
                                         <td>
                                             <?php
                                             if($category_id == $trim_id){
@@ -492,22 +492,30 @@ if(isset($_POST['fetch_cart'])){
                                                 
                                             <?php } ?>
                                         </td>
-                                        <td>
-                                            <div class="bundle-checkbox-cart d-none">
-                                                <div class="form-check text-center">
-                                                    <input class="form-check-input bundle-checkbox-cart" 
+                                        <td class="text-center">
+                                            <div class="d-flex align-items-center gap-2 justify-content-start">
+                                                <i class="fa fa-arrows drag-handle" style="cursor:move;"></i>
+
+                                                <div class="bundle-checkbox-cart d-none">
+                                                    <div class="form-check m-0">
+                                                        <input class="form-check-input bundle-checkbox-cart" 
                                                             type="checkbox" 
                                                             data-line="<?= $line; ?>" 
                                                             data-id="<?= $product_id; ?>" 
                                                             value="<?= $line; ?>">
+                                                    </div>
                                                 </div>
+
+                                                <span class="<?= $show_unique_product_id ? '' : 'd-none' ?>">
+                                                    <?= htmlspecialchars($product_id_abbrev) ?>
+                                                </span>
+
+                                                <?php if (!empty($values["note"])){ ?>
+                                                    <span class="text-muted small">
+                                                        Notes: <?= htmlspecialchars($values["note"]) ?>
+                                                    </span>
+                                                <?php } ?>
                                             </div>
-                                            <span class="<?= $show_unique_product_id ? '' : 'd-none' ?>">
-                                                <?= htmlspecialchars($product_id_abbrev) ?>
-                                            <span>
-                                            <?php if (!empty($values["note"])): ?>
-                                                <br>Notes: <?= htmlspecialchars($values["note"]) ?>
-                                            <?php endif; ?>
                                         </td>
                                         <td class="text-center">
                                             <div class="input-group d-inline-flex align-items-center flex-nowrap w-auto">
@@ -652,19 +660,6 @@ if(isset($_POST['fetch_cart'])){
                                                 <i class="fa fa-plus fs-6"></i>
                                             </a>
 
-                                            <a href="javascript:void(0)" 
-                                                class="text-decoration-none btn-sm me-1 sortArrowSec sort-up d-none"
-                                                data-id="<?php echo $product_id; ?>" 
-                                                data-line="<?php echo $line; ?>">
-                                                <i class="fa fs-6 fa-arrow-up"></i>
-                                            </a>
-
-                                            <a href="javascript:void(0)" 
-                                                class="text-decoration-none btn-sm sortArrowSec sort-down d-none"
-                                                data-id="<?php echo $product_id; ?>" 
-                                                data-line="<?php echo $line; ?>">
-                                                <i class="fa fs-6 fa-arrow-down"></i>
-                                            </a>
                                             <input type="hidden" class="form-control" data-id="<?php echo $product_id; ?>" id="item_id<?php echo $product_id; ?>" value="<?php echo $values["product_id"]; ?>">
                                             <input class="form-control" type="hidden" size="5" value="<?php echo $values["quantity_ttl"];?>" id="warehouse_stock<?php echo $product_id;?>">
                                             <input class="form-control" type="hidden" size="5" value="<?php echo $line;?>" id="line<?php echo $product_id;?>">
@@ -789,7 +784,6 @@ if(isset($_POST['fetch_cart'])){
                                 </td>
 
                                 <td class="text-center">
-                                    <a href="javascript:void(0)" class="text-decoration-none me-2 toggleSortBtn" data-id="<?= $product_id ?>"><i class="fa fs-6 fa-sort"></i></a>
                                     <a href="javascript:void(0)" data-id="<?= $product_id ?>" onClick="delete_product(this)"><i class="fa fs-6 fa-trash"></i></a>
                                 </td>
                             </tr>
@@ -832,7 +826,7 @@ if(isset($_POST['fetch_cart'])){
                                 $product_id_abbrev = $item['product_id_abbrev'];
                                 ?>
 
-                                <tr>
+                                <tr data-id="<?= $product_id ?>" data-line="<?= $line ?>" data-line="<?= $line ?>" data-bundle="<?= $values['bundle_name'] ?? '' ?>">
                                     <td>
                                         <?php if($category_id == $trim_id): ?>
                                             <?php if(!empty($values["custom_trim_src"])): ?>
@@ -848,13 +842,30 @@ if(isset($_POST['fetch_cart'])){
                                             <?php endif; ?>
                                         <?php endif; ?>
                                     </td>
-                                    <td>
-                                        <span class="<?= $show_unique_product_id ? '' : 'd-none' ?>">
-                                            <?= htmlspecialchars($product_id_abbrev) ?>
-                                        <span>
-                                        <?php if (!empty($values["note"])): ?>
-                                            <br>Notes: <?= htmlspecialchars($values["note"]) ?>
-                                        <?php endif; ?>
+                                    <td class="text-center">
+                                        <div class="d-flex align-items-center gap-2 justify-content-start">
+                                            <i class="fa fa-arrows drag-handle" style="cursor:move;"></i>
+
+                                            <div class="bundle-checkbox-cart d-none">
+                                                <div class="form-check m-0">
+                                                    <input class="form-check-input bundle-checkbox-cart" 
+                                                        type="checkbox" 
+                                                        data-line="<?= $line; ?>" 
+                                                        data-id="<?= $product_id; ?>" 
+                                                        value="<?= $line; ?>">
+                                                </div>
+                                            </div>
+
+                                            <span class="<?= $show_unique_product_id ? '' : 'd-none' ?>">
+                                                <?= htmlspecialchars($product_id_abbrev) ?>
+                                            </span>
+
+                                            <?php if (!empty($values["note"])){ ?>
+                                                <span class="text-muted small">
+                                                    Notes: <?= htmlspecialchars($values["note"]) ?>
+                                                </span>
+                                            <?php } ?>
+                                        </div>
                                     </td>
                                     <td class="text-center">
                                         <div class="input-group d-inline-flex align-items-center flex-nowrap w-auto">
@@ -950,19 +961,7 @@ if(isset($_POST['fetch_cart'])){
                                         <a href="javascript:void(0)" class="text-decoration-none btn-sm duplicate-item-btn" data-line="<?= $line; ?>" data-id="<?= $product_id; ?>" onClick="duplicate_item(this)">
                                             <i class="fa fa-plus fs-6"></i>
                                         </a>
-                                        <a href="javascript:void(0)" 
-                                            class="text-decoration-none btn-sm me-1 sortArrowSec sort-up d-none"
-                                            data-id="<?php echo $product_id; ?>" 
-                                            data-line="<?php echo $line; ?>">
-                                            <i class="fa fs-6 fa-arrow-up"></i>
-                                        </a>
-
-                                        <a href="javascript:void(0)" 
-                                            class="text-decoration-none btn-sm sortArrowSec sort-down d-none"
-                                            data-id="<?php echo $product_id; ?>" 
-                                            data-line="<?php echo $line; ?>">
-                                            <i class="fa fs-6 fa-arrow-down"></i>
-                                        </a>
+                                        
                                     </td>
                                 </tr>
                             <?php
@@ -1061,7 +1060,6 @@ if(isset($_POST['fetch_cart'])){
                                 </td>
 
                                 <td class="text-center">
-                                    <a href="javascript:void(0)" class="text-decoration-none me-2 toggleSortBtn" data-id="<?= $product_id ?>"><i class="fa fs-6 fa-sort"></i></a>
                                     <a href="javascript:void(0)" data-id="<?= $product_id ?>" onClick="delete_product(this)"><i class="fa fs-6 fa-trash"></i></a>
                                 </td>
                             </tr>
@@ -1104,7 +1102,7 @@ if(isset($_POST['fetch_cart'])){
                                 $product_id_abbrev = $item['product_id_abbrev'];
                                 ?>
 
-                                <tr>
+                                <tr data-id="<?= $product_id ?>" data-line="<?= $line ?>" data-line="<?= $line ?>" data-bundle="<?= $values['bundle_name'] ?? '' ?>">
                                     <td>
                                         <?php if($category_id == $trim_id): ?>
                                             <?php if(!empty($values["custom_trim_src"])): ?>
@@ -1120,13 +1118,30 @@ if(isset($_POST['fetch_cart'])){
                                             <?php endif; ?>
                                         <?php endif; ?>
                                     </td>
-                                    <td>
-                                        <span class="<?= $show_unique_product_id ? '' : 'd-none' ?>">
-                                            <?= htmlspecialchars($product_id_abbrev) ?>
-                                        <span>
-                                        <?php if (!empty($values["note"])): ?>
-                                            <br>Notes: <?= htmlspecialchars($values["note"]) ?>
-                                        <?php endif; ?>
+                                    <td class="text-center">
+                                        <div class="d-flex align-items-center gap-2 justify-content-start">
+                                            <i class="fa fa-arrows drag-handle" style="cursor:move;"></i>
+
+                                            <div class="bundle-checkbox-cart d-none">
+                                                <div class="form-check m-0">
+                                                    <input class="form-check-input bundle-checkbox-cart" 
+                                                        type="checkbox" 
+                                                        data-line="<?= $line; ?>" 
+                                                        data-id="<?= $product_id; ?>" 
+                                                        value="<?= $line; ?>">
+                                                </div>
+                                            </div>
+
+                                            <span class="<?= $show_unique_product_id ? '' : 'd-none' ?>">
+                                                <?= htmlspecialchars($product_id_abbrev) ?>
+                                            </span>
+
+                                            <?php if (!empty($values["note"])){ ?>
+                                                <span class="text-muted small">
+                                                    Notes: <?= htmlspecialchars($values["note"]) ?>
+                                                </span>
+                                            <?php } ?>
+                                        </div>
                                     </td>
                                     <td class="text-center">
                                         <div class="input-group d-inline-flex align-items-center flex-nowrap w-auto">
@@ -1204,19 +1219,7 @@ if(isset($_POST['fetch_cart'])){
                                         <a href="javascript:void(0)" class="text-decoration-none btn-sm duplicate-item-btn" data-line="<?= $line; ?>" data-id="<?= $product_id; ?>" onClick="duplicate_item(this)">
                                             <i class="fa fa-plus fs-6"></i>
                                         </a>
-                                        <a href="javascript:void(0)" 
-                                            class="text-decoration-none btn-sm me-1 sortArrowSec sort-up d-none"
-                                            data-id="<?php echo $product_id; ?>" 
-                                            data-line="<?php echo $line; ?>">
-                                            <i class="fa fs-6 fa-arrow-up"></i>
-                                        </a>
-
-                                        <a href="javascript:void(0)" 
-                                            class="text-decoration-none btn-sm sortArrowSec sort-down d-none"
-                                            data-id="<?php echo $product_id; ?>" 
-                                            data-line="<?php echo $line; ?>">
-                                            <i class="fa fs-6 fa-arrow-down"></i>
-                                        </a>
+                                        
                                     </td>
                                 </tr>
                             <?php
@@ -1315,7 +1318,6 @@ if(isset($_POST['fetch_cart'])){
                                 </td>
 
                                 <td class="text-center">
-                                    <a href="javascript:void(0)" class="text-decoration-none me-2 toggleSortBtn" data-id="<?= $product_id ?>"><i class="fa fs-6 fa-sort"></i></a>
                                     <a href="javascript:void(0)" data-id="<?= $product_id ?>" onClick="delete_product(this)"><i class="fa fs-6 fa-trash"></i></a>
                                 </td>
                             </tr>
@@ -1358,7 +1360,7 @@ if(isset($_POST['fetch_cart'])){
                                 $product_id_abbrev = $item['product_id_abbrev'];
                                 ?>
 
-                                <tr>
+                                <tr data-id="<?= $product_id ?>" data-line="<?= $line ?>" data-line="<?= $line ?>" data-bundle="<?= $values['bundle_name'] ?? '' ?>">
                                     <td>
                                         <?php if($category_id == $trim_id): ?>
                                             <?php if(!empty($values["custom_trim_src"])): ?>
@@ -1374,13 +1376,30 @@ if(isset($_POST['fetch_cart'])){
                                             <?php endif; ?>
                                         <?php endif; ?>
                                     </td>
-                                    <td>
-                                        <span class="<?= $show_unique_product_id ? '' : 'd-none' ?>">
-                                            <?= htmlspecialchars($product_id_abbrev) ?>
-                                        <span>
-                                        <?php if (!empty($values["note"])): ?>
-                                            <br>Notes: <?= htmlspecialchars($values["note"]) ?>
-                                        <?php endif; ?>
+                                    <td class="text-center">
+                                        <div class="d-flex align-items-center gap-2 justify-content-start">
+                                            <i class="fa fa-arrows drag-handle" style="cursor:move;"></i>
+
+                                            <div class="bundle-checkbox-cart d-none">
+                                                <div class="form-check m-0">
+                                                    <input class="form-check-input bundle-checkbox-cart" 
+                                                        type="checkbox" 
+                                                        data-line="<?= $line; ?>" 
+                                                        data-id="<?= $product_id; ?>" 
+                                                        value="<?= $line; ?>">
+                                                </div>
+                                            </div>
+
+                                            <span class="<?= $show_unique_product_id ? '' : 'd-none' ?>">
+                                                <?= htmlspecialchars($product_id_abbrev) ?>
+                                            </span>
+
+                                            <?php if (!empty($values["note"])){ ?>
+                                                <span class="text-muted small">
+                                                    Notes: <?= htmlspecialchars($values["note"]) ?>
+                                                </span>
+                                            <?php } ?>
+                                        </div>
                                     </td>
                                     <td class="text-center">
                                         <div class="input-group d-inline-flex align-items-center flex-nowrap w-auto">
@@ -1456,19 +1475,7 @@ if(isset($_POST['fetch_cart'])){
                                         <a href="javascript:void(0)" class="text-decoration-none btn-sm duplicate-item-btn" data-line="<?= $line; ?>" data-id="<?= $product_id; ?>" onClick="duplicate_item(this)">
                                             <i class="fa fa-plus fs-6"></i>
                                         </a>
-                                        <a href="javascript:void(0)" 
-                                            class="text-decoration-none btn-sm me-1 sortArrowSec sort-up d-none"
-                                            data-id="<?php echo $product_id; ?>" 
-                                            data-line="<?php echo $line; ?>">
-                                            <i class="fa fs-6 fa-arrow-up"></i>
-                                        </a>
-
-                                        <a href="javascript:void(0)" 
-                                            class="text-decoration-none btn-sm sortArrowSec sort-down d-none"
-                                            data-id="<?php echo $product_id; ?>" 
-                                            data-line="<?php echo $line; ?>">
-                                            <i class="fa fs-6 fa-arrow-down"></i>
-                                        </a>
+                                        
                                     </td>
                                 </tr>
                             <?php
@@ -1567,7 +1574,6 @@ if(isset($_POST['fetch_cart'])){
                                 </td>
 
                                 <td class="text-center">
-                                    <a href="javascript:void(0)" class="text-decoration-none me-2 toggleSortBtn" data-id="<?= $product_id ?>"><i class="fa fs-6 fa-sort"></i></a>
                                     <a href="javascript:void(0)" data-id="<?= $product_id ?>" onClick="delete_product(this)"><i class="fa fs-6 fa-trash"></i></a>
                                 </td>
                             </tr>
@@ -1610,7 +1616,7 @@ if(isset($_POST['fetch_cart'])){
                                 $product_id_abbrev = $item['product_id_abbrev'];
                                 ?>
 
-                                <tr>
+                                <tr data-id="<?= $product_id ?>" data-line="<?= $line ?>" data-line="<?= $line ?>" data-bundle="<?= $values['bundle_name'] ?? '' ?>">
                                     <td>
                                         <?php if($category_id == $trim_id): ?>
                                             <?php if(!empty($values["custom_trim_src"])): ?>
@@ -1626,13 +1632,30 @@ if(isset($_POST['fetch_cart'])){
                                             <?php endif; ?>
                                         <?php endif; ?>
                                     </td>
-                                    <td>
-                                        <span class="<?= $show_unique_product_id ? '' : 'd-none' ?>">
-                                            <?= htmlspecialchars($product_id_abbrev) ?>
-                                        <span>
-                                        <?php if (!empty($values["note"])): ?>
-                                            <br>Notes: <?= htmlspecialchars($values["note"]) ?>
-                                        <?php endif; ?>
+                                    <td class="text-center">
+                                        <div class="d-flex align-items-center gap-2 justify-content-start">
+                                            <i class="fa fa-arrows drag-handle" style="cursor:move;"></i>
+
+                                            <div class="bundle-checkbox-cart d-none">
+                                                <div class="form-check m-0">
+                                                    <input class="form-check-input bundle-checkbox-cart" 
+                                                        type="checkbox" 
+                                                        data-line="<?= $line; ?>" 
+                                                        data-id="<?= $product_id; ?>" 
+                                                        value="<?= $line; ?>">
+                                                </div>
+                                            </div>
+
+                                            <span class="<?= $show_unique_product_id ? '' : 'd-none' ?>">
+                                                <?= htmlspecialchars($product_id_abbrev) ?>
+                                            </span>
+
+                                            <?php if (!empty($values["note"])){ ?>
+                                                <span class="text-muted small">
+                                                    Notes: <?= htmlspecialchars($values["note"]) ?>
+                                                </span>
+                                            <?php } ?>
+                                        </div>
                                     </td>
                                     <td class="text-center">
                                         <div class="input-group d-inline-flex align-items-center flex-nowrap w-auto">
@@ -1708,19 +1731,7 @@ if(isset($_POST['fetch_cart'])){
                                         <a href="javascript:void(0)" class="text-decoration-none btn-sm duplicate-item-btn" data-line="<?= $line; ?>" data-id="<?= $product_id; ?>" onClick="duplicate_item(this)">
                                             <i class="fa fa-plus fs-6"></i>
                                         </a>
-                                        <a href="javascript:void(0)" 
-                                            class="text-decoration-none btn-sm me-1 sortArrowSec sort-up d-none"
-                                            data-id="<?php echo $product_id; ?>" 
-                                            data-line="<?php echo $line; ?>">
-                                            <i class="fa fs-6 fa-arrow-up"></i>
-                                        </a>
-
-                                        <a href="javascript:void(0)" 
-                                            class="text-decoration-none btn-sm sortArrowSec sort-down d-none"
-                                            data-id="<?php echo $product_id; ?>" 
-                                            data-line="<?php echo $line; ?>">
-                                            <i class="fa fs-6 fa-arrow-down"></i>
-                                        </a>
+                                        
                                     </td>
                                 </tr>
                             <?php
@@ -1989,6 +2000,78 @@ if(isset($_POST['fetch_cart'])){
         }
         $(document).ready(function() {
             initAutocomplete();
+
+            $('tbody').sortable({
+                handle: '.drag-handle',
+                axis: 'y',
+                placeholder: 'sortable-placeholder',
+
+                start: function (event, ui) {
+                    ui.item.data('start-bundle', ui.item.data('bundle') || '');
+                },
+
+                stop: function (event, ui) {
+                    const $moved = ui.item;
+                    let targetBundle = '';
+
+                    const $prevRow = $moved.prev('tr[data-line]');
+                    const $nextRow = $moved.next('tr[data-line]');
+
+                    if ($prevRow.length && $prevRow.data('bundle') !== '') {
+                        targetBundle = $prevRow.data('bundle');
+                    }
+                    else if ($nextRow.length && $nextRow.data('bundle') !== '') {
+                        targetBundle = $nextRow.data('bundle');
+                    }
+                    else {
+                        targetBundle = '';
+                    }
+
+                    $moved.data('bundle', targetBundle);
+
+                    let currentBundle = '';
+                    $('tr[data-line]').each(function () {
+                        const $row = $(this);
+                        const rowBundle = $row.data('bundle') || '';
+
+                        if (rowBundle !== '' && $row.hasClass('bundle-header')) {
+                            currentBundle = rowBundle;
+                            return;
+                        }
+
+                        if (rowBundle === '' && currentBundle !== '') {
+                            currentBundle = '';
+                        }
+                    });
+
+                    const order = [];
+                    $('tr[data-line]').each(function () {
+                        order.push({
+                            line: $(this).data('line'),
+                            bundle: $(this).data('bundle') || ''
+                        });
+                    });
+
+                    $.ajax({
+                        url: 'pages/cashier_ajax.php',
+                        type: 'POST',
+                        data: { reorder_cart: 1, order: order },
+                        dataType: 'json',
+                        success: function (response) {
+                            if (response.success) {
+                                loadCart();
+                            } else {
+                                console.error('Error reordering cart', response);
+                            }
+                        },
+                        error: function (xhr, status, error) {
+                            console.error('AJAX error:', error);
+                            console.log(xhr.responseText);
+                        }
+                    });
+                }
+            });
+
 
             const savedData = sessionStorage.getItem('new_customer');
             if (savedData && <?= empty($_SESSION["customer_id"]) ? 'true' : 'false' ?>) {

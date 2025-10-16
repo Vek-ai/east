@@ -171,6 +171,14 @@ $editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) :
         z-index: 91090;
     }
 
+    .sortable-placeholder {
+        background: #f8f9fa;
+        border: 2px dashed #ccc;
+        height: 3rem;
+        margin: 5px 0;
+        border-radius: 5px;
+    }
+
 </style>
 <div class="product-list pt-4">
     <div class="card">

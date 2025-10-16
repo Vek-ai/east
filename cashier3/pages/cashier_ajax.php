@@ -2987,46 +2987,33 @@ if (isset($_POST['set_bundle_name'])) {
 }
 
 if (isset($_POST['reorder_cart'])) {
-    $product_id = $_POST['product_id'];
-    $line = (int)$_POST['line'];
-    $direction = $_POST['direction'];
+    $order = $_POST['order'] ?? [];
 
-    if (isset($_SESSION['cart'][$line])) {
-        $currentItem = $_SESSION['cart'][$line];
-        $bundle_name = $currentItem['bundle_name'] ?? '';
+    if (!isset($_SESSION['cart']) || !is_array($_SESSION['cart'])) {
+        $_SESSION['cart'] = [];
+    }
 
-        $keys = [];
-        foreach ($_SESSION['cart'] as $k => $item) {
-            if (
-                $item['product_id'] == $product_id &&
-                ($item['bundle_name'] ?? '') == $bundle_name
-            ) {
-                $keys[] = $k;
-            }
-        }
+    $indexedCart = [];
+    foreach ($_SESSION['cart'] as $item) {
+        $indexedCart[(int)$item['line']] = $item;
+    }
 
-        $index = array_search($line, $keys);
+    $newCart = [];
+    foreach ($order as $row) {
+        $line = (int)$row['line'];
+        $bundle = trim($row['bundle'] ?? '');
 
-        if ($index !== false) {
-            if ($direction === 'up' && $index > 0) {
-                $swapIndex = $index - 1;
-            } elseif ($direction === 'down' && $index < count($keys) - 1) {
-                $swapIndex = $index + 1;
-            } else {
-                exit;
-            }
-
-            $tmp = $keys[$index];
-            $keys[$index] = $keys[$swapIndex];
-            $keys[$swapIndex] = $tmp;
-            $reordered = [];
-            foreach ($keys as $k) {
-                $reordered[$k] = $_SESSION['cart'][$k];
-            }
-            $_SESSION['cart'] = $reordered + $_SESSION['cart'];
+        if (isset($indexedCart[$line])) {
+            $indexedCart[$line]['bundle_name'] = $bundle;
+            $newCart[] = $indexedCart[$line];
         }
     }
 
+    $_SESSION['cart'] = $newCart;
+
+    echo json_encode([
+        'success' => true
+    ]);
     exit;
 }
 
