@@ -3071,6 +3071,7 @@ function calculateCartItem($values) {
     $product     = getProductDetails($data_id);
     $stock_qty   = getProductStockTotal($data_id);
     $category_id = $product["product_category"];
+    $product_type= $product['product_type'];
 
     $stock_text = ($stock_qty > 0)
         ? '<a href="javascript:void(0);" id="view_in_stock" data-id="' . htmlspecialchars($data_id, ENT_QUOTES, 'UTF-8') . '" class="d-flex align-items-center">
@@ -3098,6 +3099,7 @@ function calculateCartItem($values) {
     $profile  = intval($values["custom_profile"] ?? 0);
 
     $panel_type = $values["panel_type"] ?? '';
+    $panel_style= $values["panel_style"] ?? '';
     $bends      = intval($values["bends"] ?? 0);
     $hems       = intval($values["hems"] ?? 0);
 
@@ -3123,6 +3125,38 @@ function calculateCartItem($values) {
         $color_id,
         $length_id
     );
+
+    $parent_prod_id = '';
+    $unique_prod_id = '';
+
+    $panel_id = 3;
+    $trim_id  = 4;
+
+    if($category_id == $panel_id){
+        $parent_prod_id = getPanelProdID(
+            $category_id, $profile, $grade, $gauge, '', $color_id,
+            '',
+            '',
+            ''
+        );
+
+        $unique_prod_id = getPanelProdID(
+            $category_id, $profile, $grade, $gauge, '', $color_id,
+            $total_length,
+            $panel_type,
+            $panel_style
+        );
+    }else if($category_id == $trim_id){
+        $parent_prod_id = getTrimProdID(
+            $category_id, $product_type, $data_id, $grade, $gauge, $color_id,
+            ''
+        );
+
+        $unique_prod_id = getTrimProdID(
+            $category_id, $product_type, $data_id, $grade, $gauge, $color_id,
+            $total_length
+        );
+    }
 
     $linear_price = $product["unit_price"];
     $panel_price  = $unit_price;
@@ -3175,6 +3209,8 @@ function calculateCartItem($values) {
         "hems"              => $hems,
         "length_id"         => $length_id,
         "product_id_abbrev" => $product_id_abbrev,
+        "parent_prod_id"    => $parent_prod_id,
+        "unique_prod_id"    => $unique_prod_id,
     ];
 }
 
@@ -3331,19 +3367,6 @@ function generateProductAbr(
             return 0;
         }
 
-        function getAbbrMap($table, $id_col, $abbr_col, $ids = []) {
-            global $conn;
-            $map = [];
-            if (empty($ids)) return $map;
-
-            $ids = array_map('intval', $ids);
-            $res = mysqli_query($conn, "SELECT `$id_col`, `$abbr_col` FROM `$table` WHERE `$id_col` IN (" . implode(',', $ids) . ")");
-            while ($row = mysqli_fetch_assoc($res)) {
-                $map[$row[$id_col]] = $row[$abbr_col] ?? '';
-            }
-            return $map;
-        }
-
         $maps = [
             'category' => getAbbrMap('product_category', 'product_category_id', 'category_abreviations', $category_ids),
             'profile'  => getAbbrMap('profile_type', 'profile_type_id', 'profile_abbreviations', $profile_ids),
@@ -3498,20 +3521,6 @@ function generateProductAbrString($category_ids, $profile_ids, $grade_ids, $gaug
         return '';
     }
 
-    function getAbbrMap($table, $id_col, $abbr_col, $ids = []) {
-        global $conn;
-        $map = [];
-        if (empty($ids)) return $map;
-
-        $ids = array_map('intval', $ids);
-        $in  = implode(',', $ids);
-        $res = mysqli_query($conn, "SELECT `$id_col`, `$abbr_col` FROM `$table` WHERE `$id_col` IN ($in)");
-        while ($row = mysqli_fetch_assoc($res)) {
-            $map[$row[$id_col]] = $row[$abbr_col] ?? '';
-        }
-        return $map;
-    }
-
     $maps = [
         'category' => getAbbrMap('product_category', 'product_category_id', 'category_abreviations', $category_ids),
         'profile'  => getAbbrMap('profile_type', 'profile_type_id', 'profile_abbreviations', $profile_ids),
@@ -3557,6 +3566,225 @@ function generateProductAbrString($category_ids, $profile_ids, $grade_ids, $gaug
     $abrList = array_unique($abrList);
 
     return implode(',', $abrList);
+}
+
+function getAbbrMap($table, $id_col, $abbr_col, $ids = []) {
+    global $conn;
+    $map = [];
+    if (empty($ids)) return $map;
+
+    if (!is_array($ids)) {
+        $ids = [$ids];
+    }
+
+    $ids = array_map('intval', $ids);
+    $in  = implode(',', $ids);
+    $res = mysqli_query($conn, "SELECT `$id_col`, `$abbr_col` FROM `$table` WHERE `$id_col` IN ($in)");
+    while ($row = mysqli_fetch_assoc($res)) {
+        $map[$row[$id_col]] = $row[$abbr_col] ?? '';
+    }
+    return $map;
+}
+
+function getPanelProdID(
+    $category_ids,
+    $profile_ids,
+    $grade_ids,
+    $gauge_ids,
+    $type_ids,
+    $color_ids,
+    $length,
+    $panel_type = null,
+    $panel_style = null
+) {
+    global $conn;
+
+    if (
+        empty($category_ids) && empty($profile_ids) && empty($grade_ids) &&
+        empty($gauge_ids) && empty($type_ids) && empty($color_ids) &&
+        empty($length) && empty($panel_type) && empty($panel_style)
+    ) {
+        return '';
+    }
+
+    $category_ids = is_array($category_ids) ? $category_ids : (empty($category_ids) ? [] : [$category_ids]);
+    $profile_ids  = is_array($profile_ids)  ? $profile_ids  : (empty($profile_ids)  ? [] : [$profile_ids]);
+    $grade_ids    = is_array($grade_ids)    ? $grade_ids    : (empty($grade_ids)    ? [] : [$grade_ids]);
+    $gauge_ids    = is_array($gauge_ids)    ? $gauge_ids    : (empty($gauge_ids)    ? [] : [$gauge_ids]);
+    $type_ids     = is_array($type_ids)     ? $type_ids     : (empty($type_ids)     ? [] : [$type_ids]);
+    $color_ids    = is_array($color_ids)    ? $color_ids    : (empty($color_ids)    ? [] : [$color_ids]);
+
+    $maps = [
+        'category' => getAbbrMap('product_category', 'product_category_id', 'category_abreviations', $category_ids),
+        'profile'  => getAbbrMap('profile_type', 'profile_type_id', 'profile_abbreviations', $profile_ids),
+        'grade'    => getAbbrMap('product_grade', 'product_grade_id', 'grade_id_no', $grade_ids),
+        'gauge'    => getAbbrMap('product_gauge', 'product_gauge_id', 'gauge_id_no', $gauge_ids),
+        'type'     => getAbbrMap('product_type', 'product_type_id', 'type_abreviations', $type_ids),
+        'color'    => getAbbrMap('paint_colors', 'color_id', 'ekm_color_no', $color_ids),
+    ];
+
+    $idGroups = [
+        'category' => !empty($category_ids) ? $category_ids : [null],
+        'profile'  => !empty($profile_ids) ? $profile_ids : [null],
+        'grade'    => !empty($grade_ids) ? $grade_ids : [null],
+        'gauge'    => !empty($gauge_ids) ? $gauge_ids : [null],
+        'type'     => !empty($type_ids) ? $type_ids : [null],
+        'color'    => !empty($color_ids) ? $color_ids : [null],
+    ];
+
+    $combinations = [[]];
+    foreach ($idGroups as $key => $ids) {
+        $new = [];
+        foreach ($combinations as $combo) {
+            foreach ($ids as $id) {
+                $combo[$key] = $id;
+                $new[] = $combo;
+            }
+        }
+        $combinations = $new;
+    }
+
+    $panelTypeAbbr = '';
+    if (!empty($panel_type)) {
+        $pt = strtolower(trim($panel_type));
+        if ($pt === 'solid') $panelTypeAbbr = '(S)';
+        elseif ($pt === 'vented') $panelTypeAbbr = '(V)';
+        elseif ($pt === 'drip_stop') $panelTypeAbbr = '(DPS)';
+    }
+
+    $panelStyleAbbr = '';
+    if (!empty($panel_style)) {
+        $ps = strtolower(trim($panel_style));
+        if ($ps === 'regular') $panelStyleAbbr = '(Reg)';
+        elseif ($ps === 'reversed') $panelStyleAbbr = '(Rev)';
+    }
+
+    $lengthAbbr = '';
+    if (!empty($length)) {
+        $lengthAbbr = formatLengthAbbr(floatval($length));
+    }
+
+    $abrList = [];
+    foreach ($combinations as $c) {
+        $categoryAbbr = ($c['category'] && isset($maps['category'][$c['category']])) ? $maps['category'][$c['category']] : '';
+        $profileAbbr  = ($c['profile']  && isset($maps['profile'][$c['profile']]))   ? $maps['profile'][$c['profile']]   : '';
+        $gradeAbbr    = ($c['grade']    && isset($maps['grade'][$c['grade']]))       ? $maps['grade'][$c['grade']]       : '';
+        $gaugeAbbr    = ($c['gauge']    && isset($maps['gauge'][$c['gauge']]))       ? $maps['gauge'][$c['gauge']]       : '';
+        $colorAbbr    = ($c['color']    && isset($maps['color'][$c['color']]))       ? $maps['color'][$c['color']]       : '';
+
+        $abbr = '';
+        if ($categoryAbbr !== '') $abbr .= $categoryAbbr;
+        if ($profileAbbr !== '' || $gradeAbbr !== '' || $gaugeAbbr !== '') {
+            $abbr .= '-' . $profileAbbr . $gradeAbbr . $gaugeAbbr;
+        }
+        if ($colorAbbr !== '') {
+            $abbr .= '-' . $colorAbbr;
+        }
+
+        if ($lengthAbbr !== '') $abbr .= $lengthAbbr;
+        if ($panelTypeAbbr !== '') $abbr .= $panelTypeAbbr;
+        if ($panelStyleAbbr !== '') $abbr .= $panelStyleAbbr;
+
+        if ($abbr !== '') $abrList[] = $abbr;
+    }
+
+    $abrList = array_unique($abrList);
+
+    return !empty($abrList) ? reset($abrList) : '';
+}
+
+function getTrimProdID(
+    $category_id,
+    $type_id,
+    $product_id,
+    $grade_ids,
+    $gauge_ids,
+    $color_ids,
+    $length
+) {
+    global $conn;
+
+    $category_ids = empty($category_id) ? [] : [$category_id];
+    $type_ids     = empty($type_id)     ? [] : [$type_id];
+    $grade_ids    = is_array($grade_ids) ? $grade_ids : (empty($grade_ids) ? [] : [$grade_ids]);
+    $gauge_ids    = is_array($gauge_ids) ? $gauge_ids : (empty($gauge_ids) ? [] : [$gauge_ids]);
+    $color_ids    = is_array($color_ids) ? $color_ids : (empty($color_ids) ? [] : [$color_ids]);
+
+    $maps = [
+        'category' => getAbbrMap('product_category', 'product_category_id', 'category_abreviations', $category_ids),
+        'type'     => getAbbrMap('product_type', 'product_type_id', 'type_abreviations', $type_ids),
+        'grade'    => getAbbrMap('product_grade', 'product_grade_id', 'grade_abbreviations', $grade_ids),
+        'gauge'    => getAbbrMap('product_gauge', 'product_gauge_id', 'gauge_abbreviations', $gauge_ids),
+        'color'    => getAbbrMap('paint_colors', 'color_id', 'color_abbreviation', $color_ids),
+    ];
+
+    $idGroups = [
+        'category' => !empty($category_ids) ? $category_ids : [null],
+        'type'     => !empty($type_ids)     ? $type_ids     : [null],
+        'grade'    => !empty($grade_ids)    ? $grade_ids    : [null],
+        'gauge'    => !empty($gauge_ids)    ? $gauge_ids    : [null],
+        'color'    => !empty($color_ids)    ? $color_ids    : [null],
+    ];
+
+    $combinations = [[]];
+    foreach ($idGroups as $key => $ids) {
+        $new = [];
+        foreach ($combinations as $combo) {
+            foreach ($ids as $id) {
+                $combo[$key] = $id;
+                $new[] = $combo;
+            }
+        }
+        $combinations = $new;
+    }
+
+    $lengthAbbr = '';
+    if (!empty($length)) {
+        $lengthAbbr = '(' . formatLengthAbbr(floatval($length)) . ')';
+    }
+
+    $abrList = [];
+    foreach ($combinations as $c) {
+        $categoryAbbr = ($c['category'] && isset($maps['category'][$c['category']])) ? $maps['category'][$c['category']] : '';
+        $typeAbbr     = ($c['type']     && isset($maps['type'][$c['type']]))         ? $maps['type'][$c['type']]         : '';
+        $gradeAbbr    = ($c['grade']    && isset($maps['grade'][$c['grade']]))       ? $maps['grade'][$c['grade']]       : '';
+        $gaugeAbbr    = ($c['gauge']    && isset($maps['gauge'][$c['gauge']]))       ? $maps['gauge'][$c['gauge']]       : '';
+        $colorAbbr    = ($c['color']    && isset($maps['color'][$c['color']]))       ? $maps['color'][$c['color']]       : '';
+
+        $abbr = '';
+        if ($categoryAbbr !== '') $abbr .= $categoryAbbr;
+
+        if ($typeAbbr !== '' || !empty($product_id)) {
+            $abbr .= '-' . $typeAbbr . $product_id;
+        }
+
+        if ($gradeAbbr !== '' || $gaugeAbbr !== '') {
+            $abbr .= '-' . $gradeAbbr . $gaugeAbbr;
+        }
+
+        if ($colorAbbr !== '') {
+            $abbr .= '-' . $colorAbbr;
+        }
+
+        if ($lengthAbbr !== '') {
+            $abbr .= $lengthAbbr;
+        }
+
+        if ($abbr !== '') $abrList[] = $abbr;
+    }
+
+    $abrList = array_unique($abrList);
+    return !empty($abrList) ? reset($abrList) : '';
+}
+
+
+
+function formatLengthAbbr($decimalValue) {
+    $feet = floor($decimalValue);
+    $inchesDecimal = ($decimalValue - $feet) * 12;
+    $inches = round($inchesDecimal, 2);
+
+    return '(' . $feet . 'ft' . ($inches > 0 ? $inches . 'in' : '') . ')';
 }
 
 function fetchProductIDs($product_id_from_table) {

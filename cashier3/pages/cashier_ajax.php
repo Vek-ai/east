@@ -1321,15 +1321,7 @@ if (isset($_POST['save_order'])) {
             $loyalty_discount = intval(getCustomerDiscountLoyalty($customerid));
             $used_discount    = $item['used_discount'] ?? getCustomerDiscount($customerid);
 
-            $product_id_abbrev = fetchSingleProductABR(
-                $category_id,
-                $profile,
-                $grade,
-                $gauge,
-                '',
-                $color_id,
-                $calc['length_id'] ?? ''
-            );
+            $product_id_abbrev = $calc['unique_prod_id'];
 
             $query = "INSERT INTO order_product (
                 orderid, productid, product_item, quantity, custom_width, custom_bend, custom_hem,

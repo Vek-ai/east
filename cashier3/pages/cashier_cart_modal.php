@@ -299,7 +299,7 @@ if(isset($_POST['fetch_cart'])){
                             $picture_path = $first_calc['picture_path'];
                             $stock_text = $first_calc['stock_text'];
                             $multiplier = $first_calc['multiplier'];
-                            $product_id_abbrev = $first_calc['product_id_abbrev'];
+                            $parent_prod_id = $first_calc['parent_prod_id'];
                             ?>
 
                             <tr class="thick-border" data-mult="<?= $multiplier ?>">
@@ -312,7 +312,7 @@ if(isset($_POST['fetch_cart'])){
                                     </a>
                                     <br>
                                     <span class="<?= $show_prod_id_abbrev ? '' : 'd-none' ?>">
-                                        <?= htmlspecialchars($product_id_abbrev) ?>
+                                        <?= htmlspecialchars($parent_prod_id) ?>
                                     <span>
                                 </td>
 
@@ -463,13 +463,13 @@ if(isset($_POST['fetch_cart'])){
                                     $sold_by_feet = $item['sold_by_feet'];
                                     $linear_price =$item['linear_price'];
                                     $panel_price = $item['panel_price'];
-                                    $product_id_abbrev = $item['product_id_abbrev'];
+                                    $unique_prod_id = $item['unique_prod_id'];
 
                                     $bundle_actual_price += $product_price;
                                     $bundle_customer_price += $customer_price;
                                     ?>
 
-                                    <tr data-id="<?= $product_id ?>" data-line="<?= $line ?>" data-line="<?= $line ?>" data-bundle="<?= $values['bundle_name'] ?? '' ?>">
+                                    <tr data-abbrev="<?= $item['unique_prod_id'] ?>" data-id="<?= $product_id ?>" data-line="<?= $line ?>" data-line="<?= $line ?>" data-bundle="<?= $values['bundle_name'] ?? '' ?>">
                                         <td>
                                             <?php
                                             if($category_id == $trim_id){
@@ -494,7 +494,13 @@ if(isset($_POST['fetch_cart'])){
                                         </td>
                                         <td class="text-center align-middle">
                                             <div class="d-flex align-items-center gap-2 justify-content-start">
-                                                <i class="fa fa-bars fa-lg drag-handle" style="cursor: move;"></i>
+                                                <?php
+                                                if(!empty($values['bundle_name'])){
+                                                ?>
+                                                    <i class="fa fa-bars fa-lg drag-handle" style="cursor: move;"></i>
+                                                <?php
+                                                }
+                                                ?>
 
                                                 <div class="bundle-checkbox-cart d-none">
                                                     <div class="form-check m-0">
@@ -507,7 +513,7 @@ if(isset($_POST['fetch_cart'])){
                                                 </div>
 
                                                 <span class="<?= $show_unique_product_id ? '' : 'd-none' ?>">
-                                                    <?= htmlspecialchars($product_id_abbrev) ?>
+                                                    <?= htmlspecialchars($unique_prod_id) ?>
                                                 </span>
 
                                                 <?php if (!empty($values["note"])){ ?>
@@ -664,11 +670,6 @@ if(isset($_POST['fetch_cart'])){
                                             <input class="form-control" type="hidden" size="5" value="<?php echo $values["quantity_ttl"];?>" id="warehouse_stock<?php echo $product_id;?>">
                                             <input class="form-control" type="hidden" size="5" value="<?php echo $line;?>" id="line<?php echo $product_id;?>">
                                             <input class="form-control" type="hidden" size="5" value="<?php echo $values["quantity_in_stock"];?>" id="store_stock<?php echo $product_id;?>">
-                                            <?php 
-                                            if ($category_id == $panel_id || $category_id == $trim_id) { // Panels ID
-                                                $is_panel_present = 1;
-                                            }
-                                            ?>
                                         </td>
                                     </tr>
 
@@ -712,7 +713,7 @@ if(isset($_POST['fetch_cart'])){
                             $picture_path = $first_calc['picture_path'];
                             $stock_text = $first_calc['stock_text'];
                             $multiplier = $first_calc['multiplier'];
-                            $product_id_abbrev = $first_calc['product_id_abbrev'];
+                            $parent_prod_id = $first_calc['parent_prod_id'];
                             ?>
 
                             <tr class="thick-border" data-mult="<?= $multiplier ?>">
@@ -725,7 +726,7 @@ if(isset($_POST['fetch_cart'])){
                                     </a>
                                     <br>
                                     <span class="<?= $show_prod_id_abbrev ? '' : 'd-none' ?>">
-                                        <?= htmlspecialchars($product_id_abbrev) ?>
+                                        <?= htmlspecialchars($parent_prod_id) ?>
                                     <span>
                                 </td>
 
@@ -823,7 +824,7 @@ if(isset($_POST['fetch_cart'])){
                                 $sold_by_feet = $item['sold_by_feet'];
                                 $linear_price =$item['linear_price'];
                                 $panel_price = $item['panel_price'];
-                                $product_id_abbrev = $item['product_id_abbrev'];
+                                $unique_prod_id = $item['unique_prod_id'];
                                 ?>
 
                                 <tr data-id="<?= $product_id ?>" data-line="<?= $line ?>" data-line="<?= $line ?>" data-bundle="<?= $values['bundle_name'] ?? '' ?>">
@@ -842,9 +843,9 @@ if(isset($_POST['fetch_cart'])){
                                             <?php endif; ?>
                                         <?php endif; ?>
                                     </td>
-                                    <td class="text-center">
+                                    <td class="text-start">
                                         <div class="d-flex align-items-center gap-2 justify-content-start">
-                                            <i class="fa fa-bars fa-lg drag-handle" style="cursor: move;"></i>
+                                            
 
                                             <div class="bundle-checkbox-cart d-none">
                                                 <div class="form-check m-0">
@@ -857,7 +858,7 @@ if(isset($_POST['fetch_cart'])){
                                             </div>
 
                                             <span class="<?= $show_unique_product_id ? '' : 'd-none' ?>">
-                                                <?= htmlspecialchars($product_id_abbrev) ?>
+                                                <?= htmlspecialchars($unique_prod_id) ?>
                                             </span>
 
                                             <?php if (!empty($values["note"])){ ?>
@@ -964,6 +965,22 @@ if(isset($_POST['fetch_cart'])){
                                         
                                     </td>
                                 </tr>
+
+                                <?php
+                                $total_qty           += $item["quantity"];
+                                $total_length_cart   += $item["quantity"] * $item["total_length"];
+                                $totalquantity       += $item["quantity"];
+                                $total_price_actual  += $item["subtotal"];
+                                $total_customer_price+= $item["customer_price"];
+                                $total_weight        += ($product["weight"] ?? 0) * $item["quantity"];
+                                $customer_savings    += $item["savings"];
+                                $grand_actual_price  += $item["subtotal"];
+                                $grand_customer_price+= $item["customer_price"];
+
+                                if ($category_id == $panel_id || $category_id == $trim_id) {
+                                    $is_panel_present = 1;
+                                }
+                                ?>
                             <?php
                             }
                         }
@@ -1118,9 +1135,8 @@ if(isset($_POST['fetch_cart'])){
                                             <?php endif; ?>
                                         <?php endif; ?>
                                     </td>
-                                    <td class="text-center">
+                                    <td class="text-start">
                                         <div class="d-flex align-items-center gap-2 justify-content-start">
-                                            <i class="fa fa-bars fa-lg drag-handle" style="cursor: move;"></i>
 
                                             <div class="bundle-checkbox-cart d-none">
                                                 <div class="form-check m-0">
@@ -1222,6 +1238,18 @@ if(isset($_POST['fetch_cart'])){
                                         
                                     </td>
                                 </tr>
+
+                                <?php
+                                $total_qty           += $item["quantity"];
+                                $total_length_cart   += $item["quantity"] * $item["total_length"];
+                                $totalquantity       += $item["quantity"];
+                                $total_price_actual  += $item["subtotal"];
+                                $total_customer_price+= $item["customer_price"];
+                                $total_weight        += ($product["weight"] ?? 0) * $item["quantity"];
+                                $customer_savings    += $item["savings"];
+                                $grand_actual_price  += $item["subtotal"];
+                                $grand_customer_price+= $item["customer_price"];
+                                ?>
                             <?php
                             }
                         }
@@ -1378,7 +1406,7 @@ if(isset($_POST['fetch_cart'])){
                                     </td>
                                     <td class="text-center">
                                         <div class="d-flex align-items-center gap-2 justify-content-start">
-                                            <i class="fa fa-bars fa-lg drag-handle" style="cursor: move;"></i>
+                                            
 
                                             <div class="bundle-checkbox-cart d-none">
                                                 <div class="form-check m-0">
@@ -1478,6 +1506,18 @@ if(isset($_POST['fetch_cart'])){
                                         
                                     </td>
                                 </tr>
+
+                                <?php
+                                $total_qty           += $item["quantity"];
+                                $total_length_cart   += $item["quantity"] * $item["total_length"];
+                                $totalquantity       += $item["quantity"];
+                                $total_price_actual  += $item["subtotal"];
+                                $total_customer_price+= $item["customer_price"];
+                                $total_weight        += ($product["weight"] ?? 0) * $item["quantity"];
+                                $customer_savings    += $item["savings"];
+                                $grand_actual_price  += $item["subtotal"];
+                                $grand_customer_price+= $item["customer_price"];
+                                ?>
                             <?php
                             }
                         }
@@ -1634,7 +1674,7 @@ if(isset($_POST['fetch_cart'])){
                                     </td>
                                     <td class="text-center">
                                         <div class="d-flex align-items-center gap-2 justify-content-start">
-                                            <i class="fa fa-bars fa-lg drag-handle" style="cursor: move;"></i>
+                                            
 
                                             <div class="bundle-checkbox-cart d-none">
                                                 <div class="form-check m-0">
@@ -1734,6 +1774,18 @@ if(isset($_POST['fetch_cart'])){
                                         
                                     </td>
                                 </tr>
+
+                                <?php
+                                $total_qty           += $item["quantity"];
+                                $total_length_cart   += $item["quantity"] * $item["total_length"];
+                                $totalquantity       += $item["quantity"];
+                                $total_price_actual  += $item["subtotal"];
+                                $total_customer_price+= $item["customer_price"];
+                                $total_weight        += ($product["weight"] ?? 0) * $item["quantity"];
+                                $customer_savings    += $item["savings"];
+                                $grand_actual_price  += $item["subtotal"];
+                                $grand_customer_price+= $item["customer_price"];
+                                ?>
                             <?php
                             }
                         }
