@@ -65,7 +65,6 @@ if (isset($_POST['merge'])) {
                     WHERE `$col` = $product_merge";
             if (!mysqli_query($conn, $sql)) {
                 $allSuccess = false;
-                error_log("Failed updating $table.$col: " . mysqli_error($conn));
             }
         }
 
@@ -78,7 +77,6 @@ if (isset($_POST['merge'])) {
             if ($insertHistory) {
                 echo "success";
             } else {
-                error_log('Failed inserting into product_merge_history: ' . mysqli_error($conn));
                 echo "error: failed to update history";
             }
         } else {
