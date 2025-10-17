@@ -859,6 +859,8 @@ function showCol($name) {
                                 dropdownParent: $this.parent()
                             });
                         });
+
+                        fetchProductABR();
                     }
                 });
             } else {

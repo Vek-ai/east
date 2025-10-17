@@ -176,36 +176,33 @@ if(isset($_REQUEST['action'])) {
 
     if ($action == "get_product_abr") {
         $category_ids = isset($_POST['category_ids']) ? array_map('intval', $_POST['category_ids']) : [];
-        $type_ids     = isset($_POST['type_ids'])     ? array_map('intval', $_POST['type_ids']) : [];
-        $profile_ids  = isset($_POST['profile_ids'])  ? array_map('intval', $_POST['profile_ids']) : [];
-        $grade_ids    = isset($_POST['grade_ids'])    ? array_map('intval', $_POST['grade_ids']) : [];
-        $gauge_ids    = isset($_POST['gauge_ids'])    ? array_map('intval', $_POST['gauge_ids']) : [];
-        $color_ids    = isset($_POST['color_ids'])    ? array_map('intval', $_POST['color_ids']) : [];
-        $length_ids   = isset($_POST['length_ids'])   ? array_map('intval', $_POST['length_ids']) : [];
+        $type_ids     = isset($_POST['type_ids']) ? array_map('intval', $_POST['type_ids']) : [];
+        $profile_ids  = isset($_POST['profile_ids']) ? array_map('intval', $_POST['profile_ids']) : [];
+        $grade_ids    = isset($_POST['grade_ids']) ? array_map('intval', $_POST['grade_ids']) : [];
+        $gauge_ids    = isset($_POST['gauge_ids']) ? array_map('intval', $_POST['gauge_ids']) : [];
+        $color_ids    = isset($_POST['color_ids']) ? array_map('intval', $_POST['color_ids']) : [];
+        $length       = isset($_POST['length']) ? floatval($_POST['length']) : 0;
+        $product_id   = isset($_POST['product_id']) ? $_POST['product_id'] : '';
 
-        $product_ids_string = '';
-        if (
-            !empty($category_ids) ||
-            !empty($type_ids) ||
-            !empty($profile_ids) ||
-            !empty($grade_ids) ||
-            !empty($gauge_ids) ||
-            !empty($color_ids) ||
-            !empty($length_ids)
-        ) {
-            $product_ids_string = generateProductAbrString(
-                $category_ids,
-                $profile_ids,
-                $grade_ids,
-                $gauge_ids,
-                $type_ids,
-                $color_ids,
-                $length_ids
-            );
-        }
+        $panel_id = 3;
+        $trim_id  = 4;
+
+        $product_ids_string = generateProductAbrString(
+                                $category_ids,
+                                $profile_ids,
+                                $grade_ids,
+                                $gauge_ids,
+                                $type_ids,
+                                $color_ids,
+                                '',
+                                $product_id = null
+                            );
+
+        
 
         echo $product_ids_string;
     }
+
 
     if ($action == "fetch_view_modal") {
         $product_id = mysqli_real_escape_string($conn, $_POST['id']);
