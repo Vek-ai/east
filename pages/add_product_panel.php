@@ -31,7 +31,7 @@ if(isset($_REQUEST['action'])) {
             <div class="card-body border rounded p-3">
                 <div class="row">
                     <?php
-                    $color_group_selected = (array) json_decode($row['color_group'] ?? '[]', true);
+                    $selected_color_groups = (array) json_decode($row['color_group'] ?? '[]', true);
                     ?>
                     <div class="col-md-4">
                         <div class="mb-3">
@@ -42,15 +42,14 @@ if(isset($_REQUEST['action'])) {
                             <select id="color" class="form-control calculate select2" name="color_group[]" multiple>
                                 <option value="">Select Color Group...</option>
                                 <?php
-                                $query_groups = "SELECT DISTINCT color_group_name_id, color_group_name 
-                                                FROM color_group_name 
-                                                ORDER BY color_group_name ASC";
+                                $query_groups = "SELECT * FROM product_color ORDER BY color_name ASC";
                                 $result_groups = mysqli_query($conn, $query_groups);
-                                while ($row_group = mysqli_fetch_array($result_groups)) {
-                                    $selected = in_array($row_group['color_group_name_id'], $color_group_selected) ? 'selected' : '';
+
+                                while ($row_group = mysqli_fetch_assoc($result_groups)) {
+                                    $selected = in_array($row_group['id'], $selected_color_groups) ? 'selected' : '';
                                     ?>
-                                    <option value="<?= $row_group['color_group_name_id'] ?>" <?= $selected ?>>
-                                        <?= $row_group['color_group_name'] ?>
+                                    <option value="<?= $row_group['id'] ?>" <?= $selected ?>>
+                                        <?= htmlspecialchars($row_group['color_name']) ?>
                                     </option>
                                     <?php
                                 }

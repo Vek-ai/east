@@ -81,8 +81,14 @@ $permission = $_SESSION['permission'];
     <div class="card card-body">
         <div class="row">
             <div class="col-12 text-end d-flex justify-content-md-end justify-content-center mt-3 mt-md-0">
-                <button type="button" id="addCoilModalLabel" class="btn btn-primary d-flex align-items-center" data-bs-toggle="modal" data-bs-target="#addCoilModal">
-                    <i class="ti ti-users text-white me-1 fs-5"></i> Add Coil
+                <button type="button" class="btn btn-primary d-flex align-items-center coil_btn" data-id="" data-type="add">
+                    <i class="ti ti-users text-white me-1 fs-5"></i> Add <?= $page_title ?>
+                </button>
+                <button type="button" id="downloadBtn" class="btn btn-primary d-flex align-items-center">
+                    <i class="ti ti-download text-white me-1 fs-5"></i> Download <?= $page_title ?>
+                </button>
+                <button type="button" id="uploadBtn" class="btn btn-primary d-flex align-items-center">
+                    <i class="ti ti-upload text-white me-1 fs-5"></i> Upload <?= $page_title ?>
                 </button>
             </div>
         </div>
@@ -92,379 +98,70 @@ $permission = $_SESSION['permission'];
     ?>
 
 
-    <div class="modal fade" id="addCoilModal" tabindex="-1" aria-labelledby="addCoilModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-lg">
+    <div class="modal fade" id="addCoilModal" tabindex="-1" aria-labelledby="" aria-hidden="true">
+        <div class="modal-dialog modal-xl">
             <div class="modal-content">
                 <div class="modal-header d-flex align-items-center">
-                    <h4 class="modal-title" id="myLargeModalLabel">
+                    <h4 class="modal-title">
                         Add <?= $page_title ?>
                     </h4>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
-                <form id="add_coil" class="form-horizontal" autocomplete="off">
-                    <div class="modal-body">
-                        <div class="card">
-                            <div class="card-body">
-                                <input type="hidden" id="coil_id_add" name="coil_id" class="form-control" />
-
-                                <div class="row">
-                                    <div class="card-body p-0">
-                                        <h4 class="card-title text-center">Coil Image</h4>
-                                        <p action="#" id="myDropzone" class="dropzone">
-                                            <div class="fallback">
-                                            <input type="file" id="picture_path_add" name="picture_path" class="form-control" style="display: none"/>
-                                            </div>
-                                        </p>
-                                    </div>
-                                </div>
-
-                                <div class="row pt-3">
-                                    <div class="col-md-6">
-                                        <div class="mb-3">
-                                            <label class="form-label">Entry #</label>
-                                            <input type="text" id="entry_no_add" name="entry_no" class="form-control" />
-                                        </div>
-                                    </div>
-                                    <div class="col-md-6">
-                                        <label class="form-label">Warehouse</label>
-                                        <div class="mb-3">
-                                            <select id="warehouse_add" class="form-control select2-add" name="warehouse">
-                                                <option value="" >Select One...</option>
-                                                <?php
-                                                $query_warehouses = "SELECT * FROM warehouses WHERE status = 1 ORDER BY `WarehouseName` ASC";
-                                                $result_warehouses = mysqli_query($conn, $query_warehouses);            
-                                                while ($row_warehouses = mysqli_fetch_array($result_warehouses)) {
-                                                ?>
-                                                    <option value="<?= $row_warehouses['WarehouseID'] ?>" ><?= $row_warehouses['WarehouseName'] ?></option>
-                                                <?php
-                                                }
-                                                ?>
-                                            </select>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div class="card">
-                                    <h4 class="card-header">Color Details</h4>
-                                    <div class="card-body">
-                                        <div class="row">
-                                            <div class="col-md-6 opt_field">
-                                                <label class="form-label">Close EKM Color</label>
-                                                <div class="mb-3">
-                                                    <select id="color_close_edit" class="form-control select2-add colors-add" name="color_close">
-                                                        <option value="" >Select Color...</option>
-                                                        <?php
-                                                        $query_paint_colors = "SELECT * FROM paint_colors WHERE hidden = '0' AND color_status = '1' ORDER BY `color_name` ASC";
-                                                        $result_paint_colors = mysqli_query($conn, $query_paint_colors);            
-                                                        while ($row_paint_colors = mysqli_fetch_array($result_paint_colors)) {
-                                                            $selected = ($row['color_close'] == $row_paint_colors['color_id']) ? 'selected' : '';
-                                                        ?>
-                                                            <option value="<?= $row_paint_colors['color_id'] ?>" <?= $selected ?>><?= $row_paint_colors['color_name'] ?></option>
-                                                        <?php
-                                                        }
-                                                        ?>
-                                                    </select>
-                                                </div>
-                                            </div>
-                                            <div class="col-md-6 opt_field">
-                                                <label class="form-label">Actual Color</label>
-                                                <div class="mb-3">
-                                                    <select id="actual_color_edit" class="form-control select2-add colors-add" name="actual_color">
-                                                        <option value="" >Select Color...</option>
-                                                        <?php
-                                                        $query_paint_colors = "SELECT * FROM paint_colors WHERE hidden = '0' AND color_status = '1' ORDER BY `color_name` ASC";
-                                                        $result_paint_colors = mysqli_query($conn, $query_paint_colors);            
-                                                        while ($row_paint_colors = mysqli_fetch_array($result_paint_colors)) {
-                                                            $selected = ($row['actual_color'] == $row_paint_colors['color_id']) ? 'selected' : '';
-                                                        ?>
-                                                            <option value="<?= $row_paint_colors['color_id'] ?>" ><?= $row_paint_colors['color_name'] ?></option>
-                                                        <?php   
-                                                        }
-                                                        ?>
-                                                    </select>
-                                                </div>
-                                            </div>
-                                            <div class="col-md-6 opt_field">
-                                                <div class="mb-3">
-                                                    <label class="form-label">Color Family</label>
-                                                    <input type="text" id="color_family_add" name="color_family" class="form-control" value="<?= $row['color_family'] ?>"/>
-                                                </div>
-                                            </div>
-                                            <div class="col-md-6">
-                                                <div class="mb-3">
-                                                    <label class="form-label">Color Abbreviation</label>
-                                                    <input type="text" id="color_abbreviation_add" name="color_abbreviation" class="form-control" value="<?= $row['color_abbreviation'] ?>"/>
-                                                </div>
-                                            </div>
-                                            <div class="col-md-6">
-                                                <div class="mb-3">
-                                                    <label class="form-label">Paint Supplier</label>
-                                                    <input type="text" id="paint_supplier_add" name="paint_supplier" class="form-control" value="<?= $row['paint_supplier'] ?>"/>
-                                                </div>
-                                            </div>
-                                            <div class="col-md-6">
-                                                <div class="mb-3">
-                                                    <label class="form-label">Paint ID Code ID</label>
-                                                    <input type="text" id="paint_code_add" name="paint_code" class="form-control" value="<?= $row['paint_code'] ?>"/>
-                                                </div>
-                                            </div>
-                                            <div class="col-md-6">
-                                                <div class="mb-3">
-                                                    <label class="form-label">Stock Availability</label>
-                                                    <input type="text" id="stock_availability_add" name="stock_availability" class="form-control" value="<?= $row['stock_availability'] ?>"/>
-                                                </div>
-                                            </div>
-                                            <div class="col-md-6">
-                                                <div class="mb-3">
-                                                    <label class="form-label">Multiplier Category</label>
-                                                    <input type="text" id="multiplier_category_add" name="multiplier_category" class="form-control" value="<?= $row['multiplier_category'] ?>"/>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div class="row pt-3">
-                                    <div class="col-md-3">
-                                        <div class="mb-3">
-                                            <label class="form-label">Coil #</label>
-                                            <input type="text" id="coil_no_add" name="coil_no" class="form-control" />
-                                        </div>
-                                    </div>
-                                    <div class="col-md-3">
-                                        <div class="mb-3">
-                                            <label class="form-label">Date</label>
-                                            <input type="date" id="date_add" name="date" class="form-control" />
-                                        </div>
-                                    </div>
-                                    <div class="col-md-3">
-                                        <label class="form-label">Supplier</label>
-                                        <div class="mb-3">
-                                            <select id="supplier_add" class="form-control select2-add" name="supplier">
-                                                <option value="">Select Supplier...</option>
-                                                <?php
-                                                $query_supplier = "SELECT * FROM supplier WHERE status = '1'";
-                                                $result_supplier = mysqli_query($conn, $query_supplier);            
-                                                while ($row_supplier = mysqli_fetch_array($result_supplier)) {
-                                                ?>
-                                                    <option value="<?= $row_supplier['supplier_id'] ?>" ><?= $row_supplier['supplier_name'] ?></option>
-                                                <?php
-                                                }
-                                                ?>
-                                            </select>
-                                        </div>
-                                    </div>
-                                    <div class="col-md-3">
-                                        <label class="form-label">Supplier Tag #</label>
-                                        <input type="text" id="supplier_tag" name="supplier_tag" class="form-control" />
-                                    </div>
-                                </div>
-
-                                <div class="row pt-3">
-                                    <div class="col-md-6">
-                                        <label class="form-label">Sold As</label>
-                                        <div class="mb-3">
-                                            <select id="color_sold_as_add" class="form-control select2-add" name="color_sold_as">
-                                                <option value="" >Select Color...</option>
-                                                <?php
-                                                $query_paint_colors = "SELECT * FROM paint_colors WHERE hidden = '0' AND color_status = '1' ORDER BY `color_name` ASC";
-                                                $result_paint_colors = mysqli_query($conn, $query_paint_colors);            
-                                                while ($row_paint_colors = mysqli_fetch_array($result_paint_colors)) {
-                                                ?>
-                                                    <option value="<?= $row_paint_colors['color_id'] ?>" ><?= $row_paint_colors['color_name'] ?></option>
-                                                <?php
-                                                }
-                                                ?>
-                                            </select>
-                                        </div>
-                                    </div>
-                                    <div class="col-md-6">
-                                        <div class="mb-3">
-                                            <label class="form-label">Product ID</label>
-                                            <input type="text" id="product_id_add" name="product_id" class="form-control" />
-                                        </div>
-                                    </div>
-                                </div>   
-                                
-                                <div class="row pt-3">
-                                    <div class="col-md-4">
-                                        <div class="mb-3">
-                                            <label class="form-label">Original Length</label>
-                                            <input type="text" id="og_length_add" name="og_length" class="form-control" />
-                                        </div>
-                                    </div>
-                                    <div class="col-md-4">
-                                        <div class="mb-3">
-                                            <label class="form-label">Remaining Length</label>
-                                            <input type="text" id="remaining_feet_add" name="remaining_feet" class="form-control" />
-                                        </div>
-                                    </div>
-                                    <div class="col-md-4">
-                                        <div class="mb-3">
-                                            <label class="form-label">Last Inventory Count</label>
-                                            <input type="text" id="last_inventory_count_add" name="last_inventory_count" class="form-control" />
-                                        </div>
-                                    </div>
-                                </div>
-
-
-                                <div class="row pt-3">
-                                    <div class="col-md-3">
-                                        <div class="mb-3">
-                                            <label class="form-label">Weight</label>
-                                            <input type="text" id="weight_add" name="weight" class="form-control" />
-                                        </div>
-                                    </div>
-                                    <div class="col-md-3">
-                                        <div class="mb-3">
-                                            <label class="form-label">Thickness</label>
-                                            <input type="text" id="thickness_add" name="thickness" class="form-control" />
-                                        </div>
-                                    </div>
-                                    <div class="col-md-3">
-                                        <label class="form-label">Width</label>
-                                        <div class="mb-3">
-                                            <select id="width_add" class="form-control select2-add width-select" data-type="add" name="width">
-                                                <option value="" >Select Coil Width...</option>
-                                                <?php
-                                                $query_width = "SELECT * FROM coil_width WHERE hidden = '0'";
-                                                $result_width = mysqli_query($conn, $query_width);            
-                                                while ($row_width = mysqli_fetch_array($result_width)) {
-                                                ?>
-                                                    <option value="<?= $row_width['id'] ?>" ><?= $row_width['actual_width'] ?></option>
-                                                <?php
-                                                }
-                                                ?>
-                                            </select>
-                                        </div>
-                                    </div>
-                                    <div class="col-md-3 opt_field" data-id="5">
-                                        <label class="form-label">Coil Class</label>
-                                        <div class="mb-3">
-                                            <input type="text" id="coil_class_add" name="coil_class" class="form-control" />
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div class="row pt-3">
-                                    <div class="col-md-6">
-                                        <label class="form-label">Grade</label>
-                                        <div class="mb-3">
-                                            <select id="grade_add" class="form-control select2-add" name="grade">
-                                                <option value="" >Select Grade...</option>
-                                                <?php
-                                                $query_grade = "SELECT * FROM product_grade WHERE hidden = '0' AND status = '1' ORDER BY `product_grade` ASC";
-                                                $result_grade = mysqli_query($conn, $query_grade);            
-                                                while ($row_grade = mysqli_fetch_array($result_grade)) {
-                                                ?>
-                                                    <option value="<?= $row_grade['product_grade_id'] ?>" ><?= $row_grade['product_grade'] ?></option>
-                                                <?php
-                                                }
-                                                ?>
-                                            </select>
-                                        </div>
-                                    </div>
-                                    <div class="col-md-6">
-                                        <label class="form-label">Gauge</label>
-                                        <div class="mb-3">
-                                            <select id="gauge_add" class="form-control select2-add" name="gauge">
-                                                <option value="" >Select Gauge...</option>
-                                                <?php
-                                                $query_gauge = "SELECT * FROM product_gauge WHERE hidden = '0' AND status = '1' ORDER BY `product_gauge` ASC";
-                                                $result_gauge = mysqli_query($conn, $query_gauge);            
-                                                while ($row_gauge = mysqli_fetch_array($result_gauge)) {
-                                                ?>
-                                                    <option value="<?= $row_gauge['product_gauge_id'] ?>" ><?= $row_gauge['product_gauge'] ?></option>
-                                                <?php
-                                                }
-                                                ?>
-                                            </select>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div class="row pt-3">
-                                    <div class="col-md-4">
-                                        <div class="mb-3">
-                                            <label class="form-label">Coating</label>
-                                            <input type="text" id="coating_add" name="coating" class="form-control" />
-                                        </div>
-                                    </div>
-                                    <div class="col-md-4">
-                                        <div class="mb-3">
-                                            <label class="form-label">Tag #</label>
-                                            <input type="text" id="tag_no_add" name="tag_no" class="form-control" />
-                                        </div>
-                                    </div>
-                                    <div class="col-md-4">
-                                        <div class="mb-3">
-                                            <label class="form-label">Invoice #</label>
-                                            <input type="text" id="invoice_no_add" name="invoice_no" class="form-control" />
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div class="row pt-3">
-                                    <div class="col-md-4 opt_field" data-id="5">
-                                        <label class="form-label">Grade No.</label>
-                                        <div class="mb-3">
-                                            <select id="grade_no_add" class="form-control select2-add" name="grade_no">
-                                                <option value="" >Select Grade No...</option>
-                                                <option value="1">1</option>
-                                                <option value="2">2</option>
-                                                <option value="3">3</option>
-                                                <option value="4">4</option>
-                                            </select>
-                                        </div>
-                                    </div>
-                                    <div class="col-md-4">
-                                        <div class="mb-3">
-                                            <label class="form-label">Price ($)</label>
-                                            <input type="text" id="price_add" name="price" class="form-control" />
-                                        </div>
-                                    </div>
-                                    <div class="col-md-4">
-                                        <div class="mb-3">
-                                            <label class="form-label">Contract PPF</label>
-                                            <input type="text" id="contract_ppf_add" name="contract_ppf" class="form-control" />
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div class="row pt-3">
-                                    <div class="col-md-4">
-                                        <div class="mb-3">
-                                            <label class="form-label">Contract PPCWG</label>
-                                            <input type="text" id="contract_ppcwg_add" name="contract_ppcwg" class="form-control" />
-                                        </div>
-                                    </div>
-                                    <div class="col-md-4">
-                                        <div class="mb-3">
-                                            <label class="form-label">Invoice Price ($)</label>
-                                            <input type="text" id="invoice_price_add" name="invoice_price" class="form-control" />
-                                        </div>
-                                    </div>
-                                    <div class="col-md-4">
-                                        <div class="mb-3">
-                                            <label class="form-label">Round Width</label>
-                                            <input type="text" id="round_width_add" name="round_width" class="form-control" />
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="modal-footer">
-                        <div class="form-actions">
-                            <div class="card-body">
-                                <button type="submit" class="btn bg-success-subtle waves-effect text-start">Save</button>
-                                <button type="button" class="btn bg-danger-subtle text-danger  waves-effect text-start" data-bs-dismiss="modal">Close</button>
-                            </div>
-                        </div>
+                <form id="coil_form" class="form-horizontal" autocomplete="off">
+                    <div class="modal-body" id="addCoilBody">
+                        
                     </div>
                 </form>
             </div>
-            <!-- /.modal-content -->
+        </div>
+    </div>
+
+    <div class="modal fade" id="uploadModal" tabindex="-1" aria-labelledby="uploadModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-md">
+            <div class="modal-content">
+                <div class="modal-header d-flex align-items-center">
+                    <h4 class="modal-title" id="myLargeModalLabel">
+                        Upload <?= $page_title ?>
+                    </h4>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="card">
+                        <div class="card-body">
+                            <form id="upload_excel_form" action="#" method="post" enctype="multipart/form-data">
+                                <div class="mb-3">
+                                    <label for="excel_file" class="form-label fw-semibold">Select Excel File</label>
+                                    <input type="file" class="form-control" name="excel_file" accept=".xls,.xlsx" required>
+                                </div>
+                                <div class="text-center">
+                                    <button type="submit" class="btn btn-primary">Upload & Read</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                    <div class="card mb-0 mt-2">
+                        <div class="card-body d-flex justify-content-center align-items-center">
+                            <button type="button" id="readUploadBtn" class="btn btn-primary fw-semibold">
+                                <i class="fas fa-eye me-2"></i> View Uploaded File
+                            </button>
+                        </div>
+                    </div>    
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="readUploadModal" tabindex="-1" aria-labelledby="readUploadModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-fullscreen">
+            <div class="modal-content">
+                <div class="modal-header d-flex align-items-center">
+                    <h4 class="modal-title" id="myLargeModalLabel">
+                        Uploaded <?= $page_title ?>
+                    </h4>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div id="uploaded_excel" class="modal-body"></div>
+            </div>
         </div>
     </div>
 
@@ -664,7 +361,7 @@ $permission = $_SESSION['permission'];
                                                 <?php                                                    
                                                 if ($permission === 'edit') {
                                                 ?>
-                                                <a href="#" title="Edit" id="edit_product_btn" class="edit" data-id="<?= $row_coil['coil_id'] ?>">
+                                                <a href="#" title="Edit" class="edit coil_btn" data-id="<?= $row_coil['coil_id'] ?>" data-type="add">
                                                     <i class="ti ti-pencil fs-7"></i>
                                                 </a>
                                                 <a href="#" title="Archive" id="delete_product_btn" class="text-danger edit changeStatus" data-no="<?= $no ?>" data-id="<?= $coil_id ?>" data-status='<?= $db_status ?>'>
@@ -690,23 +387,7 @@ $permission = $_SESSION['permission'];
 </div>
 
 <script>
-    function displayFileNames() {
-        let files = document.getElementById('picture_path_add').files;
-        let fileNames = '';
-
-        if (files.length > 0) {
-            for (let i = 0; i < files.length; i++) {
-                let file = files[i];
-                fileNames += `<p>${file.name}</p>`;
-            }
-        } else {
-            fileNames = '<p>No files selected</p>';
-        }
-
-        console.log(fileNames);
-    }
     $(document).ready(function() {
-        displayFileNames()
         let uploadedFiles = [];
 
         $('.dropzone').dropzone({
@@ -720,13 +401,11 @@ $permission = $_SESSION['permission'];
                     }
                     uploadedFiles = [file];
                     updateFileInput();
-                    displayFileNames();
                 });
 
                 this.on("removedfile", function(file) {
                     uploadedFiles = uploadedFiles.filter(f => f.name !== file.name);
                     updateFileInput();
-                    displayFileNames();
                 });
             }
         });
@@ -758,37 +437,6 @@ $permission = $_SESSION['permission'];
                     success: function (response) {
                         if (response.success) {
                             $("#coil_class_" + type).val(response.classification);
-                        }
-                    },
-                    error: function (xhr, status, error) {
-                        console.error("XHR Response:", xhr.responseText);
-                        console.error("Status:", status);
-                        console.error("Error:", error);
-                        alert("Error fetching color details.");
-                    }
-                });
-            }
-        });
-
-        $(document).on("change", ".colors-add", function () {
-            let colorId = $(this).val();
-            if (colorId) {
-                $.ajax({
-                    url: "pages/coil_product_ajax.php",
-                    type: "POST",
-                    data: { 
-                        color_id: colorId,
-                        action: 'fetch_color_details'
-                    },
-                    dataType: "json",
-                    success: function (response) {
-                        if (response.success) {
-                            $("#color_family_add").val(response.color_group);
-                            $("#color_abbreviation_add").val(response.color_abbreviation);
-                            $("#paint_supplier_add").val(response.provider_id);
-                            $("#paint_code_add").val(response.ekm_paint_code);
-                            $("#stock_availability_add").val(response.stock_availability);
-                            $("#multiplier_category_add").val(response.multiplier_category);
                         }
                     },
                     error: function (xhr, status, error) {
@@ -875,20 +523,31 @@ $permission = $_SESSION['permission'];
             }
         });
 
+        function getUploadedFiles() {
+            const dz = Dropzone.forElement('#myUpdateDropzone');
+            return dz.getAcceptedFiles();
+        }
 
-        $(document).on('click', '#edit_product_btn', function(event) {
+        $(document).on('click', '.coil_btn', function(event) {
             event.preventDefault(); 
             var id = $(this).data('id');
+            var type = $(this).data('type') || '';
+
+            if(type == 'edit'){
+                $('.modal-title').html('Update <?= $page_title ?>');
+            }else{
+                $('.modal-title').html('Add <?= $page_title ?>');
+            }
             $.ajax({
                     url: 'pages/coil_product_ajax.php',
                     type: 'POST',
                     data: {
                         id: id,
-                        action: "fetch_edit_modal"
+                        action: "fetch_modal"
                     },
                     success: function(response) {
-                        $('#updateProductModal').html(response);
-                        $('#updateProductModal').modal('show');
+                        $('#addCoilBody').html(response);
+                        $('#addCoilModal').modal('show');
                     },
                     error: function(jqXHR, textStatus, errorThrown) {
                         alert('Error: ' + textStatus + ' - ' + errorThrown);
@@ -896,11 +555,15 @@ $permission = $_SESSION['permission'];
             });
         });
 
-        $(document).on('submit', '#edit_coil', function(event) {
+        $(document).on('submit', '#coil_form', function(event) {
             event.preventDefault(); 
 
             var formData = new FormData(this);
             formData.append('action', 'add_update');
+
+            getUploadedFiles().forEach(file => {
+                formData.append('picture_path[]', file);
+            });
 
             $.ajax({
                 url: 'pages/coil_product_ajax.php',
@@ -909,10 +572,10 @@ $permission = $_SESSION['permission'];
                 processData: false,
                 contentType: false,
                 success: function(response) {
-                    $('#updateProductModal').modal('hide');
-                    if (response.trim() === "success_update") {
+                    $('.modal').modal('hide');
+                    if (response.trim() === "success_add") {
                         $('#responseHeader').text("Success");
-                        $('#responseMsg').text("Coil updated successfully.");
+                        $('#responseMsg').text("New coil added successfully.");
                         $('#responseHeaderContainer').removeClass("bg-danger");
                         $('#responseHeaderContainer').addClass("bg-success");
                         $('#response-modal').modal("show");
@@ -920,40 +583,9 @@ $permission = $_SESSION['permission'];
                         $('#response-modal').on('hide.bs.modal', function () {
                             location.reload();
                         });
-                    } else {
-                        $('#responseHeader').text("Failed");
-                        $('#responseMsg').text(response);
-
-                        $('#responseHeaderContainer').removeClass("bg-success");
-                        $('#responseHeaderContainer').addClass("bg-danger");
-                        $('#response-modal').modal("show");
-                    }
-
-                    
-                },
-                error: function(jqXHR, textStatus, errorThrown) {
-                    alert('Error: ' + textStatus + ' - ' + errorThrown);
-                }
-            });
-        });
-
-        $(document).on('submit', '#add_coil', function(event) {
-            event.preventDefault(); 
-
-            var formData = new FormData(this);
-            formData.append('action', 'add_update');
-
-            $.ajax({
-                url: 'pages/coil_product_ajax.php',
-                type: 'POST',
-                data: formData,
-                processData: false,
-                contentType: false,
-                success: function(response) {
-                    $('#addCoilModal').modal('hide');
-                    if (response.trim() === "success_add") {
+                    }else if (response.trim() === "success_update") {
                         $('#responseHeader').text("Success");
-                        $('#responseMsg').text("New coil added successfully.");
+                        $('#responseMsg').text("Coil updated successfully.");
                         $('#responseHeaderContainer').removeClass("bg-danger");
                         $('#responseHeaderContainer').addClass("bg-success");
                         $('#response-modal').modal("show");
@@ -979,6 +611,135 @@ $permission = $_SESSION['permission'];
 
         $('#select-color').select2();
         $('#select-grade').select2();
+
+        $(document).on('click', '#downloadBtn', function(event) {
+            window.location.href = "pages/coil_product_ajax.php?action=download_excel";
+        });
+
+        $(document).on('click', '#uploadBtn', function(event) {
+            $('#uploadModal').modal('show');
+        });
+
+        $(document).on('click', '#readUploadBtn', function(event) {
+            $.ajax({
+                url: 'pages/coil_product_ajax.php',
+                type: 'POST',
+                data: {
+                    action: "fetch_uploaded_modal"
+                },
+                success: function(response) {
+                    $('#uploaded_excel').html(response);
+                    $('#readUploadModal').modal('show');
+                },
+                error: function(jqXHR, textStatus, errorThrown) {
+                    alert('Error: ' + textStatus + ' - ' + errorThrown);
+                }
+            });
+        });
+
+        $('#upload_excel_form').on('submit', function (e) {
+            e.preventDefault();
+            
+            var formData = new FormData(this);
+            formData.append('action', 'upload_excel');
+
+            $.ajax({
+                url: 'pages/coil_product_ajax.php',
+                type: 'POST',
+                data: formData,
+                contentType: false,
+                processData: false,
+                success: function (response) {
+                    $('.modal').modal('hide');
+                    response = response.trim();
+                    if (response.trim() === "success") {
+                        $('#responseHeader').text("Success");
+                        $('#responseMsg').text("Data Uploaded successfully.");
+                        $('#responseHeaderContainer').removeClass("bg-danger");
+                        $('#responseHeaderContainer').addClass("bg-success");
+                        $('#response-modal').modal("show");
+                        $('#response-modal').on('hide.bs.modal', function () {
+                            location.reload();
+                        });
+                    } else {
+                        $('#responseHeader').text("Failed");
+                        $('#responseMsg').text(response);
+                        $('#responseHeaderContainer').removeClass("bg-success");
+                        $('#responseHeaderContainer').addClass("bg-danger");
+                        $('#response-modal').modal("show");
+                    }  
+                },
+                error: function (jqXHR, textStatus, errorThrown) {
+                    console.error('AJAX Error:', textStatus, errorThrown);
+                    console.error('Response:', jqXHR.responseText);
+
+                    $('#responseHeader').text("Error");
+                    $('#responseMsg').text("An error occurred while processing your request.");
+                    $('#responseHeaderContainer').removeClass("bg-success").addClass("bg-danger");
+                    $('#response-modal').modal("show");
+                }
+            });
+        });
+
+        $(document).on('blur', '.table_data', function() {
+            let newValue;
+            let updatedData = {};
+            
+            if ($(this)[0].tagName.toLowerCase() === 'select') {
+                const selectedValue = $(this).val();
+                const selectedText = $(this).find('option:selected').text();
+                newValue = selectedValue ? selectedValue : selectedText;
+            } 
+            else if ($(this).is('td')) {
+                newValue = $(this).text();
+            }
+            
+            const headerName = $(this).data('header-name');
+            const id = $(this).data('id');
+
+            updatedData = {
+                action: 'update_test_data',
+                id: id,
+                header_name: headerName,
+                new_value: newValue,
+            };
+
+            $.ajax({
+                url: 'pages/coil_product_ajax.php',
+                type: 'POST',
+                data: updatedData,
+                success: function(response) {
+
+                },
+                error: function(xhr, status, error) {
+                    console.log('Error: ' + error);
+                    alert('Error updating data');
+                }
+            });
+        });
+
+        $(document).on('click', '#saveTable', function(event) {
+            if (confirm("Are you sure you want to save this Excel data to the product lines data?")) {
+                var formData = new FormData();
+                formData.append("action", "save_table");
+
+                $.ajax({
+                    url: "pages/coil_product_ajax.php",
+                    type: "POST",
+                    data: formData,
+                    processData: false,
+                    contentType: false,
+                    success: function (response) {
+                        $('.modal').modal('hide');
+                        response = response.trim();
+                        $('#responseHeader').text("Success");
+                        $('#responseMsg').text(response);
+                        $('#responseHeaderContainer').removeClass("bg-danger").addClass("bg-success");
+                        $('#response-modal').modal("show");
+                    }
+                });
+            }
+        });
 
         function filterTable() {
             var textSearch = $('#text-srh').val().toLowerCase();
