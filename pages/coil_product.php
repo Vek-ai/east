@@ -249,6 +249,12 @@ $permission = $_SESSION['permission'];
                         </select>
                     </div>
                 </div>
+                <div class="px-3 mb-2"> 
+                    <input type="checkbox" id="toggleDefective"> Show Defective
+                </div>
+                <div class="px-3 mb-2"> 
+                    <input type="checkbox" id="toggleClaim"> Show Submitted for Claim
+                </div>
                 <div class="d-flex justify-content-end py-2">
                     <button type="button" class="btn btn-outline-primary reset_filters">
                         <i class="fas fa-sync-alt me-1"></i> Reset Filters
@@ -315,6 +321,15 @@ $permission = $_SESSION['permission'];
                                             </a>";
                                             break;
 
+                                        case '2': // Rework
+                                            $status_icon = "text-danger ti ti-alert-circle";
+                                            $status = "<a href='#'>
+                                                <div id='status-alert$no' style='background-color: #c6223aff; color: #ffffffff; text-align: center; padding: 4px 8px; border-radius: 5%; font-weight: bold;'>
+                                                    Rework
+                                                </div>
+                                            </a>";
+                                            break;
+
                                         case '3': // Defective
                                             $status_icon = "text-warning ti ti-alert-circle";
                                             $status = "<a href='#'>
@@ -329,6 +344,15 @@ $permission = $_SESSION['permission'];
                                             $status = "<a href='#'>
                                                 <div id='status-alert$no' style='background-color: #6c757d; color: white; text-align: center; padding: 4px 8px; border-radius: 5%; font-weight: bold;'>
                                                     Archived
+                                                </div>
+                                            </a>";
+                                            break;
+                                        
+                                        case '5': // Submit Claim
+                                            $status_icon = "text-dark ti ti-file";
+                                            $status = "<a href='#'>
+                                                <div id='status-alert$no' style='background-color: #ffffffff; color: black; text-align: center; padding: 4px 8px; border-radius: 5%; font-weight: bold;'>
+                                                    Submitted for Claim
                                                 </div>
                                             </a>";
                                             break;
@@ -367,6 +391,7 @@ $permission = $_SESSION['permission'];
                                         data-grade="<?= $grade ?>"
                                         data-instock="<?= $instock ?>"
                                         data-supplier="<?= $supplier ?>"
+                                        data-status="<?= $db_status ?>"
                                     >
                                         <td>
                                             <a href="javascript:void(0)">
@@ -824,6 +849,8 @@ $permission = $_SESSION['permission'];
 
         function filterTable() {
             var textSearch = $('#text-srh').val().toLowerCase();
+            var showDefective = $('#toggleDefective').is(':checked');
+            var showClaim = $('#toggleClaim').is(':checked');
 
             $.fn.dataTable.ext.search = [];
 
@@ -847,12 +874,24 @@ $permission = $_SESSION['permission'];
                     }
                 });
 
+                if (match) {
+                    var status = row.data('status')?.toString() || '';
+
+                    if (showDefective && status === '3') return true;
+                    if (showClaim && status === '5') return true;
+                    if (!showDefective && status === '3') return false;
+                    if (!showClaim && status === '5') return false;
+                }
+
                 return match;
             });
 
             table.draw();
             updateSelectedTags();
         }
+
+        $('#toggleDefective, #toggleClaim').on('change', filterTable);
+
 
         function updateSelectedTags() {
             var displayDiv = $('#selected-tags');
