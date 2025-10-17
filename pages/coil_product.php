@@ -199,7 +199,7 @@ $permission = $_SESSION['permission'];
                 </div>
                 <div class="align-items-center">
                     <div class="position-relative w-100 px-1 mb-2">
-                        <select class="form-control search-chat py-0 ps-5 filter-selection" id="select-color" data-filter="color" data-filter-name="Color">
+                        <select class="form-control search-chat py-0 ps-5 select2 filter-selection" id="select-color" data-filter="color" data-filter-name="Color">
                             <option value="" data-category="">All Colors</option>
                             <optgroup label="Coil Colors">
                                 <?php
@@ -216,7 +216,7 @@ $permission = $_SESSION['permission'];
                         </select>
                     </div>
                     <div class="position-relative w-100 px-1 mb-2">
-                        <select class="form-control search-chat py-0 ps-5 filter-selection" id="select-grade" data-filter="grade" data-filter-name="Grade">
+                        <select class="form-control search-chat py-0 ps-5 select2 filter-selection" id="select-grade" data-filter="grade" data-filter-name="Grade">
                             <option value="" data-category="">All Grades</option>
                             <optgroup label="Coil Grades">
                                 <?php
@@ -226,6 +226,22 @@ $permission = $_SESSION['permission'];
                                     $selected = ($grade_id == $row_grade['product_grade_id']) ? 'selected' : '';
                                 ?>
                                     <option value="<?= $row_grade['product_grade_id'] ?>" data-category="grade" <?= $selected ?>><?= $row_grade['product_grade'] ?></option>
+                                <?php
+                                }
+                                ?>
+                            </optgroup>
+                        </select>
+                    </div>
+                    <div class="position-relative w-100 px-1 mb-2">
+                        <select class="form-control search-chat py-0 ps-5 select2 filter-selection" id="select-supplier" data-filter="supplier" data-filter-name="Supplier">
+                            <option value="">All Suppliers</option>
+                            <optgroup label="Suppliers">
+                                <?php
+                                $query_grade = "SELECT * FROM supplier WHERE status = '1' ORDER BY `supplier_name` ASC";
+                                $result_grade = mysqli_query($conn, $query_grade);
+                                while ($row_grade = mysqli_fetch_array($result_grade)) {
+                                ?>
+                                    <option value="<?= $row_grade['supplier_id'] ?>"><?= $row_grade['supplier_name'] ?></option>
                                 <?php
                                 }
                                 ?>
@@ -246,10 +262,14 @@ $permission = $_SESSION['permission'];
                     <div class="table-responsive">
                         <table id="productList" class="table search-table align-middle text-nowrap">
                             <thead class="header-item">
-                            <th>Entry #</th>
+                            <th>Coil #</th>
                             <th>Color</th>
                             <th>Grade</th>
-                            <th>Remaining Feet</th>
+                            <th>Supplier</th>
+                            <th>Remaining Ft</th>
+                            <th>Notes</th>
+                            <th>Last Edit By</th>
+                            <th>Last Time Edited</th>
                             <th>Status</th>
                             <th>Action</th>
                             </thead>
@@ -268,9 +288,12 @@ $permission = $_SESSION['permission'];
                                 while ($row_coil = mysqli_fetch_array($result_coil)) {
                                     $color = $row_coil['color_sold_as'];
                                     $grade = $row_coil['grade'];
+                                    $supplier = $row_coil['supplier'];
+                                    $remaining_feet = $row_coil['remaining_feet'] ?? 0;
+                                    $notes = isset($row_coil['notes']) ? substr($row_coil['notes'], 0, 30) : '';
                                     $coil_id = $row_coil['coil_id'];
                                     $db_status = $row_coil['status'];
-                                    $remaining_feet = $row_coil['remaining_feet'] ?? 0;
+                                    
                                     $instock = $remaining_feet > 0 ? '1' : '0';
 
                                     switch ($db_status) {
@@ -327,6 +350,15 @@ $permission = $_SESSION['permission'];
                                     }
 
                                     $color_details = getColorDetails($row_coil['color_sold_as']);
+
+                                    $last_edit = '';
+                                    if (!empty($row_coil['last_edit'])) {
+                                        $date = new DateTime($row_coil['last_edit']);
+                                        $last_edit = $date->format('m-d-Y');
+                                    }
+                            
+                                    $user_id = $row_coil['edited_by'] != 0 ? $row_coil['edited_by'] : $row_coil['added_by'];
+                                    $last_edit_by = $user_id ? get_name($user_id) : '';
                 
                                 ?>
                                     <tr class="search-items"
@@ -334,6 +366,7 @@ $permission = $_SESSION['permission'];
                                         data-color="<?= $color ?>"
                                         data-grade="<?= $grade ?>"
                                         data-instock="<?= $instock ?>"
+                                        data-supplier="<?= $supplier ?>"
                                     >
                                         <td>
                                             <a href="javascript:void(0)">
@@ -354,17 +387,27 @@ $permission = $_SESSION['permission'];
                                             </div>
                                         </td>
                                         <td><?= getGradeName($row_coil['grade']) ?></td>
-                                        <td><?= $remaining_feet ?></td>
+                                        <td><?= getSupplierName($row_coil['supplier']) ?></td>
+                                        <td><?= number_format(floatval($remaining_feet),2) ?></td>
+                                        <td><?= $notes ?></td>
+                                        <td><?= $last_edit_by ?></td>
+                                        <td><?= $last_edit ?></td>
                                         <td><?= $status ?></td>
                                         <td>
                                             <div class="action-btn text-center">
+                                                <a href="#" title="View" class="coil_btn" data-id="<?= $row_coil['coil_id'] ?>" data-type="view">
+                                                    <i class="ti ti-eye fs-7"></i>
+                                                </a>
                                                 <?php                                                    
                                                 if ($permission === 'edit') {
                                                 ?>
-                                                <a href="#" title="Edit" class="edit coil_btn" data-id="<?= $row_coil['coil_id'] ?>" data-type="add">
-                                                    <i class="ti ti-pencil fs-7"></i>
+                                                <a href="#" title="Coil Use History" class="edit coil_history_btn" data-id="<?= $row_coil['coil_id'] ?>">
+                                                    <i class="ti ti-history text-info fs-7"></i>
                                                 </a>
-                                                <a href="#" title="Archive" id="delete_product_btn" class="text-danger edit changeStatus" data-no="<?= $no ?>" data-id="<?= $coil_id ?>" data-status='<?= $db_status ?>'>
+                                                <a href="#" title="Edit" class="edit coil_btn" data-id="<?= $row_coil['coil_id'] ?>" data-type="add">
+                                                    <i class="ti ti-pencil text-warning fs-7"></i>
+                                                </a>
+                                                <a href="#" title="Remove From Stock" id="delete_product_btn" class="text-danger edit changeStatus" data-no="<?= $no ?>" data-id="<?= $coil_id ?>" data-status='<?= $db_status ?>'>
                                                     <i class="text-danger ti ti-trash fs-7"></i>
                                                 </a>
                                                 <?php
@@ -387,6 +430,34 @@ $permission = $_SESSION['permission'];
 </div>
 
 <script>
+    function toggleFormEditable(formId, enable = true, hideBorders = false) {
+        const $form = $("#" + formId);
+        if ($form.length === 0) return;
+
+        $form.find("input, select, textarea").each(function () {
+            const $element = $(this);
+            if (enable) {
+                $element.removeAttr("readonly").removeAttr("disabled");
+                $element.css("border", hideBorders ? "none" : "");
+                $element.css("background-color", "");
+                if ($element.is("select")) {
+                    $element.removeClass("hide-dropdown");
+                }
+            } else {
+                $element.attr("readonly", true).attr("disabled", true);
+                $element.css("border", hideBorders ? "none" : "1px solid #ccc");
+                $element.css("background-color", "#f8f9fa");
+                if ($element.is("select")) {
+                    $element.addClass("hide-dropdown");
+                }
+            }
+        });
+
+        $form.find("button[type='submit'], input[type='submit']").toggle(enable);
+
+        $(".toggleElements").toggleClass("d-none", !enable);
+    }
+
     $(document).ready(function() {
         let uploadedFiles = [];
 
@@ -535,6 +606,8 @@ $permission = $_SESSION['permission'];
 
             if(type == 'edit'){
                 $('.modal-title').html('Update <?= $page_title ?>');
+            }else if(type == 'view'){
+                $('.modal-title').html('View <?= $page_title ?>');
             }else{
                 $('.modal-title').html('Add <?= $page_title ?>');
             }
@@ -547,6 +620,11 @@ $permission = $_SESSION['permission'];
                     },
                     success: function(response) {
                         $('#addCoilBody').html(response);
+                        if(type == 'view'){
+                            toggleFormEditable("coil_form", false, true);
+                        }else{
+                            toggleFormEditable("coil_form", true, false);
+                        }
                         $('#addCoilModal').modal('show');
                     },
                     error: function(jqXHR, textStatus, errorThrown) {
@@ -609,8 +687,11 @@ $permission = $_SESSION['permission'];
             });
         });
 
-        $('#select-color').select2();
-        $('#select-grade').select2();
+        $(".select2").each(function() {
+            $(this).select2({
+                dropdownParent: $(this).parent()
+            });
+        });
 
         $(document).on('click', '#downloadBtn', function(event) {
             window.location.href = "pages/coil_product_ajax.php?action=download_excel";

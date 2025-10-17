@@ -1,4 +1,5 @@
 <?php
+session_start();
 ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ERROR | E_PARSE | E_CORE_ERROR | E_CORE_WARNING | E_COMPILE_ERROR | E_COMPILE_WARNING);
@@ -54,8 +55,6 @@ if(isset($_REQUEST['action'])) {
     $action = $_REQUEST['action'];
 
     if ($action == "add_update") {
-        $main_image = isset($_POST['picture_path']) ? mysqli_real_escape_string($conn, $_POST['picture_path']) : '';
-
         $coil_id = mysqli_real_escape_string($conn, $_POST['coil_id'] ?? '');
         $entry_no = mysqli_real_escape_string($conn, $_POST['entry_no'] ?? '');
         $warehouse = mysqli_real_escape_string($conn, $_POST['warehouse'] ?? '');
@@ -63,41 +62,34 @@ if(isset($_REQUEST['action'])) {
         $coating = mysqli_real_escape_string($conn, $_POST['coating'] ?? '');
         $grade = mysqli_real_escape_string($conn, $_POST['grade'] ?? '');
         $gauge = mysqli_real_escape_string($conn, $_POST['gauge'] ?? '');
-
         $date = mysqli_real_escape_string($conn, $_POST['date'] ?? '');
         $date_inventory = mysqli_real_escape_string($conn, $_POST['date_inventory'] ?? '');
         $year = !empty($date) ? date('Y', strtotime($date)) : '';
         $month = !empty($date) ? date('m', strtotime($date)) : '';
-
         $weight = floatval($_POST['weight'] ?? 0);
         $thickness = floatval($_POST['thickness'] ?? 0);
         $width = floatval($_POST['width'] ?? 0);
         $round_width = floatval($_POST['round_width'] ?? 0);
         $stated_length = floatval($_POST['stated_length'] ?? 0);
         $actual_start_length = floatval($_POST['actual_start_length'] ?? 0);
-
         $color_sold_as = mysqli_real_escape_string($conn, $_POST['color_sold_as'] ?? '');
         $actual_color = mysqli_real_escape_string($conn, $_POST['actual_color'] ?? '');
         $color_close = mysqli_real_escape_string($conn, $_POST['color_close'] ?? '');
         $paint_supplier = mysqli_real_escape_string($conn, $_POST['paint_supplier'] ?? '');
-
         $color_group = $_POST['color_group'] ?? [];
         $color_group_json = mysqli_real_escape_string($conn, json_encode($color_group));
-
         $invoice_price = floatval($_POST['invoice_price'] ?? 0);
         $price_per_ft = floatval($_POST['price_per_ft'] ?? 0);
         $price_per_in = floatval($_POST['price_per_in'] ?? 0);
         $sq_in_price = floatval($_POST['sq_in_price'] ?? 0);
         $allowed_price = floatval($_POST['allowed_price'] ?? 0);
         $floor_price = floatval($_POST['floor_price'] ?? 0);
-
         $supplier = mysqli_real_escape_string($conn, $_POST['supplier'] ?? '');
         $stock_availability = mysqli_real_escape_string($conn, $_POST['stock_availability'] ?? '');
-
         $notes = mysqli_real_escape_string($conn, $_POST['notes'] ?? '');
-
         $lb_per_ft = ($actual_start_length != 0) ? ($weight / $actual_start_length) : 0;
         $remaining_feet = floatval($_POST['remaining_feet'] ?? 0);
+        $user_id = intval($_SESSION['userid'] ?? 0);
 
         $checkQuery = "SELECT * FROM coil_product WHERE coil_id = '$coil_id'";
         $result = mysqli_query($conn, $checkQuery);
@@ -105,6 +97,25 @@ if(isset($_REQUEST['action'])) {
 
         if ($isInsert) {
             $remaining_feet = $actual_start_length;
+        }
+
+        $main_image_sql = '';
+        if (!empty($_FILES['picture_path']['name'][0])) {
+            $fileNames = (array) $_FILES['picture_path']['name'];
+            $uploadFileDir = '../images/coils/';
+            for ($i = 0; $i < count($fileNames); $i++) {
+                $fileTmpPath = $_FILES['picture_path']['tmp_name'][$i];
+                $fileName = $fileNames[$i];
+                if (empty($fileName)) continue;
+                $fileExtension = strtolower(pathinfo($fileName, PATHINFO_EXTENSION));
+                $newFileName = md5(time() . $fileName) . '.' . $fileExtension;
+                $dest_path = $uploadFileDir . $newFileName;
+                if (move_uploaded_file($fileTmpPath, $dest_path)) {
+                    if ($i == 0) {
+                        $main_image_sql = ", main_image='images/coils/$newFileName'";
+                    }
+                }
+            }
         }
 
         if (!$isInsert) {
@@ -142,8 +153,10 @@ if(isset($_REQUEST['action'])) {
                     notes = '$notes',
                     remaining_feet = '$remaining_feet',
                     lb_per_ft = '$lb_per_ft',
-                    current_weight = '" . ($lb_per_ft * $remaining_feet) . "',
-                    main_image = '$main_image'
+                    current_weight = '" . ($lb_per_ft * $remaining_feet) . "'
+                    $main_image_sql,
+                    last_edit = NOW(),
+                    edited_by = '$user_id'
                 WHERE coil_id = '$coil_id'
             ";
 
@@ -153,6 +166,11 @@ if(isset($_REQUEST['action'])) {
                 echo "Error updating record: " . mysqli_error($conn);
             }
         } else {
+            $main_image = 'images/coils/product.jpg';
+            if (!empty($main_image_sql)) {
+                $main_image = str_replace(", main_image='", "", $main_image_sql);
+                $main_image = rtrim($main_image, "'");
+            }
             $insertQuery = "
                 INSERT INTO coil_product (
                     coil_id, entry_no, warehouse, coil_class, coating, grade, gauge,
@@ -160,14 +178,16 @@ if(isset($_REQUEST['action'])) {
                     stated_length, actual_start_length, color_sold_as, actual_color, color_close,
                     color_group, paint_supplier, invoice_price, price_per_ft, price_per_in,
                     sq_in_price, allowed_price, floor_price, supplier, stock_availability,
-                    notes, remaining_feet, lb_per_ft, current_weight, main_image
+                    notes, remaining_feet, lb_per_ft, current_weight, main_image,
+                    added_date, added_by
                 ) VALUES (
                     '$coil_id', '$entry_no', '$warehouse', '$coil_class', '$coating', '$grade', '$gauge',
                     '$date', '$date_inventory', '$year', '$month', '$weight', '$thickness', '$width', '$round_width',
                     '$stated_length', '$actual_start_length', '$color_sold_as', '$actual_color', '$color_close',
                     '$color_group_json', '$paint_supplier', '$invoice_price', '$price_per_ft', '$price_per_in',
                     '$sq_in_price', '$allowed_price', '$floor_price', '$supplier', '$stock_availability',
-                    '$notes', '$remaining_feet', '$lb_per_ft', '" . ($lb_per_ft * $remaining_feet) . "', '$main_image'
+                    '$notes', '$remaining_feet', '$lb_per_ft', '" . ($lb_per_ft * $remaining_feet) . "', '$main_image',
+                    NOW(), '$user_id'
                 )
             ";
 
@@ -177,36 +197,8 @@ if(isset($_REQUEST['action'])) {
                 echo "Error inserting record: " . mysqli_error($conn);
             }
         }
-
-        if (!empty($_FILES['picture_path']['name'])) {
-            $fileNames = (array) $_FILES['picture_path']['name'];
-
-            if (count($fileNames) > 0) {
-                $uploadFileDir = '../images/coils/';
-                for ($i = 0; $i < count($fileNames); $i++) {
-                    $fileTmpPath = $_FILES['picture_path']['tmp_name'][$i];
-                    $fileName = $fileNames[$i];
-                    if (empty($fileName)) continue;
-
-                    $fileExtension = strtolower(pathinfo($fileName, PATHINFO_EXTENSION));
-                    $newFileName = md5(time() . $fileName) . '.' . $fileExtension;
-                    $dest_path = $uploadFileDir . $newFileName;
-
-                    if (move_uploaded_file($fileTmpPath, $dest_path)) {
-                        if ($i == 0) {
-                            $sql = "UPDATE coil_product SET main_image='images/coils/$newFileName' WHERE coil_id='$coil_id'";
-                            $conn->query($sql);
-                        }
-                    }
-                }
-            }
-        } else {
-            if ($isInsert) {
-                $sql = "UPDATE coil_product SET main_image='images/coils/product.jpg' WHERE coil_id='$coil_id'";
-                $conn->query($sql);
-            }
-        }
     }
+
 
     if ($action == "fetch_modal") {
         $coil_id = mysqli_real_escape_string($conn, $_POST['id']);
