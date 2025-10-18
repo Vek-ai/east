@@ -39,6 +39,15 @@ function get_role_name($emp_role_id){
     return  $emp_role;
 }
 
+function getStationName($station_id){
+    global $conn;
+    $query = "SELECT station_name FROM station WHERE station_id = '$station_id'";
+    $result = mysqli_query($conn,$query);
+    $row = mysqli_fetch_array($result); 
+    $station_name = !empty($row['station_name']) ? $row['station_name'] : '';
+    return  $station_name;
+}
+
 function getProductName($product_id){
     global $conn;
     $query = "SELECT product_item, description FROM product WHERE product_id = '$product_id'";
@@ -4092,6 +4101,52 @@ function fetchSingleProductABR($category_id = null, $profile_id = null, $grade_i
     }
 
     return '';
+}
+
+function recordCashInflow($payment_method, $cash_flow_type) {
+    global $conn;
+
+    $received_by = isset($_SESSION['userid']) ? intval($_SESSION['userid']) : 0;
+    $station_id  = isset($_SESSION['station']) ? intval($_SESSION['station']) : 0;
+
+    $allowed_methods = ['cash', 'card', 'cheque'];
+    if (!in_array($payment_method, $allowed_methods)) {
+        return false;
+    }
+
+    $movement_type = 'cash_inflow';
+    $payment_method = mysqli_real_escape_string($conn, $payment_method);
+    $cash_flow_type = mysqli_real_escape_string($conn, $cash_flow_type);
+
+    $sql = "
+        INSERT INTO cash_flow (movement_type, payment_method, date, received_by, station_id, cash_flow_type)
+        VALUES ('$movement_type', '$payment_method', NOW(), '$received_by', '$station_id', '$cash_flow_type')
+    ";
+
+    return mysqli_query($conn, $sql);
+}
+
+function recordCashOutflow($payment_method, $cash_flow_type) {
+    global $conn;
+
+    $received_by = isset($_SESSION['userid']) ? intval($_SESSION['userid']) : 0;
+    $station_id  = isset($_SESSION['station']) ? intval($_SESSION['station']) : 0;
+
+    $allowed_methods = ['cash', 'card', 'cheque'];
+    if (!in_array($payment_method, $allowed_methods)) {
+        return false;
+    }
+
+    $movement_type = 'cash_outflow';
+    $payment_method = mysqli_real_escape_string($conn, $payment_method);
+    $cash_flow_type = mysqli_real_escape_string($conn, $cash_flow_type);
+
+    $sql = "
+        INSERT INTO cash_flow (movement_type, payment_method, date, received_by, station_id, cash_flow_type)
+        VALUES ('$movement_type', '$payment_method', NOW(), '$received_by', '$station_id', '$cash_flow_type')
+    ";
+
+    return mysqli_query($conn, $sql);
 }
 
 ?>

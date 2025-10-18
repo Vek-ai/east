@@ -1051,6 +1051,7 @@ if (isset($_POST['save_order'])) {
     $estimateid = intval($_SESSION['estimateid']);
     $customerid = intval($_SESSION['customer_id']);
     $cashierid = intval($_SESSION['userid']);
+    $station_id = intval($_SESSION['station'] ?? 0);
     $cart = $_SESSION['cart'];
     $order_date = date('Y-m-d H:i:s');
     $discount_default = floatval(getCustomerDiscount($customerid)) / 100;
@@ -1148,8 +1149,8 @@ if (isset($_POST['save_order'])) {
         $pay_type = 'job_deposit';
     }
 
-    $query = "INSERT INTO orders (estimateid, cashier, total_price, discounted_price, discount_percent, order_date, scheduled_date, customerid, originalcustomerid, cash_amt, credit_amt, job_name, job_po, deliver_address,  deliver_city,  deliver_state,  deliver_zip, delivery_amt, deliver_method, deliver_fname, deliver_lname, pay_type, tax_status, tax_exempt_number, truck, contractor_id) 
-              VALUES ('$estimateid', '$cashierid', '$total_price', '$total_discounted_price', '".($discount * 100)."', '$order_date', '$scheduled_datetime', '$customerid', '$customerid', '$cash_amt', '$credit_amt' , '$job_name' , '$job_po' , '$deliver_address', '$deliver_city', '$deliver_state', '$deliver_zip' , '$delivery_amt', '$deliver_method' , '$deliver_fname' , '$deliver_lname', '$pay_type', '$tax_status', '$tax_exempt_number', '$truck', '$contractor_id')";
+    $query = "INSERT INTO orders (estimateid, cashier, station, total_price, discounted_price, discount_percent, order_date, scheduled_date, customerid, originalcustomerid, cash_amt, credit_amt, job_name, job_po, deliver_address,  deliver_city,  deliver_state,  deliver_zip, delivery_amt, deliver_method, deliver_fname, deliver_lname, pay_type, tax_status, tax_exempt_number, truck, contractor_id) 
+              VALUES ('$estimateid', '$cashierid', '$station_id', '$total_price', '$total_discounted_price', '".($discount * 100)."', '$order_date', '$scheduled_datetime', '$customerid', '$customerid', '$cash_amt', '$credit_amt' , '$job_name' , '$job_po' , '$deliver_address', '$deliver_city', '$deliver_state', '$deliver_zip' , '$delivery_amt', '$deliver_method' , '$deliver_fname' , '$deliver_lname', '$pay_type', '$tax_status', '$tax_exempt_number', '$truck', '$contractor_id')";
     
     if ($conn->query($query) === TRUE) {
         $orderid = $conn->insert_id;
@@ -1288,6 +1289,10 @@ if (isset($_POST['save_order'])) {
             if (!mysqli_query($conn, $sql)) {
                 $response['error'] = 'Ledger Insert Error ($entry_type): ' . mysqli_error($conn);
             }
+        }
+
+        if ($pay_type == 'cash' || $pay_type == 'check' || $pay_type == 'card') {
+            recordCashInflow($pay_type, 'sales_payment');
         }
 
         $values = [];

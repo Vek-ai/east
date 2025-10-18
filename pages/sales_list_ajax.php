@@ -137,6 +137,7 @@ if (isset($_POST['search_orders'])) {
             if (!empty($paid_status) && $payment_status !== $paid_status) {
                 continue;
             }
+            
 
             $status_html = '<span class="badge" style="background-color: ' . $color . ';">' . htmlspecialchars($label) . '</span>';
 
@@ -146,6 +147,7 @@ if (isset($_POST['search_orders'])) {
                 'formatted_date' => date("F d, Y", strtotime($row['order_date'])),
                 'formatted_time' => date("h:i A", strtotime($row['order_date'])),
                 'cashier' => get_staff_name($row['cashier']),
+                'station' => getStationName($row["station"]),
                 'customer_name' => $row['customer_name'],
                 'customer_pricing' => $row['customer_pricing'],
                 'amount' => number_format($row['discounted_price'], 2),
