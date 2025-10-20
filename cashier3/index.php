@@ -62,6 +62,7 @@ $page_key = !empty($_REQUEST['page']) ? $_REQUEST['page'] : 'cashier';
       .tooltip.bs-tooltip-end .tooltip-arrow::before {
           background: #f8f9fa !important;
           border-color: transparent !important;
+          color: #000000 !important;
       }
   </style>
 
