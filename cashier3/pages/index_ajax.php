@@ -222,5 +222,30 @@ if (isset($_POST['save_opening_bal'])) {
     exit;
 }
 
+if (isset($_POST['record_cash_outflow'])) {
+    $description = isset($_POST['description']) ? trim($_POST['description']) : '';
+    $amount      = isset($_POST['amount']) ? floatval($_POST['amount']) : 0;
+
+    if ($description === '' || $amount <= 0) {
+        $response['message'] = 'Please select a description and enter a valid amount.';
+        echo json_encode($response);
+        exit;
+    }
+
+    $description_normalized = strtolower($description);
+    $description_normalized = preg_replace('/\s+/', '_', $description_normalized);
+
+    $saved = recordCashOutflow('', $description_normalized, $amount);
+
+    if ($saved) {
+        $response['success'] = true;
+    } else {
+        $response['message'] = 'Failed to save cash outflow.';
+    }
+
+    echo json_encode($response);
+    exit;
+}
+
 $conn->close();
 ?>
