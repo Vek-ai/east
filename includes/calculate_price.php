@@ -24,9 +24,9 @@ function calculateUnitPrice(
     $pricePerHem  = floatval(getPaymentSetting('price_per_hem') ?? 0);
 
     $panelExtra = 0;
-    if ($panelType === 'vented') {
+    if ($panelType === 'Vented') {
         $panelExtra = floatval(getPaymentSetting('vented') ?? 0);
-    } elseif ($panelType === 'drip_stop') {
+    } elseif ($panelType === 'Drip Stop') {
         $panelExtra = floatval(getPaymentSetting('drip_stop') ?? 0);
     }
 

@@ -300,6 +300,16 @@ if(isset($_POST['fetch_cart'])){
                             $stock_text = $first_calc['stock_text'];
                             $multiplier = $first_calc['multiplier'];
                             $parent_prod_id = $first_calc['parent_prod_id'];
+                            $profile_type = $first_calc['profile'];
+
+                            $profile_details = getProfileTypeDetails($profile_type);
+                            $panel_type_1 = $profile_details['panel_type_1'];
+                            $panel_type_2 = $profile_details['panel_type_2'];
+                            $panel_type_3 = $profile_details['panel_type_3'];
+
+                            $panel_style_1 = $profile_details['panel_style_1'];
+                            $panel_style_2 = $profile_details['panel_style_2'];
+                            $panel_style_3 = $profile_details['panel_style_3'];
                             ?>
 
                             <tr class="thick-border" data-mult="<?= $multiplier ?>">
@@ -593,9 +603,27 @@ if(isset($_POST['fetch_cart'])){
                                         <td class="text-center">
                                             <select class="form-control panel_type_cart" name="panel_type" onchange="updatePanelType(this)" data-line="<?= $line; ?>" data-id="<?= $product_id; ?>">
                                                 <option value="">Select...</option>
-                                                <option value="solid" <?= $values['panel_type'] == 'solid' ? 'selected' : '' ?>>Solid</option>
-                                                <option value="vented" <?= $values['panel_type'] == 'vented' ? 'selected' : '' ?>>Vented</option>
-                                                <option value="drip_stop" <?= $values['panel_type'] == 'drip_stop' ? 'selected' : '' ?>>Drip Stop</option>
+                                                <?php
+                                                $panel_types = array_filter([$panel_type_1 ?? '', $panel_type_2 ?? '', $panel_type_3 ?? '']);
+                                                $selected_type = $values['panel_type'] ?? '';
+
+                                                if (!empty($panel_types)) {
+                                                    foreach ($panel_types as $type) {
+                                                        $selected = ($selected_type === $type) ? 'selected' : '';
+                                                        echo "<option value=\"{$type}\" {$selected}>" . ucwords(str_replace('_', ' ', $type)) . "</option>";
+                                                    }
+                                                } else {
+                                                    $static_options = [
+                                                        'Solid' => 'Solid',
+                                                        'Vented' => 'Vented',
+                                                        'Drip Stop' => 'Drip Stop'
+                                                    ];
+                                                    foreach ($static_options as $val => $label) {
+                                                        $selected = ($selected_type === $val) ? 'selected' : '';
+                                                        echo "<option value=\"{$val}\" {$selected}>{$label}</option>";
+                                                    }
+                                                }
+                                                ?>
                                             </select>
                                         </td>
                                         <td class="text-center">
@@ -613,8 +641,17 @@ if(isset($_POST['fetch_cart'])){
                                                     <option value="flat" <?= $values['panel_style'] == 'flat' ? 'selected' : '' ?>>Flat</option>
                                                     <option value="minor_rib" <?= $values['panel_style'] == 'minor_rib' ? 'selected' : '' ?>>Minor Rib</option>
                                                 <?php else: ?>
-                                                    <option value="regular" <?= $values['panel_style'] == 'regular' ? 'selected' : '' ?>>Regular</option>
-                                                    <option value="reversed" <?= $values['panel_style'] == 'reversed' ? 'selected' : '' ?>>Reversed</option>
+                                                    <?php
+                                                    $panel_styles = array_filter([$panel_style_1 ?? '', $panel_style_2 ?? '', $panel_style_3 ?? '']);
+                                                    $selected_style = $values['panel_style'] ?? '';
+
+                                                    if (!empty($panel_styles)) {
+                                                        foreach ($panel_styles as $style) {
+                                                            $selected = ($selected_style === $style) ? 'selected' : '';
+                                                            echo "<option value=\"{$style}\" {$selected}>" . ucwords(str_replace('_', ' ', $style)) . "</option>";
+                                                        }
+                                                    } 
+                                                    ?>
                                                 <?php endif; ?>
                                             </select>
                                         </td>

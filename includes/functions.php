@@ -3764,110 +3764,59 @@ function getAbbrMap($table, $id_col, $abbr_col, $ids = []) {
 }
 
 function getPanelProdID(
-    $category_ids,
-    $profile_ids,
-    $grade_ids,
-    $gauge_ids,
-    $type_ids,
-    $color_ids,
+    $category_id,
+    $profile_id,
+    $grade_id,
+    $gauge_id,
+    $type_id,
+    $color_id,
     $length,
     $panel_type = null,
     $panel_style = null
-    ) {
+) {
     global $conn;
 
     if (
-        empty($category_ids) && empty($profile_ids) && empty($grade_ids) &&
-        empty($gauge_ids) && empty($type_ids) && empty($color_ids) &&
+        empty($category_id) && empty($profile_id) && empty($grade_id) &&
+        empty($gauge_id) && empty($type_id) && empty($color_id) &&
         empty($length) && empty($panel_type) && empty($panel_style)
     ) {
         return '';
     }
 
-    $category_ids = is_array($category_ids) ? $category_ids : (empty($category_ids) ? [] : [$category_ids]);
-    $profile_ids  = is_array($profile_ids)  ? $profile_ids  : (empty($profile_ids)  ? [] : [$profile_ids]);
-    $grade_ids    = is_array($grade_ids)    ? $grade_ids    : (empty($grade_ids)    ? [] : [$grade_ids]);
-    $gauge_ids    = is_array($gauge_ids)    ? $gauge_ids    : (empty($gauge_ids)    ? [] : [$gauge_ids]);
-    $type_ids     = is_array($type_ids)     ? $type_ids     : (empty($type_ids)     ? [] : [$type_ids]);
-    $color_ids    = is_array($color_ids)    ? $color_ids    : (empty($color_ids)    ? [] : [$color_ids]);
-
-    $maps = [
-        'category' => getAbbrMap('product_category', 'product_category_id', 'category_abreviations', $category_ids),
-        'profile'  => getAbbrMap('profile_type', 'profile_type_id', 'profile_abbreviations', $profile_ids),
-        'grade'    => getAbbrMap('product_grade', 'product_grade_id', 'grade_id_no', $grade_ids),
-        'gauge'    => getAbbrMap('product_gauge', 'product_gauge_id', 'gauge_id_no', $gauge_ids),
-        'type'     => getAbbrMap('product_type', 'product_type_id', 'type_abreviations', $type_ids),
-        'color'    => getAbbrMap('paint_colors', 'color_id', 'ekm_color_no', $color_ids),
-    ];
-
-    $idGroups = [
-        'category' => !empty($category_ids) ? $category_ids : [null],
-        'profile'  => !empty($profile_ids) ? $profile_ids : [null],
-        'grade'    => !empty($grade_ids) ? $grade_ids : [null],
-        'gauge'    => !empty($gauge_ids) ? $gauge_ids : [null],
-        'type'     => !empty($type_ids) ? $type_ids : [null],
-        'color'    => !empty($color_ids) ? $color_ids : [null],
-    ];
-
-    $combinations = [[]];
-    foreach ($idGroups as $key => $ids) {
-        $new = [];
-        foreach ($combinations as $combo) {
-            foreach ($ids as $id) {
-                $combo[$key] = $id;
-                $new[] = $combo;
-            }
-        }
-        $combinations = $new;
-    }
-
-    $panelTypeAbbr = '';
-    if (!empty($panel_type)) {
-        $pt = strtolower(trim($panel_type));
-        if ($pt === 'solid') $panelTypeAbbr = '(S)';
-        elseif ($pt === 'vented') $panelTypeAbbr = '(V)';
-        elseif ($pt === 'drip_stop') $panelTypeAbbr = '(DPS)';
-    }
-
-    $panelStyleAbbr = '';
-    if (!empty($panel_style)) {
-        $ps = strtolower(trim($panel_style));
-        if ($ps === 'regular') $panelStyleAbbr = '(Reg)';
-        elseif ($ps === 'reversed') $panelStyleAbbr = '(Rev)';
-    }
+    $categoryAbbr = !empty($category_id) ? getAbbrMap('product_category', 'product_category_id', 'category_abreviations', [$category_id])[$category_id] ?? '' : '';
+    $profileAbbr  = !empty($profile_id)  ? getAbbrMap('profile_type', 'profile_type_id', 'profile_abbreviations', [$profile_id])[$profile_id] ?? '' : '';
+    $gradeAbbr    = !empty($grade_id)    ? getAbbrMap('product_grade', 'product_grade_id', 'grade_id_no', [$grade_id])[$grade_id] ?? '' : '';
+    $gaugeAbbr    = !empty($gauge_id)    ? getAbbrMap('product_gauge', 'product_gauge_id', 'gauge_id_no', [$gauge_id])[$gauge_id] ?? '' : '';
+    $typeAbbr     = !empty($type_id)     ? getAbbrMap('product_type', 'product_type_id', 'type_abreviations', [$type_id])[$type_id] ?? '' : '';
+    $colorAbbr    = !empty($color_id)    ? getAbbrMap('paint_colors', 'color_id', 'ekm_color_no', [$color_id])[$color_id] ?? '' : '';
 
     $lengthAbbr = '';
     if (!empty($length)) {
         $lengthAbbr = formatLengthAbbr(floatval($length));
     }
 
-    $abrList = [];
-    foreach ($combinations as $c) {
-        $categoryAbbr = ($c['category'] && isset($maps['category'][$c['category']])) ? $maps['category'][$c['category']] : '';
-        $profileAbbr  = ($c['profile']  && isset($maps['profile'][$c['profile']]))   ? $maps['profile'][$c['profile']]   : '';
-        $gradeAbbr    = ($c['grade']    && isset($maps['grade'][$c['grade']]))       ? $maps['grade'][$c['grade']]       : '';
-        $gaugeAbbr    = ($c['gauge']    && isset($maps['gauge'][$c['gauge']]))       ? $maps['gauge'][$c['gauge']]       : '';
-        $colorAbbr    = ($c['color']    && isset($maps['color'][$c['color']]))       ? $maps['color'][$c['color']]       : '';
-
-        $abbr = '';
-        if ($categoryAbbr !== '') $abbr .= $categoryAbbr;
-        if ($profileAbbr !== '' || $gradeAbbr !== '' || $gaugeAbbr !== '') {
-            $abbr .= '-' . $profileAbbr . $gradeAbbr . $gaugeAbbr;
-        }
-        if ($colorAbbr !== '') {
-            $abbr .= '-' . $colorAbbr;
-        }
-
-        if ($lengthAbbr !== '') $abbr .= $lengthAbbr;
-        if ($panelTypeAbbr !== '') $abbr .= $panelTypeAbbr;
-        if ($panelStyleAbbr !== '') $abbr .= $panelStyleAbbr;
-
-        if ($abbr !== '') $abrList[] = $abbr;
+    $panelTypeAbbr = '';
+    if (!empty($panel_type) && !empty($profile_id)) {
+        $panelTypeAbbr = getProfileTypeAbbrev($profile_id, $panel_type);
     }
 
-    $abrList = array_unique($abrList);
+    $panelStyleAbbr = '';
+    if (!empty($panel_style) && !empty($profile_id)) {
+        $panelStyleAbbr = getProfileStyleAbbrev($profile_id, $panel_style);
+    }
 
-    return !empty($abrList) ? reset($abrList) : '';
+    $abbr = '';
+    if ($categoryAbbr !== '') $abbr .= $categoryAbbr;
+    if ($profileAbbr !== '' || $gradeAbbr !== '' || $gaugeAbbr !== '') {
+        $abbr .= '-' . $profileAbbr . $gradeAbbr . $gaugeAbbr;
+    }
+    if ($colorAbbr !== '') $abbr .= '-' . $colorAbbr;
+    if ($lengthAbbr !== '') $abbr .= $lengthAbbr;
+    if ($panelTypeAbbr !== '') $abbr .= '(' . $panelTypeAbbr . ')';
+    if ($panelStyleAbbr !== '') $abbr .= '(' . $panelStyleAbbr . ')';
+
+    return $abbr;
 }
 
 function getTrimProdID(
@@ -4151,5 +4100,74 @@ function recordCashOutflow($payment_method, $cash_flow_type, $amount = 0) {
     return mysqli_query($conn, $sql);
 }
 
+function getProfileTypeAbbrev($profile_id, $profile_type_char = '') {
+    global $conn;
+
+    $profile_id = intval($profile_id);
+    $profile_type_char = trim($profile_type_char);
+
+    if ($profile_id <= 0 || $profile_type_char === '') {
+        return '';
+    }
+
+    $profile_id_esc = mysqli_real_escape_string($conn, (string)$profile_id);
+    $sql = "SELECT panel_type_1, panel_type_abbrev_1,
+                   panel_type_2, panel_type_abbrev_2,
+                   panel_type_3, panel_type_abbrev_3
+            FROM profile_type
+            WHERE profile_type_id = '$profile_id_esc'
+            LIMIT 1";
+
+    $res = mysqli_query($conn, $sql);
+    if (!$res) return '';
+
+    $row = mysqli_fetch_assoc($res);
+    if (!$row) return '';
+
+    for ($i = 1; $i <= 3; $i++) {
+        $typeCol = "panel_type_" . $i;
+        $abbrCol = "panel_type_abbrev_" . $i;
+        if (isset($row[$typeCol]) && strtoupper($row[$typeCol]) === strtoupper($profile_type_char)) {
+            return $row[$abbrCol] ?? '';
+        }
+    }
+
+    return '';
+}
+
+function getProfileStyleAbbrev($profile_id, $profile_style_char = '') {
+    global $conn;
+
+    $profile_id = intval($profile_id);
+    $profile_style_char = trim($profile_style_char);
+
+    if ($profile_id <= 0 || $profile_style_char === '') {
+        return '';
+    }
+
+    $profile_id_esc = mysqli_real_escape_string($conn, (string)$profile_id);
+    $sql = "SELECT panel_style_1, panel_style_abbrev_1,
+                   panel_style_2, panel_style_abbrev_2,
+                   panel_style_3, panel_style_abbrev_3
+            FROM profile_type
+            WHERE profile_type_id = '$profile_id_esc'
+            LIMIT 1";
+
+    $res = mysqli_query($conn, $sql);
+    if (!$res) return '';
+
+    $row = mysqli_fetch_assoc($res);
+    if (!$row) return '';
+
+    for ($i = 1; $i <= 3; $i++) {
+        $styleCol = "panel_style_" . $i;
+        $abbrCol = "panel_style_abbrev_" . $i;
+        if (isset($row[$styleCol]) && strtoupper($row[$styleCol]) === strtoupper($profile_style_char)) {
+            return $row[$abbrCol] ?? '';
+        }
+    }
+
+    return '';
+}
 
 ?>
