@@ -1,3 +1,13 @@
+<?php 
+$profile_details = getProfileTypeDetails($highestProfile);
+$panel_type_1 = $profile_details['panel_type_1'];
+$panel_type_2 = $profile_details['panel_type_2'];
+$panel_type_3 = $profile_details['panel_type_3'];
+
+$panel_style_1 = $profile_details['panel_style_1'];
+$panel_style_2 = $profile_details['panel_style_2'];
+$panel_style_3 = $profile_details['panel_style_3'];
+?>
 <div class="row justify-content-center mb-2">
     <!-- Colors -->
     <div class="col-3">
@@ -140,10 +150,27 @@
                             <option value="flat" selected>Flat</option>
                             <option value="minor_rib">Minor Rib</option>
                         <?php else: ?>
-                            <option value="striated" selected>Striated</option>
-                            <option value="flat">Flat</option>
-                            <option value="minor_rib">Minor Rib</option>
-                            <option value="pencil_rib">Pencil Rib</option>
+                            <?php
+                            if(!empty($panel_style_1)){
+                            ?>
+                            <option value="<?= $panel_style_1 ?>" selected><?= $panel_style_1 ?></option>
+                            <?php
+                            }
+                            ?>
+                            <?php
+                            if(!empty($panel_style_2)){
+                            ?>
+                            <option value="<?= $panel_style_2 ?>"><?= $panel_style_2 ?></option>
+                            <?php
+                            }
+                            ?>
+                            <?php
+                            if(!empty($panel_style_3)){
+                            ?>
+                            <option value="<?= $panel_style_3 ?>"><?= $panel_style_3 ?></option>
+                            <?php
+                            }
+                            ?>
                         <?php endif; ?>
                     </select>
                 </div>

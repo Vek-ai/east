@@ -1,3 +1,13 @@
+<?php 
+$profile_details = getProfileTypeDetails($highestProfile);
+$panel_type_1 = $profile_details['panel_type_1'];
+$panel_type_2 = $profile_details['panel_type_2'];
+$panel_type_3 = $profile_details['panel_type_3'];
+
+$panel_style_1 = $profile_details['panel_style_1'];
+$panel_style_2 = $profile_details['panel_style_2'];
+$panel_style_3 = $profile_details['panel_style_3'];
+?>
 <div class="row justify-content-center mb-2">
     <!-- Colors -->
     <div class="col-3">
@@ -133,8 +143,27 @@
 
                 <div class="col-2">
                     <select id="panel_option" name="panel_option[]" class="form-control form-control-sm">
-                        <option value="solid" selected>Solid</option>
-                        <option value="vented">Vented</option>
+                        <?php
+                        if(!empty($panel_type_1)){
+                        ?>
+                        <option value="<?= $panel_type_1 ?>" selected><?= $panel_type_1 ?></option>
+                        <?php
+                        }
+                        ?>
+                        <?php
+                        if(!empty($panel_type_2)){
+                        ?>
+                        <option value="<?= $panel_type_2 ?>"><?= $panel_type_2 ?></option>
+                        <?php
+                        }
+                        ?>
+                        <?php
+                        if(!empty($panel_type_3)){
+                        ?>
+                        <option value="<?= $panel_type_3 ?>"><?= $panel_type_3 ?></option>
+                        <?php
+                        }
+                        ?>
                     </select>
                 </div>
                 <div class="col-2">
@@ -147,8 +176,27 @@
                             <option value="flat" selected>Flat</option>
                             <option value="minor_rib">Minor Rib</option>
                         <?php else: ?>
-                            <option value="regular" selected>Regular</option>
-                            <option value="reversed">Reversed</option>
+                            <?php
+                            if(!empty($panel_style_1)){
+                            ?>
+                            <option value="<?= $panel_style_1 ?>" selected><?= $panel_style_1 ?></option>
+                            <?php
+                            }
+                            ?>
+                            <?php
+                            if(!empty($panel_style_2)){
+                            ?>
+                            <option value="<?= $panel_style_2 ?>"><?= $panel_style_2 ?></option>
+                            <?php
+                            }
+                            ?>
+                            <?php
+                            if(!empty($panel_style_3)){
+                            ?>
+                            <option value="<?= $panel_style_3 ?>"><?= $panel_style_3 ?></option>
+                            <?php
+                            }
+                            ?>
                         <?php endif; ?>
                     </select>
                 </div>
