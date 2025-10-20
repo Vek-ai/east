@@ -238,7 +238,7 @@ if(isset($_REQUEST['action'])) {
                 $success = true;
                 $total_inserted++;
 
-                recordCashInflow($payment_method, 'receivable_payment');
+                recordCashInflow($payment_method, 'receivable_payment', $to_pay);
 
                 $orderids_query = "
                     SELECT DISTINCT l.reference_no AS orderid

@@ -1292,7 +1292,7 @@ if (isset($_POST['save_order'])) {
         }
 
         if ($pay_type == 'cash' || $pay_type == 'check' || $pay_type == 'card') {
-            recordCashInflow($pay_type, 'sales_payment');
+            recordCashInflow($pay_type, 'sales_payment', $cash_amt);
         }
 
         $values = [];

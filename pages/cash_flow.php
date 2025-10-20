@@ -148,21 +148,28 @@ td.notes,  td.last-edit{
         <div class="datatables">
           <div class="card">
             <div class="card-body">
-                <h4 class="card-title d-flex justify-content-between align-items-center"><?= $page_title ?> List</h4>
-                <div class="table-responsive">
-                <table id="display_cash_flow" class="table table-striped table-bordered align-middle">
-                  <thead>
-                    <tr>
-                      <th>Cashier</th>
-                      <th>Station</th>
-                      <th>Payment Method</th>
-                      <th>Cash Flow Type</th>
-                      <th>Date</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    
-                  </tbody>
+                    <h4 class="card-title d-flex justify-content-between align-items-center"><?= $page_title ?> List</h4>
+                    <div class="table-responsive">
+                    <table id="display_cash_flow" class="table table-striped table-bordered align-middle text-center">
+                    <thead>
+                        <tr>
+                        <th>Cashier</th>
+                        <th>Station</th>
+                        <th>Payment Method</th>
+                        <th>Cash Flow Type</th>
+                        <th>Date</th>
+                        <th>Amount</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        
+                    </tbody>
+                    <tfoot>
+                        <tr>
+                            <th colspan="5" style="text-align:right">Total:</th>
+                            <th style="text-align:center"></th>
+                        </tr>
+                    </tfoot>
                 </table>
               </div>
             </div>
@@ -208,13 +215,27 @@ td.notes,  td.last-edit{
             { data: 'station' },
             { data: 'payment_method' },
             { data: 'cash_flow_type' },
-            { data: 'date_display' }
+            { data: 'date_display' },
+            { data: 'amount_display' },
         ],
         createdRow: function(row, data, dataIndex) {
             $(row).attr('data-station', data.station_id);
             $(row).attr('data-date', data.date);
             $(row).attr('data-month', data.month);
             $(row).attr('data-year', data.year);
+            $(row).attr('data-amount', data.amount);
+        },
+        drawCallback: function(settings) {
+            let total = 0;
+
+            $('#display_cash_flow tbody tr').each(function() {
+                const amt = parseFloat($(this).attr('data-amount')) || 0;
+                total += amt;
+            });
+
+            $('#display_cash_flow tfoot th:last').html(
+                '$' + total.toLocaleString()
+            );
         }
     });
     
