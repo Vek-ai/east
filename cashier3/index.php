@@ -724,6 +724,11 @@ $page_key = !empty($_REQUEST['page']) ? $_REQUEST['page'] : 'cashier';
                               </a>
                             </div>
                             <div class="h6 mb-0 dropdown-item py-8 px-3 rounded-2 link">
+                              <a href="?page=close_station" class=" d-flex  align-items-center  ">
+                                Close Station
+                              </a>
+                            </div>
+                            <div class="h6 mb-0 dropdown-item py-8 px-3 rounded-2 link">
                               <a href="logout.php" class=" d-flex  align-items-center ">
                                 Sign Out
                               </a>
