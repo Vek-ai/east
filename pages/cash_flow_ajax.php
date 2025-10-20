@@ -32,6 +32,7 @@ if(isset($_REQUEST['action'])) {
                 'amount'         => floatval($row['amount']),
                 'payment_method' => ucwords($row['payment_method']),
                 'cash_flow_type' => ucwords(str_replace('_', ' ', $row['cash_flow_type'])),
+                'movement_type'  => ucwords(str_replace('_', ' ', $row['movement_type'])),
                 'date_display'   => $dateObj->format('m/d/Y'),
                 'date'           => $dateObj->format('Y-m-d'),
                 'month'          => $dateObj->format('n'),

@@ -1783,7 +1783,7 @@ if (isset($_POST['save_trim'])) {
                 'supplier_id'       => '',
                 'custom_grade'      => !empty($grade) ? $grade : '',
                 'custom_gauge'      => !empty($gauge) ? $gauge : '',
-                'custom_profile'    => !empty($profile) ? $profile : '',
+                'custom_profile'    => !empty($profile) ? $profile : getLastValue($row['profile']),
                 'is_pre_order'      => $is_pre_order,
                 'is_custom'         => $is_custom,
                 'custom_trim_src'   => $img_src,
@@ -1801,7 +1801,7 @@ if (isset($_POST['save_trim'])) {
 if (isset($_POST['save_custom_length'])) {
     $id   = mysqli_real_escape_string($conn, $_POST['id']);
     $line = mysqli_real_escape_string($conn, $_POST['line'] ?? 1);
-    $profile = mysqli_real_escape_string($conn, $_POST['profile'] ?? 1);
+    $profile = mysqli_real_escape_string($conn, $_POST['profile'] ?? 0);
 
     $quantities  = $_POST['quantity'] ?? [];
     $feet_list   = $_POST['length_feet'] ?? [];
@@ -1865,7 +1865,7 @@ if (isset($_POST['save_custom_length'])) {
                     'weight'              => 0,
                     'supplier_id'         => '',
                     'custom_grade'        => '',
-                    'custom_profile'    => !empty($profile) ? $profile : getLastValue($row['profile']),
+                    'custom_profile'      => !empty($profile) ? $profile : getLastValue($row['profile']),
                     'custom_gauge'        => '',
                     'note'                => $note
                 );
@@ -1963,11 +1963,11 @@ if (isset($_POST['return_product'])) {
             $update_order_product = "UPDATE order_product SET quantity = '$new_quantity' WHERE id = '$id'";
             mysqli_query($conn, $update_order_product);
 
-            if ($pay_method == 'store_credit') {
-                $amount = $quantity * floatval($order['discounted_price']);
-                $stock_fee = $amount * $stock_fee_percent;
-                $amount_returned = $amount - $stock_fee;
+            $amount = $quantity * floatval($order['discounted_price']);
+            $stock_fee = $amount * $stock_fee_percent;
+            $amount_returned = $amount - $stock_fee;
 
+            if ($pay_method === 'store_credit') {
                 $credit_update = "
                     UPDATE customer 
                     SET store_credit = store_credit + $amount_returned
@@ -1995,6 +1995,9 @@ if (isset($_POST['return_product'])) {
                     )
                 ";
                 mysqli_query($conn, $credit_history);
+
+            } else {
+                recordCashOutflow($pay_method, 'product_return', $amount_returned);
             }
 
             if ($status === 0) {
@@ -2016,8 +2019,6 @@ if (isset($_POST['return_product'])) {
         echo "Error: Order not found.";
     }
 }
-
-
 
 if (isset($_POST['return_approval_product'])) {
     $id = mysqli_real_escape_string($conn, $_POST['id']);
@@ -2598,7 +2599,7 @@ if (isset($_POST['add_to_cart'])) {
                     'weight'              => $weight,
                     'custom_grade'      => !empty($grade) ? $grade : '',
                     'custom_gauge'      => !empty($gauge) ? $gauge : '',
-                    'custom_profile'    => !empty($profile) ? $profile : '',
+                    'custom_profile'    => !empty($profile) ? $profile : getLastValue($row['profile']),
                     'stiff_board_batten'  => $stiff_board_batten,
                     'stiff_stand_seam'    => $stiff_stand_seam,
                     'is_pre_order'        => $is_pre_order,

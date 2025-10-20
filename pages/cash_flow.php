@@ -135,6 +135,14 @@ td.notes,  td.last-edit{
                     </select>
                 </div>
             </div>
+
+            <div class="position-relative w-100 px-0 mb-2">
+                <select id="movement_type" class="form-control py-0 ps-5 select2 filter-selection" style="width: 100%;" data-filter="movement" data-filter-name="Movement Type">
+                    <option value="">All Movement Types</option>
+                    <option value="Cash Inflow">Cash Inflow</option>
+                    <option value="Cash Outflow">Cash Outflow</option>
+                </select>
+            </div>
         </div>
 
         <div class="d-flex justify-content-end py-2">
@@ -156,6 +164,7 @@ td.notes,  td.last-edit{
                         <th>Cashier</th>
                         <th>Station</th>
                         <th>Payment Method</th>
+                        <th>Movement Type</th>
                         <th>Cash Flow Type</th>
                         <th>Date</th>
                         <th>Amount</th>
@@ -166,7 +175,7 @@ td.notes,  td.last-edit{
                     </tbody>
                     <tfoot>
                         <tr>
-                            <th colspan="5" style="text-align:right">Total:</th>
+                            <th colspan="6" style="text-align:right">Total:</th>
                             <th style="text-align:center"></th>
                         </tr>
                     </tfoot>
@@ -214,6 +223,7 @@ td.notes,  td.last-edit{
             { data: 'cashier' },
             { data: 'station' },
             { data: 'payment_method' },
+            { data: 'movement_type' },
             { data: 'cash_flow_type' },
             { data: 'date_display' },
             { data: 'amount_display' },
@@ -224,6 +234,7 @@ td.notes,  td.last-edit{
             $(row).attr('data-month', data.month);
             $(row).attr('data-year', data.year);
             $(row).attr('data-amount', data.amount);
+            $(row).attr('data-movement', data.movement_type);
         },
         drawCallback: function(settings) {
             let total = 0;
@@ -405,5 +416,11 @@ td.notes,  td.last-edit{
 
         filterTable();
     });
+
+    const today = new Date().toISOString().split('T')[0];
+    $('.input-daterange input[name="start"]').val(today);
+    $('.input-daterange input[name="end"]').val(today);
+
+    filterTable();
 });
 </script>
