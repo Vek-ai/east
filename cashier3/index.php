@@ -74,6 +74,28 @@ $page_key = !empty($_REQUEST['page']) ? $_REQUEST['page'] : 'cashier';
   <div class="preloader">
     <img src="../assets/images/logos/logo-icon.svg" alt="loader" class="lds-ripple img-fluid" />
   </div>
+  <div class="modal fade" id="openingBalanceModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-md">
+      <div class="modal-content">
+        <form id="openingBalanceForm">
+          <div class="modal-header">
+            <h5 class="modal-title">Enter Opening Balance</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            <div class="mb-3">
+              <label for="opening_balance" class="form-label">Opening Balance</label>
+              <input type="number" class="form-control" id="opening_balance" name="opening_balance" required>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="submit" class="btn btn-primary">Save</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
   <div id="main-wrapper">
     <div class="page-wrapper">
       <!--  Header Start -->
@@ -504,6 +526,25 @@ $page_key = !empty($_REQUEST['page']) ? $_REQUEST['page'] : 'cashier';
                         <i class="fa fa-check" aria-hidden="true"></i>
                     </a>
                   </li>
+
+                  <li class="nav-item hover-dd dropdown nav-icon-hover-bg rounded-circle d-none d-lg-block">
+                    <a class="nav-link nav-icon-hover waves-effect waves-dark" href="javascript:void(0)" aria-expanded="false">
+                      <iconify-icon icon="mdi:cash" class="search-icon"></iconify-icon>
+                    </a>
+                    <div class="dropdown-menu py-0 content-dd dropdown-menu-animate-up overflow-hidden dropdown-menu-end" aria-labelledby="drop2">
+                      <div class="py-3 px-4 bg-primary">
+                        <div class="mb-0 fs-6 fw-medium text-white">Opening Balance</div>
+                      </div>
+
+                      <div class="p-3 d-flex align-items-center border-bottom">
+                        <div class="w-100 text-center">
+                          <div class="fs-4 fw-bold text-dark">$ <span id="opening-balance-display">0.00</span></div>
+                          <div class="small text-muted">for today</div>
+                        </div>
+                      </div>
+                    </div>
+                  </li>
+
 
                   <li class="nav-item hover-dd dropdown nav-icon-hover-bg rounded-circle d-none d-lg-block">
                     <a class="nav-link nav-icon-hover waves-effect waves-dark" href="javascript:void(0)" aria-expanded="false">
@@ -1483,6 +1524,29 @@ $page_key = !empty($_REQUEST['page']) ? $_REQUEST['page'] : 'cashier';
 
   }
 
+  function checkOpeningBalance() {
+      $.ajax({
+          url: 'pages/index_ajax.php',
+          type: 'POST',
+          data: { fetch_opening_bal: 'fetch_opening_bal' },
+          dataType: 'json',
+          success: function (res) {
+              let amount = parseFloat(res.opening_balance || 0).toLocaleString('en-PH', {
+                  minimumFractionDigits: 2,
+                  maximumFractionDigits: 2
+              });
+
+              $('#opening-balance-display').text(amount);
+
+              if (parseFloat(res.opening_balance) === 0) {
+                  $('#openingBalanceModal').modal({
+                      backdrop: 'static',
+                      keyboard: false
+                  }).modal('show');
+              }
+          }
+      });
+  }
 
   $(document).ready(function() {
     $(document).on('mouseenter', '[title]', function () {
@@ -1600,8 +1664,61 @@ $page_key = !empty($_REQUEST['page']) ? $_REQUEST['page'] : 'cashier';
         });
     });
 
-
     fetchNotifications();
+
+    checkOpeningBalance();
+
+    $('#openingBalanceForm').on('submit', function (e) {
+        e.preventDefault();
+
+        const bal = $('#opening_balance').val().trim();
+        if (bal === '') {
+            alert('Please enter opening balance');
+            return;
+        }
+
+        $.ajax({
+            url: 'url/pages/index_ajax.php',
+            type: 'POST',
+            data: {
+                action: 'save_opening_bal',
+                opening_balance: bal
+            },
+            success: function () {
+                $('#openingBalanceModal').modal('hide');
+                location.reload();
+            }
+        });
+    });
+
+    $('#openingBalanceForm').on('submit', function (e) {
+        e.preventDefault();
+        const opening_balance = $('#opening_balance').val().trim();
+
+        if (opening_balance === '' || parseFloat(opening_balance) <= 0) {
+            alert('Please enter a valid opening balance.');
+            return;
+        }
+
+        $.ajax({
+            url: 'pages/index_ajax.php',
+            type: 'POST',
+            data: {
+                save_opening_bal: true,
+                opening_balance: opening_balance
+            },
+            dataType: 'json',
+            success: function (res) {
+                if (res.status === 'success') {
+                    $('#openingBalanceModal').modal('hide');
+                    location.reload();
+                } else {
+                    alert(res.message);
+                }
+            }
+        });
+    });
+
   });
   </script>
 </body>
