@@ -66,106 +66,113 @@ td.notes,  td.last-edit{
         <div id="selected-tags" class="mb-2"></div>
         <div class="datatables">
           <div class="table-responsive">
-                <?php
-                $today = date('Y-m-d');
-                $station_id = intval($_SESSION['station']);
+              <?php
+              $today = date('Y-m-d');
+              $station_id = intval($_SESSION['station']);
+              $cashier_id = intval($_SESSION['userid']);
 
-                if(empty($station_id)){
-                ?>
-                    <h3>Station is not set. Please <a href="logout.php">Login</a> Again</h3>
-                <?php
-                }else{
+              if(empty($station_id)){
+              ?>
+                  <h3>Station is not set. Please <a href="logout.php">Login</a> Again</h3>
+              <?php
+              }else{
+                  $chk = mysqli_query($conn, "SELECT id FROM cash_flow_summary WHERE station_id=$station_id AND closing_date='$today' LIMIT 1");
+                  $already_closed = ($chk && mysqli_num_rows($chk) > 0);
 
-                    
+                  $opening = 0;
+                  $ob = mysqli_query($conn, "SELECT amount FROM cash_flow WHERE movement_type='opening_balance' AND DATE(date)='$today' AND station_id=$station_id LIMIT 1");
+                  if ($ob && mysqli_num_rows($ob)) {
+                      $row = mysqli_fetch_assoc($ob);
+                      $opening = floatval($row['amount']);
+                  }
 
-                    $opening = 0;
-                    $ob = mysqli_query($conn, "SELECT amount FROM cash_flow WHERE movement_type='opening_balance' AND DATE(date)='$today' AND station_id=$station_id LIMIT 1");
-                    if ($ob && mysqli_num_rows($ob)) {
-                        $row = mysqli_fetch_assoc($ob);
-                        $opening = floatval($row['amount']);
-                    }
+                  $inflows = [];
+                  $total_inflows = 0;
+                  $ci = mysqli_query($conn, "SELECT cash_flow_type, SUM(amount) as total FROM cash_flow WHERE movement_type='cash_inflow' AND DATE(date)='$today' AND station_id=$station_id GROUP BY cash_flow_type");
+                  while ($row = mysqli_fetch_assoc($ci)) {
+                      $inflows[$row['cash_flow_type']] = floatval($row['total']);
+                      $total_inflows += floatval($row['total']);
+                  }
 
-                    $inflows = [];
-                    $total_inflows = 0;
-                    $ci = mysqli_query($conn, "SELECT cash_flow_type, SUM(amount) as total FROM cash_flow WHERE movement_type='cash_inflow' AND DATE(date)='$today' AND station_id=$station_id GROUP BY cash_flow_type");
-                    while ($row = mysqli_fetch_assoc($ci)) {
-                        $inflows[$row['cash_flow_type']] = floatval($row['total']);
-                        $total_inflows += floatval($row['total']);
-                    }
+                  $outflows = [];
+                  $total_outflows = 0;
+                  $co = mysqli_query($conn, "SELECT cash_flow_type, SUM(amount) as total FROM cash_flow WHERE movement_type='cash_outflow' AND DATE(date)='$today' AND station_id=$station_id GROUP BY cash_flow_type");
+                  while ($row = mysqli_fetch_assoc($co)) {
+                      $outflows[$row['cash_flow_type']] = floatval($row['total']);
+                      $total_outflows += floatval($row['total']);
+                  }
 
-                    $outflows = [];
-                    $total_outflows = 0;
-                    $co = mysqli_query($conn, "SELECT cash_flow_type, SUM(amount) as total FROM cash_flow WHERE movement_type='cash_outflow' AND DATE(date)='$today' AND station_id=$station_id GROUP BY cash_flow_type");
-                    while ($row = mysqli_fetch_assoc($co)) {
-                        $outflows[$row['cash_flow_type']] = floatval($row['total']);
-                        $total_outflows += floatval($row['total']);
-                    }
-
-                    $closing_balance = $opening + $total_inflows - $total_outflows;
-                    ?>
+                  $closing_balance = $opening + $total_inflows - $total_outflows;
+                  ?>
 
 
-                    <table class="table table-bordered table-striped">
-                        <thead>
-                            <tr>
-                                <th>Category</th>
-                                <th>Description</th>
-                                <th>Amount ($)</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td>Opening Balance</td>
-                                <td>Cash Float</td>
-                                <td class="text-end">$<?= number_format($opening, 2) ?></td>
-                            </tr>
+                  <table class="table table-bordered table-striped">
+                      <thead>
+                          <tr>
+                              <th>Category</th>
+                              <th>Description</th>
+                              <th>Amount ($)</th>
+                          </tr>
+                      </thead>
+                      <tbody>
+                          <tr>
+                              <td>Opening Balance</td>
+                              <td>Cash Float</td>
+                              <td class="text-end">$<?= number_format($opening, 2) ?></td>
+                          </tr>
 
-                            <?php if (!empty($inflows)) { ?>
-                                <tr><td colspan="3"><strong>Cash Inflows</strong></td></tr>
-                                <?php foreach ($inflows as $desc => $amt) { ?>
-                                    <tr>
-                                        <td></td>
-                                        <td><?= ucwords(str_replace('_',' ',$desc)) ?></td>
-                                        <td class="text-end">$<?= number_format($amt, 2) ?></td>
-                                    </tr>
-                                <?php } ?>
-                                <tr>
-                                    <td></td>
-                                    <td><strong>Total Inflows</strong></td>
-                                    <td class="text-end"><strong>$<?= number_format($total_inflows, 2) ?></strong></td>
-                                </tr>
-                            <?php } ?>
+                          <?php if (!empty($inflows)) { ?>
+                              <tr><td colspan="3"><strong>Cash Inflows</strong></td></tr>
+                              <?php foreach ($inflows as $desc => $amt) { ?>
+                                  <tr>
+                                      <td></td>
+                                      <td><?= ucwords(str_replace('_',' ',$desc)) ?></td>
+                                      <td class="text-end">$<?= number_format($amt, 2) ?></td>
+                                  </tr>
+                              <?php } ?>
+                              <tr>
+                                  <td></td>
+                                  <td><strong>Total Inflows</strong></td>
+                                  <td class="text-end"><strong>$<?= number_format($total_inflows, 2) ?></strong></td>
+                              </tr>
+                          <?php } ?>
 
-                            <?php if (!empty($outflows)) { ?>
-                                <tr><td colspan="3"><strong>Cash Outflows</strong></td></tr>
-                                <?php foreach ($outflows as $desc => $amt) { ?>
-                                    <tr>
-                                        <td></td>
-                                        <td><?= ucwords(str_replace('_',' ',$desc)) ?></td>
-                                        <td class="text-end">$<?= number_format($amt, 2) ?></td>
-                                    </tr>
-                                <?php } ?>
-                                <tr>
-                                    <td></td>
-                                    <td><strong>Total Outflows</strong></td>
-                                    <td class="text-end"><strong>$<?= number_format($total_outflows, 2) ?></strong></td>
-                                </tr>
-                            <?php } ?>
+                          <?php if (!empty($outflows)) { ?>
+                              <tr><td colspan="3"><strong>Cash Outflows</strong></td></tr>
+                              <?php foreach ($outflows as $desc => $amt) { ?>
+                                  <tr>
+                                      <td></td>
+                                      <td><?= ucwords(str_replace('_',' ',$desc)) ?></td>
+                                      <td class="text-end">$<?= number_format($amt, 2) ?></td>
+                                  </tr>
+                              <?php } ?>
+                              <tr>
+                                  <td></td>
+                                  <td><strong>Total Outflows</strong></td>
+                                  <td class="text-end"><strong>$<?= number_format($total_outflows, 2) ?></strong></td>
+                              </tr>
+                          <?php } ?>
 
-                            <tr>
-                                <td>Closing Balance</td>
-                                <td>$<?= number_format($opening, 2) ?> + $<?= number_format($total_inflows, 2) ?> - $<?= number_format($total_outflows, 2) ?> =</td>
-                                <td class="text-end"><strong>$<?= number_format($closing_balance, 2) ?></strong></td>
-                            </tr>
-                        </tbody>
-                    </table>
+                          <tr>
+                              <td>Closing Balance</td>
+                              <td>$<?= number_format($opening, 2) ?> + $<?= number_format($total_inflows, 2) ?> - $<?= number_format($total_outflows, 2) ?> =</td>
+                              <td class="text-end"><strong>$<?= number_format($closing_balance, 2) ?></strong></td>
+                          </tr>
+                      </tbody>
+                  </table>
 
-                    <div class="text-end mt-3">
-                        <button class="btn btn-danger">Confirm Closing</button>
-                    </div>
-                <?php
-                }
-                ?>
+                  <?php if (!$already_closed) { ?>
+                      <div class="text-end mt-3">
+                          <button class="btn btn-danger btn-close-station">Confirm Closing</button>
+                      </div>
+                  <?php } else { ?>
+                      <div class="alert alert-success text-center mt-3">
+                          Station already closed for today.
+                      </div>
+                  <?php } ?>
+              <?php
+              }
+              ?>
             </div>
         </div>
       </div>
@@ -196,5 +203,32 @@ td.notes,  td.last-edit{
   $(document).ready(function() {
     document.title = "<?= $page_title ?>";
     
+    $(document).on('click', '.btn-close-station', function (e) {
+      e.preventDefault();
+
+      if (!confirm('Are you sure you want to close this station?')) return;
+
+      $.ajax({
+          url: 'pages/close_station_ajax.php',
+          type: 'POST',
+          data: {
+              close_station: 1
+          },
+          dataType: 'json',
+          success: function (res) {
+              if (res.success) {
+                  alert('Station closed successfully!');
+                  location.reload();
+              } else {
+                  alert('Error: ' + res.message);
+              }
+          },
+          error: function (xhr, status, err) {
+              console.log(err);
+              alert('Something went wrong!');
+          }
+      });
+  });
+
 });
 </script>
