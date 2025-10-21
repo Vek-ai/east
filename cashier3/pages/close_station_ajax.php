@@ -7,8 +7,6 @@ error_reporting(E_ERROR | E_PARSE | E_CORE_ERROR | E_CORE_WARNING | E_COMPILE_ER
 require '../../includes/dbconn.php';
 require '../../includes/functions.php';
 
-
-
 if (isset($_POST['close_station'])) {
     header('Content-Type: application/json');
 
