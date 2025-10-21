@@ -35,8 +35,8 @@ if (isset($_POST['search_returns'])) {
             cp.supplier AS supplier_id,
             cp.entry_no,
             cp.date_inventory AS coil_date,
-            o.customerid,
-            o.orderid
+            GROUP_CONCAT(DISTINCT o.customerid) AS customerids,
+            GROUP_CONCAT(DISTINCT o.orderid) AS orderids
         FROM coil_transaction ct
         LEFT JOIN coil_product cp 
             ON ct.coilid = cp.coil_id
@@ -63,7 +63,12 @@ if (isset($_POST['search_returns'])) {
         $query .= " AND ct.coilid = '$coilid' ";
     }
 
-    $query .= " ORDER BY ct.date DESC";
+    $query .= "
+        GROUP BY 
+            ct.id, ct.coilid, ct.date, ct.remaining_length, 
+            ct.length_before_use, cp.supplier, cp.entry_no, cp.date_inventory
+        ORDER BY ct.date DESC
+    ";
 
     $result = mysqli_query($conn, $query);
 
@@ -82,14 +87,21 @@ if (isset($_POST['search_returns'])) {
             $coil_date = !empty($row['coil_date']) ? date('m/d/Y', strtotime($row['coil_date'])) : '-';
             $trans_date = !empty($row['date']) ? date('m/d/Y', strtotime($row['date'])) : '-';
 
+            $order_list = !empty($row['orderids']) ? explode(',', $row['orderids']) : [];
+            $customer_list = !empty($row['customerids']) ? explode(',', $row['customerids']) : [];
+
+            $first_orderid = !empty($order_list) ? 'INV#' . $order_list[0] : '-';
+            $first_customerid = !empty($customer_list) ? $customer_list[0] : '-';
+            $customer_name = !empty($first_customerid) ? get_customer_name($first_customerid) : '-';
+
             $response['coils'][] = [
                 'id' => $row['id'],
                 'coilid' => $row['coilid'] ?? '-',
                 'entry_no' => $row['entry_no'] ?? '-',
                 'supplier_id' => $row['supplier_id'] ?? '-',
-                'orderid' => "INV#" . $row['orderid'] ?? '-',
-                'customerid' => $row['customerid'] ?? '-',
-                'customer' => get_customer_name($row['customerid']),
+                'orderid' => $first_orderid,
+                'customerid' => $first_customerid,
+                'customer' => $customer_name,
                 'used_in_workorders' => $row['used_in_workorders'] ?? '',
                 'length_before_use' => $length_before_use,
                 'remaining_length' => $remaining_feet,
