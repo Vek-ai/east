@@ -181,6 +181,20 @@ function showCol($name) {
                         </select>
                     </div>
                 </div>
+                <select class="form-control py-0 ps-5 select2 filter-selection" id="filter-station" data-filter="station" data-filter-name="Station">
+                    <option value="">All Stations</option>
+                    <optgroup label="Stations">
+                        <?php
+                        $query_station = "SELECT * FROM station ORDER BY `station_name` ASC";
+                        $result_station = mysqli_query($conn, $query_station);
+                        while ($row_station = mysqli_fetch_array($result_station)) {
+                        ?>
+                            <option value="<?= $row_station['station_id'] ?>"><?= $row_station['station_name'] ?></option>
+                        <?php
+                        }
+                        ?>
+                    </optgroup>
+                </select>
             </div>
             <div class="d-flex justify-content-end py-2">
                 <button type="button" class="btn btn-outline-primary reset_filters">
@@ -475,6 +489,7 @@ function showCol($name) {
             const staff = $('#filter-staff').val();
             const tax_status = $('#filter-tax').val();
             const paid_status = $('#paid_status_select').val();
+            const station = $('filter-station').val();
 
             $.ajax({
                 url: 'pages/sales_report_ajax.php',
@@ -489,6 +504,7 @@ function showCol($name) {
                     staff,
                     tax_status,
                     paid_status,
+                    station,
                     search_orders: 'search_orders'
                 },
                 success: function (response) {

@@ -113,7 +113,6 @@ if (isset($_POST['search_returns'])) {
                 'entry_no' => $row['entry_no'] ?? '-',
                 'supplier_id' => $row['supplier_id'] ?? '-',
                 'orderid' => $first_orderid,
-                'customerid' => $first_customerid,
                 'customer' => $customer_name,
                 'used_in_workorders' => $row['used_in_workorders'] ?? '',
                 'length_before_use' => $length_before_use,
@@ -140,6 +139,7 @@ if (isset($_POST['fetch_usage_details'])) {
         SELECT
             wo.id AS wo_id,
             wo.work_order_id AS invoice_no,
+            wo.work_order_product_id AS line_id,
             wo.quantity AS wo_quantity,
             wo.custom_length AS wo_length_ft,
             wo.custom_length2 AS wo_length_in,
@@ -212,7 +212,7 @@ if (isset($_POST['fetch_usage_details'])) {
                             <tbody>
                                 <?php foreach ($rows as $row): 
                                     $line_counter++;
-                                    $line_id = 'L' . $line_counter;
+                                    $line_id = 'L' . $row['line_id'];
 
                                     $invoice_no = "INV#" . $row['invoice_no'];
 

@@ -62,6 +62,7 @@ if (isset($_POST['search_orders'])) {
     $staff = mysqli_real_escape_string($conn, $_POST['staff']);
     $tax_status = mysqli_real_escape_string($conn, $_POST['tax_status']);
     $paid_status = mysqli_real_escape_string($conn, $_POST['paid_status']);
+    $station = mysqli_real_escape_string($conn, $_POST['station']);
 
     $query = "
         SELECT 
@@ -100,6 +101,10 @@ if (isset($_POST['search_orders'])) {
 
     if (!empty($tax_status)) {
         $query .= " AND c.tax_status = '$tax_status'";
+    }
+
+    if (!empty($station)) {
+        $query .= " AND o.station = '$station'";
     }
 
     $query .= " ORDER BY o.order_date DESC";

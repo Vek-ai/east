@@ -179,6 +179,7 @@ if(isset($_POST['fetch_order_details'])){
             <table id="order_dtls_tbl" class="table table-hover mb-0 text-md-nowrap">
                 <thead>
                     <tr>
+                        <th>Line ID</th>
                         <th>Description</th>
                         <th>Color</th>
                         <th>Grade</th>
@@ -202,6 +203,9 @@ if(isset($_POST['fetch_order_details'])){
                             if($row['quantity'] > 0){
                             ?>
                             <tr>
+                                <td class="text-wrap"> 
+                                    <?php echo "L" .$row['id'] ?>
+                                </td>
                                 <td class="text-wrap"> 
                                     <?php echo getProductName($product_id) ?>
                                 </td>
@@ -267,7 +271,7 @@ if(isset($_POST['fetch_order_details'])){
 
                 <tfoot>
                     <tr>
-                        <td colspan="4">Total</td>
+                        <td colspan="5">Total</td>
                         <td><?= $totalquantity ?></td>
                         <td></td>
                         <td class="text-end">$ <?= number_format($total_actual_price,2) ?></td>

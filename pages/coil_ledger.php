@@ -6,7 +6,7 @@ if (!defined('APP_SECURE')) {
 require 'includes/dbconn.php';
 require 'includes/functions.php';
 
-$page_title = "Coil Use History";
+$page_title = "Coil Ledger";
 
 $permission = $_SESSION['permission'];
 
