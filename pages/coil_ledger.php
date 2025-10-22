@@ -117,6 +117,7 @@ $coilid = $_REQUEST['coil'] ?? '';
                             <tr>
                                 <th>Coil ID #</th>
                                 <th>Customer</th>
+                                <th>Initial Ft</th>
                                 <th>Used Ft</th>
                                 <th>Remaining Ft</th>
                                 <th>Date</th>
@@ -331,6 +332,7 @@ $coilid = $_REQUEST['coil'] ?? '';
                             const entry_no = coil.entry_no || '-';
                             const orderid = coil.orderid || '-';
                             const customer = coil.customer || '-';
+                            const initial_feet = coil.initial_feet || '-';
                             const used_feet = coil.used_feet || '-';
                             const remaining_length = coil.remaining_length || '-';
                             const date = coil.transaction_date || '-';
@@ -348,6 +350,7 @@ $coilid = $_REQUEST['coil'] ?? '';
                             table.row.add([
                                 entry_no,        
                                 customer,
+                                initial_feet,
                                 used_feet,
                                 remaining_length,
                                 date,

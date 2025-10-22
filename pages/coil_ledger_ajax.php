@@ -115,7 +115,7 @@ if (isset($_POST['search_returns'])) {
                 'orderid' => $first_orderid,
                 'customer' => $customer_name,
                 'used_in_workorders' => $row['used_in_workorders'] ?? '',
-                'length_before_use' => $length_before_use,
+                'initial_feet' => $length_before_use,
                 'remaining_length' => number_format($remaining_feet,2),
                 'used_feet' => number_format($used_feet,2),
                 'coil_date' => $coil_date,
