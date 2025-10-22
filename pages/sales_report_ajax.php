@@ -112,7 +112,7 @@ if (isset($_POST['search_orders'])) {
             $payment_method = ucfirst($row['pay_type']);
             $expected_amount = floatval($row['discounted_price']);
             $total_paid = floatval(getOrderTotalPayments($orderid));
-            $balance = $expected_amount - $total_paid;
+            $balance = max(0, $expected_amount - $total_paid);
 
             $payment_status_str = '';
             if ($total_paid <= 0) {
