@@ -6,7 +6,7 @@ if (!defined('APP_SECURE')) {
 require 'includes/dbconn.php';
 require 'includes/functions.php';
 
-$page_title = "Sales History";
+$page_title = "Sales Report";
 
 $permission = $_SESSION['permission'];
 
