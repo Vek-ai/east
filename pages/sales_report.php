@@ -489,7 +489,7 @@ function showCol($name) {
             const staff = $('#filter-staff').val();
             const tax_status = $('#filter-tax').val();
             const paid_status = $('#paid_status_select').val();
-            const station = $('filter-station').val();
+            const station = $('#filter-station').val();
 
             $.ajax({
                 url: 'pages/sales_report_ajax.php',
