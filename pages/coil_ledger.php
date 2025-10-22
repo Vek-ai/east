@@ -116,8 +116,9 @@ $coilid = $_REQUEST['coil'] ?? '';
                         <thead>
                             <tr>
                                 <th>Coil ID #</th>
-                                <th>Invoice ID #</th>
                                 <th>Customer</th>
+                                <th>Used Ft</th>
+                                <th>Remaining Ft</th>
                                 <th>Date</th>
                                 <th>Action</th>
                             </tr>
@@ -167,10 +168,27 @@ $coilid = $_REQUEST['coil'] ?? '';
     </div>
 </div>
 
+<div class="modal" id="view_invoice_modal" style="background-color: rgba(0, 0, 0, 0.5);">
+    <div class="modal-dialog modal-dialog-centered modal-xl" role="document" style="max-width: 80%;">
+        <div class="modal-content p-2">
+            <div class="modal-header">
+                <h6 class="modal-title">Invoice Details</h6>
+                <button aria-label="Close" class="close" data-bs-dismiss="modal" type="button">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div id="invoice-details">
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
 <script>
     function loadCoilDetails(coil_id){
         $.ajax({
-            url: 'pages/coil_use_history_ajax.php',
+            url: 'pages/coil_ledger_ajax.php',
             type: 'POST',
             data: {
                 coil_id: coil_id,
@@ -187,7 +205,7 @@ $coilid = $_REQUEST['coil'] ?? '';
 
     function loadUsageDetails(id){
         $.ajax({
-            url: 'pages/coil_use_history_ajax.php',
+            url: 'pages/coil_ledger_ajax.php',
             type: 'POST',
             data: {
                 id: id,
@@ -277,7 +295,7 @@ $coilid = $_REQUEST['coil'] ?? '';
             const supplier_id = $('#supplier_id').val() || [];
 
             $.ajax({
-                url: 'pages/coil_use_history_ajax.php',
+                url: 'pages/coil_ledger_ajax.php',
                 type: 'POST',
                 dataType: 'json',
                 data: {
@@ -304,7 +322,6 @@ $coilid = $_REQUEST['coil'] ?? '';
 
                     table.clear();
 
-                    // Bind text search input
                     $('#text_search').off('keyup').on('keyup', function() {
                         table.search(this.value).draw();
                     });
@@ -314,6 +331,8 @@ $coilid = $_REQUEST['coil'] ?? '';
                             const entry_no = coil.entry_no || '-';
                             const orderid = coil.orderid || '-';
                             const customer = coil.customer || '-';
+                            const used_feet = coil.used_feet || '-';
+                            const remaining_length = coil.remaining_length || '-';
                             const date = coil.transaction_date || '-';
 
                             const actionButtons = `
@@ -328,18 +347,15 @@ $coilid = $_REQUEST['coil'] ?? '';
 
                             table.row.add([
                                 entry_no,        
-                                orderid,
                                 customer,
+                                used_feet,
+                                remaining_length,
                                 date,
                                 actionButtons
                             ]);
                         });
 
                         table.draw();
-                    } else {
-                        table.row.add([
-                            '-', '-', 'No records found', '-', '-'
-                        ]).draw();
                     }
 
                     updateSelectedTags();
@@ -367,6 +383,27 @@ $coilid = $_REQUEST['coil'] ?? '';
             var id = $(this).data('id');
             loadUsageDetails(id);
             $('#view_coil_usage_modal').modal('toggle');
+        });
+
+        $(document).on('click', '.view_invoice_details', function(event) {
+            var orderid = $(this).data('orderid');
+            $.ajax({
+                url: 'pages/sales_list_ajax.php',
+                type: 'POST',
+                data: {
+                    orderid: orderid,
+                    fetch_order_details: "fetch_order_details"
+                },
+                success: function(response) {
+                    console.log(response);
+                    $('#invoice-details').html(response);
+                },
+                error: function(jqXHR, textStatus, errorThrown) {
+                    alert('Failed!');
+                    console.log(jqXHR.responseText)
+                }
+            });
+            $('#view_invoice_modal').modal('toggle');
         });
 
         performSearch();

@@ -90,9 +90,22 @@ if (isset($_POST['search_returns'])) {
             $order_list = !empty($row['orderids']) ? explode(',', $row['orderids']) : [];
             $customer_list = !empty($row['customerids']) ? explode(',', $row['customerids']) : [];
 
-            $first_orderid = !empty($order_list) ? 'INV#' . $order_list[0] : '-';
-            $first_customerid = !empty($customer_list) ? $customer_list[0] : '-';
-            $customer_name = !empty($first_customerid) ? get_customer_name($first_customerid) : '-';
+            $order_display = !empty($order_list)
+                ? implode(', ', array_map(fn($id) => 'INV#' . trim($id), $order_list))
+                : '-';
+
+            if (!empty($customer_list)) {
+                $customer_names = [];
+                foreach ($customer_list as $cid) {
+                    $name = get_customer_name(trim($cid));
+                    if ($name) {
+                        $customer_names[] = $name;
+                    }
+                }
+                $customer_name = implode(', ', $customer_names);
+            } else {
+                $customer_name = '-';
+            }
 
             $response['coils'][] = [
                 'id' => $row['id'],
@@ -104,8 +117,8 @@ if (isset($_POST['search_returns'])) {
                 'customer' => $customer_name,
                 'used_in_workorders' => $row['used_in_workorders'] ?? '',
                 'length_before_use' => $length_before_use,
-                'remaining_length' => $remaining_feet,
-                'used_feet' => $used_feet,
+                'remaining_length' => number_format($remaining_feet,2),
+                'used_feet' => number_format($used_feet,2),
                 'coil_date' => $coil_date,
                 'transaction_date' => $trans_date
             ];
@@ -126,6 +139,7 @@ if (isset($_POST['fetch_usage_details'])) {
     $sql = "
         SELECT
             wo.id AS wo_id,
+            wo.work_order_id AS invoice_no,
             wo.quantity AS wo_quantity,
             wo.custom_length AS wo_length_ft,
             wo.custom_length2 AS wo_length_in,
@@ -183,6 +197,7 @@ if (isset($_POST['fetch_usage_details'])) {
                         <table class="table table-bordered table-sm align-middle mb-0 text-center">
                             <thead class="text-center">
                                 <tr>
+                                    <th>Invoice #</th>
                                     <th>Line Item ID #</th>
                                     <th>Product ID #</th>
                                     <th>Description</th>
@@ -198,6 +213,8 @@ if (isset($_POST['fetch_usage_details'])) {
                                 <?php foreach ($rows as $row): 
                                     $line_counter++;
                                     $line_id = 'L' . $line_counter;
+
+                                    $invoice_no = "INV#" . $row['invoice_no'];
 
                                     $qty = intval($row['wo_quantity']);
                                     $length_ft = floatval($row['wo_length_ft']);
@@ -215,6 +232,11 @@ if (isset($_POST['fetch_usage_details'])) {
                                     $grand_total += $line_total;
                                 ?>
                                     <tr>
+                                        <td>
+                                            <a href="javascript:void(0)" class="view_invoice_details" style="color: #4da3ff !important;" data-orderid="<?= $row['invoice_no'] ?>">
+                                                <?= htmlspecialchars($invoice_no) ?>
+                                            </a>
+                                        </td>
                                         <td><?= htmlspecialchars($line_id) ?></td>
                                         <td><?= htmlspecialchars($product_id_display) ?></td>
                                         <td><?= htmlspecialchars($description) ?></td>
