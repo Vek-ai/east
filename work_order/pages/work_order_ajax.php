@@ -1402,33 +1402,27 @@ if (isset($_POST['run_work_order'])) {
     $job_batch_data = [];
     $barcodes = [];
 
+    $coil_updates = [];
+
     $no = 1;
     foreach ($ids as $id) {
-        $id = mysqli_real_escape_string($conn, $id);
+        $id = intval($id);
         $work_order_details = getWorkOrderDetails($id);
-        $upc = (!empty($upc) ? $upc : getOrderProductBarcode($work_order_details['work_order_product_id']));
+        if (!$work_order_details) continue;
 
         $fields = [];
-        if (!empty($usage)) {
-            $fields[] = "usageid = " . intval($usage);
-        }
-        if (!empty($upc)) {
-            $fields[] = "upc = '" . $upc . "'";
-        }
+        if (!empty($usage)) $fields[] = "usageid = " . intval($usage);
+        if (!empty($upc)) $fields[] = "upc = '" . mysqli_real_escape_string($conn, $upc) . "'";
         if (!empty($fields)) {
             $updateSQL = "UPDATE work_order SET " . implode(", ", $fields) . " WHERE id = $id";
             mysqli_query($conn, $updateSQL);
         }
 
-        if (!$work_order_details) continue;
-
         $productid = $work_order_details['productid'];
         $product_name = getProductName($productid);
         $product_details = getProductDetails($productid);
         $color_id = $work_order_details['custom_color'];
-        $barcode = $upc;
-        $barcodes[] = $barcode;
-        $usageid = $usage;
+        $usageid = intval($usage);
         $usage_name = getUsageName($usageid);
 
         $materials_data[] = [
@@ -1443,10 +1437,6 @@ if (isset($_POST['run_work_order'])) {
             ''
         ];
 
-        $profile_type_id = $work_order_details['custom_profile'];
-        $profile_details = getProfileTypeDetails($profile_type_id);
-        $profile = $profile_details['profile_type'];
-
         $assigned_coils = json_decode($work_order_details['assigned_coils'], true);
         $length_ft = floatval($work_order_details['custom_length'] ?? 0);
         $length_in = floatval($work_order_details['custom_length2'] ?? 0);
@@ -1455,49 +1445,14 @@ if (isset($_POST['run_work_order'])) {
         if (is_array($assigned_coils)) {
             foreach ($assigned_coils as $coil_id) {
                 $coil_id = intval($coil_id);
-                $coil_before = getCoilProductDetails($coil_id);
-                $length_before_use = floatval($coil_before['remaining_feet']);
-
-                mysqli_query($conn, "
-                    UPDATE coil_product 
-                    SET remaining_feet = GREATEST(remaining_feet - $total_length_ft, 0) 
-                    WHERE coil_id = $coil_id
-                ");
-
-                $coil_after = getCoilProductDetails($coil_id);
-                $remaining_length = floatval($coil_after['remaining_feet']);
-
-                mysqli_query($conn, "
-                    INSERT INTO coil_transaction (coilid, remaining_length, length_before_use, used_in_workorders)
-                    VALUES (
-                        $coil_id,
-                        '" . mysqli_real_escape_string($conn, $remaining_length) . "',
-                        '" . mysqli_real_escape_string($conn, $length_before_use) . "',
-                        '" . mysqli_real_escape_string($conn, $id) . "'
-                    )
-                ");
-
-                $coils_data[] = [
-                    'C',
-                    $coil_after['entry_no'],
-                    getWarehouseName($coil_after['warehouse']),
-                    '',
-                    date('m/d/Y', strtotime($coil_after['date'])),
-                    match($coil_after['status']) {
-                        0 => 'AVAILABLE',
-                        1 => 'USED',
-                        2 => 'REWORK',
-                        3 => 'DEFECTIVE',
-                        4 => 'ARCHIVED',
-                        default => 'UNKNOWN'
-                    },
-                    getSupplierName($coil_after['supplier']),
-                    floatval($coil_after['weight']),
-                    floatval($coil_after['price']),
-                    $remaining_length,
-                    getGradeName($coil_after['grade']),
-                    'NotesHere'
-                ];
+                if (!isset($coil_updates[$coil_id])) {
+                    $coil_updates[$coil_id] = [
+                        'total_length_used' => 0,
+                        'work_orders' => [],
+                    ];
+                }
+                $coil_updates[$coil_id]['total_length_used'] += $total_length_ft;
+                $coil_updates[$coil_id]['work_orders'][] = $id;
             }
 
             mysqli_query($conn, "UPDATE work_order SET status = 2, roll_former_id = '$roll_former_id' WHERE id = $id");
@@ -1505,13 +1460,13 @@ if (isset($_POST['run_work_order'])) {
 
         $orderid = $work_order_details['work_order_id'];
         $order_details = getOrderDetails($orderid);
-        $job_name = $order_details['job_name'];
-        $rollformer_name = getRollFormerDetails($roll_former_id)['roll_former'];
+        $job_name = $order_details['job_name'] ?? '';
+        $rollformer_name = getRollFormerDetails($roll_former_id)['roll_former'] ?? '';
         $part_no = $product_details['coil_part_no'];
         $quantity = $work_order_details['quantity'];
-        $custom_length = $work_order_details['custom_length'];
-        $custom_length2 = $work_order_details['custom_length2'];
-        $decimal_length = floatval($custom_length) + (floatval($custom_length2) / 12);
+        $decimal_length = $length_ft + ($length_in / 12);
+        $barcode = !empty($upc) ? $upc : getOrderProductBarcode($work_order_details['work_order_product_id']);
+        $barcodes[] = $barcode;
 
         $job_batch_data[] = [
             'B',
@@ -1523,8 +1478,74 @@ if (isset($_POST['run_work_order'])) {
             $usage_name,
             'UDF3', 'UDF4', 'UDF5'
         ];
-
         $no++;
+    }
+
+    foreach ($coil_updates as $coil_id => $data) {
+        $coil_before = getCoilProductDetails($coil_id);
+        $length_before_use = floatval($coil_before['remaining_feet']);
+        $deduct_used = floatval($data['total_length_used']);
+
+        mysqli_query($conn, "
+            UPDATE coil_product 
+            SET remaining_feet = GREATEST(remaining_feet - $deduct_used, 0)
+            WHERE coil_id = $coil_id
+        ");
+
+        $coil_after = getCoilProductDetails($coil_id);
+        $remaining_length = floatval($coil_after['remaining_feet']);
+        $work_order_ids = implode(',', array_unique($data['work_orders']));
+
+        $check = mysqli_query($conn, "
+            SELECT id, used_in_workorders
+            FROM coil_transaction
+            WHERE coilid = $coil_id
+            ORDER BY id DESC
+            LIMIT 1
+        ");
+
+        if ($check && mysqli_num_rows($check) > 0) {
+            $row = mysqli_fetch_assoc($check);
+            $existing_ids = array_filter(explode(',', $row['used_in_workorders']));
+            $merged_ids = array_unique(array_merge($existing_ids, $data['work_orders']));
+            $merged_ids_str = implode(',', $merged_ids);
+
+            mysqli_query($conn, "
+                UPDATE coil_transaction
+                SET 
+                    remaining_length = '$remaining_length',
+                    length_before_use = '$length_before_use',
+                    used_in_workorders = '$merged_ids_str'
+                WHERE id = {$row['id']}
+            ");
+        } else {
+            mysqli_query($conn, "
+                INSERT INTO coil_transaction (coilid, remaining_length, length_before_use, used_in_workorders)
+                VALUES ($coil_id, '$remaining_length', '$length_before_use', '$work_order_ids')
+            ");
+        }
+
+        $coils_data[] = [
+            'C',
+            $coil_after['entry_no'],
+            getWarehouseName($coil_after['warehouse']),
+            '',
+            date('m/d/Y', strtotime($coil_after['date'] ?? date('Y-m-d'))),
+            match($coil_after['status']) {
+                0 => 'AVAILABLE',
+                1 => 'USED',
+                2 => 'REWORK',
+                3 => 'DEFECTIVE',
+                4 => 'ARCHIVED',
+                default => 'UNKNOWN'
+            },
+            getSupplierName($coil_after['supplier']),
+            floatval($coil_after['weight']),
+            floatval($coil_after['price']),
+            $remaining_length,
+            getGradeName($coil_after['grade']),
+            $coil_after['notes'] ?? ''
+        ];
     }
 
     $partOpRows = [
@@ -1532,22 +1553,12 @@ if (isset($_POST['run_work_order'])) {
         ['#O', 'OPERATION', 'POSITION', 'REFERENCE', 'YPOS'],
         ['P', 'TEST PART', 'TEST PART'],
         ['O', 'TEST OPERATION', '1', 'LEADING EDGE', '2'],
-        ['O', 'TEST OPERATION 2', '2', 'LEADING EDGE', '-2'],
-        ['O', 'TEST OPERATION 3', '4', 'LEADING EDGE', '2'],
-        ['O', 'TEST OPERATION 4', '8', 'LEADING EDGE', '-2']
+        ['O', 'TEST OPERATION 2', '2', 'LEADING EDGE', '-2']
     ];
 
     $folderRows = [
         ['#FOLDER_PART', 'NAME', 'DESCRIPTION', 'CLAMP_PRESSURE', 'OVERBEND', 'MATERIAL_THICKNESS', 'PAINT_DIRECTION'],
-        ['#FOLDER_OPERATION', 'STEP', 'BACKGAUGE2', 'BACKGAUGE', 'CLAMP_PRESSURE', 'BEND_ANGLE', 'OVERBEND', 'UPPER_JAW', 'BUMP_BEND_ANGLE', 'BUMP_BEND_RADIUS', 'BUMP_BEND_ITERATIONS', 'ROTARY_SHEAR', 'FLIP', 'HELI_ROTATE', 'PROP ROTATE', 'BG ADJUST'],
-        ['FOLDER_PART', 'CANOPY-PANEL', 'TEST PART', '1500', '8', '0.03998', 'UP'],
-        ['FOLDER_OPERATION', '0', '18.99994', '18.99994', '0', '0', '0', '0.7', '0', '0', '0', '200', 'NO', 'NO', 'NO', '0'],
-        ['FOLDER_OPERATION', '1', '18.24994', '18.24994', '0', '90', '0', '0.7', '0', '0', '0', '0', 'NO', 'NO', 'NO', '0'],
-        ['FOLDER_OPERATION', '2', '17.19994', '17.19994', '0', '90', '0', '0.7', '0', '0', '0', '0', 'NO', 'NO', 'NO', '0'],
-        ['FOLDER_OPERATION', '3', '14.36995', '14.36995', '0', '95', '0', '0.7', '0', '0', '0', '0', 'NO', 'NO', 'YES', '0'],
-        ['FOLDER_OPERATION', '4', '1.54999', '1.54999', '0', '90', '0', '2', '0', '0', '0', '0', 'NO', 'NO', 'NO', '0'],
-        ['FOLDER_OPERATION', '5', '0.59998', '0.59998', '0', '85', '0', '2', '0', '0', '0', '0', 'NO', 'NO', 'NO', '0'],
-        ['FOLDER_OPERATION', '6', '2.81998', '2.81998', '0', '90', '0', '2', '0', '0', '0', '0', 'NO', 'NO', 'NO', '0']
+        ['#FOLDER_OPERATION', 'STEP', 'BACKGAUGE2', 'BACKGAUGE', 'CLAMP_PRESSURE', 'BEND_ANGLE', 'OVERBEND', 'UPPER_JAW']
     ];
 
     $allRows = [];
@@ -1577,7 +1588,6 @@ if (isset($_POST['run_work_order'])) {
 
     $baseUrl = $_SERVER['REQUEST_SCHEME'] . '://' . $_SERVER['HTTP_HOST'] . dirname($_SERVER['PHP_SELF']);
     $downloadUrl = $baseUrl . "/temp_exports/$filename";
-
     $barcodeList = implode(',', array_filter($barcodes, fn($b) => trim($b) !== ''));
 
     echo json_encode([
