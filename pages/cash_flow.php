@@ -325,14 +325,21 @@ td.notes,  td.last-edit{
 
             var rowDateStr = row.data('date');
             if (rowDateStr) {
-                var rowDate = new Date(rowDateStr);
+                var parts = rowDateStr.split('-');
+                var rowDate = new Date(parts[0], parts[1] - 1, parts[2]);
+
                 if (!isNaN(rowDate.getTime())) {
+                    rowDate.setHours(0, 0, 0, 0);
+                    if (dateFrom) dateFrom.setHours(0, 0, 0, 0);
+                    if (dateTo) dateTo.setHours(0, 0, 0, 0);
+
                     if (dateFrom && rowDate < dateFrom) match = false;
                     if (dateTo && rowDate > dateTo) match = false;
                     if (selectedMonths.length && !selectedMonths.includes((rowDate.getMonth() + 1).toString())) match = false;
                     if (selectedYears.length && !selectedYears.includes(rowDate.getFullYear().toString())) match = false;
                 }
             }
+
 
             return match;
         });

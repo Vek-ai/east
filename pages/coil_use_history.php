@@ -209,13 +209,6 @@ $coilid = $_REQUEST['coil'] ?? '';
         var isPrinting = false;
         var coilid = '<?= $coilid ?>';
 
-        const yearSelect = $('#year_select');
-        const currentYear = new Date().getFullYear();
-        const yearsBack = 15;
-        for (let y = currentYear; y >= currentYear - yearsBack; y--) {
-            yearSelect.append(new Option(y, y));
-        }
-
         $(document).on('mouseenter focus', '.select2-selection__choice, .select2-selection__choice__remove', function () {
             $(this).removeAttr('title');
             
@@ -246,12 +239,6 @@ $coilid = $_REQUEST['coil'] ?? '';
             placeholder: "All Months",
             width: '100%',
             dropdownParent: $("#month_select").parent()
-        });
-
-        $("#year_select").select2({
-            placeholder: "All Years",
-            width: '100%',
-            dropdownParent: $("#year_select").parent()
         });
 
         function updateSelectedTags() {

@@ -426,7 +426,7 @@ $permission = $_SESSION['permission'];
                                                 <?php                                                    
                                                 if ($permission === 'edit') {
                                                 ?>
-                                                <a href="#" title="Coil Use History" class="edit coil_history_btn" data-id="<?= $row_coil['coil_id'] ?>">
+                                                <a href="?page=coil_use_history&coil=<?= $row_coil['coil_id'] ?>" target="_blank" title="Coil Use History" class="edit coil_history_btn" data-id="<?= $row_coil['coil_id'] ?>">
                                                     <i class="ti ti-history text-info fs-7"></i>
                                                 </a>
                                                 <a href="#" title="Edit" class="edit coil_btn" data-id="<?= $row_coil['coil_id'] ?>" data-type="add">

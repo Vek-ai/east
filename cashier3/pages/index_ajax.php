@@ -165,11 +165,13 @@ if (isset($_POST['notification_id'])) {
 
 if (isset($_POST['fetch_opening_bal'])) {
     $today = date('Y-m-d');
+    $station_id = intval($_SESSION['station'] ?? 0);
 
     $sql = "SELECT amount 
             FROM cash_flow 
             WHERE movement_type = 'opening_balance' 
             AND DATE(`date`) = '$today'
+            AND station_id = '$station_id'
             LIMIT 1";
 
     $res = mysqli_query($conn, $sql);
@@ -194,18 +196,30 @@ if (isset($_POST['save_opening_bal'])) {
     $received_by = intval($_SESSION['userid'] ?? 0);
     $station_id = intval($_SESSION['station'] ?? 0);
 
-    $check = mysqli_query($conn, "SELECT id FROM cash_flow WHERE movement_type = 'opening_balance' AND DATE(`date`) = CURDATE() LIMIT 1");
+    $check = mysqli_query($conn, "
+        SELECT id 
+        FROM cash_flow 
+        WHERE movement_type = 'opening_balance' 
+        AND DATE(`date`) = CURDATE() 
+        AND station_id = '$station_id'
+        LIMIT 1
+    ");
 
     if ($check && mysqli_num_rows($check) > 0) {
         echo json_encode([
             'status' => 'error',
-            'message' => 'Opening balance already set for today.'
+            'message' => 'Opening balance already set for this station today.'
         ]);
         exit;
     }
 
-    $sql = "INSERT INTO cash_flow (movement_type, payment_method, date, received_by, station_id, cash_flow_type, amount) 
-            VALUES ('opening_balance', '', '$today', '$received_by', '$station_id', 'opening_balance', '$opening_balance')";
+    $sql = "
+        INSERT INTO cash_flow 
+            (movement_type, payment_method, date, received_by, station_id, cash_flow_type, amount)
+        VALUES 
+            ('opening_balance', '', '$today', '$received_by', '$station_id', 'opening_balance', '$opening_balance')
+    ";
+
     $res = mysqli_query($conn, $sql);
 
     if ($res) {
@@ -219,6 +233,7 @@ if (isset($_POST['save_opening_bal'])) {
             'message' => 'Failed to save opening balance.'
         ]);
     }
+
     exit;
 }
 
