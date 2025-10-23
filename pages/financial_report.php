@@ -127,7 +127,7 @@ td.notes,  td.last-edit{
 
             <div class="position-relative w-100 px-0 mb-2">
                 <select id="daily_status_select" name="daily_status" class="form-select select2-daily-status filter-selection select2" data-filter="daily-status" data-filter-name="Daily Status">
-                    <option value="">All Business Day Status</option>
+                    <option value="">All Daily Status</option>
                     <option value="Completed">Completed</option>
                     <option value="In Operation">In Operation</option>
                 </select>
