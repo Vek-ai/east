@@ -303,6 +303,13 @@ if(isset($_POST['fetch_prompt_quantity'])){
                 calculateProductCost();
             });
 
+            $(document).on('input', '.length_feet', function() {
+                let val = parseFloat($(this).val());
+                if (!isNaN(val)) {
+                    $(this).val(Math.floor(val));
+                }
+            });
+
             $(document).on("change", ".fraction_input", function() {
                 const allowed = [0.25, 0.50, 0.75];
                 const val = parseFloat($(this).val());

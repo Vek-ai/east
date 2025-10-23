@@ -117,7 +117,7 @@
 
                 <div class="col-2">
                     <div class="input-group">
-                        <input step="0.0001" class="form-control form-control-sm length_feet" 
+                        <input class="form-control form-control-sm length_feet" 
                             type="number" name="length_feet[]" list="length_feet_datalist" 
                             value="<?= $values['estimate_length'] ?>" placeholder="FT">
                         <input step="0.0001" class="form-control form-control-sm length_inch" 
