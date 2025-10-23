@@ -413,7 +413,7 @@ if(isset($_REQUEST['action'])) {
                         <th>Amount</th>
                         <th>Date</th>
                         <th>Time</th>
-                        <th>Status</th>
+                        <th>Payment Method</th>
                         <th>Salesperson</th>
                     </tr>
                 </thead>
@@ -421,34 +421,35 @@ if(isset($_REQUEST['action'])) {
         ';
 
         $total_amount = 0;
-        $status_labels = [
-            'pickup'   => ['label' => 'Pay at Pick-up'],
-            'delivery' => ['label' => 'Pay at Delivery'],
-            'cash'     => ['label' => 'Cash'],
-            'check'    => ['label' => 'Check'],
-            'card'     => ['label' => 'Credit/Debit Card'],
-            'net30'    => ['label' => 'Charge Net 30'],
+        $payment_labels = [
+            'pickup'   => 'Pay at Pick-up',
+            'delivery' => 'Pay at Delivery',
+            'cash'     => 'Cash',
+            'check'    => 'Check',
+            'card'     => 'Credit/Debit Card',
+            'net30'    => 'Charge Net 30',
         ];
 
         while ($row = mysqli_fetch_assoc($result)) {
             $orderid = $row['orderid'];
             $pay_type = strtolower(trim($row['pay_type']));
-            $label = $status_labels[$pay_type]['label'] ?? ucfirst($pay_type);
-
-            $total_paid = getOrderTotalPayments($orderid);
+            $payment_label = $payment_labels[$pay_type] ?? ucfirst($pay_type);
             $expected_amount = floatval($row['discounted_price']);
-            $color = 'secondary';
-            $payment_status = 'Not Paid';
 
-            if ($total_paid <= 0) {
-                $color = 'danger';
-                $payment_status = 'Not Paid';
-            } elseif ($total_paid < $expected_amount) {
-                $color = 'warning';
-                $payment_status = 'Partially Paid';
+            // default green for cash/card/check
+            if (in_array($pay_type, ['cash', 'card', 'check'])) {
+                $color_class = 'success';
             } else {
-                $color = 'success';
-                $payment_status = 'Fully Paid';
+                // for pickup, delivery, net30, check actual payments
+                $total_paid = getOrderTotalPayments($orderid);
+
+                if ($total_paid <= 0) {
+                    $color_class = 'danger';
+                } elseif ($total_paid < $expected_amount) {
+                    $color_class = 'warning';
+                } else {
+                    $color_class = 'success';
+                }
             }
 
             $response_html .= '
@@ -458,7 +459,9 @@ if(isset($_REQUEST['action'])) {
                     <td class="text-end">' . number_format($expected_amount, 2) . '</td>
                     <td>' . date('F d, Y', strtotime($row['order_date'])) . '</td>
                     <td>' . date('h:i A', strtotime($row['order_date'])) . '</td>
-                    <td class="text-center"><span class="badge bg-' . $color . '">' . $payment_status . '</span></td>
+                    <td class="text-center">
+                        <span class="badge bg-' . $color_class . '">' . htmlspecialchars($payment_label) . '</span>
+                    </td>
                     <td>' . htmlspecialchars(get_staff_name($row['cashier'])) . '</td>
                 </tr>
             ';
@@ -480,6 +483,7 @@ if(isset($_REQUEST['action'])) {
 
         echo $response_html;
     }
+
 
     if ($action == 'fetch_receivable') {
         $date = mysqli_real_escape_string($conn, $_POST['date']);
