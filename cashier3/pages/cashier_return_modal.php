@@ -174,6 +174,13 @@ if(isset($_POST['return_product_modal'])){
                                                     <i class="fa-brands fa-cc-visa me-1"></i>Credit/Debit Card
                                                 </label>
                                             </div>
+
+                                            <div class="form-check form-check-inline">
+                                                <input class="form-check-input" type="radio" name="payReturnMethod" id="payCheck" value="check">
+                                                <label class="form-check-label" for="payCheck">
+                                                    <i class="fa-solid fa-money-check"></i> Check
+                                                </label>
+                                            </div>
                                         <?php endif; ?>
 
                                         <div class="form-check form-check-inline">
