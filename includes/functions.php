@@ -4069,12 +4069,13 @@ function recordCashInflow($payment_method, $cash_flow_type, $amount = 0) {
     $amount          = ($amount === null || $amount === '') ? 0 : floatval($amount);
 
     $sql = "
-        INSERT INTO cash_flow (movement_type, payment_method, date, received_by, station_id, cash_flow_type, amount)
-        VALUES ('$movement_type', '$payment_method', NOW(), '$received_by', '$station_id', '$cash_flow_type', '$amount')
+        INSERT INTO cash_flow (movement_type, payment_method, received_by, station_id, cash_flow_type, amount)
+        VALUES ('$movement_type', '$payment_method', '$received_by', '$station_id', '$cash_flow_type', '$amount')
     ";
 
     return mysqli_query($conn, $sql);
 }
+
 
 function recordCashOutflow($payment_method, $cash_flow_type, $amount = 0) {
     global $conn;
@@ -4088,8 +4089,8 @@ function recordCashOutflow($payment_method, $cash_flow_type, $amount = 0) {
     $amount          = ($amount === null || $amount === '') ? 0 : floatval($amount);
 
     $sql = "
-        INSERT INTO cash_flow (movement_type, payment_method, date, received_by, station_id, cash_flow_type, amount)
-        VALUES ('$movement_type', '$payment_method', NOW(), '$received_by', '$station_id', '$cash_flow_type', '$amount')
+        INSERT INTO cash_flow (movement_type, payment_method, received_by, station_id, cash_flow_type, amount)
+        VALUES ('$movement_type', '$payment_method', '$received_by', '$station_id', '$cash_flow_type', '$amount')
     ";
 
     return mysqli_query($conn, $sql);

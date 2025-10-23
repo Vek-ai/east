@@ -224,7 +224,6 @@ function showCol($name) {
 
                                         <?php if (showCol('salesperson')): ?>
                                             <th>Salesperson</th>
-                                            <th>Station</th>
                                         <?php endif; ?>
 
                                         <?php if (showCol('action')): ?>
@@ -622,7 +621,6 @@ function showCol($name) {
 
                             <?php if (showCol('salesperson')): ?>
                                 rowData.push(order.cashier);
-                                rowData.push(order.station);
                             <?php endif; ?>
 
                             <?php if (showCol('action')): ?>
@@ -683,7 +681,7 @@ function showCol($name) {
                         <?php endif; ?>
 
                         <?php if (showCol('action')): ?>
-                            footerCols.push(`<td></td>`);
+                            footerCols.push(`<td></td><td></td>`);
                         <?php endif; ?>
 
                         $('#sales_table tfoot').html(`<tr>${footerCols.join('')}</tr>`);
