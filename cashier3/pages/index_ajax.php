@@ -191,16 +191,17 @@ if (isset($_POST['fetch_opening_bal'])) {
 
 if (isset($_POST['save_opening_bal'])) {
     $opening_balance = floatval($_POST['opening_balance']);
-    $today = date('Y-m-d H:i:s');
+    $date_now = date('Y-m-d H:i:s');
+    $today = date('Y-m-d');
 
     $received_by = intval($_SESSION['userid'] ?? 0);
-    $station_id = intval($_SESSION['station'] ?? 0);
+    $station_id  = intval($_SESSION['station'] ?? 0);
 
     $check = mysqli_query($conn, "
         SELECT id 
         FROM cash_flow 
         WHERE movement_type = 'opening_balance' 
-        AND DATE(`date`) = CURDATE() 
+        AND DATE(`date`) = '$today'
         AND station_id = '$station_id'
         LIMIT 1
     ");
@@ -208,16 +209,16 @@ if (isset($_POST['save_opening_bal'])) {
     if ($check && mysqli_num_rows($check) > 0) {
         echo json_encode([
             'status' => 'error',
-            'message' => 'Opening balance already set for this station today.'
+            'message' => 'Opening balance already set for today.'
         ]);
         exit;
     }
 
     $sql = "
         INSERT INTO cash_flow 
-            (movement_type, payment_method, received_by, station_id, cash_flow_type, amount)
+            (movement_type, payment_method, date, received_by, station_id, cash_flow_type, amount)
         VALUES 
-            ('opening_balance', '', '$received_by', '$station_id', 'opening_balance', '$opening_balance')
+            ('opening_balance', '', '$date_now', '$received_by', '$station_id', 'opening_balance', '$opening_balance')
     ";
 
     $res = mysqli_query($conn, $sql);
@@ -242,8 +243,10 @@ if (isset($_POST['record_cash_outflow'])) {
     $amount      = isset($_POST['amount']) ? floatval($_POST['amount']) : 0;
 
     if ($description === '' || $amount <= 0) {
-        $response['message'] = 'Please select a description and enter a valid amount.';
-        echo json_encode($response);
+        echo json_encode([
+            'success' => false,
+            'message' => 'Please select a description and enter a valid amount.'
+        ]);
         exit;
     }
 
@@ -252,13 +255,10 @@ if (isset($_POST['record_cash_outflow'])) {
 
     $saved = recordCashOutflow('', $description_normalized, $amount);
 
-    if ($saved) {
-        $response['success'] = true;
-    } else {
-        $response['message'] = 'Failed to save cash outflow.';
-    }
-
-    echo json_encode($response);
+    echo json_encode([
+        'success' => $saved,
+        'message' => $saved ? 'Cash outflow recorded successfully.' : 'Failed to save cash outflow.'
+    ]);
     exit;
 }
 
