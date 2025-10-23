@@ -215,9 +215,9 @@ if (isset($_POST['save_opening_bal'])) {
 
     $sql = "
         INSERT INTO cash_flow 
-            (movement_type, payment_method, date, received_by, station_id, cash_flow_type, amount)
+            (movement_type, payment_method, received_by, station_id, cash_flow_type, amount)
         VALUES 
-            ('opening_balance', '', '$today', '$received_by', '$station_id', 'opening_balance', '$opening_balance')
+            ('opening_balance', '', '$received_by', '$station_id', 'opening_balance', '$opening_balance')
     ";
 
     $res = mysqli_query($conn, $sql);
