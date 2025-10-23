@@ -552,11 +552,14 @@ if (isset($_POST['set_estimate_length'])) {
     $line = mysqli_real_escape_string($conn, $_POST['line']);
     $length = parseNumber(mysqli_real_escape_string($conn, $_POST['length']));
 
+    $length = floor($length);
+
     $key = findCartKey($_SESSION["cart"], $product_id, $line);
     if ($key !== false && isset($_SESSION["cart"][$key])) {
         $_SESSION["cart"][$key]['estimate_length'] = !empty($length) ? $length : "";
     }
-    echo "Length ID: $product_id, Line: $line, Key: $key";
+
+    echo "Length ID: $product_id, Line: $line, Key: $key, Length: $length";
 }
 
 if (isset($_POST['set_estimate_length_inch'])) {

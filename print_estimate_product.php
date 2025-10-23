@@ -150,7 +150,7 @@ function renderPanelCategory($pdf, $products, $conn) {
         $panel_type  = $row_product['panel_type'];
         $panel_style = $row_product['panel_style'];
 
-        $ft  = floatval($row_product['custom_length'] ?? 0);
+        $ft = floor(floatval($row_product['custom_length'] ?? 0));
         $in  = floatval($row_product['custom_length2'] ?? 0);
         $len = $ft + ($in / 12);
 
@@ -269,7 +269,7 @@ function renderDefaultCategory($pdf, $products, $conn) {
         $grade_details   = getGradeDetails($product_details['grade']);
         $profile_details = getProfileTypeDetails($product_details['profile']);
 
-        $ft  = floatval($row_product['custom_length'] ?? 0);
+        $ft = floor(floatval($row_product['custom_length'] ?? 0));
         $in  = floatval($row_product['custom_length2'] ?? 0);
         $len = $ft + ($in / 12);
 
@@ -316,7 +316,7 @@ function renderTrimCategory($pdf, $products, $conn) {
         $grade_details   = getGradeDetails($product_details['grade']);
         $profile_details = getProfileTypeDetails($product_details['profile']);
 
-        $ft  = floatval($row_product['custom_length'] ?? 0);
+        $ft = floor(floatval($row_product['custom_length'] ?? 0));
         $in  = floatval($row_product['custom_length2'] ?? 0);
         $len = $ft + ($in / 12);
 
@@ -358,7 +358,7 @@ function renderLumberCategory($pdf, $products, $conn) {
     foreach ($products as $row_product) {
         $product_details = getProductDetails($row_product['product_id']);
 
-        $ft  = floatval($row_product['custom_length'] ?? 0);
+        $ft = floor(floatval($row_product['custom_length'] ?? 0));
         $in  = floatval($row_product['custom_length2'] ?? 0);
         $len = $ft + ($in / 12);
 

@@ -170,7 +170,7 @@ function renderPanelCategory($pdf, $products, $conn) {
         $panel_type  = $row_product['panel_type'];
         $panel_style = $row_product['panel_style'];
 
-        $ft  = floatval($row_product['custom_length'] ?? 0);
+        $ft = floor(floatval($row_product['custom_length'] ?? 0));
         $in  = floatval($row_product['custom_length2'] ?? 0);
         $len = $ft + ($in / 12);
 
@@ -296,7 +296,7 @@ function renderDefaultCategory($pdf, $products, $conn) {
         $profile_details = getProfileTypeDetails($row_product['custom_profile']);
         $grade_details = getGradeDetails($row_product['custom_grade']);
 
-        $ft  = floatval($row_product['custom_length'] ?? 0);
+        $ft = floor(floatval($row_product['custom_length'] ?? 0));
         $in  = floatval($row_product['custom_length2'] ?? 0);
         $len = $ft + ($in / 12);
 
@@ -349,7 +349,7 @@ function renderTrimCategory($pdf, $products, $conn) {
         $grade       = getGradeDetails($row_product['custom_grade'])['grade_abbreviations'] ?? '';
         $gauge       = getGaugeName($row_product['custom_gauge'] ?? '');
 
-        $ft  = floatval($row_product['custom_length'] ?? 0);
+        $ft = floor(floatval($row_product['custom_length'] ?? 0));
         $in  = floatval($row_product['custom_length2'] ?? 0);
         $len = $ft + ($in / 12);
 
@@ -431,7 +431,7 @@ function renderLumberCategory($pdf, $products, $conn) {
         $profile_details = getProfileTypeDetails($row_product['custom_profile']);
         $grade_details = getGradeDetails($row_product['custom_grade']);
 
-        $ft  = floatval($row_product['custom_length'] ?? 0);
+        $ft = floor(floatval($row_product['custom_length'] ?? 0));
         $in  = floatval($row_product['custom_length2'] ?? 0);
         $len = $ft + ($in / 12);
 

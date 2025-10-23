@@ -92,9 +92,22 @@ if(isset($_REQUEST['action'])) {
             $username = mysqli_real_escape_string($conn, $_POST['username']);
 
             if (!empty($customer_id)) {
-                $checkQuery = "SELECT customer_id FROM customer WHERE username = '$username' AND customer_id != '$customer_id'";
+                $checkQuery = "
+                    SELECT customer_id 
+                    FROM customer 
+                    WHERE username = '$username' 
+                    AND customer_id != '$customer_id' 
+                    AND status = 1 
+                    AND hidden = 0
+                ";
             } else {
-                $checkQuery = "SELECT customer_id FROM customer WHERE username = '$username'";
+                $checkQuery = "
+                    SELECT customer_id 
+                    FROM customer 
+                    WHERE username = '$username' 
+                    AND status = 1 
+                    AND hidden = 0
+                ";
             }
 
             $result = mysqli_query($conn, $checkQuery) or die("Error checking username: " . mysqli_error($conn));

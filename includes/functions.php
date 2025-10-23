@@ -3867,7 +3867,7 @@ function getTrimProdID(
 
     $lengthAbbr = '';
     if (!empty($length)) {
-        $lengthAbbr = '(' . formatLengthAbbr(floatval($length)) . ')';
+        $lengthAbbr = formatLengthAbbr(floatval($length));
     }
 
     $abrList = [];
@@ -3949,7 +3949,7 @@ function getDefaultProdID(
 
     $lengthAbbr = '';
     if (!empty($length)) {
-        $lengthAbbr = '(' . formatLengthAbbr(floatval($length)) . ')';
+        $lengthAbbr = formatLengthAbbr(floatval($length));
     }
 
     $abrList = [];
@@ -3982,11 +3982,8 @@ function getDefaultProdID(
 }
 
 function formatLengthAbbr($decimalValue) {
-    $feet = floor($decimalValue);
-    $inchesDecimal = ($decimalValue - $feet) * 12;
-    $inches = round($inchesDecimal, 2);
-
-    return '(' . $feet . 'ft' . ($inches > 0 ? $inches . 'in' : '') . ')';
+    $inches = round($decimalValue * 12);
+    return '-' . $inches . '-';
 }
 
 function fetchProductIDs($product_id_from_table) {

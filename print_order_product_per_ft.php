@@ -114,7 +114,7 @@ function renderPanelCategory($pdf, $products, $conn) {
         $panel_type  = $row_product['panel_type'];
         $panel_style = $row_product['panel_style'];
 
-        $ft  = floatval($row_product['custom_length'] ?? 0);
+        $ft = floor(floatval($row_product['custom_length'] ?? 0));
         $in  = floatval($row_product['custom_length2'] ?? 0);
         $len = $ft + ($in / 12);
 
@@ -262,7 +262,7 @@ function renderTrimCategory($pdf, $products, $conn) {
         $disc_price = floatval($row_product['discounted_price'] ?? 0);
         $note       = trim($row_product['note'] ?? '');
 
-        $ft  = floatval($row_product['custom_length'] ?? 0);
+        $ft = floor(floatval($row_product['custom_length'] ?? 0));
         $in  = floatval($row_product['custom_length2'] ?? 0);
         $len = $ft + ($in / 12);
 
@@ -410,7 +410,7 @@ function renderScrewCategory($pdf, $products, $conn) {
         $disc_price = floatval($row_product['discounted_price'] ?? 0);
         $note       = trim($row_product['note'] ?? '');
 
-        $ft  = floatval($row_product['custom_length'] ?? 0);
+        $ft = floor(floatval($row_product['custom_length'] ?? 0));
         $in  = floatval($row_product['custom_length2'] ?? 0);
         $len = $ft + ($in / 12);
 
@@ -558,7 +558,7 @@ function renderLumberCategory($pdf, $products, $conn) {
         $disc_price = floatval($row_product['discounted_price'] ?? 0);
         $note       = trim($row_product['note'] ?? '');
 
-        $ft  = floatval($row_product['custom_length'] ?? 0);
+        $ft = floor(floatval($row_product['custom_length'] ?? 0));
         $in  = floatval($row_product['custom_length2'] ?? 0);
         $len = $ft + ($in / 12);
 
@@ -706,7 +706,7 @@ function renderDefaultCategory($pdf, $products, $conn) {
         $disc_price = floatval($row_product['discounted_price'] ?? 0);
         $note       = trim($row_product['note'] ?? '');
 
-        $ft  = floatval($row_product['custom_length'] ?? 0);
+        $ft = floor(floatval($row_product['custom_length'] ?? 0));
         $in  = floatval($row_product['custom_length2'] ?? 0);
         $len = $ft + ($in / 12);
 
