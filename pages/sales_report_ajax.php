@@ -197,7 +197,6 @@ if (isset($_REQUEST['download_excel'])) {
                 <th>Balance</th>
                 <th>Status</th>
                 <th>Payment Method</th>
-                <th>Station</th>
                 <th>Cashier</th>
             </tr>
         </thead><tbody>";
@@ -245,7 +244,6 @@ if (isset($_REQUEST['download_excel'])) {
                 <td style='text-align: right;'>" . number_format($balance, 2) . "</td>
                 <td style='text-align: center; background-color: {$bg_color}; color: #fff;'>{$status}</td>
                 <td style='text-align: center;'>{$payment_method}</td>
-                <td style='text-align: center;'>{$station}</td>
                 <td style='text-align: center;'>{$cashier}</td>
             </tr>";
 
@@ -259,7 +257,7 @@ if (isset($_REQUEST['download_excel'])) {
             <td style='text-align:right;'>" . number_format($total_amount, 2) . "</td>
             <td style='text-align:right;'>" . number_format($total_paid, 2) . "</td>
             <td style='text-align:right;'>" . number_format($total_balance, 2) . "</td>
-            <td colspan='4'></td>
+            <td colspan='3'></td>
         </tr>";
 
     echo "</tbody></table>";
@@ -292,9 +290,8 @@ if (isset($_REQUEST['download_pdf'])) {
         'Paid'        => $usableWidth * 0.10,
         'Balance'     => $usableWidth * 0.10,
         'Status'      => $usableWidth * 0.10,
-        'Method'      => $usableWidth * 0.10,
-        'Station'     => $usableWidth * 0.08,
-        'Cashier'     => $usableWidth * 0.07,
+        'Method'      => $usableWidth * 0.14,
+        'Cashier'     => $usableWidth * 0.11,
     ];
 
     $pdf->SetFont('Arial', 'B', 10);
@@ -341,7 +338,6 @@ if (isset($_REQUEST['download_pdf'])) {
         $pdf->Cell($colWidths['Balance'], 6, number_format($balance, 2), 1, 0, 'R');
         $pdf->Cell($colWidths['Status'], 6, $status, 1, 0, 'C', true);
         $pdf->Cell($colWidths['Method'], 6, $method, 1, 0, 'C');
-        $pdf->Cell($colWidths['Station'], 6, $station, 1, 0, 'C');
         $pdf->Cell($colWidths['Cashier'], 6, $cashier, 1, 0, 'C');
         $pdf->Ln();
 
@@ -393,7 +389,6 @@ if (isset($_REQUEST['print_result'])) {
                     <th>Balance</th>
                     <th>Status</th>
                     <th>Payment Method</th>
-                    <th>Station</th>
                     <th>Cashier</th>
                 </tr>
             </thead>
@@ -433,7 +428,6 @@ if (isset($_REQUEST['print_result'])) {
                         <td style='text-align:right;'>" . number_format($balance, 2) . "</td>
                         <td class='{$class}'>{$status}</td>
                         <td>{$method}</td>
-                        <td>{$station}</td>
                         <td>{$cashier}</td>
                     </tr>";
                 }

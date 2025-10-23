@@ -71,7 +71,8 @@ td.notes,  td.last-edit{
               $station_id = intval($_SESSION['station']);
               $cashier_id = intval($_SESSION['userid']);
 
-              if(empty($station_id)){
+              //if(empty($station_id)){
+              if(false){
               ?>
                   <h3>Station is not set. Please <a href="logout.php">Login</a> Again</h3>
               <?php

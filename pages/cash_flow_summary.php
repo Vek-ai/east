@@ -83,7 +83,7 @@ td.notes,  td.last-edit{
         </h3>
 
         <div class="align-items-center filter_container">
-            <div class="position-relative w-100 px-0 mb-2">
+            <div class="position-relative w-100 px-0 mb-2 d-none">
                 <select class="form-control py-0 ps-5 select2 filter-selection" id="filter_station" data-filter="station" data-filter-name="Station">
                     <option value="">All Stations</option>
                     <optgroup label="Stations">

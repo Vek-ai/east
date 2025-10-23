@@ -8,7 +8,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $password = trim($_POST['password']);
     $station  = $_POST['station'] ?? '';
 
-    if (empty($username) || empty($password) || empty($station)) {
+    if (empty($username) || empty($password)) {
         $error = 'Please fill in all required fields.';
     } else {
         $redirect = !empty($_REQUEST['redirect']) ? urldecode($_REQUEST['redirect']) : 'index.php';
@@ -86,7 +86,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                     <label for="exampleInputPassword1" class="form-label">Password</label>
                     <input type="password" name="password" class="form-control" id="exampleInputPassword1" required>
                   </div>
-                  <div class="mb-4">
+                  <!-- <div class="mb-4">
                     <label for="stationSelect" class="form-label">Station</label>
                     <select name="station" class="form-control" id="stationSelect" required>
                         <option value="" hidden>--Select Station--</option>
@@ -103,7 +103,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                         }
                         ?>
                     </select>
-                  </div>
+                  </div> -->
                   <div class="d-flex align-items-center justify-content-between mb-4">
                     <div class="form-check">
                       <input class="form-check-input primary" type="checkbox" value="" id="flexCheckChecked" checked>

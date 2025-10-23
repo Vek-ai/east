@@ -16,7 +16,7 @@ $permission = $_SESSION['permission'];
 if(isset($_REQUEST['action'])) {
     $action = $_REQUEST['action'];
 
-    if ($action == 'fetch_table') {
+    if ($action == 'fetch_table_old') {
         $date = !empty($_POST['date']) ? $_POST['date'] : date('Y-m-d');
         $selected_station = !empty($_POST['station']) ? intval($_POST['station']) : 0;
 
@@ -179,6 +179,120 @@ if(isset($_REQUEST['action'])) {
         } else {
             ?>
             <div class="alert alert-warning">No stations found.</div>
+            <?php
+        }
+
+        $table_html = ob_get_clean();
+        echo json_encode(['data' => $table_html]);
+        exit;
+    }
+
+    if ($action == 'fetch_table') {
+        $date = !empty($_POST['date']) ? $_POST['date'] : date('Y-m-d');
+
+        $query = "
+            SELECT s.station_name, cfs.*
+            FROM cash_flow_summary cfs
+            LEFT JOIN station s ON s.station_id = cfs.station_id
+            WHERE cfs.closing_date = '$date'
+            ORDER BY s.station_name ASC
+        ";
+        $result = mysqli_query($conn, $query);
+
+        $grand_opening = 0;
+        $grand_inflows = 0;
+        $grand_outflows = 0;
+        $grand_closing = 0;
+
+        ob_start();
+
+        if ($result && mysqli_num_rows($result) > 0) {
+            while ($row = mysqli_fetch_assoc($result)) {
+                $station_name = $row['station_name'] ?? 'Unknown Station';
+                $opening = floatval($row['opening_balance']);
+                $total_inflows = floatval($row['total_inflows']);
+                $total_outflows = floatval($row['total_outflows']);
+                $closing_balance = floatval($row['closing_balance']);
+
+                $details = json_decode($row['details_json'], true);
+                $inflows = $details['inflows'] ?? [];
+                $outflows = $details['outflows'] ?? [];
+
+                $grand_opening += $opening;
+                $grand_inflows += $total_inflows;
+                $grand_outflows += $total_outflows;
+                $grand_closing += $closing_balance;
+                ?>
+                <div class="datatables mb-4">
+                    <h5 class="mb-2">Station: <?= htmlspecialchars($station_name) ?></h5>
+                    <div class="table-responsive">
+                        <table class="table table-bordered table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Category</th>
+                                    <th>Description</th>
+                                    <th class="text-end">Amount ($)</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>Opening Balance</td>
+                                    <td>Cash Float</td>
+                                    <td class="text-end">$<?= number_format($opening, 2) ?></td>
+                                </tr>
+
+                                <?php if (!empty($inflows)) { ?>
+                                    <tr><td colspan="3"><strong>Cash Inflows</strong></td></tr>
+                                    <?php foreach ($inflows as $desc => $amt) { ?>
+                                        <tr>
+                                            <td></td>
+                                            <td><?= ucwords(str_replace('_', ' ', $desc)) ?></td>
+                                            <td class="text-end">$<?= number_format($amt, 2) ?></td>
+                                        </tr>
+                                    <?php } ?>
+                                    <tr>
+                                        <td></td>
+                                        <td><strong>Total Inflows</strong></td>
+                                        <td class="text-end"><strong>$<?= number_format($total_inflows, 2) ?></strong></td>
+                                    </tr>
+                                <?php } else { ?>
+                                    <tr><td colspan="3" class="text-center text-muted">No inflows recorded</td></tr>
+                                <?php } ?>
+
+                                <?php if (!empty($outflows)) { ?>
+                                    <tr><td colspan="3"><strong>Cash Outflows</strong></td></tr>
+                                    <?php foreach ($outflows as $desc => $amt) { ?>
+                                        <tr>
+                                            <td></td>
+                                            <td><?= ucwords(str_replace('_', ' ', $desc)) ?></td>
+                                            <td class="text-end">$<?= number_format($amt, 2) ?></td>
+                                        </tr>
+                                    <?php } ?>
+                                    <tr>
+                                        <td></td>
+                                        <td><strong>Total Outflows</strong></td>
+                                        <td class="text-end"><strong>$<?= number_format($total_outflows, 2) ?></strong></td>
+                                    </tr>
+                                <?php } else { ?>
+                                    <tr><td colspan="3" class="text-center text-muted">No outflows recorded</td></tr>
+                                <?php } ?>
+
+                                <tr>
+                                    <td>Closing Balance</td>
+                                    <td>
+                                        $<?= number_format($opening, 2) ?> + $<?= number_format($total_inflows, 2) ?> - $<?= number_format($total_outflows, 2) ?> =
+                                    </td>
+                                    <td class="text-end"><strong>$<?= number_format($closing_balance, 2) ?></strong></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <?php
+            }
+        } else {
+            ?>
+            <div class="alert alert-warning">No cash flow summaries found for <?= htmlspecialchars($date) ?>.</div>
             <?php
         }
 
