@@ -96,7 +96,7 @@ td.notes,  td.last-edit{
         <hr class="my-3 border-dark opacity-75">
 
         <div class="align-items-center filter_container">
-            <div class="position-relative w-100 px-0 mb-2">
+            <!-- <div class="position-relative w-100 px-0 mb-2">
                 <select class="form-control py-0 ps-5 select2 filter-selection" id="select-station" data-filter="station" data-filter-name="Station">
                     <option value="">All Stations</option>
                     <optgroup label="Stations">
@@ -111,7 +111,7 @@ td.notes,  td.last-edit{
                         ?>
                     </optgroup>
                 </select>
-            </div>
+            </div> -->
             <div class="position-relative w-100 px-0 mb-2">
                 <select id="month_select" name="month[]" multiple class="form-control py-0 ps-5 select2 filter-selection" style="width: 100%;" data-filter="month" data-filter-name="Month">
                     <option value="1">January</option>
@@ -162,7 +162,6 @@ td.notes,  td.last-edit{
                     <thead>
                         <tr>
                         <th>Cashier</th>
-                        <th>Station</th>
                         <th>Payment Method</th>
                         <th>Movement Type</th>
                         <th>Cash Flow Type</th>
@@ -175,7 +174,7 @@ td.notes,  td.last-edit{
                     </tbody>
                     <tfoot>
                         <tr>
-                            <th colspan="6" style="text-align:right">Total:</th>
+                            <th colspan="5" style="text-align:right">Total:</th>
                             <th style="text-align:center"></th>
                         </tr>
                     </tfoot>
@@ -221,7 +220,6 @@ td.notes,  td.last-edit{
         },
         columns: [
             { data: 'cashier' },
-            { data: 'station' },
             { data: 'payment_method' },
             { data: 'movement_type' },
             { data: 'cash_flow_type' },
