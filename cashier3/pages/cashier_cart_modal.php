@@ -2269,13 +2269,19 @@ if(isset($_POST['fetch_cart'])){
                 if ($(this).data('select2')) {
                     $(this).select2('destroy');
                 }
+
                 $(this).select2({
                     width: '300px',
                     placeholder: "Select...",
                     dropdownAutoWidth: true,
                     dropdownParent: $('#cartTable'),
                     templateResult: formatOption,
-                    templateSelection: formatSelected
+                    templateSelection: formatSelected,
+                    language: {
+                        noResults: function() {
+                            return "No paint color";
+                        }
+                    }
                 });
             });
 

@@ -188,8 +188,8 @@ $permission = $_SESSION['permission'];
     </div>
 
     <div class="card card-body">
-        <div class="row">
-            <div class="col-3">
+        <div class="d-flex">
+            <div class="flex-shrink-0" style="width: 250px;">
                 <h3 class="card-title align-items-center mb-2">
                     Filter <?= $page_title ?>
                 </h3>
@@ -261,7 +261,7 @@ $permission = $_SESSION['permission'];
                     </button>
                 </div>
             </div>
-            <div class="col-9">
+            <div class="flex-grow-1 ms-3">
                 <div id="selected-tags" class="mb-2"></div>
                 <h4 class="card-title d-flex justify-content-between align-items-center"><?= $page_title ?> List</h4>
                 <div class="datatables">
