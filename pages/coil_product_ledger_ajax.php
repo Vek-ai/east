@@ -119,6 +119,9 @@ if (isset($_POST['search_tx'])) {
                                         <td class="text-end"><?= number_format($qty) ?></td>
                                         <td class="text-end"><?= number_format($line_total, 2) ?></td>
                                         <td class="text-nowrap">
+                                            <a href="javascript:void(0)" class="me-1 text-decoration-none view_invoice_details" title="View" data-orderid="<?= $wo['invoice_no'] ?>">
+                                                <i class="fa-solid fa-eye text-primary"></i>
+                                            </a>
                                             <a href="javascript:void(0)" class="me-1 text-decoration-none" title="Print" data-wo="<?= (int)$wo['wo_id'] ?>">
                                                 <i class="fa-solid fa-print text-info"></i>
                                             </a>
