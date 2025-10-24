@@ -339,7 +339,6 @@ if(isset($_POST['fetch_cart'])){
                                             if (empty($row_colors['color_id']) || $row_colors['color_id'] == 0) {
                                                 continue;
                                             }
-
                                             $inventory_color_ids[] = $row_colors['color_id'];
                                             $selected = ($first_calc['color_id'] == $row_colors['color_id']) ? 'selected' : '';
                                             $colorDetails = getColorDetails($row_colors['color_id']);
@@ -780,7 +779,7 @@ if(isset($_POST['fetch_cart'])){
                                         $query_colors = "SELECT Product_id, color_id FROM inventory WHERE Product_id = '$product_id'";
                                         $result_colors = mysqli_query($conn, $query_colors);
                                         while ($row_colors = mysqli_fetch_array($result_colors)) {
-                                            if (empty($first_calc['color_id']) || $first_calc['color_id'] == 0) {
+                                            if (empty($row_colors['color_id']) || $row_colors['color_id'] == 0) {
                                                 continue;
                                             }
                                             $selected = ($first_calc['color_id'] == $row_colors['color_id']) ? 'selected' : '';
@@ -1075,7 +1074,7 @@ if(isset($_POST['fetch_cart'])){
                                         $query_colors = "SELECT Product_id, color_id FROM inventory WHERE Product_id = '$product_id'";
                                         $result_colors = mysqli_query($conn, $query_colors);
                                         while ($row_colors = mysqli_fetch_array($result_colors)) {
-                                            if (empty($first_calc['color_id']) || $first_calc['color_id'] == 0) {
+                                            if (empty($row_colors['color_id']) || $row_colors['color_id'] == 0) {
                                                 continue;
                                             }
                                             $selected = ($first_calc['color_id'] == $row_colors['color_id']) ? 'selected' : '';
@@ -1347,7 +1346,7 @@ if(isset($_POST['fetch_cart'])){
                                         $query_colors = "SELECT Product_id, color_id FROM inventory WHERE Product_id = '$product_id'";
                                         $result_colors = mysqli_query($conn, $query_colors);
                                         while ($row_colors = mysqli_fetch_array($result_colors)) {
-                                            if (empty($first_calc['color_id']) || $first_calc['color_id'] == 0) {
+                                            if (empty($row_colors['color_id']) || $row_colors['color_id'] == 0) {
                                                 continue;
                                             }
                                             $selected = ($first_calc['color_id'] == $row_colors['color_id']) ? 'selected' : '';
@@ -1618,7 +1617,7 @@ if(isset($_POST['fetch_cart'])){
                                         $query_colors = "SELECT Product_id, color_id FROM inventory WHERE Product_id = '$product_id'";
                                         $result_colors = mysqli_query($conn, $query_colors);
                                         while ($row_colors = mysqli_fetch_array($result_colors)) {
-                                            if (empty($first_calc['color_id']) || $first_calc['color_id'] == 0) {
+                                            if (empty($row_colors['color_id']) || $row_colors['color_id'] == 0) {
                                                 continue;
                                             }
                                             $selected = ($first_calc['color_id'] == $row_colors['color_id']) ? 'selected' : '';
