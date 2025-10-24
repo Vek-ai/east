@@ -2273,7 +2273,7 @@ if(isset($_POST['fetch_cart'])){
                     width: '300px',
                     placeholder: "Select...",
                     dropdownAutoWidth: true,
-                    dropdownParent: $('#cartTable'),
+                    dropdownParent: $('.modal.show'),
                     templateResult: formatOption,
                     templateSelection: formatSelected,
                     language: {
@@ -2288,13 +2288,15 @@ if(isset($_POST['fetch_cart'])){
                 if ($(this).data('select2')) {
                     $(this).select2('destroy');
                 }
+
                 $(this).select2({
                     width: '300px',
                     placeholder: "Select...",
                     dropdownAutoWidth: true,
-                    dropdownParent: $('#cartTable')
+                    dropdownParent: $('.modal.show')
                 });
             });
+
         });
     </script>
     <?php
