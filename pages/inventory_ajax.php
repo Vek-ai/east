@@ -172,7 +172,6 @@ if(isset($_REQUEST['action'])) {
         echo "success";
     }
 
-
     if ($action == "fetch_modal") {
         $Inventory_id = (int)($_POST['id'] ?? 0);
 

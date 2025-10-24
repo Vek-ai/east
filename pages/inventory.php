@@ -135,7 +135,7 @@ function showCol($name) {
                             <div class="col-md-6">
                                 <label class="form-label">Color</label>
                                 <div class="mb-3">
-                                    <select id="color<?= $no ?>" class="form-control color-cart select2-inventory" name="color_id">
+                                    <select id="color<?= $no ?>" class="form-control color-cart select2-inventory" name="color_id" required>
                                         <option value="">Select Color...</option>
                                         <?php
                                         $query_paint_colors = "SELECT * FROM paint_colors WHERE hidden = '0' AND color_status = '1' ORDER BY `color_name` ASC";
