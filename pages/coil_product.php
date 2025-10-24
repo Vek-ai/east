@@ -26,31 +26,20 @@ $onlyInStock = isset($_REQUEST['onlyInStock']) ? filter_var($_REQUEST['onlyInSto
 $permission = $_SESSION['permission'];
 ?>
 <style>
-    .dz-preview {
-        position: relative;
+    @media (max-width: 992px) {
+        .d-flex {
+            flex-direction: column;
+        }
+        .flex-shrink-0 {
+            width: 100% !important;
+            margin-bottom: 1rem;
+        }
     }
 
-    .dz-remove {
-        position: absolute;
-        top: 10px;
-        right: 10px;
-        background: red;
-        color: white;
-        border-radius: 50%;
-        width: 20px;
-        height: 20px;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        text-decoration: none;
-        font-weight: bold;
-        font-size: 12px;
-        z-index: 9999;
-        cursor: pointer;
-    }
-
-    #productList_filter {
-        display: none !important;
+    .flex-grow-1 {
+        min-width: 0;
+        overflow-x: auto;
+        overflow-y: hidden;
     }
 </style>
 <div class="container-fluid">
@@ -96,7 +85,6 @@ $permission = $_SESSION['permission'];
     <?php
     }
     ?>
-
 
     <div class="modal fade" id="addCoilModal" tabindex="-1" aria-labelledby="" aria-hidden="true">
         <div class="modal-dialog modal-xl">
@@ -266,7 +254,7 @@ $permission = $_SESSION['permission'];
                 <h4 class="card-title d-flex justify-content-between align-items-center"><?= $page_title ?> List</h4>
                 <div class="datatables">
                     <div class="table-responsive">
-                        <table id="productList" class="table search-table align-middle text-nowrap">
+                        <table id="productList" class="table search-table align-middle text-wrap">
                             <thead class="header-item">
                             <th>Coil #</th>
                             <th>Color</th>
@@ -572,13 +560,22 @@ $permission = $_SESSION['permission'];
         });
 
         var table = $('#productList').DataTable({
-            "order": [[1, "asc"]],
-            "pageLength": 100,
-            "lengthMenu": [
-                [10, 25, 50, 100],
-                [10, 25, 50, 100]
-            ],
-            "dom": 'lftp',
+            responsive: true,
+            autoWidth: false,
+            order: [[1, "asc"]],
+            pageLength: 100,
+            lengthMenu: [[10, 25, 50, 100], [10, 25, 50, 100]],
+            dom: 'lftp',
+        });
+
+        $('.dataTables_scrollBody').css('overflow-y', 'hidden');
+
+        setTimeout(() => table.columns.adjust().responsive.recalc(), 500);
+
+        $('#productList_filter').hide();
+
+        $(window).on('resize', function() {
+            table.columns.adjust().responsive.recalc();
         });
 
         $(".select2-add").each(function () {
