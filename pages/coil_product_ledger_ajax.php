@@ -70,7 +70,7 @@ if (isset($_POST['search_ledger'])) {
                     <table class="table table-bordered table-sm text-center mb-2">
                         <thead>
                             <tr>
-                                <th>Before (Ft)</th>
+                                <th>Initial (Ft)</th>
                                 <th>Used (Ft)</th>
                                 <th>Remaining (Ft)</th>
                             </tr>
