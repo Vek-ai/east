@@ -6,11 +6,13 @@ if (!defined('APP_SECURE')) {
 require 'includes/dbconn.php';
 require 'includes/functions.php';
 
-$page_title = "Coil Ledger";
+$page_title = "Coil Product Ledger";
 
 $permission = $_SESSION['permission'];
 
 $coilid = $_REQUEST['coil'] ?? '';
+$coil_details = getCoilProductDetails($coilid);
+
 ?>
 
 <div class="container-fluid">
@@ -18,11 +20,11 @@ $coilid = $_REQUEST['coil'] ?? '';
     <div class="card-body px-0">
         <div class="d-flex justify-content-between align-items-center">
         <div><br>
-            <h4 class="font-weight-medium fs-14 mb-0"><?= $page_title ?></h4>
+            <h4 class="font-weight-medium fs-14 mb-0"><?= $page_title . (!empty($coilid) ? ": Coil # " . $coil_details['entry_no'] : "") ?></h4>
             <nav aria-label="breadcrumb">
             <ol class="breadcrumb">
                 <li class="breadcrumb-item">
-                <a class="text-muted text-decoration-none" href="">Reports
+                <a class="text-muted text-decoration-none" href="?page=coil_product">Coil Product
                 </a>
                 </li>
                 <li class="breadcrumb-item text-muted" aria-current="page"><?= $page_title ?></li>
@@ -36,102 +38,111 @@ $coilid = $_REQUEST['coil'] ?? '';
     <div class="widget-content searchable-container list">
 
     <div class="card card-body">
-        <div class="row">
-        <div class="col-3">
-            <h3 class="card-title align-items-center mb-2">
-                Search <?= $page_title ?>
-            </h3>
-            
-            <div class="position-relative w-100 px-0 mr-0 mb-2">
-                <input type="text" class="form-control py-2 ps-5 " id="text_search" placeholder="Search">
-                <i class="ti ti-user position-absolute top-50 start-0 translate-middle-y fs-6 text-dark ms-3"></i>
+        <?php
+        if(empty($coilid)){
+        ?>
+        <h4 class="fw-bold text-center">Coil Product Not Selected</h4>
+        <?php
+        }else{
+        ?>
+        <div class="d-flex">
+            <div class="flex-shrink-0" style="width: 250px;">
+                <h3 class="card-title align-items-center mb-2">
+                    Search <?= $page_title ?>
+                </h3>
+                
+                <div class="position-relative w-100 px-0 mr-0 mb-2">
+                    <input type="text" class="form-control py-2 ps-5 " id="text_search" placeholder="Search">
+                    <i class="ti ti-user position-absolute top-50 start-0 translate-middle-y fs-6 text-dark ms-3"></i>
+                </div>
+
+                <hr class="my-3 border-dark opacity-75">
+
+                <div class="align-items-center">
+                    <div class="position-relative w-100 px-1 mb-2">
+                        <select id="customer_id" class="form-control select2-filter filter-selection select2" name="customer" data-filter="customer" data-filter-name="Customer">
+                            <option value="" >All Customers...</option>
+                            <optgroup label="Customers">
+                                <?php
+                                $query_customer = "SELECT * FROM customer WHERE status = 1 ORDER BY `customer_first_name` ASC";
+                                $result_customer = mysqli_query($conn, $query_customer);            
+                                while ($row_customer = mysqli_fetch_array($result_customer)) {
+                                ?>
+                                    <option value="<?= $row_customer['customer_id'] ?>"><?= get_customer_name($row_customer['customer_id']) ?></option>
+                                <?php   
+                                }
+                                ?>
+                            </optgroup>
+                        </select>
+                    </div>
+                    <div class="position-relative w-100 px-1 mb-2">
+                        <select id="month_select" name="month[]" multiple class="form-select select2-month" style="width: 100%;">
+                            <option value="1">January</option>
+                            <option value="2">February</option>
+                            <option value="3">March</option>
+                            <option value="4">April</option>
+                            <option value="5">May</option>
+                            <option value="6">June</option>
+                            <option value="7">July</option>
+                            <option value="8">August</option>
+                            <option value="9">September</option>
+                            <option value="10">October</option>
+                            <option value="11">November</option>
+                            <option value="12">December</option>
+                        </select>
+                    </div>
+                    <div class="position-relative w-100 px-1 mb-2">
+                        <select id="supplier_id" class="form-control select2-filter filter-selection select2" name="supplier_id" data-filter="supplier" data-filter-name="Supplier">
+                            <option value="" >All Suppliers...</option>
+                            <optgroup label="Supplier">
+                                <?php
+                                $query_supplier = "SELECT * FROM supplier WHERE status = 1 ORDER BY `supplier_name` ASC";
+                                $result_supplier = mysqli_query($conn, $query_supplier);            
+                                while ($row_supplier = mysqli_fetch_array($result_supplier)) {
+                                ?>
+                                    <option value="<?= $row_supplier['supplier_id'] ?>" ><?= $row_supplier['supplier_name'] ?></option>
+                                <?php   
+                                }
+                                ?>
+                            </optgroup>
+                        </select>
+                    </div>
+
+                </div>
+                
+                <div class="d-flex justify-content-end py-2">
+                    <button type="button" class="btn btn-outline-primary reset_filters">
+                        <i class="fas fa-sync-alt me-1"></i> Reset Filters
+                    </button>
+                </div>
             </div>
-
-            <hr class="my-3 border-dark opacity-75">
-
-            <div class="align-items-center">
-                <div class="position-relative w-100 px-1 mb-2">
-                    <select id="customer_id" class="form-control select2-filter filter-selection select2" name="customer" data-filter="customer" data-filter-name="Customer">
-                        <option value="" >All Customers...</option>
-                        <optgroup label="Customers">
-                            <?php
-                            $query_customer = "SELECT * FROM customer WHERE status = 1 ORDER BY `customer_first_name` ASC";
-                            $result_customer = mysqli_query($conn, $query_customer);            
-                            while ($row_customer = mysqli_fetch_array($result_customer)) {
-                            ?>
-                                <option value="<?= $row_customer['customer_id'] ?>"><?= get_customer_name($row_customer['customer_id']) ?></option>
-                            <?php   
-                            }
-                            ?>
-                        </optgroup>
-                    </select>
+            <div class="flex-grow-1 ms-3">
+                <div id="selected-tags" class="mb-2"></div>
+                <div class="datatables">
+                    <h4 class="card-title d-flex justify-content-between align-items-center"><?= $page_title ?></h4>
+                    <div class="table-responsive text-nowrap">
+                        <table id="coil_usage_table" class="table table-hover mb-0 text-md-nowrap">
+                            <thead>
+                                <tr>
+                                    <th>Coil ID #</th>
+                                    <th>Customer</th>
+                                    <th>Initial Ft</th>
+                                    <th>Used Ft</th>
+                                    <th>Remaining Ft</th>
+                                    <th>Date</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                            <tfoot></tfoot>
+                        </table>
+                    </div>
                 </div>
-                <div class="position-relative w-100 px-1 mb-2">
-                    <select id="month_select" name="month[]" multiple class="form-select select2-month" style="width: 100%;">
-                        <option value="1">January</option>
-                        <option value="2">February</option>
-                        <option value="3">March</option>
-                        <option value="4">April</option>
-                        <option value="5">May</option>
-                        <option value="6">June</option>
-                        <option value="7">July</option>
-                        <option value="8">August</option>
-                        <option value="9">September</option>
-                        <option value="10">October</option>
-                        <option value="11">November</option>
-                        <option value="12">December</option>
-                    </select>
-                </div>
-                <div class="position-relative w-100 px-1 mb-2">
-                    <select id="supplier_id" class="form-control select2-filter filter-selection select2" name="supplier_id" data-filter="supplier" data-filter-name="Supplier">
-                        <option value="" >All Suppliers...</option>
-                        <optgroup label="Supplier">
-                            <?php
-                            $query_supplier = "SELECT * FROM supplier WHERE status = 1 ORDER BY `supplier_name` ASC";
-                            $result_supplier = mysqli_query($conn, $query_supplier);            
-                            while ($row_supplier = mysqli_fetch_array($result_supplier)) {
-                            ?>
-                                <option value="<?= $row_supplier['supplier_id'] ?>" ><?= $row_supplier['supplier_name'] ?></option>
-                            <?php   
-                            }
-                            ?>
-                        </optgroup>
-                    </select>
-                </div>
-
-            </div>
-            
-            <div class="d-flex justify-content-end py-2">
-                <button type="button" class="btn btn-outline-primary reset_filters">
-                    <i class="fas fa-sync-alt me-1"></i> Reset Filters
-                </button>
             </div>
         </div>
-        <div class="col-9">
-            <div id="selected-tags" class="mb-2"></div>
-            <div class="datatables">
-                <h4 class="card-title d-flex justify-content-between align-items-center"><?= $page_title ?></h4>
-                <div class="table-responsive text-nowrap">
-                    <table id="coil_usage_table" class="table table-hover mb-0 text-md-nowrap">
-                        <thead>
-                            <tr>
-                                <th>Coil ID #</th>
-                                <th>Customer</th>
-                                <th>Initial Ft</th>
-                                <th>Used Ft</th>
-                                <th>Remaining Ft</th>
-                                <th>Date</th>
-                                <th>Action</th>
-                            </tr>
-                        </thead>
-                        <tbody></tbody>
-                        <tfoot></tfoot>
-                    </table>
-                </div>
-            </div>
-        </div>
-    </div>
-
+        <?php
+        }
+        ?>
     </div>
 </div>
 
@@ -189,7 +200,7 @@ $coilid = $_REQUEST['coil'] ?? '';
 <script>
     function loadCoilDetails(coil_id){
         $.ajax({
-            url: 'pages/coil_ledger_ajax.php',
+            url: 'pages/coil_product_ledger_ajax.php',
             type: 'POST',
             data: {
                 coil_id: coil_id,
@@ -206,7 +217,7 @@ $coilid = $_REQUEST['coil'] ?? '';
 
     function loadUsageDetails(id){
         $.ajax({
-            url: 'pages/coil_ledger_ajax.php',
+            url: 'pages/coil_product_ledger_ajax.php',
             type: 'POST',
             data: {
                 id: id,
@@ -296,7 +307,7 @@ $coilid = $_REQUEST['coil'] ?? '';
             const supplier_id = $('#supplier_id').val() || [];
 
             $.ajax({
-                url: 'pages/coil_ledger_ajax.php',
+                url: 'pages/coil_product_ledger_ajax.php',
                 type: 'POST',
                 dataType: 'json',
                 data: {

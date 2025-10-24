@@ -382,7 +382,7 @@ $permission = $_SESSION['permission'];
                                         data-status="<?= $db_status ?>"
                                     >
                                         <td>
-                                            <a href="javascript:void(0)">
+                                            <a href="?page=coil_product_ledger&coil=<?= $row_coil['coil_id'] ?>" target="_blank" class="coil_history_btn" data-id="<?= $row_coil['coil_id'] ?>">
                                                 <div class="d-flex align-items-center">
                                                     <img src="<?= $picture_path ?>" class="rounded-circle" alt="materialpro-img" width="56" height="56">
                                                     <div class="ms-3">
@@ -414,7 +414,7 @@ $permission = $_SESSION['permission'];
                                                 <?php                                                    
                                                 if ($permission === 'edit') {
                                                 ?>
-                                                <a href="?page=coil_use_history&coil=<?= $row_coil['coil_id'] ?>" target="_blank" title="Coil Use History" class="edit coil_history_btn" data-id="<?= $row_coil['coil_id'] ?>">
+                                                <a href="?page=coil_product_ledger&coil=<?= $row_coil['coil_id'] ?>" target="_blank" title="Coil Product Ledger" class="edit coil_history_btn" data-id="<?= $row_coil['coil_id'] ?>">
                                                     <i class="ti ti-history text-info fs-7"></i>
                                                 </a>
                                                 <a href="#" title="Edit" class="edit coil_btn" data-id="<?= $row_coil['coil_id'] ?>" data-type="add">
