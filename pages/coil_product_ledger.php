@@ -46,6 +46,7 @@ $coil_details = getCoilProductDetails($coilid);
         }else{
         ?>
         <div class="d-flex">
+            <!-- 
             <div class="flex-shrink-0" style="width: 250px;">
                 <h3 class="card-title align-items-center mb-2">
                     Search <?= $page_title ?>
@@ -91,23 +92,6 @@ $coil_details = getCoilProductDetails($coilid);
                             <option value="12">December</option>
                         </select>
                     </div>
-                    <div class="position-relative w-100 px-1 mb-2">
-                        <select id="supplier_id" class="form-control select2-filter filter-selection select2" name="supplier_id" data-filter="supplier" data-filter-name="Supplier">
-                            <option value="" >All Suppliers...</option>
-                            <optgroup label="Supplier">
-                                <?php
-                                $query_supplier = "SELECT * FROM supplier WHERE status = 1 ORDER BY `supplier_name` ASC";
-                                $result_supplier = mysqli_query($conn, $query_supplier);            
-                                while ($row_supplier = mysqli_fetch_array($result_supplier)) {
-                                ?>
-                                    <option value="<?= $row_supplier['supplier_id'] ?>" ><?= $row_supplier['supplier_name'] ?></option>
-                                <?php   
-                                }
-                                ?>
-                            </optgroup>
-                        </select>
-                    </div>
-
                 </div>
                 
                 <div class="d-flex justify-content-end py-2">
@@ -115,27 +99,16 @@ $coil_details = getCoilProductDetails($coilid);
                         <i class="fas fa-sync-alt me-1"></i> Reset Filters
                     </button>
                 </div>
-            </div>
+            </div> 
+            -->
             <div class="flex-grow-1 ms-3">
                 <div id="selected-tags" class="mb-2"></div>
                 <div class="datatables">
                     <h4 class="card-title d-flex justify-content-between align-items-center"><?= $page_title ?></h4>
                     <div class="table-responsive text-nowrap">
-                        <table id="coil_usage_table" class="table table-hover mb-0 text-md-nowrap">
-                            <thead>
-                                <tr>
-                                    <th>Coil ID #</th>
-                                    <th>Customer</th>
-                                    <th>Initial Ft</th>
-                                    <th>Used Ft</th>
-                                    <th>Remaining Ft</th>
-                                    <th>Date</th>
-                                    <th>Action</th>
-                                </tr>
-                            </thead>
-                            <tbody></tbody>
-                            <tfoot></tfoot>
-                        </table>
+                        <div class="coil_usage_div">
+
+                        </div>
                     </div>
                 </div>
             </div>
@@ -198,41 +171,6 @@ $coil_details = getCoilProductDetails($coilid);
 </div>
 
 <script>
-    function loadCoilDetails(coil_id){
-        $.ajax({
-            url: 'pages/coil_product_ledger_ajax.php',
-            type: 'POST',
-            data: {
-                coil_id: coil_id,
-                fetch_coil_details: "fetch_coil_details"
-            },
-            success: function(response) {
-                $('#coil-details').html(response);
-            },
-            error: function(jqXHR, textStatus, errorThrown) {
-                alert('Error: ' + textStatus + ' - ' + errorThrown);
-            }
-        });
-    }
-
-    function loadUsageDetails(id){
-        $.ajax({
-            url: 'pages/coil_product_ledger_ajax.php',
-            type: 'POST',
-            data: {
-                id: id,
-                fetch_usage_details: "fetch_usage_details"
-            },
-            success: function(response) {
-                console.log(response);
-                $('#usage-details').html(response);
-            },
-            error: function(jqXHR, textStatus, errorThrown) {
-                alert('Error: ' + textStatus + ' - ' + errorThrown);
-            }
-        });
-    }
-
     $(document).ready(function() {
         document.title = "<?= $page_title ?>";
 
@@ -304,73 +242,18 @@ $coil_details = getCoilProductDetails($coilid);
         function performSearch() {
             const customer_id = $('#customer_id').val();
             const month_select = $('#month_select').val() || [];
-            const supplier_id = $('#supplier_id').val() || [];
 
             $.ajax({
                 url: 'pages/coil_product_ledger_ajax.php',
                 type: 'POST',
-                dataType: 'json',
                 data: {
                     coilid,
                     customer_id,
                     month_select,
-                    supplier_id,
                     search_ledger: 'search_ledger'
                 },
                 success: function (response) {
-                    console.log(response);
-
-                    if ($.fn.DataTable.isDataTable('#coil_usage_table')) {
-                        $('#coil_usage_table').DataTable().clear().destroy();
-                    }
-
-                    const table = $('#coil_usage_table').DataTable({
-                        pageLength: 100,
-                        ordering: false,
-                        searching: true
-                    });
-
-                    $('#coil_usage_table_filter').hide();
-
-                    table.clear();
-
-                    $('#text_search').off('keyup').on('keyup', function() {
-                        table.search(this.value).draw();
-                    });
-
-                    if (response.coils && response.coils.length > 0) {
-                        response.coils.forEach(coil => {
-                            const entry_no = coil.entry_no || '-';
-                            const orderid = coil.orderid || '-';
-                            const customer = coil.customer || '-';
-                            const initial_feet = coil.initial_feet || '-';
-                            const used_feet = coil.used_feet || '-';
-                            const remaining_length = coil.remaining_length || '-';
-                            const date = coil.transaction_date || '-';
-
-                            const actionButtons = `
-                                <a href="javascript:void(0)" 
-                                class="text-primary" 
-                                id="view_coil_usage" 
-                                data-id="${coil.used_in_workorders}" 
-                                title="View Coil Usage">
-                                    <i class="fa fa-eye"></i>
-                                </a>
-                            `;
-
-                            table.row.add([
-                                entry_no,        
-                                customer,
-                                initial_feet,
-                                used_feet,
-                                remaining_length,
-                                date,
-                                actionButtons
-                            ]);
-                        });
-
-                        table.draw();
-                    }
+                    $('.coil_usage_div').html(response);
 
                     updateSelectedTags();
                 },
@@ -380,24 +263,6 @@ $coil_details = getCoilProductDetails($coilid);
                 }
             });
         }
-
-
-
-        $(document).on('change', '#customer_search, #date_from, #date_to, .filter-selection', function(event) {
-            performSearch();
-        });
-
-        $(document).on('click', '#view_coil_details', function(event) {
-            var coil_id = $(this).data('id');
-            loadCoilDetails(coil_id);
-            $('#view_coil_details_modal').modal('toggle');
-        });
-
-        $(document).on('click', '#view_coil_usage', function(event) {
-            var id = $(this).data('id');
-            loadUsageDetails(id);
-            $('#view_coil_usage_modal').modal('toggle');
-        });
 
         $(document).on('click', '.view_invoice_details', function(event) {
             var orderid = $(this).data('orderid');
@@ -418,6 +283,11 @@ $coil_details = getCoilProductDetails($coilid);
                 }
             });
             $('#view_invoice_modal').modal('toggle');
+        });
+
+
+        $(document).on('change', '#customer_search, #date_from, #date_to, .filter-selection', function(event) {
+            performSearch();
         });
 
         performSearch();

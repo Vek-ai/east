@@ -10,305 +10,198 @@ require '../includes/functions.php';
 $emailSender = new EmailTemplates();
 
 if (isset($_POST['search_ledger'])) {
-    $response = [
-        'coils' => [],
-        'total_count' => 0,
-        'total_amount' => 0,
-        'error' => null
-    ];
+    $coil_id = mysqli_real_escape_string($conn, $_POST['coilid']);
 
-    $coilid = mysqli_real_escape_string($conn, $_POST['coilid'] ?? '');
-    $customer_id = mysqli_real_escape_string($conn, $_POST['customer_id'] ?? '');
-    $months = array_map('intval', $_POST['months'] ?? []);
-    $supplier_id = mysqli_real_escape_string($conn, $_POST['supplier_id'] ?? '');
-
-    $months_in = !empty($months) ? implode(',', $months) : '';
-
-    $query = "
-        SELECT 
-            ct.id,
-            ct.coilid,
-            ct.date,
-            ct.remaining_length,
-            ct.length_before_use,
-            ct.used_in_workorders,
-            cp.supplier AS supplier_id,
-            cp.entry_no,
-            cp.date_inventory AS coil_date,
-            GROUP_CONCAT(DISTINCT o.customerid) AS customerids,
-            GROUP_CONCAT(DISTINCT o.orderid) AS orderids
-        FROM coil_transaction ct
-        LEFT JOIN coil_product cp 
-            ON ct.coilid = cp.coil_id
-        LEFT JOIN work_order wo 
-            ON FIND_IN_SET(wo.id, ct.used_in_workorders)
-        LEFT JOIN orders o 
-            ON wo.work_order_id = o.orderid
-        WHERE 1 = 1
+    $sql_tx = "
+        SELECT id, coilid, date, remaining_length, length_before_use, used_in_workorders
+        FROM coil_transaction
+        WHERE coilid = '$coil_id'
     ";
+    $res_tx = mysqli_query($conn, $sql_tx);
 
-    if (!empty($customer_id)) {
-        $query .= " AND o.customerid = '$customer_id' ";
-    }
-
-    if (!empty($months_in)) {
-        $query .= " AND MONTH(o.order_date) IN ($months_in) ";
-    }
-
-    if (!empty($supplier_id)) {
-        $query .= " AND cp.supplier = '$supplier_id' ";
-    }
-
-    if (!empty($coilid)) {
-        $query .= " AND ct.coilid = '$coilid' ";
-    }
-
-    $query .= "
-        GROUP BY 
-            ct.id, ct.coilid, ct.date, ct.remaining_length, 
-            ct.length_before_use, cp.supplier, cp.entry_no, cp.date_inventory
-        ORDER BY ct.date DESC
+    $sql_def = "
+        SELECT history_id, coil_defective_id, action_type, change_text, note, changed_by, changed_at
+        FROM coil_defective_history
+        WHERE coil_id = '$coil_id'
     ";
+    $res_def = mysqli_query($conn, $sql_def);
 
-    $result = mysqli_query($conn, $query);
-
-    if (!$result) {
-        $response['error'] = 'SQL Error: ' . mysqli_error($conn);
-        echo json_encode($response);
+    if ((!$res_tx || mysqli_num_rows($res_tx) == 0) && (!$res_def || mysqli_num_rows($res_def) == 0)) {
+        echo '<div class="alert alert-warning">No records found for this coil ' . $coil_id . '.</div>';
         exit;
     }
 
-    if (mysqli_num_rows($result) > 0) {
-        while ($row = mysqli_fetch_assoc($result)) {
-            $remaining_feet = floatval($row['remaining_length'] ?? 0);
-            $length_before_use = floatval($row['length_before_use'] ?? 0);
-            $used_feet = max(0, $length_before_use - $remaining_feet);
+    $timeline = [];
 
-            $coil_date = !empty($row['coil_date']) ? date('m/d/Y', strtotime($row['coil_date'])) : '-';
-            $trans_date = !empty($row['date']) ? date('m/d/Y', strtotime($row['date'])) : '-';
-
-            $order_list = !empty($row['orderids']) ? explode(',', $row['orderids']) : [];
-            $customer_list = !empty($row['customerids']) ? explode(',', $row['customerids']) : [];
-
-            $order_display = !empty($order_list)
-                ? implode(', ', array_map(fn($id) => 'INV#' . trim($id), $order_list))
-                : '-';
-
-            if (!empty($customer_list)) {
-                $customer_names = [];
-                foreach ($customer_list as $cid) {
-                    $name = get_customer_name(trim($cid));
-                    if ($name) {
-                        $customer_names[] = $name;
-                    }
-                }
-                $customer_name = implode(', ', $customer_names);
-            } else {
-                $customer_name = '-';
-            }
-
-            $response['coils'][] = [
-                'id' => $row['id'],
-                'coilid' => $row['coilid'] ?? '-',
-                'entry_no' => $row['entry_no'] ?? '-',
-                'supplier_id' => $row['supplier_id'] ?? '-',
-                'orderid' => $first_orderid,
-                'customer' => $customer_name,
-                'used_in_workorders' => $row['used_in_workorders'] ?? '',
-                'initial_feet' => $length_before_use,
-                'remaining_length' => number_format($remaining_feet,2),
-                'used_feet' => number_format($used_feet,2),
-                'coil_date' => $coil_date,
-                'transaction_date' => $trans_date
-            ];
-
-            $response['total_count']++;
-            $response['total_amount'] += $used_feet;
+    if ($res_tx) {
+        while ($t = mysqli_fetch_assoc($res_tx)) {
+            $t['type'] = 'transaction';
+            $t['datetime'] = $t['date'];
+            $timeline[] = $t;
         }
-    } else {
-        $response['error'] = 'No coil usage found.';
     }
 
-    echo json_encode($response);
-}
-
-if (isset($_POST['fetch_usage_details'])) {
-    $id = mysqli_real_escape_string($conn, $_POST['id']);
-
-    $sql = "
-        SELECT
-            wo.id AS wo_id,
-            wo.work_order_id AS invoice_no,
-            wo.work_order_product_id AS line_id,
-            wo.quantity AS wo_quantity,
-            wo.custom_length AS wo_length_ft,
-            wo.custom_length2 AS wo_length_in,
-            op.id AS op_id,
-            op.productid AS product_id,
-            op.product_item AS product_item,
-            op.product_id_abbrev AS product_id_abbrev,
-            op.custom_color AS op_custom_color,
-            op.custom_grade AS op_custom_grade,
-            op.custom_gauge AS op_custom_gauge,
-            op.custom_profile AS op_custom_profile
-        FROM work_order wo
-        LEFT JOIN order_product op ON op.id = wo.work_order_product_id
-        WHERE FIND_IN_SET(wo.id, '$id')
-        ORDER BY op.productid, wo.id
-    ";
-
-    $res = mysqli_query($conn, $sql);
-    if (!$res) {
-        echo '<div class="alert alert-danger">SQL error: ' . mysqli_error($conn) . '</div>';
-        exit;
+    if ($res_def) {
+        while ($d = mysqli_fetch_assoc($res_def)) {
+            $d['type'] = 'defective';
+            $d['datetime'] = $d['changed_at'];
+            $timeline[] = $d;
+        }
     }
 
-    $grouped = [];
-    while ($r = mysqli_fetch_assoc($res)) {
-        $pid = $r['product_id'] ?: 'unknown_product';
-        $grouped[$pid][] = $r;
-    }
-
-    $line_counter = 0;
-    $grand_total = 0;
+    usort($timeline, function ($a, $b) {
+        return strtotime($b['datetime']) - strtotime($a['datetime']);
+    });
     ?>
 
     <div class="card card-body">
-        <h5 class="fw-bold mb-3">View Coil Use History</h5>
-
-        <?php if (empty($grouped)): ?>
-            <div class="text-center text-muted">No coil usage found.</div>
-        <?php else: ?>
-
-            <?php foreach ($grouped as $product_id => $rows): ?>
+        <?php foreach ($timeline as $row): ?>
+            <?php if ($row['type'] === 'transaction'): ?>
                 <?php
-                $first = $rows[0];
-                $product_item = $first['product_item'] ?? 'Unknown';
-                $product_abbrev = $first['product_id_abbrev'] ?? ('-');
-
-                $product_subtotal = 0;
+                $trans_id = (int)$row['id'];
+                $trans_date = date('m/d/Y g:i A', strtotime($row['date']));
+                $before_ft = (float)$row['length_before_use'];
+                $remain_ft = (float)$row['remaining_length'];
+                $used_ft = max(0, $before_ft - $remain_ft);
+                $used_wo_list = array_filter(array_map('trim', explode(',', $row['used_in_workorders'])));
                 ?>
-                <div class="mb-3">
-                    <h6 class="fw-bold text-primary mb-2">
-                        Product: <?= htmlspecialchars($product_item) ?> (<?= htmlspecialchars($product_abbrev) ?>)
-                    </h6>
+                <div class="mb-3 border-start border-4 border-success rounded p-2 ps-3" id="transaction-block-<?= $trans_id ?>">
+                    <div class="fw-bold mb-1 text-success">Coil Processed — <?= $trans_date ?></div>
+                    <table class="table table-bordered table-sm text-center mb-2">
+                        <thead>
+                            <tr>
+                                <th>Before (Ft)</th>
+                                <th>Used (Ft)</th>
+                                <th>Remaining (Ft)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><?= number_format($before_ft, 2) ?></td>
+                                <td><?= number_format($used_ft, 2) ?></td>
+                                <td><?= number_format($remain_ft, 2) ?></td>
+                            </tr>
+                        </tbody>
+                    </table>
 
-                    <div class="table-responsive">
-                        <table class="table table-bordered table-sm align-middle mb-0 text-center">
-                            <thead class="text-center">
-                                <tr>
-                                    <th>Invoice #</th>
-                                    <th>Line Item ID #</th>
-                                    <th>Product ID #</th>
-                                    <th>Description</th>
-                                    <th>Color</th>
-                                    <th>Grade</th>
-                                    <th>Gauge</th>
-                                    <th>Profile</th>
-                                    <th class="text-end">Quantity</th>
-                                    <th class="text-end">Total Length Ft</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <?php foreach ($rows as $row): 
-                                    $line_counter++;
-                                    $line_id = 'L' . $row['line_id'];
-
-                                    $invoice_no = "INV#" . $row['invoice_no'];
-
-                                    $qty = intval($row['wo_quantity']);
-                                    $length_ft = floatval($row['wo_length_ft']);
-                                    $line_total = $qty * $length_ft;
-
-                                    $product_id_display = $row['product_id_abbrev'] ?? $product_abbrev;
-                                    $description = $row['product_item'] ?? '-';
-
-                                    $color = function_exists('getColorName') ? getColorName($row['op_custom_color']) : ($row['op_custom_color'] ?? '-');
-                                    $grade = function_exists('getGradeName') ? getGradeName($row['op_custom_grade']) : ($row['op_custom_grade'] ?? '-');
-                                    $gauge = function_exists('getGaugeName') ? getGaugeName($row['op_custom_gauge']) : ($row['op_custom_gauge'] ?? '-');
-                                    $profile = function_exists('getProfileTypeName') ? getProfileTypeName($row['op_custom_profile']) : ($row['op_custom_profile'] ?? '-');
-
-                                    $product_subtotal += $line_total;
-                                    $grand_total += $line_total;
-                                ?>
-                                    <tr>
-                                        <td>
-                                            <a href="javascript:void(0)" class="view_invoice_details" style="color: #4da3ff !important;" data-orderid="<?= $row['invoice_no'] ?>">
-                                                <?= htmlspecialchars($invoice_no) ?>
-                                            </a>
-                                        </td>
-                                        <td><?= htmlspecialchars($line_id) ?></td>
-                                        <td><?= htmlspecialchars($product_id_display) ?></td>
-                                        <td><?= htmlspecialchars($description) ?></td>
-                                        <td><?= htmlspecialchars($color) ?></td>
-                                        <td><?= htmlspecialchars($grade) ?></td>
-                                        <td><?= htmlspecialchars($gauge) ?></td>
-                                        <td><?= htmlspecialchars($profile) ?></td>
-                                        <td><?= number_format($qty) ?></td>
-                                        <td><?= number_format($line_total, 2) ?></td>
-                                    </tr>
-                                <?php endforeach; ?>
-                            </tbody>
-                        </table>
-                    </div>
+                    <?php if (!empty($used_wo_list)): ?>
+                        <?php
+                        $id_list = implode(',', array_map('intval', $used_wo_list));
+                        $sql_wo = "
+                            SELECT
+                                wo.id AS wo_id,
+                                wo.work_order_id AS invoice_no,
+                                wo.work_order_product_id AS line_id,
+                                wo.quantity AS wo_quantity,
+                                wo.custom_length AS wo_length_ft,
+                                wo.custom_length2 AS wo_length_in,
+                                wo.submitted_date AS wo_date,
+                                op.productid AS product_id,
+                                op.product_item AS product_item,
+                                op.product_id_abbrev AS product_id_abbrev,
+                                op.custom_color AS op_custom_color,
+                                op.custom_grade AS op_custom_grade,
+                                op.custom_gauge AS op_custom_gauge,
+                                op.custom_profile AS op_custom_profile
+                            FROM work_order wo
+                            LEFT JOIN order_product op ON op.id = wo.work_order_product_id
+                            WHERE wo.id IN ($id_list)
+                            ORDER BY op.productid, wo.id
+                        ";
+                        $res_wo = mysqli_query($conn, $sql_wo);
+                        ?>
+                        <?php if ($res_wo && mysqli_num_rows($res_wo) > 0): ?>
+                            <div class="table-responsive">
+                                <table class="table table-bordered table-sm align-middle text-center mb-0">
+                                    <thead>
+                                        <tr>
+                                            <th>Date</th>
+                                            <th>Invoice #</th>
+                                            <th>Line Item</th>
+                                            <th>Product ID</th>
+                                            <th>Description</th>
+                                            <th>Color</th>
+                                            <th>Grade</th>
+                                            <th>Gauge</th>
+                                            <th>Profile</th>
+                                            <th class="text-end">Qty</th>
+                                            <th class="text-end">Total Ft</th>
+                                            <th></th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <?php while ($wo = mysqli_fetch_assoc($res_wo)): ?>
+                                            <?php
+                                            $qty = (int)$wo['wo_quantity'];
+                                            $length_ft = (float)$wo['wo_length_ft'];
+                                            $line_total = $qty * $length_ft;
+                                            ?>
+                                            <tr>
+                                                <td><?= date('m/d/Y', strtotime($wo['wo_date'])) ?></td>
+                                                <td>
+                                                    <a href="javascript:void(0)" class="text-primary view_invoice_details" data-orderid="<?= $wo['invoice_no'] ?>">
+                                                        INV#<?= htmlspecialchars($wo['invoice_no']) ?>
+                                                    </a>
+                                                </td>
+                                                <td>L<?= htmlspecialchars($wo['line_id']) ?></td>
+                                                <td><?= htmlspecialchars($wo['product_id_abbrev'] ?? '-') ?></td>
+                                                <td><?= htmlspecialchars($wo['product_item'] ?? '-') ?></td>
+                                                <td><?= htmlspecialchars(getColorName($wo['op_custom_color']) ?? '-') ?></td>
+                                                <td><?= htmlspecialchars(getGradeName($wo['op_custom_grade']) ?? '-') ?></td>
+                                                <td><?= htmlspecialchars(getGaugeName($wo['op_custom_gauge']) ?? '-') ?></td>
+                                                <td><?= htmlspecialchars(getProfileTypeName($wo['op_custom_profile']) ?? '-') ?></td>
+                                                <td class="text-end"><?= number_format($qty) ?></td>
+                                                <td class="text-end"><?= number_format($line_total, 2) ?></td>
+                                                <td>
+                                                    <a href="javascript:void(0)" class="me-1 text-decoration-none view_invoice_details" data-orderid="<?= $wo['invoice_no'] ?>" title="View Invoice"> 
+                                                        <i class="fa fa-eye text-primary"></i> 
+                                                    </a>
+                                                    <a href="javascript:void(0)" class="me-1 text-decoration-none" title="Print">
+                                                        <i class="fa-solid fa-print text-info"></i>
+                                                    </a>
+                                                    <a href="javascript:void(0)" class="text-decoration-none" title="Download">
+                                                        <i class="fa-solid fa-download text-success"></i>
+                                                    </a>
+                                                </td>
+                                            </tr>
+                                        <?php endwhile; ?>
+                                    </tbody>
+                                </table>
+                            </div>
+                        <?php endif; ?>
+                    <?php endif; ?>
                 </div>
-            <?php endforeach; ?>
 
-        <?php endif; ?>
-
-        <div class="d-flex justify-content-end gap-2 mt-3">
-            <button class="btn btn-success btn-sm" id="btnPrint"><i class="fa fa-print me-1"></i> Print</button>
-            <button class="btn btn-primary btn-sm" id="btnDownload"><i class="fa fa-download me-1"></i> Download</button>
-            <button class="btn btn-danger btn-sm" id="btnClose"><i class="fa fa-times me-1"></i> Close</button>
-        </div>
+            <?php elseif ($row['type'] === 'defective'): ?>
+                <div class="mb-3 border-start border-4 border-danger rounded p-2 ps-3">
+                    <div class="fw-bold text-danger mb-1">Defective — <?= date('m/d/Y g:i A', strtotime($row['changed_at'])) ?></div>
+                    <table class="table table-bordered table-sm text-center mb-0">
+                        <thead>
+                            <tr>
+                                <th>Action</th>
+                                <th>Note</th>
+                                <th>Changed By</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><?= nl2br(htmlspecialchars($row['change_text'] ?? '-')) ?></td>
+                                <td><?= nl2br(htmlspecialchars($row['note'] ?? '-')) ?></td>
+                                <td><?= htmlspecialchars(get_staff_name($row['changed_by'])) ?></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            <?php endif; ?>
+        <?php endforeach; ?>
     </div>
-
-    <script>
-        $(document).ready(function() {
-            $('#btnClose').on('click', function() {
-                $('#view_coil_usage_modal').modal('hide');
-            });
-        });
-    </script>
-
-    <?php
-    // end POST handler
+<?php
 }
+?>
 
-if (isset($_POST['fetch_coil_details'])) {
-    $coil_id = mysqli_real_escape_string($conn, $_POST['coil_id']);
-    $coil = getCoilProductDetails($coil_id); 
-    ?>
-    <div class="card shadow-sm border-0 rounded-3">
-        <div class="card-body">
-            <div class="row g-3">
-                <div class="col-md-6">
-                    <div class="p-1">
-                        <small class="text-muted d-block">Coil #</small>
-                        <span class="fw-bold fs-6"><?= $coil['entry_no'] ?></span>
-                    </div>
-                </div>
-                <div class="col-md-6">
-                    <div class="p-1">
-                        <small class="text-muted d-block">Color</small>
-                        <span class="fw-bold fs-6"><?= getColorName($coil['color_sold_as']) ?></span>
-                    </div>
-                </div>
-                <div class="col-md-6">
-                    <div class="p-1">
-                        <small class="text-muted d-block">Grade</small>
-                        <span class="fw-bold fs-6"><?= getGradeName($coil['grade']) ?></span>
-                    </div>
-                </div>
-                <div class="col-md-6">
-                    <div class="p-1">
-                        <small class="text-muted d-block">Gauge</small>
-                        <span class="fw-bold fs-6"><?= getGaugeName($coil['gauge']) ?></span>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-    <?php
-}
+
+
+
+
+
 
