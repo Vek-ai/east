@@ -45,72 +45,51 @@ $coil_details = getCoilProductDetails($coilid);
         <?php
         }else{
         ?>
-        <div class="d-flex">
-            <!-- 
-            <div class="flex-shrink-0" style="width: 250px;">
-                <h3 class="card-title align-items-center mb-2">
-                    Search <?= $page_title ?>
-                </h3>
-                
-                <div class="position-relative w-100 px-0 mr-0 mb-2">
-                    <input type="text" class="form-control py-2 ps-5 " id="text_search" placeholder="Search">
-                    <i class="ti ti-user position-absolute top-50 start-0 translate-middle-y fs-6 text-dark ms-3"></i>
-                </div>
-
-                <hr class="my-3 border-dark opacity-75">
-
-                <div class="align-items-center">
-                    <div class="position-relative w-100 px-1 mb-2">
-                        <select id="customer_id" class="form-control select2-filter filter-selection select2" name="customer" data-filter="customer" data-filter-name="Customer">
-                            <option value="" >All Customers...</option>
-                            <optgroup label="Customers">
-                                <?php
-                                $query_customer = "SELECT * FROM customer WHERE status = 1 ORDER BY `customer_first_name` ASC";
-                                $result_customer = mysqli_query($conn, $query_customer);            
-                                while ($row_customer = mysqli_fetch_array($result_customer)) {
-                                ?>
-                                    <option value="<?= $row_customer['customer_id'] ?>"><?= get_customer_name($row_customer['customer_id']) ?></option>
-                                <?php   
-                                }
-                                ?>
-                            </optgroup>
-                        </select>
-                    </div>
-                    <div class="position-relative w-100 px-1 mb-2">
-                        <select id="month_select" name="month[]" multiple class="form-select select2-month" style="width: 100%;">
-                            <option value="1">January</option>
-                            <option value="2">February</option>
-                            <option value="3">March</option>
-                            <option value="4">April</option>
-                            <option value="5">May</option>
-                            <option value="6">June</option>
-                            <option value="7">July</option>
-                            <option value="8">August</option>
-                            <option value="9">September</option>
-                            <option value="10">October</option>
-                            <option value="11">November</option>
-                            <option value="12">December</option>
-                        </select>
-                    </div>
-                </div>
-                
-                <div class="d-flex justify-content-end py-2">
-                    <button type="button" class="btn btn-outline-primary reset_filters">
-                        <i class="fas fa-sync-alt me-1"></i> Reset Filters
-                    </button>
-                </div>
-            </div> 
-            -->
-            <div class="flex-grow-1 ms-3">
-                <div id="selected-tags" class="mb-2"></div>
-                <div class="datatables">
-                    <h4 class="card-title d-flex justify-content-between align-items-center"><?= $page_title ?></h4>
-                    <div class="table-responsive text-nowrap">
-                        <div class="coil_usage_div">
-
+        <div class="coil_usage_div row g-3">
+            <div class="col-12">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h4 class="fw-bold mb-0">Coil Process</h4>
+                    <div class="d-flex gap-2">
+                        <div class="form-group mb-0">
+                            <label for="date_from_tx" class="form-label">Date From</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="fas fa-calendar-alt"></i></span>
+                                <input type="date" class="form-control" id="date_from_tx">
+                            </div>
+                        </div>
+                        <div class="form-group mb-0">
+                            <label for="date_to_tx" class="form-label">Date To</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="fas fa-calendar-alt"></i></span>
+                                <input type="date" class="form-control" id="date_to_tx">
+                            </div>
                         </div>
                     </div>
                 </div>
+                <div id="coil_tx_result" class="mt-2"></div>
+            </div>
+
+            <div class="col-12">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h4 class="fw-bold mb-0">Coil Defective History</h4>
+                    <div class="d-flex gap-2">
+                        <div class="form-group mb-0">
+                            <label for="date_from_def" class="form-label">Date From</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="fas fa-calendar-alt"></i></span>
+                                <input type="date" class="form-control" id="date_from_def">
+                            </div>
+                        </div>
+                        <div class="form-group mb-0">
+                            <label for="date_to_def" class="form-label">Date To</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="fas fa-calendar-alt"></i></span>
+                                <input type="date" class="form-control" id="date_to_def">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div id="coil_def_result" class="mt-2"></div>
             </div>
         </div>
         <?php
@@ -177,37 +156,61 @@ $coil_details = getCoilProductDetails($coilid);
         var isPrinting = false;
         var coilid = '<?= $coilid ?>';
 
-        $(document).on('mouseenter focus', '.select2-selection__choice, .select2-selection__choice__remove', function () {
-            $(this).removeAttr('title');
-            
-            if ($(this).data('bs.tooltip')) {
-                $(this).tooltip('hide');
-            }
-        });
+        function loadCoilTransactions() {
+            const from = $('#date_from_tx').val();
+            const to = $('#date_to_tx').val();
 
-        $(document).on('click', '.select2-selection__choice__remove', function () {
-            $(this).tooltip('hide');
-        });
-
-        $('.input-daterange').datepicker({
-            format: 'yyyy-mm-dd',
-            autoclose: true,
-            todayHighlight: true,
-            orientation: "bottom auto"
-        });
-
-        $(".select2").each(function () {
-            $(this).select2({
-                width: '100%',
-                dropdownParent: $(this).parent()
+            $.ajax({
+                url: 'pages/coil_product_ledger_ajax.php',
+                type: 'POST',
+                data: {
+                    search_tx: 1,
+                    coilid: coilid,
+                    date_from: from,
+                    date_to: to
+                },
+                beforeSend: function () {
+                    $('#coil_tx_result').html('<div class="text-center py-3 text-muted"><i class="fas fa-spinner fa-spin"></i> Loading transactions...</div>');
+                },
+                success: function (response) {
+                    $('#coil_tx_result').html(response);
+                },
+                error: function (xhr) {
+                    $('#coil_tx_result').html('<div class="alert alert-danger">Error loading transactions. (' + xhr.status + ')</div>');
+                }
             });
-        });
+        }
 
-        $("#month_select").select2({
-            placeholder: "All Months",
-            width: '100%',
-            dropdownParent: $("#month_select").parent()
-        });
+        function loadCoilDefective() {
+            const from = $('#date_from_def').val();
+            const to = $('#date_to_def').val();
+
+            $.ajax({
+                url: 'pages/coil_product_ledger_ajax.php',
+                type: 'POST',
+                data: {
+                    search_defective: 1,
+                    coilid: coilid,
+                    date_from: from,
+                    date_to: to
+                },
+                beforeSend: function () {
+                    $('#coil_def_result').html('<div class="text-center py-3 text-muted"><i class="fas fa-spinner fa-spin"></i> Loading defective history...</div>');
+                },
+                success: function (response) {
+                    $('#coil_def_result').html(response);
+                },
+                error: function (xhr) {
+                    $('#coil_def_result').html('<div class="alert alert-danger">Error loading defective history. (' + xhr.status + ')</div>');
+                }
+            });
+        }
+
+        $('#date_from_tx, #date_to_tx').on('change', loadCoilTransactions);
+        $('#date_from_def, #date_to_def').on('change', loadCoilDefective);
+
+        loadCoilTransactions();
+        loadCoilDefective();
 
         function updateSelectedTags() {
             var displayDiv = $('#selected-tags');
@@ -238,31 +241,6 @@ $coil_details = getCoilProductDetails($coilid);
                 $(this).parent().remove();
             });
         }
-        
-        function performSearch() {
-            const customer_id = $('#customer_id').val();
-            const month_select = $('#month_select').val() || [];
-
-            $.ajax({
-                url: 'pages/coil_product_ledger_ajax.php',
-                type: 'POST',
-                data: {
-                    coilid,
-                    customer_id,
-                    month_select,
-                    search_ledger: 'search_ledger'
-                },
-                success: function (response) {
-                    $('.coil_usage_div').html(response);
-
-                    updateSelectedTags();
-                },
-                error: function (xhr, status, error) {
-                    console.error('Error:', status, xhr.responseText);
-                    alert('Error fetching coil usage data.');
-                }
-            });
-        }
 
         $(document).on('click', '.view_invoice_details', function(event) {
             var orderid = $(this).data('orderid');
@@ -284,12 +262,5 @@ $coil_details = getCoilProductDetails($coilid);
             });
             $('#view_invoice_modal').modal('toggle');
         });
-
-
-        $(document).on('change', '#customer_search, #date_from, #date_to, .filter-selection', function(event) {
-            performSearch();
-        });
-
-        performSearch();
     });
 </script>
