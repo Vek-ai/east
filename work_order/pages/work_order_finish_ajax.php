@@ -321,20 +321,20 @@ if(isset($_POST['fetch_view'])){
                                 <td class="text-center">
                                     <?php 
                                     if (!empty($width)) {
-                                        echo htmlspecialchars($width);
+                                        echo number_format($width,2);
                                     }
                                     ?>
                                 </td>
                                 <td class="text-center">
                                     <?php 
                                     if (!empty($length)) {
-                                        echo htmlspecialchars($length) . " ft";
+                                        echo number_format($length,2) . " ft";
                                         
                                         if (!empty($inch)) {
-                                            echo " " . htmlspecialchars($inch) . " in";
+                                            echo " " . number_format($inch,2) . " in";
                                         }
                                     } elseif (!empty($inch)) {
-                                        echo htmlspecialchars($inch) . " in";
+                                        echo number_format($inch,2) . " in";
                                     }
                                     ?>
                                 </td>

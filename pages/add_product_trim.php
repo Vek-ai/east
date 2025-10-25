@@ -155,6 +155,12 @@ if(isset($_REQUEST['action'])) {
                             </select>
                         </div>
                     </div>
+                    <div class="col-md-4">
+                        <div class="mb-3">
+                            <label class="form-label">Weight</label>
+                            <input type="number" step="0.001" id="weight" name="weight" class="form-control" value="<?= $row['weight']?>" />
+                        </div>
+                    </div>
                     <div class="col-md-12">
                         <div class="card-body p-0">
                             <h4 class="card-title text-center">Product Image</h4>

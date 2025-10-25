@@ -49,13 +49,14 @@ if (isset($_POST['search_tx'])) {
                             <th>Product ID</th>
                             <th>Description</th>
                             <th>Initial (Ft)</th>
-                            <th>Used (Ft)</th>
                             <th>Remaining (Ft)</th>
                             <th>Color</th>
                             <th>Grade</th>
                             <th>Gauge</th>
                             <th>Profile</th>
-                            <th class="text-end">Qty</th>
+                            <th>LBS/FT</th>
+                            <th>Total Weight</th>
+                            <th>Qty</th>
                             <th class="text-end">Total Ft</th>
                             <th></th>
                         </tr>
@@ -80,6 +81,7 @@ if (isset($_POST['search_tx'])) {
                                     wo.custom_length AS wo_length_ft,
                                     wo.submitted_date AS wo_date,
                                     op.product_item AS product_item,
+                                    op.productid,
                                     op.product_id_abbrev AS product_id_abbrev,
                                     op.custom_color AS op_custom_color,
                                     op.custom_grade AS op_custom_grade,
@@ -98,6 +100,21 @@ if (isset($_POST['search_tx'])) {
                                     $qty = (int)$wo['wo_quantity'];
                                     $length_ft = (float)$wo['wo_length_ft'];
                                     $line_total = $qty * $length_ft;
+
+                                    $product_details = getProductDetails($wo['productid']);
+                                    $weight = $product_details['weight'];
+                                    $weight_total = $qty * $weight;
+
+                                    $lb_per_ft = '-';
+                                    $coil_details = getCoilProductDetails($coil_id);
+                                    $coil_weight = isset($coil_details['weight']) ? floatval($coil_details['weight']) : 0;
+                                    $coil_act_ft = isset($coil_details['actual_start_length']) ? floatval($coil_details['actual_start_length']) : 0;
+
+                                    if ($coil_weight > 0 && $coil_act_ft > 0) {
+                                        $lb_per_ft = ($coil_weight > 0 && $coil_act_ft > 0) ? round($coil_weight / $coil_act_ft, 3) : '-';
+                                    }
+
+                                    $lb_per_ft_display = is_numeric($lb_per_ft) ? number_format($lb_per_ft, 2) : $lb_per_ft;
                                     ?>
                                     <tr>
                                         <td><?= $trans_date ?></td>
@@ -110,13 +127,14 @@ if (isset($_POST['search_tx'])) {
                                         <td><?= htmlspecialchars($wo['product_id_abbrev'] ?? '-') ?></td>
                                         <td><?= htmlspecialchars($wo['product_item'] ?? '-') ?></td>
                                         <td><?= number_format($before_ft, 2) ?></td>
-                                        <td><?= number_format($used_ft, 2) ?></td>
                                         <td><?= number_format($remain_ft, 2) ?></td>
                                         <td><?= htmlspecialchars(getColorName($wo['op_custom_color']) ?? '-') ?></td>
                                         <td><?= htmlspecialchars(getGradeName($wo['op_custom_grade']) ?? '-') ?></td>
                                         <td><?= htmlspecialchars(getGaugeName($wo['op_custom_gauge']) ?? '-') ?></td>
                                         <td><?= htmlspecialchars(getProfileTypeName($wo['op_custom_profile']) ?? '-') ?></td>
-                                        <td class="text-end"><?= number_format($qty) ?></td>
+                                        <td><?= $lb_per_ft_display ?></td>
+                                        <td><?= number_format($weight_total, 2) ?></td>
+                                        <td><?= number_format($qty) ?></td>
                                         <td class="text-end"><?= number_format($line_total, 2) ?></td>
                                         <td class="text-nowrap">
                                             <a href="javascript:void(0)" class="me-1 text-decoration-none view_invoice_details" title="View" data-orderid="<?= $wo['invoice_no'] ?>">
