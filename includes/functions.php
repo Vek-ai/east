@@ -4165,4 +4165,67 @@ function getProfileStyleAbbrev($profile_id, $profile_style_char = '') {
     return '';
 }
 
+function processCoilTransaction($coil_id, $length_used, $work_orders, $is_waste = false) {
+    global $conn;
+
+    if (!is_array($work_orders)) {
+        $work_orders = [$work_orders];
+    }
+
+    $coil_before = getCoilProductDetails($coil_id);
+    if (!$coil_before) return false;
+
+    $length_before_use = floatval($coil_before['remaining_feet']);
+    $length_used = floatval($length_used);
+
+    $update_product = mysqli_query($conn, "
+        UPDATE coil_product 
+        SET remaining_feet = GREATEST(remaining_feet - $length_used, 0)
+        WHERE coil_id = $coil_id
+    ");
+    if (!$update_product) return false;
+
+    $coil_after = getCoilProductDetails($coil_id);
+    $remaining_length = floatval($coil_after['remaining_feet']);
+
+    $work_order_ids_str = implode(',', array_unique($work_orders));
+
+    $check = mysqli_query($conn, "
+        SELECT id, used_in_workorders
+        FROM coil_transaction
+        WHERE coilid = $coil_id
+        ORDER BY id DESC
+        LIMIT 1
+    ");
+
+    if ($check && mysqli_num_rows($check) > 0) {
+        $row = mysqli_fetch_assoc($check);
+        $existing_ids = array_filter(array_map('intval', explode(',', $row['used_in_workorders'])));
+        $merged_ids = array_unique(array_merge($existing_ids, $work_orders));
+        $merged_ids_str = implode(',', $merged_ids);
+
+        $update_tx = mysqli_query($conn, "
+            UPDATE coil_transaction
+            SET 
+                remaining_length = $remaining_length,
+                length_before_use = $length_before_use,
+                used_in_workorders = '$merged_ids_str',
+                is_waste = " . ($is_waste ? 1 : 0) . "
+            WHERE id = {$row['id']}
+        ");
+        if (!$update_tx) return false;
+
+    } else {
+        $insert_tx = mysqli_query($conn, "
+            INSERT INTO coil_transaction 
+            (coilid, remaining_length, length_before_use, used_in_workorders, is_waste)
+            VALUES ($coil_id, $remaining_length, $length_before_use, '$work_order_ids_str', " . ($is_waste ? 1 : 0) . ")
+        ");
+        if (!$insert_tx) return false;
+    }
+
+    return true;
+}
+
+
 ?>

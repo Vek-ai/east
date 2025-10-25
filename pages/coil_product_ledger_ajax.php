@@ -24,7 +24,7 @@ if (isset($_POST['search_tx'])) {
     }
 
     $sql_tx = "
-        SELECT id, coilid, date, remaining_length, length_before_use, used_in_workorders
+        SELECT id, coilid, date, remaining_length, length_before_use, used_in_workorders, is_waste
         FROM coil_transaction
         WHERE coilid = '$coil_id' $date_filter
         ORDER BY date DESC
@@ -68,94 +68,116 @@ if (isset($_POST['search_tx'])) {
                             $before_ft = (float)$tx['length_before_use'];
                             $remain_ft = (float)$tx['remaining_length'];
                             $used_ft = max(0, $before_ft - $remain_ft);
-                            $used_wo_list = array_filter(array_map('trim', explode(',', $tx['used_in_workorders'])));
-                            if (empty($used_wo_list)) continue;
-                            $id_list = implode(',', array_map('intval', $used_wo_list));
+                            $is_waste = intval($tx['is_waste']) === 1;
 
-                            $sql_wo = "
-                                SELECT
-                                    wo.id AS wo_id,
-                                    wo.work_order_id AS invoice_no,
-                                    wo.work_order_product_id AS line_id,
-                                    wo.quantity AS wo_quantity,
-                                    wo.custom_length AS wo_length_ft,
-                                    wo.submitted_date AS wo_date,
-                                    op.product_item AS product_item,
-                                    op.productid,
-                                    op.product_id_abbrev AS product_id_abbrev,
-                                    op.custom_color AS op_custom_color,
-                                    op.custom_grade AS op_custom_grade,
-                                    op.custom_gauge AS op_custom_gauge,
-                                    op.custom_profile AS op_custom_profile
-                                FROM work_order wo
-                                LEFT JOIN order_product op ON op.id = wo.work_order_product_id
-                                WHERE wo.id IN ($id_list)
-                                ORDER BY op.productid, wo.id
-                            ";
-                            $res_wo = mysqli_query($conn, $sql_wo);
-                            ?>
-                            <?php if ($res_wo && mysqli_num_rows($res_wo) > 0): ?>
-                                <?php while ($wo = mysqli_fetch_assoc($res_wo)): ?>
-                                    <?php
-                                    $qty = (int)$wo['wo_quantity'];
-                                    $length_ft = (float)$wo['wo_length_ft'];
-                                    $line_total = $qty * $length_ft;
+                            $used_wo_list = $is_waste ? [] : array_filter(array_map('trim', explode(',', $tx['used_in_workorders'])));
+                            if (!$is_waste && empty($used_wo_list)) continue;
 
+                            if ($is_waste) {
+                                $wo_rows = [
+                                    [
+                                        'invoice_no' => '-',
+                                        'wo_id' => 0,
+                                        'line_id' => '-',
+                                        'productid' => 0,
+                                        'product_id_abbrev' => '-',
+                                        'product_item' => 'Waste',
+                                        'op_custom_color' => null,
+                                        'op_custom_grade' => null,
+                                        'op_custom_gauge' => null,
+                                        'op_custom_profile' => null,
+                                        'wo_quantity' => 1,
+                                        'wo_length_ft' => $used_ft
+                                    ]
+                                ];
+                            } else {
+                                $id_list = implode(',', array_map('intval', $used_wo_list));
+                                $sql_wo = "
+                                    SELECT
+                                        wo.id AS wo_id,
+                                        wo.work_order_id AS invoice_no,
+                                        wo.work_order_product_id AS line_id,
+                                        wo.quantity AS wo_quantity,
+                                        wo.custom_length AS wo_length_ft,
+                                        wo.submitted_date AS wo_date,
+                                        op.product_item AS product_item,
+                                        op.productid,
+                                        op.product_id_abbrev AS product_id_abbrev,
+                                        op.custom_color AS op_custom_color,
+                                        op.custom_grade AS op_custom_grade,
+                                        op.custom_gauge AS op_custom_gauge,
+                                        op.custom_profile AS op_custom_profile
+                                    FROM work_order wo
+                                    LEFT JOIN order_product op ON op.id = wo.work_order_product_id
+                                    WHERE wo.id IN ($id_list)
+                                    ORDER BY op.productid, wo.id
+                                ";
+                                $res_wo = mysqli_query($conn, $sql_wo);
+                                $wo_rows = [];
+                                if ($res_wo && mysqli_num_rows($res_wo) > 0) {
+                                    while ($wo = mysqli_fetch_assoc($res_wo)) {
+                                        $wo_rows[] = $wo;
+                                    }
+                                }
+                            }
+
+                            foreach ($wo_rows as $wo):
+                                $qty = (int)$wo['wo_quantity'];
+                                $length_ft = (float)$wo['wo_length_ft'];
+                                $line_total = $qty * $length_ft;
+
+                                if ($is_waste) {
+                                    $weight = 0;
+                                    $weight_total = 0;
+                                    $lb_per_ft_display = '-';
+                                } else {
                                     $product_details = getProductDetails($wo['productid']);
-                                    $weight = $product_details['weight'];
+                                    $weight = $product_details['weight'] ?? 0;
                                     $weight_total = $qty * $weight;
 
-                                    $lb_per_ft = '-';
                                     $coil_details = getCoilProductDetails($coil_id);
                                     $coil_weight = isset($coil_details['weight']) ? floatval($coil_details['weight']) : 0;
                                     $coil_act_ft = isset($coil_details['actual_start_length']) ? floatval($coil_details['actual_start_length']) : 0;
-
-                                    if ($coil_weight > 0 && $coil_act_ft > 0) {
-                                        $lb_per_ft = ($coil_weight > 0 && $coil_act_ft > 0) ? round($coil_weight / $coil_act_ft, 3) : '-';
-                                    }
-
+                                    $lb_per_ft = ($coil_weight > 0 && $coil_act_ft > 0) ? round($coil_weight / $coil_act_ft, 3) : '-';
                                     $lb_per_ft_display = is_numeric($lb_per_ft) ? number_format($lb_per_ft, 2) : $lb_per_ft;
-                                    ?>
-                                    <tr>
-                                        <td><?= $trans_date ?></td>
-                                        <td>
-                                            <a href="javascript:void(0)" class="text-primary view_invoice_details" data-orderid="<?= $wo['invoice_no'] ?>">
-                                                INV#<?= htmlspecialchars($wo['invoice_no']) ?>
-                                            </a>
-                                        </td>
-                                        <td>L<?= htmlspecialchars($wo['line_id']) ?></td>
-                                        <td><?= htmlspecialchars($wo['product_id_abbrev'] ?? '-') ?></td>
-                                        <td><?= htmlspecialchars($wo['product_item'] ?? '-') ?></td>
-                                        <td><?= number_format($before_ft, 2) ?></td>
-                                        <td><?= number_format($remain_ft, 2) ?></td>
-                                        <td><?= htmlspecialchars(getColorName($wo['op_custom_color']) ?? '-') ?></td>
-                                        <td><?= htmlspecialchars(getGradeName($wo['op_custom_grade']) ?? '-') ?></td>
-                                        <td><?= htmlspecialchars(getGaugeName($wo['op_custom_gauge']) ?? '-') ?></td>
-                                        <td><?= htmlspecialchars(getProfileTypeName($wo['op_custom_profile']) ?? '-') ?></td>
-                                        <td><?= $lb_per_ft_display ?></td>
-                                        <td><?= number_format($weight_total, 2) ?></td>
-                                        <td><?= number_format($qty) ?></td>
-                                        <td class="text-end"><?= number_format($line_total, 2) ?></td>
-                                        <td class="text-nowrap">
-                                            <a href="javascript:void(0)" class="me-1 text-decoration-none view_invoice_details" title="View" data-orderid="<?= $wo['invoice_no'] ?>">
-                                                <i class="fa-solid fa-eye text-primary"></i>
-                                            </a>
-                                            <a href="javascript:void(0)" class="me-1 text-decoration-none" title="Print" data-wo="<?= (int)$wo['wo_id'] ?>">
-                                                <i class="fa-solid fa-print text-info"></i>
-                                            </a>
-                                            <a href="javascript:void(0)" class="text-decoration-none" title="Download" data-wo="<?= (int)$wo['wo_id'] ?>">
-                                                <i class="fa-solid fa-download text-success"></i>
-                                            </a>
-                                        </td>
-                                    </tr>
-                                <?php endwhile; ?>
-                            <?php endif; ?>
-                        <?php endwhile; ?>
+                                }
+                            ?>
+                            <tr>
+                                <td><?= $trans_date ?></td>
+                                <td><?= $is_waste ? '-' : '<a href="javascript:void(0)" class="text-primary view_invoice_details" data-orderid="' . $wo['invoice_no'] . '">INV#' . htmlspecialchars($wo['invoice_no']) . '</a>' ?></td>
+                                <td><?= htmlspecialchars($wo['line_id']) ?></td>
+                                <td><?= htmlspecialchars($wo['product_id_abbrev'] ?? '-') ?></td>
+                                <td><?= htmlspecialchars($wo['product_item'] ?? '-') ?></td>
+                                <td><?= number_format($before_ft, 2) ?></td>
+                                <td><?= number_format($remain_ft, 2) ?></td>
+                                <td><?= $is_waste ? '-' : htmlspecialchars(getColorName($wo['op_custom_color']) ?? '-') ?></td>
+                                <td><?= $is_waste ? '-' : htmlspecialchars(getGradeName($wo['op_custom_grade']) ?? '-') ?></td>
+                                <td><?= $is_waste ? '-' : htmlspecialchars(getGaugeName($wo['op_custom_gauge']) ?? '-') ?></td>
+                                <td><?= $is_waste ? '-' : htmlspecialchars(getProfileTypeName($wo['op_custom_profile']) ?? '-') ?></td>
+                                <td><?= $lb_per_ft_display ?></td>
+                                <td><?= $is_waste ? '-' : number_format($weight_total, 2) ?></td>
+                                <td><?= number_format($qty) ?></td>
+                                <td class="text-end"><?= number_format($line_total, 2) ?></td>
+                                <td class="text-nowrap">
+                                    <?php if (!$is_waste): ?>
+                                        <a href="javascript:void(0)" class="me-1 text-decoration-none view_invoice_details" title="View" data-orderid="<?= $wo['invoice_no'] ?>">
+                                            <i class="fa-solid fa-eye text-primary"></i>
+                                        </a>
+                                        <a href="javascript:void(0)" class="me-1 text-decoration-none" title="Print" data-wo="<?= (int)$wo['wo_id'] ?>">
+                                            <i class="fa-solid fa-print text-info"></i>
+                                        </a>
+                                        <a href="javascript:void(0)" class="text-decoration-none" title="Download" data-wo="<?= (int)$wo['wo_id'] ?>">
+                                            <i class="fa-solid fa-download text-success"></i>
+                                        </a>
+                                    <?php endif; ?>
+                                </td>
+                            </tr>
+                        <?php endforeach; ?>
+                    <?php endwhile; ?>
                     </tbody>
                 </table>
             </div>
         </div>
-        
     </div>
 
     <script>

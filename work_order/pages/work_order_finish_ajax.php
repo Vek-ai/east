@@ -567,8 +567,8 @@ if (isset($_POST['release_work_order'])) {
 if (isset($_POST['add_waste'])) {
 
     $batch_id = intval($_POST['batch_id']);
-    $work_order_ids = mysqli_real_escape_string($conn, $_POST['work_order_ids']);
-    
+    $work_order_ids = $_POST['work_order_ids'] ?? '';
+
     $coil_ids_input = $_POST['coil_ids'] ?? '';
     $coil_array = array_map('intval', explode(',', $coil_ids_input));
     $coil_ids_json = json_encode($coil_array);
@@ -583,24 +583,23 @@ if (isset($_POST['add_waste'])) {
     }
 
     $sql = "INSERT INTO coil_waste (batch_id, work_order_ids, coil_ids, length, notes, created_by) 
-            VALUES ($batch_id, '$work_order_ids', '$coil_ids_json', $length, '$notes', $created_by)";
+            VALUES ($batch_id, '" . mysqli_real_escape_string($conn, $work_order_ids) . "', '$coil_ids_json', $length, '$notes', $created_by)";
 
     $exec = mysqli_query($conn, $sql);
 
     if ($exec) {
-        $date_now = date('Y-m-d H:i:s');
-
+        $all_success = true;
         foreach ($coil_array as $coilid) {
-            $coilid = intval($coilid);
-
-            $sql_tx = "INSERT INTO coil_transaction 
-                        (coilid, date, remaining_length, length_before_use, used_in_workorders, is_waste) 
-                       VALUES 
-                        ($coilid, '$date_now', 0, 0, '$work_order_ids', 1)";
-            mysqli_query($conn, $sql_tx);
+            $success = processCoilTransaction($coilid, $length, $work_order_ids, true);
+            if (!$success) $all_success = false;
         }
 
-        echo 'success';
+        if ($all_success) {
+            echo 'success';
+        } else {
+            echo 'Failed to update some coil transactions';
+        }
+
     } else {
         echo 'Failed to save waste: ' . mysqli_error($conn);
     }
