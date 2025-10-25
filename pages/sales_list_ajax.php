@@ -883,3 +883,79 @@ if (isset($_REQUEST['close_out_order'])) {
     echo 'success';
 }
 
+if (isset($_REQUEST['fetch_edit_sales'])) {
+    $orderid = intval($_POST['sale_id']);
+    $password = trim($_POST['password']);
+
+    $sales_edit_password = getSetting('sales_edit_password');
+
+    if ($password !== $sales_edit_password) {
+        echo '<div class="alert alert-danger text-center mb-0">Invalid password.</div>';
+        exit;
+    }
+
+    $query = "SELECT orderid, pay_type, deliver_method FROM orders WHERE orderid = '$orderid' LIMIT 1";
+    $result = mysqli_query($conn, $query);
+
+    if (!$result || mysqli_num_rows($result) === 0) {
+        echo '<div class="alert alert-warning text-center mb-0">Order not found.</div>';
+        exit;
+    }
+
+    $order = mysqli_fetch_assoc($result);
+    $payType = $order['pay_type'];
+    $deliverMethod = $order['deliver_method'];
+?>
+    <form id="editSalesForm">
+        <input type="hidden" name="orderid" value="<?= $orderid ?>">
+
+        <div class="mb-3">
+            <label class="form-label fw-bold">Order ID: <?= $orderid ?></label>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label fw-bold">Payment Method</label>
+            <select class="form-select" name="payMethod" id="payMethod" required>
+                <option value="" hidden>-- Select Payment Method --</option>
+                <option value="pickup" <?= $payType === 'pickup' ? 'selected' : '' ?>>Pay at Pick-Up</option>
+                <option value="delivery" <?= $payType === 'delivery' ? 'selected' : '' ?>>Pay at Delivery</option>
+                <option value="cash" <?= $payType === 'cash' ? 'selected' : '' ?>>Cash</option>
+                <option value="check" <?= $payType === 'check' ? 'selected' : '' ?>>Check</option>
+                <option value="card" <?= $payType === 'card' ? 'selected' : '' ?>>Credit/Debit Card</option>
+            </select>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label fw-bold">Delivery Method</label>
+            <select name="deliveryMethod" id="deliveryMethod" class="form-select" required>
+                <option value="" hidden>-- Select Delivery Method --</option>
+                <option value="pickup" <?= $deliverMethod === 'pickup' ? 'selected' : '' ?>>Pick-Up</option>
+                <option value="deliver" <?= $deliverMethod === 'deliver' ? 'selected' : '' ?>>Delivery</option>
+            </select>
+        </div>
+
+        <div class="text-end">
+            <button type="submit" class="btn btn-primary btn-sm">Save Changes</button>
+        </div>
+    </form>
+<?php
+}
+
+if (isset($_POST['edit_sales'])) {
+    $orderid = intval($_POST['orderid']);
+    $payMethod = mysqli_real_escape_string($conn, $_POST['payMethod']);
+    $deliveryMethod = mysqli_real_escape_string($conn, $_POST['deliveryMethod']);
+
+    $query = "
+        UPDATE orders 
+        SET pay_type = '$payMethod', deliver_method = '$deliveryMethod', is_edited = 1 
+        WHERE orderid = '$orderid'
+    ";
+
+    if (mysqli_query($conn, $query)) {
+        echo '<div class="alert alert-success text-center mb-0">Sales record updated successfully!</div>';
+    } else {
+        echo '<div class="alert alert-danger text-center mb-0">Error updating record</div>';
+    }
+}
+

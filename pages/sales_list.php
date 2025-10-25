@@ -328,6 +328,38 @@ function showCol($name) {
   </div>
 </div>
 
+<div class="modal fade" id="passwordModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-sm modal-dialog-centered">
+    <div class="modal-content">
+      <form id="passwordForm">
+        <div class="modal-header py-2">
+          <h6 class="modal-title">Enter Password</h6>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <input type="password" class="form-control" id="edit_password" name="password" placeholder="Password" required>
+          <input type="hidden" id="edit_sale_id" name="sale_id">
+        </div>
+        <div class="modal-footer py-2">
+          <button type="submit" class="btn btn-primary btn-sm">Submit</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="resultModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-md modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header py-2">
+        <h6 class="modal-title">Edit Sales</h6>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body" id="resultContent"></div>
+    </div>
+  </div>
+</div>
+
 <script>
     $("#customer_search").autocomplete({
         source: function(request, response) {
@@ -638,6 +670,9 @@ function showCol($name) {
                                 <?php if ($permission === 'edit'): ?>
                                     if (order.payment_status === 'not_paid') {
                                         actionButtons += `
+                                            <a href="javascript:void(0)" class="text-primary" id="edit_order_details" data-id="${order.orderid}">
+                                                <i class="fa fa-pencil"></i>
+                                            </a>
                                             <a href="javascript:void(0)" 
                                                 class="close_out_sale btn btn-danger-gradient btn-sm p-0" 
                                                 data-id="${order.orderid}" data-bs-toggle="tooltip" 
@@ -705,6 +740,61 @@ function showCol($name) {
             var orderid = $(this).data('id');
             loadOrderDetails(orderid);
             $('#view_order_details_modal').modal('toggle');
+        });
+
+        $(document).on('click', '#edit_order_details', function(event) {
+            const saleId = $(this).data('id');
+            $('#edit_sale_id').val(saleId);
+            $('#passwordModal').modal('show');
+        });
+
+        $(document).on('submit', '#passwordForm', function(e) {
+            e.preventDefault();
+
+            const formData = new FormData(this);
+            formData.append('fetch_edit_sales', true);
+
+            $.ajax({
+                url: 'pages/sales_list_ajax.php',
+                type: 'POST',
+                data: formData,
+                processData: false,
+                contentType: false,
+                success: function(response) {
+                    $('#passwordModal').modal('hide');
+                    $('#resultContent').html(response);
+                    $('#resultModal').modal('show');
+                },
+                error: function() {
+                    alert('An error occurred.');
+                }
+            });
+        });
+
+        $(document).on('submit', '#editSalesForm', function(e) {
+            e.preventDefault();
+
+            const formData = new FormData(this);
+            formData.append('edit_sales', true);
+
+            $.ajax({
+                url: 'pages/sales_list_ajax.php',
+                type: 'POST',
+                data: formData,
+                processData: false,
+                contentType: false,
+                beforeSend: function() {
+                    $('#editSalesForm button[type="submit"]').prop('disabled', true).text('Saving...');
+                },
+                success: function(response) {
+                    $('#editSalesForm button[type="submit"]').prop('disabled', false).text('Save Changes');
+                    $('#resultContent').html(response);
+                },
+                error: function() {
+                    $('#editSalesForm button[type="submit"]').prop('disabled', false).text('Save Changes');
+                    alert('An error occurred while saving changes.');
+                }
+            });
         });
 
         $(document).on('click', '.close_out_sale', function(event) {
