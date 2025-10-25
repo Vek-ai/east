@@ -427,6 +427,8 @@ if (isset($_POST['run_work_order'])) {
         exit;
     }
 
+    $batch_id = date('YmdHis');
+
     $coils_json = json_encode($selected_coils);
 
     $materialData = [];
@@ -442,7 +444,9 @@ if (isset($_POST['run_work_order'])) {
 
         $update_sql = "
             UPDATE work_order 
-            SET assigned_coils = '$coils_json', roll_former_id = '$roll_former_id'
+            SET assigned_coils = '$coils_json', 
+                roll_former_id = '$roll_former_id',
+                batch_id = '$batch_id'
             WHERE id = $id
         ";
         $conn->query($update_sql);

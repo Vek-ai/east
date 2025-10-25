@@ -189,108 +189,106 @@ $page_title = "Work Order Released";
                 <div class="datatables">
                     <div class="table-responsive">
                         <div id="tbl-work-order" class="product-details table-responsive">
+                        <?php
+                        $query = "
+                            SELECT 
+                                wo.*, 
+                                p.product_item 
+                            FROM 
+                                work_order AS wo
+                            LEFT JOIN 
+                                product AS p ON p.product_id = wo.productid
+                            WHERE 
+                                wo.submitted_date >= DATE_SUB(CURDATE(), INTERVAL 2 WEEK)
+                                AND wo.submitted_date <= NOW()
+                                AND wo.status = 4
+                            ORDER BY 
+                                wo.batch_id, wo.id
+                        ";
+
+                        $result = mysqli_query($conn, $query);
+
+                        if ($result && mysqli_num_rows($result) > 0) {
+                            $grouped = [];
+
+                            while ($row = mysqli_fetch_assoc($result)) {
+                                $batch_id = $row['batch_id'] ?? 0;
+                                $grouped[$batch_id][] = $row;
+                            }
+                        ?>
+                        <table id="work_order_table" class="table table-hover mb-0 text-md-nowrap align-middle">
+                            <thead>
+                                <tr>
+                                    <th>Order #</th>
+                                    <th>Products</th>
+                                    <th>Cashier</th>
+                                    <th>Customer</th>
+                                    <th>Job Name</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
                             <?php
-                            $query = "
-                                SELECT 
-                                    wo.*, 
-                                    p.product_item 
-                                FROM 
-                                    work_order AS wo
-                                LEFT JOIN 
-                                    product AS p ON p.product_id = wo.productid
-                                WHERE 
-                                    wo.submitted_date >= DATE_SUB(CURDATE(), INTERVAL 2 WEEK)
-                                    AND wo.submitted_date <= NOW()
-                                    AND wo.status = 4
-                                ORDER BY 
-                                    wo.work_order_id, wo.id
-                            ";
+                            $images_directory = "../images/drawing/";
+                            $default_image = "../images/product/product.jpg";
 
-                            $result = mysqli_query($conn, $query);
+                            foreach ($grouped as $batch_id => $items):
+                                $first = $items[0];
 
-                            if ($result && mysqli_num_rows($result) > 0) {
-                                $grouped = [];
+                                $order_ids = array_unique(array_column($items, 'work_order_id'));
+                                $order_nos = 'SO-' . implode(', SO-', $order_ids);
 
-                                while ($row = mysqli_fetch_assoc($result)) {
-                                    $grouped[$row['work_order_id']][] = $row;
+                                $cashier = get_name($first['user_id']);
+                                $order_details = getOrderDetails($first['work_order_id']);
+                                $customer_name = get_customer_name($order_details['customerid']);
+                                $job_name = $order_details['job_name'];
+
+                                $status = (int)$first['status'];
+                                $statusText = 'Unknown';
+                                $statusClass = 'badge bg-secondary';
+                                switch ($status) {
+                                    case 1: $statusText = 'New'; $statusClass = 'badge bg-primary'; break;
+                                    case 2: $statusText = 'Processing'; $statusClass = 'badge bg-warning text-dark'; break;
+                                    case 3: $statusText = 'Done'; $statusClass = 'badge bg-success'; break;
                                 }
                             ?>
-                            <table id="work_order_table" class="table table-hover mb-0 text-md-nowrap align-middle">
-                                <thead>
-                                    <tr>
-                                        <th>Order #</th>
-                                        <th>Products</th>
-                                        <th>Cashier</th>
-                                        <th>Customer</th>
-                                        <th>Job Name</th>
-                                        <th>Status</th>
-                                        <th>Actions</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                <?php
-                                $images_directory = "../images/drawing/";
-                                $default_image = "../images/product/product.jpg";
+                            <tr data-batch-id="<?= $batch_id ?>">
+                                <td><?= htmlspecialchars($order_nos) ?></td>
 
-                                foreach ($grouped as $work_order_id => $items):
-                                    $first = $items[0];
+                                <td class="text-wrap w-20">
+                                    <?php foreach ($items as $row): 
+                                        $product_id = $row['productid'];
+                                        $product_name = getProductName($product_id);
+                                        $picture_path = !empty($row['custom_img_src']) ? $images_directory . $row["custom_img_src"] : $default_image;
+                                    ?>
+                                    <div class="d-flex align-items-center mb-1">
+                                        <img src="<?= $picture_path ?>" class="rounded-circle img-thumbnail me-2" width="40" height="40">
+                                        <div><?= htmlspecialchars($product_name) ?></div>
+                                    </div>
+                                    <?php endforeach; ?>
+                                </td>
 
-                                    $order_no = 'SO-' . $work_order_id;
+                                <td><?= htmlspecialchars($cashier) ?></td>
+                                <td><?= htmlspecialchars($customer_name) ?></td>
+                                <td><?= htmlspecialchars($job_name) ?></td>
 
-                                    $cashier = get_name($first['user_id']);
-                                    $order_details = getOrderDetails($work_order_id);
-                                    $customer_name = get_customer_name($order_details['customerid']);
-                                    $job_name = $order_details['job_name'];
+                                <td class="text-center"><span class="<?= $statusClass ?>"><?= $statusText ?></span></td>
 
-                                    $status = (int)$first['status'];
-                                    $statusText = 'Unknown';
-                                    $statusClass = 'badge bg-secondary';
-                                    switch ($status) {
-                                        case 1: $statusText = 'New'; $statusClass = 'badge bg-primary'; break;
-                                        case 2: $statusText = 'Processing'; $statusClass = 'badge bg-warning text-dark'; break;
-                                        case 3: $statusText = 'Done'; $statusClass = 'badge bg-success'; break;
-                                        case 4: $statusText = 'Released'; $statusClass = 'badge bg-success'; break;
-                                    }
-                                ?>
-                                <tr data-work-order-id="<?= $work_order_id ?>">
-                                    <td><?= $order_no ?></td>
-
-                                    <td class="text-wrap w-20">
-                                        <?php foreach ($items as $row): 
-                                            $product_id = $row['productid'];
-                                            $product_name = getProductName($product_id);
-                                            $picture_path = !empty($row['custom_img_src']) ? $images_directory . $row["custom_img_src"] : $default_image;
-                                        ?>
-                                        <div class="d-flex align-items-center mb-1">
-                                            <img src="<?= $picture_path ?>" class="rounded-circle img-thumbnail me-2" width="40" height="40">
-                                            <div><?= htmlspecialchars($product_name) ?></div>
-                                        </div>
-                                        <?php endforeach; ?>
-                                    </td>
-
-                                    <td><?= htmlspecialchars($cashier) ?></td>
-                                    <td><?= htmlspecialchars($customer_name) ?></td>
-                                    <td><?= htmlspecialchars($job_name) ?></td>
-
-                                    <td class="text-center"><span class="<?= $statusClass ?>"><?= $statusText ?></span></td>
-
-                                    <td class="text-center">
-                                        <div class="action-btn">
-                                            <a href="javascript:void(0)" class="text-decoration-none" id="viewBtn" title="View" data-id="<?= $work_order_id ?>">
-                                                <i class="fa fa-eye"></i>
-                                            </a>
-                                        </div>
-                                    </td>
-                                </tr>
-                                <?php endforeach; ?>
-                                </tbody>
-                            </table>
-                            <?php } else { ?>
-                                <h4 class="text-center">No Requests found</h4>
-                            <?php } ?>
-
-
-
+                                <td class="text-center">
+                                    <div class="action-btn">
+                                        <a href="javascript:void(0)" class="text-decoration-none" id="viewBtn" title="View" data-id="<?= $batch_id ?>">
+                                            <i class="fa fa-eye"></i>
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                            <?php endforeach; ?>
+                            </tbody>
+                        </table>
+                        <?php } else { ?>
+                            <h4 class="text-center">No Requests found</h4>
+                        <?php } ?>
                         </div>
                     </div>
                 </div>

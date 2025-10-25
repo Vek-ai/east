@@ -499,20 +499,20 @@ if(isset($_POST['fetch_view'])){
                                 <td class="text-center">
                                     <?php 
                                     if (!empty($width)) {
-                                        echo htmlspecialchars($width);
+                                        echo number_format($width,2);
                                     }
                                     ?>
                                 </td>
                                 <td class="text-center">
                                     <?php 
                                     if (!empty($length)) {
-                                        echo htmlspecialchars($length) . " ft";
+                                        echo number_format($length,2) . " ft";
                                         
                                         if (!empty($inch)) {
-                                            echo " " . htmlspecialchars($inch) . " in";
+                                            echo " " . number_format($inch,2) . " in";
                                         }
                                     } elseif (!empty($inch)) {
-                                        echo htmlspecialchars($inch) . " in";
+                                        echo number_format($inch,2) . " in";
                                     }
                                     ?>
                                 </td>
@@ -1389,6 +1389,8 @@ if (isset($_POST['run_work_order'])) {
         exit;
     }
 
+    $batch_id = date('YmdHis');
+
     $materials_header = ['#L', 'MATERIAL', 'GAUGE', 'GRADE', 'THICKNESS', 'WIDTH', 'COLOR', 'DENSITY', 'DESCRIPTION'];
     $materials_data = [];
 
@@ -1413,6 +1415,9 @@ if (isset($_POST['run_work_order'])) {
         $fields = [];
         if (!empty($usage)) $fields[] = "usageid = " . intval($usage);
         if (!empty($upc)) $fields[] = "upc = '" . mysqli_real_escape_string($conn, $upc) . "'";
+
+        $fields[] = "batch_id = '" . mysqli_real_escape_string($conn, $batch_id) . "'";
+
         if (!empty($fields)) {
             $updateSQL = "UPDATE work_order SET " . implode(", ", $fields) . " WHERE id = $id";
             mysqli_query($conn, $updateSQL);

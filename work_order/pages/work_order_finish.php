@@ -190,107 +190,144 @@ $permission = $_SESSION['permission'];
                 <div class="datatables">
                     <div class="table-responsive">
                         <div id="tbl-work-order" class="product-details table-responsive">
-                            <?php
-                            $query = "
-                                SELECT 
-                                    wo.*, 
-                                    p.product_item 
-                                FROM 
-                                    work_order AS wo
-                                LEFT JOIN 
-                                    product AS p ON p.product_id = wo.productid
-                                WHERE 
-                                    wo.submitted_date >= DATE_SUB(CURDATE(), INTERVAL 2 WEEK)
-                                    AND wo.submitted_date <= NOW()
-                                    AND wo.status = 3
-                                ORDER BY 
-                                    wo.work_order_id, wo.id
-                            ";
+                        <?php
+                        $query = "
+                            SELECT 
+                                wo.*, 
+                                p.product_item 
+                            FROM 
+                                work_order AS wo
+                            LEFT JOIN 
+                                product AS p ON p.product_id = wo.productid
+                            WHERE 
+                                wo.submitted_date >= DATE_SUB(CURDATE(), INTERVAL 2 WEEK)
+                                AND wo.submitted_date <= NOW()
+                                AND wo.status IN (2,3)
+                            ORDER BY 
+                                wo.batch_id, wo.id
+                        ";
 
-                            $result = mysqli_query($conn, $query);
+                        $result = mysqli_query($conn, $query);
 
-                            if ($result && mysqli_num_rows($result) > 0) {
-                                $grouped = [];
+                        if ($result && mysqli_num_rows($result) > 0) {
+                            $grouped = [];
 
-                                while ($row = mysqli_fetch_assoc($result)) {
-                                    $grouped[$row['work_order_id']][] = $row;
-                                }
-                            ?>
-                            <table id="work_order_table" class="table table-hover mb-0 text-md-nowrap align-middle">
-                                <thead>
-                                    <tr>
-                                        <th>Order #</th>
-                                        <th>Products</th>
-                                        <th>Cashier</th>
-                                        <th>Customer</th>
-                                        <th>Job Name</th>
-                                        <th>Status</th>
-                                        <th>Actions</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                <?php
-                                $images_directory = "../images/drawing/";
-                                $default_image = "../images/product/product.jpg";
-
-                                foreach ($grouped as $work_order_id => $items):
-                                    $first = $items[0];
-
-                                    $order_no = 'SO-' . $work_order_id;
-
-                                    $cashier = get_name($first['user_id']);
-                                    $order_details = getOrderDetails($work_order_id);
-                                    $customer_name = get_customer_name($order_details['customerid']);
-                                    $job_name = $order_details['job_name'];
-
-                                    $status = (int)$first['status'];
-                                    $statusText = 'Unknown';
-                                    $statusClass = 'badge bg-secondary';
-                                    switch ($status) {
-                                        case 1: $statusText = 'New'; $statusClass = 'badge bg-primary'; break;
-                                        case 2: $statusText = 'Processing'; $statusClass = 'badge bg-warning text-dark'; break;
-                                        case 3: $statusText = 'Done'; $statusClass = 'badge bg-success'; break;
-                                    }
-                                ?>
-                                <tr data-work-order-id="<?= $work_order_id ?>">
-                                    <td><?= $order_no ?></td>
-
-                                    <td class="text-wrap w-20">
-                                        <?php foreach ($items as $row): 
-                                            $product_id = $row['productid'];
-                                            $product_name = getProductName($product_id);
-                                            $picture_path = !empty($row['custom_img_src']) ? $images_directory . $row["custom_img_src"] : $default_image;
-                                        ?>
-                                        <div class="d-flex align-items-center mb-1">
-                                            <img src="<?= $picture_path ?>" class="rounded-circle img-thumbnail me-2" width="40" height="40">
-                                            <div><?= htmlspecialchars($product_name) ?></div>
-                                        </div>
-                                        <?php endforeach; ?>
-                                    </td>
-
-                                    <td><?= htmlspecialchars($cashier) ?></td>
-                                    <td><?= htmlspecialchars($customer_name) ?></td>
-                                    <td><?= htmlspecialchars($job_name) ?></td>
-
-                                    <td class="text-center"><span class="<?= $statusClass ?>"><?= $statusText ?></span></td>
-
-                                    <td class="text-center">
-                                        <div class="action-btn">
-                                            <a href="javascript:void(0)" class="text-decoration-none" id="viewBtn" title="View" data-id="<?= $work_order_id ?>">
-                                                <i class="fa fa-eye"></i>
-                                            </a>
-                                        </div>
-                                    </td>
+                            while ($row = mysqli_fetch_assoc($result)) {
+                                $batch_id = $row['batch_id'] ?? 0;
+                                $grouped[$batch_id][] = $row;
+                            }
+                        ?>
+                        <table id="work_order_table" class="table table-hover mb-0 text-md-nowrap align-middle">
+                            <thead>
+                                <tr>
+                                    <th>Order #</th>
+                                    <th>Products</th>
+                                    <th>Cashier</th>
+                                    <th>Customer</th>
+                                    <th>Job Name</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
                                 </tr>
-                                <?php endforeach; ?>
-                                </tbody>
-                            </table>
-                            <?php } else { ?>
-                                <h4 class="text-center">No Requests found</h4>
-                            <?php } ?>
+                            </thead>
+                            <tbody>
+                            <?php
+                            $images_directory = "../images/drawing/";
+                            $default_image = "../images/product/product.jpg";
 
+                            foreach ($grouped as $batch_id => $items):
+                                $first = $items[0];
 
+                                $order_ids = array_unique(array_column($items, 'work_order_id'));
+                                $order_nos = 'SO-' . implode(', SO-', $order_ids);
 
+                                $has_done = false;
+                                $all_done = true;
+
+                                foreach ($items as $it) {
+                                    if ((int)$it['status'] == 3) {
+                                        $has_done = true;
+                                    }
+                                    if ((int)$it['status'] < 3) {
+                                        $all_done = false;
+                                    }
+                                }
+
+                                if (!$has_done) {
+                                    continue;
+                                }
+
+                                if ($all_done) {
+                                    $statusText = 'Done';
+                                    $statusClass = 'badge bg-success';
+                                } else {
+                                    $statusText = 'Processing';
+                                    $statusClass = 'badge bg-warning text-dark';
+                                }
+
+                                $cashier = get_name($first['user_id']);
+                                $order_details = getOrderDetails($first['work_order_id']);
+                                $customer_name = get_customer_name($order_details['customerid']);
+                                $job_name = $order_details['job_name'];
+                            ?>
+                            <tr data-batch-id="<?= $batch_id ?>">
+                                <td><?= htmlspecialchars($order_nos) ?></td>
+
+                                <td class="text-wrap w-20">
+                                    <?php foreach ($items as $row): 
+                                        $product_id = $row['productid'];
+                                        $product_name = getProductName($product_id);
+                                        $picture_path = !empty($row['custom_img_src']) ? $images_directory . $row["custom_img_src"] : $default_image;
+                                    ?>
+                                    <div class="d-flex align-items-center mb-1">
+                                        <img src="<?= $picture_path ?>" class="rounded-circle img-thumbnail me-2" width="40" height="40">
+                                        <div><?= htmlspecialchars($product_name) ?></div>
+                                    </div>
+                                    <?php endforeach; ?>
+                                </td>
+
+                                <td><?= htmlspecialchars($cashier) ?></td>
+                                <td><?= htmlspecialchars($customer_name) ?></td>
+                                <td><?= htmlspecialchars($job_name) ?></td>
+
+                                <td class="text-center"><span class="<?= $statusClass ?>"><?= $statusText ?></span></td>
+
+                                <td class="text-center">
+                                    <div class="action-btn">
+                                        <a href="javascript:void(0)" class="text-decoration-none" id="viewBtn" title="View" data-id="<?= $batch_id ?>">
+                                            <i class="fa fa-eye"></i>
+                                        </a>
+                                        <?php if ($all_done): 
+                                            $work_orders_str = implode(',', $order_ids);
+
+                                            $coil_ids = [];
+                                            foreach ($items as $it) {
+                                                if (!empty($it['assigned_coils'])) {
+                                                    $decoded = json_decode($it['assigned_coils'], true);
+                                                    if (is_array($decoded)) {
+                                                        $coil_ids = array_merge($coil_ids, $decoded);
+                                                    }
+                                                }
+                                            }
+                                            $coil_ids = array_unique($coil_ids);
+                                            $coil_ids_str = implode(',', $coil_ids);
+                                        ?>
+                                            <a href="javascript:void(0)" class="text-decoration-none ms-2 addWasteBtn" 
+                                                data-batch-id="<?= $batch_id ?>" 
+                                                data-work-orders="<?= $work_orders_str ?>"
+                                                data-coil-ids="<?= $coil_ids_str ?>"
+                                                title="Add Waste">
+                                                <i class="fa fa-recycle text-info"></i>
+                                            </a>
+                                        <?php endif; ?>
+                                    </div>
+                                </td>
+                            </tr>
+                            <?php endforeach; ?>
+                            </tbody>
+                        </table>
+                        <?php } else { ?>
+                            <h4 class="text-center">No Requests found</h4>
+                        <?php } ?>
                         </div>
                     </div>
                 </div>
@@ -344,6 +381,37 @@ $permission = $_SESSION['permission'];
             <div class="modal-body">
                 <div id="coil_details"></div>
             </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="addWasteModal" tabindex="-1" aria-labelledby="addWasteModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-md modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header text-white">
+                <h5 class="modal-title" id="addWasteModalLabel">Add Waste</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="addWasteForm">
+                <div class="modal-body">
+                    <input type="hidden" name="batch_id" id="wasteBatchId">
+                    <input type="hidden" name="work_order_ids" id="wasteWorkOrders">
+                    <input type="hidden" name="coil_ids" id="wasteCoilIds">
+
+                    <div class="mb-3">
+                        <label for="wasteLength" class="form-label">Length</label>
+                        <input type="number" step="0.01" class="form-control" name="length" id="wasteLength" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="wasteNotes" class="form-label">Notes</label>
+                        <textarea class="form-control" name="notes" id="wasteNotes" rows="3"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Close</button>
+                    <button type="submit" class="btn btn-success" id="saveWasteBtn">Save</button>
+                </div>
+            </form>
         </div>
     </div>
 </div>
@@ -460,15 +528,56 @@ $permission = $_SESSION['permission'];
             });
         });
 
-        
+        $(document).on('click', '.addWasteBtn', function() {
+            const batchId = $(this).data('batch-id');
+            const workOrders = $(this).data('work-orders');
+            const coilIds = $(this).data('coil-ids');
+
+            $('#wasteBatchId').val(batchId);
+            $('#wasteWorkOrders').val(workOrders);
+            $('#wasteCoilIds').val(coilIds);
+            $('#wasteLength').val('');
+            $('#wasteNotes').val('');
+
+            const wasteModal = new bootstrap.Modal(document.getElementById('addWasteModal'));
+            wasteModal.show();
+        });
+
+        $(document).on('submit', '#addWasteForm', function(e) {
+            e.preventDefault();
+
+            const form = this;
+            const formData = new FormData(form);
+
+            formData.append('add_waste', true);
+
+            $.ajax({
+                url: 'pages/work_order_finish_ajax.php',
+                method: 'POST',
+                data: formData,
+                processData: false,
+                contentType: false,
+                success: function(res) {
+                    if (res.trim() === 'success') {
+                        alert('Waste successfully added.');
+                        location.reload();
+                    } else {
+                        alert('Failed to add waste.');
+                        console.log(res);
+                    }
+                },
+                error: function(xhr) {
+                    alert('Error: ' + xhr.statusText);
+                    console.error(xhr.responseText);
+                }
+            });
+        });
 
         $(document).on('click', '.preview-image', function () {
             var imgSrc = $(this).attr('src');
             $('#modalImage').attr('src', imgSrc);
             $('#imageModal').modal('show');
         });
-
-        
 
         function filterTable() {
             var textSearch = $('#text-srh').val().toLowerCase();

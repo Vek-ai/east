@@ -201,7 +201,7 @@ if(isset($_POST['fetch_view'])){
                         product AS p ON 
                             p.product_id = wo.productid
                     WHERE 
-                        wo.work_order_id = '$id' AND wo.status = 3
+                        wo.batch_id = '$id'
                 ";
 
                 $result = mysqli_query($conn, $query);
@@ -286,7 +286,9 @@ if(isset($_POST['fetch_view'])){
 
                             >
                                 <td class="text-center align-middle">
-                                    <input type="checkbox" class="row-check" value="<?= $row['id'] ?>">
+                                    <?php if ((int)$row['status'] === 3): ?>
+                                        <input type="checkbox" class="row-check" value="<?= $row['id'] ?>">
+                                    <?php endif; ?>
                                 </td>
                                 <td class="align-middle">
                                     <?= $order_no ?>
@@ -381,12 +383,20 @@ if(isset($_POST['fetch_view'])){
                                     }
                                     ?>
                                 </td>
-                                <td>
-                                    <div class="action-btn text-center">
-                                        <a href="javascript:void(0)" class="text-decoration-none" id="viewAvailableBtn" title="Release Work Order" data-app-prod-id="<?= $row['id'] ?>">
-                                            <i class="fa fa-arrow-right-to-bracket"></i>
-                                        </a>
-                                    </div>
+                                <td class="text-center">
+                                    <?php if ((int)$row['status'] === 3): ?>
+                                        <div class="action-btn text-center">
+                                            <a href="javascript:void(0)" 
+                                            class="text-decoration-none" 
+                                            id="viewAvailableBtn" 
+                                            title="Release Work Order" 
+                                            data-app-prod-id="<?= $row['id'] ?>">
+                                                <i class="fa fa-arrow-right-to-bracket"></i>
+                                            </a>
+                                        </div>
+                                    <?php else: ?>
+                                        <div class="text-muted small">Processing</div>
+                                    <?php endif; ?>
                                 </td>
                             </tr>
                             <?php
@@ -553,6 +563,49 @@ if (isset($_POST['release_work_order'])) {
 
     exit;
 }
+
+if (isset($_POST['add_waste'])) {
+
+    $batch_id = intval($_POST['batch_id']);
+    $work_order_ids = mysqli_real_escape_string($conn, $_POST['work_order_ids']);
+    
+    $coil_ids_input = $_POST['coil_ids'] ?? '';
+    $coil_array = array_map('intval', explode(',', $coil_ids_input));
+    $coil_ids_json = json_encode($coil_array);
+
+    $length = floatval($_POST['length']);
+    $notes = isset($_POST['notes']) ? mysqli_real_escape_string($conn, $_POST['notes']) : '';
+    $created_by = $_SESSION['userid'] ?? 0;
+
+    if ($batch_id <= 0 || $length <= 0) {
+        echo 'Invalid input';
+        exit;
+    }
+
+    $sql = "INSERT INTO coil_waste (batch_id, work_order_ids, coil_ids, length, notes, created_by) 
+            VALUES ($batch_id, '$work_order_ids', '$coil_ids_json', $length, '$notes', $created_by)";
+
+    $exec = mysqli_query($conn, $sql);
+
+    if ($exec) {
+        $date_now = date('Y-m-d H:i:s');
+
+        foreach ($coil_array as $coilid) {
+            $coilid = intval($coilid);
+
+            $sql_tx = "INSERT INTO coil_transaction 
+                        (coilid, date, remaining_length, length_before_use, used_in_workorders, is_waste) 
+                       VALUES 
+                        ($coilid, '$date_now', 0, 0, '$work_order_ids', 1)";
+            mysqli_query($conn, $sql_tx);
+        }
+
+        echo 'success';
+    } else {
+        echo 'Failed to save waste: ' . mysqli_error($conn);
+    }
+}
+
 
 
 
