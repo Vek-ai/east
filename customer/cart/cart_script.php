@@ -3159,7 +3159,7 @@ $(document).ready(function() {
                 success: function(response) {
                     console.log(response);
                     if (response.success) {
-                        alert("Order successfully saved.");
+                        alert("Order submitted for approval");
 
                         orderIdSaved = response.order_id;
                         customerIdSaved = response.customer_id;

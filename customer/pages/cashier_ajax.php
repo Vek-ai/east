@@ -974,88 +974,66 @@ if (isset($_POST['save_order'])) {
     $customerid = intval($_SESSION['customer_id']);
     $cashierid = intval($_SESSION['userid']);
 
-    if (!isset($_SESSION['customer_id'])) {
-        $response['error'] = "Customer ID or cart is not set.";
-        echo json_encode($response);
+    if (!$customerid) {
+        echo json_encode(['error' => 'Customer not set']);
         exit;
     }
 
     $cart = getCartDataByCustomerId($customerid);
-
-    $applyStoreCredit = floatval($_POST['applyStoreCredit']);
-    $applyJobDeposit = floatval($_POST['applyJobDeposit']);
+    if (empty($cart)) {
+        echo json_encode(['error' => 'Cart is empty']);
+        exit;
+    }
 
     $order_date = date('Y-m-d H:i:s');
     $discount_default = floatval(getCustomerDiscount($customerid)) / 100;
 
     $customer_details = getCustomerDetails($customerid);
-
-    if (!empty($customer_tax)) {
-        $tax_rate = floatval(getCustomerTaxById($customer_tax)) / 100;
-        $tax_status = $customer_tax;
-    } else {
-        $tax_rate = floatval(getCustomerTaxById($customer_details['tax_status'])) / 100;
-        $tax_status = $customer_details['tax_status'];
-    }
+    $tax_rate = !empty($customer_tax)
+        ? floatval(getCustomerTaxById($customer_tax)) / 100
+        : floatval(getCustomerTaxById($customer_details['tax_status'])) / 100;
+    $tax_status = !empty($customer_tax) ? $customer_tax : $customer_details['tax_status'];
 
     $total_price = 0;
     $total_discounted_price = 0;
     $approval_products = [];
 
     foreach ($cart as $item) {
-        $discount = isset($item['used_discount']) ? floatval($item['used_discount']) / 100 : $discount_default;
-        $product_id = intval($item['product_id']);
-        $product_details = getProductDetails($product_id);
+        $calc = calculateCartItem($item);
 
-        $customer_pricing = getPricingCategory($product_details['product_category'], $customer_details['customer_pricing']) / 100;
-        $quantity_cart = intval($item['quantity_cart']);
-        $unit_price = floatval($item['unit_price']);
-        $estimate_length = floatval($item['estimate_length']);
-        $estimate_length_inch = floatval($item['estimate_length_inch']);
-        $amount_discount = !empty($item["amount_discount"]) ? floatval($item["amount_discount"]) : 0;
-
-        $total_length = ($estimate_length + ($estimate_length_inch / 12));
-        $actual_price = $unit_price * $quantity_cart * $total_length;
-
-        $price_after_discount = ($actual_price * (1 - $discount) * (1 - $customer_pricing)) - $amount_discount;
-        $price_after_discount = max(0, $price_after_discount);
-
-        $discounted_price = $price_after_discount * (1 + $tax_rate);
-
-        $total_price += $actual_price;
-        $total_discounted_price += $discounted_price;
+        $total_price += floatval($calc['product_price'] ?? 0);
+        $total_discounted_price += floatval($calc['customer_price'] ?? 0);
 
         $approval_products[] = [
-            'productid' => $product_id,
-            'product_item' => $item['product_item'],
-            'quantity' => $quantity_cart,
-            'custom_color' => $item['custom_color'] ?? null,
-            'custom_grade' => $item['custom_grade'] ?? null,
-            'custom_gauge' => $item['custom_gauge'] ?? 0,
-            'custom_profile' => $item['custom_profile'] ?? 0,
-            'custom_width' => $item['custom_width'],
-            'custom_height' => $item['custom_height'] ?? null,
-            'custom_bend' => $item['custom_bend'] ?? null,
-            'custom_hem' => $item['custom_hem'] ?? null,
-            'custom_length' => $item['custom_length'] ?? null,
-            'custom_length2' => $item['custom_length2'] ?? null,
-            'actual_price' => $actual_price,
-            'discounted_price' => $price_after_discount,
-            'product_category' => $product_details['product_category'],
-            'usageid' => $item['usageid'] ?? 0,
-            'current_customer_discount' => $item['current_customer_discount'] ?? 0,
-            'current_loyalty_discount' => $item['current_loyalty_discount'] ?? 0,
-            'used_discount' => $item['used_discount'] ?? 0,
-            'stiff_stand_seam' => $item['stiff_stand_seam'],
-            'stiff_board_batten' => $item['stiff_board_batten'],
-            'panel_type' => $item['panel_type'],
-            'panel_style' => $item['panel_style'] ?? null,
-            'custom_img_src' => $item['custom_img_src'] ?? null,
-            'bundle_id' => $item['bundle_id'] ?? null,
-            'note' => $item['note'] ?? null,
-            'product_id_abbrev' => $item['product_id_abbrev'] ?? null,
-            'upc' => $item['upc'] ?? null,
-            'assigned_coils' => $item['assigned_coils'] ?? null
+            'productid' => $calc['data_id'] ?? $item['product_id'],
+            'product_item' => $item['product_item'] ?? '',
+            'quantity' => $calc['quantity'],
+            'custom_color' => $calc['color_id'] ?? null,
+            'custom_grade' => $calc['grade'] ?? null,
+            'custom_gauge' => $calc['gauge'] ?? 0,
+            'custom_profile' => !empty($calc['profile']) ? $calc['profile'] : ($item['profile'] ?? 0),
+            'custom_width' => $item['estimate_width'] ?? ($calc['product']['width'] ?? null),
+            'custom_bend' => $item['estimate_bend'] ?? '',
+            'custom_hem' => $item['estimate_hem'] ?? '',
+            'custom_length' => $calc['total_length'] ?? null,
+            'custom_length2' => $item['estimate_length_inch'] ?? null,
+            'actual_price' => $calc['product_price'] ?? 0,
+            'discounted_price' => $calc['customer_price'] ?? 0,
+            'product_category' => $calc['category_id'] ?? ($item['product_category'] ?? ''),
+            'usageid' => $calc['usageid'] ?? 0,
+            'current_customer_discount' => intval(getCustomerDiscountProfile($customerid)),
+            'current_loyalty_discount' => intval(getCustomerDiscountLoyalty($customerid)),
+            'used_discount' => $item['used_discount'] ?? getCustomerDiscount($customerid),
+            'stiff_stand_seam' => $item['stiff_stand_seam'] ?? '0',
+            'stiff_board_batten' => $item['stiff_board_batten'] ?? '0',
+            'panel_type' => $item['panel_type'] ?? '',
+            'panel_style' => $item['panel_style'] ?? '',
+            'custom_img_src' => $item['custom_trim_src'] ?? '',
+            'bundle_id' => $item['bundle_name'] ?? '',
+            'note' => $item['note'] ?? '',
+            'product_id_abbrev' => $calc['unique_prod_id'] ?? '',
+            'upc' => $calc['upc'] ?? '',
+            'assigned_coils' => $calc['assigned_coils'] ?? ''
         ];
     }
 
@@ -1069,40 +1047,14 @@ if (isset($_POST['save_order'])) {
             pay_type, tax_status, tax_exempt_number, truck, contractor_id,
             station, order_from, shipping_company, tracking_number, pickup_name
         ) VALUES (
-            1,
-            '{$cashierid}',
-            '{$total_price}',
-            '{$total_discounted_price}',
-            '{$discount_default}',
-            '{$cash_amt}',
-            '{$credit_amt}',
-            '{$amount_discount}',
-            NOW(),
-            '{$order_date}',
-            " . (!empty($scheduled_date) ? "'{$scheduled_date}'" : "NULL") . ",
-            3,
-            '{$customerid}',
-            '{$customerid}',
-            '{$job_name}',
-            '{$job_po}',
-            '{$deliver_address}',
-            '{$deliver_city}',
-            '{$deliver_state}',
-            '{$deliver_zip}',
-            '{$delivery_amt}',
-            '{$deliver_method}',
-            '{$deliver_fname}',
-            '{$deliver_lname}',
-            '{$pay_type}',
-            '{$tax_status}',
-            '{$tax_exempt_number}',
-            '{$truck}',
-            '{$contractor_id}',
-            '{$station_id}',
-            2, -- order_from = customer
-            '{$shipping_company}',
-            '{$tracking_number}',
-            '{$pickup_name}'
+            1, '$cashierid', '$total_price', '$total_discounted_price', '$discount_default',
+            '$cash_amt', '$credit_amt', 0, NOW(), '$order_date',
+            " . (!empty($scheduled_date) ? "'$scheduled_date'" : "NULL") . ",
+            3, '$customerid', '$customerid', '$job_name', '$job_po',
+            '$deliver_address', '$deliver_city', '$deliver_state', '$deliver_zip',
+            '$delivery_amt', '$deliver_method', '$deliver_fname', '$deliver_lname',
+            '$pay_type', '$tax_status', '$tax_exempt_number', '$truck', '$contractor_id',
+            '$station_id', 2, '$shipping_company', '$tracking_number', '$pickup_name'
         )
     ";
 
@@ -1117,68 +1069,56 @@ if (isset($_POST['save_order'])) {
             INSERT INTO approval_product (
                 approval_id, productid, product_item, status, quantity, paid_status,
                 custom_color, custom_grade, custom_gauge, custom_profile, custom_width,
-                custom_height, custom_bend, custom_hem, custom_length, custom_length2,
+                custom_bend, custom_hem, custom_length, custom_length2,
                 actual_price, discounted_price, product_category, usageid,
                 current_customer_discount, current_loyalty_discount, used_discount,
                 stiff_stand_seam, stiff_board_batten, panel_type, panel_style,
                 custom_img_src, bundle_id, note, product_id_abbrev, upc, assigned_coils
             ) VALUES (
-                '$approval_id',
-                '{$p['productid']}',
-                '" . mysqli_real_escape_string($conn, $p['product_item']) . "',
-                0,
-                '{$p['quantity']}',
-                0,
-                " . ($p['custom_color'] !== null ? "'" . mysqli_real_escape_string($conn, $p['custom_color']) . "'" : "NULL") . ",
-                " . ($p['custom_grade'] !== null ? "'" . mysqli_real_escape_string($conn, $p['custom_grade']) . "'" : "NULL") . ",
-                " . ($p['custom_gauge'] ?? 0) . ",
-                " . ($p['custom_profile'] ?? 0) . ",
+                '$approval_id', '{$p['productid']}', '" . mysqli_real_escape_string($conn, $p['product_item']) . "',
+                0, '{$p['quantity']}', 0,
+                " . (!empty($p['custom_color']) ? "'" . mysqli_real_escape_string($conn, $p['custom_color']) . "'" : "NULL") . ",
+                " . (!empty($p['custom_grade']) ? "'" . mysqli_real_escape_string($conn, $p['custom_grade']) . "'" : "NULL") . ",
+                '{$p['custom_gauge']}', '{$p['custom_profile']}',
                 '" . mysqli_real_escape_string($conn, $p['custom_width']) . "',
-                " . (!empty($p['custom_height']) ? "'" . mysqli_real_escape_string($conn, $p['custom_height']) . "'" : "NULL") . ",
-                " . (!empty($p['custom_bend']) ? "'" . mysqli_real_escape_string($conn, $p['custom_bend']) . "'" : "NULL") . ",
-                " . (!empty($p['custom_hem']) ? "'" . mysqli_real_escape_string($conn, $p['custom_hem']) . "'" : "NULL") . ",
-                " . (!empty($p['custom_length']) ? "'" . mysqli_real_escape_string($conn, $p['custom_length']) . "'" : "NULL") . ",
-                " . (!empty($p['custom_length2']) ? "'" . mysqli_real_escape_string($conn, $p['custom_length2']) . "'" : "NULL") . ",
-                '{$p['actual_price']}',
-                '{$p['discounted_price']}',
-                '{$p['product_category']}',
-                '{$p['usageid']}',
-                '{$p['current_customer_discount']}',
-                '{$p['current_loyalty_discount']}',
-                '{$p['used_discount']}',
-                '{$p['stiff_stand_seam']}',
-                '{$p['stiff_board_batten']}',
-                " . (!empty($p['panel_type']) ? "'" . mysqli_real_escape_string($conn, $p['panel_type']) . "'" : "NULL") . ",
-                " . (!empty($p['panel_style']) ? "'" . mysqli_real_escape_string($conn, $p['panel_style']) . "'" : "NULL") . ",
-                " . (!empty($p['custom_img_src']) ? "'" . mysqli_real_escape_string($conn, $p['custom_img_src']) . "'" : "NULL") . ",
-                " . (!empty($p['bundle_id']) ? "'" . mysqli_real_escape_string($conn, $p['bundle_id']) . "'" : "NULL") . ",
-                " . (!empty($p['note']) ? "'" . mysqli_real_escape_string($conn, $p['note']) . "'" : "NULL") . ",
-                " . (!empty($p['product_id_abbrev']) ? "'" . mysqli_real_escape_string($conn, $p['product_id_abbrev']) . "'" : "NULL") . ",
-                " . (!empty($p['upc']) ? "'" . mysqli_real_escape_string($conn, $p['upc']) . "'" : "NULL") . ",
-                " . (!empty($p['assigned_coils']) ? "'" . mysqli_real_escape_string($conn, $p['assigned_coils']) . "'" : "NULL") . "
+                '" . mysqli_real_escape_string($conn, $p['custom_bend']) . "',
+                '" . mysqli_real_escape_string($conn, $p['custom_hem']) . "',
+                '" . mysqli_real_escape_string($conn, $p['custom_length']) . "',
+                '" . mysqli_real_escape_string($conn, $p['custom_length2']) . "',
+                '{$p['actual_price']}', '{$p['discounted_price']}',
+                '{$p['product_category']}', '{$p['usageid']}',
+                '{$p['current_customer_discount']}', '{$p['current_loyalty_discount']}',
+                '{$p['used_discount']}', '{$p['stiff_stand_seam']}', '{$p['stiff_board_batten']}',
+                '" . mysqli_real_escape_string($conn, $p['panel_type']) . "',
+                '" . mysqli_real_escape_string($conn, $p['panel_style']) . "',
+                '" . mysqli_real_escape_string($conn, $p['custom_img_src']) . "',
+                '" . mysqli_real_escape_string($conn, $p['bundle_id']) . "',
+                '" . mysqli_real_escape_string($conn, $p['note']) . "',
+                '" . mysqli_real_escape_string($conn, $p['product_id_abbrev']) . "',
+                '" . mysqli_real_escape_string($conn, $p['upc']) . "',
+                '" . mysqli_real_escape_string($conn, $p['assigned_coils']) . "'
             )
         ";
         mysqli_query($conn, $sql);
     }
 
+    mysqli_query($conn, "DELETE FROM customer_cart WHERE customer_id = '$customerid'");
+
     $actorId = $customerid;
     $actor_name = get_customer_name($actorId);
-    $actionType = 'request_approval';
     $targetId = $approval_id;
-    $targetType = "Request Approval(Customer)";
-    $message = "Approval #$targetId requested by $actor_name";
-    $url = '?page=approval_list';
-    $recipientIds = getAdminIDs();
-    createNotification($actorId, $actionType, $targetId, $targetType, $message, 'admin', $url);
+    createNotification(
+        $actorId, 'request_approval', $targetId,
+        "Request Approval(Customer)",
+        "Approval #$targetId requested by $actor_name",
+        'admin', '?page=approval_list'
+    );
 
-    echo json_encode([
-        'success' => true,
-        'message' => 'Order submitted for approval'
-    ]);
-
+    echo json_encode(['success' => true, 'message' => 'Order submitted for approval']);
     $conn->close();
     exit;
 }
+
 
 if (isset($_POST['save_approval'])) {
     header('Content-Type: application/json');

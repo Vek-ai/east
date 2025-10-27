@@ -1410,7 +1410,6 @@ if (isset($_POST['save_order'])) {
             }
         }
 
-
         if (!empty($pre_orders)) {
             $list_items = '<ul style="list-style-type: none; padding-left: 0;">';
             foreach ($pre_orders as $key => $value) {
