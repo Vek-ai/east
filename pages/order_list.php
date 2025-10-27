@@ -483,10 +483,6 @@ function showCol($name) {
                                             <th style="color: #ffffff !important;">Salesperson</th>
                                         <?php endif; ?>
 
-                                        <?php if (showCol('salesperson')): ?>
-                                            <th style="color: #ffffff !important;">Station</th>
-                                        <?php endif; ?>
-
                                         <?php if (showCol('action')): ?>
                                             <th style="color: #ffffff !important;">Action</th>
                                         <?php endif; ?>
@@ -586,12 +582,6 @@ function showCol($name) {
                                             <?php if (showCol('salesperson')): ?>
                                                 <td style="color: #ffffff !important;">
                                                     <?= ucwords(get_staff_name($row["cashier"])) ?>
-                                                </td>
-                                            <?php endif; ?>
-
-                                            <?php if (showCol('salesperson')): ?>
-                                                <td style="color: #ffffff !important;">
-                                                    <?= getStationName($row["station"]) ?>
                                                 </td>
                                             <?php endif; ?>
 

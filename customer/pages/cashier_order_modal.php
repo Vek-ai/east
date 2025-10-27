@@ -150,10 +150,9 @@ if(isset($_POST['fetch_order'])){
             ]);
 
             $store_credit = number_format(floatval($customer_details['store_credit'] ?? 0),2);
-
             $customer_name = get_customer_name($_SESSION["customer_id"]);
         ?>
-        <div class="form-group row align-items-center" style="color: #ffffff !important;">
+        <div class="form-group row align-items-center">
             <div class="d-flex flex-column gap-2">
                 <div>
                     <label>Customer Name: <?= $customer_name ?></label>
@@ -175,21 +174,7 @@ if(isset($_POST['fetch_order'])){
             </div>
         </div>
 
-        <?php } else {?>
-        
-        <div class="form-group row align-items-center">
-            <div class="col-3">
-                <label>Customer Name</label>
-                <div class="input-group">
-                    <input class="form-control" placeholder="Search Customer" type="text" id="customer_select_cash">
-                    <a class="input-group-text rounded-right m-0 p-0 toggle_add_customer" href="javascript:void(0)" target="_blank">
-                        <span class="input-group-text"> + </span>
-                    </a>
-                </div>
-            </div>
-        </div>
-        
-    <?php } ?>
+        <?php } ?>
     </div>
     <input type='hidden' id='customer_id_cash' name="customer_id"/>
 
@@ -204,82 +189,34 @@ if(isset($_POST['fetch_order'])){
     $cart = getCartDataByCustomerId($customer_id);
     if ($cart) {
         foreach ($cart as $keys => $values) {
-            $data_id = $values["product_id"];
-            $product = getProductDetails($data_id);
-            $totalstockquantity = getProductStockTotal($data_id);
-            $category_id = $product["product_category"];
-            if ($totalstockquantity > 0) {
-                $stock_text = '
-                    <a href="javascript:void(0);" id="view_in_stock" data-id="' . htmlspecialchars($data_id, ENT_QUOTES, 'UTF-8') . '" class="d-flex align-items-center">
-                        <span class="text-bg-success p-1 rounded-circle"></span>
-                        <span class="ms-2">In Stock</span>
-                    </a>';
-            } else {
-                $stock_text = '
-                    <a href="javascript:void(0);" id="view_out_of_stock" data-id="' . htmlspecialchars($data_id, ENT_QUOTES, 'UTF-8') . '" class="d-flex align-items-center">
-                        <span class="text-bg-danger p-1 rounded-circle"></span>
-                        <span class="ms-2 fs-3">Out of Stock</span>
-                    </a>';
-            } 
+            $calc = calculateCartItem($values);
 
-            $default_image = '../images/product/product.jpg';
+            $stock_text = $calc["stock_text"];
+            $picture_path = $calc["picture_path"];
+            $product = $calc["product"];
+            $category_id = $calc["category_id"];
+            $quantity = $calc["quantity"];
+            $unit_price = $calc["unit_price"];
+            $subtotal = $calc["subtotal"];
+            $customer_price = $calc["customer_price"];
+            $total_length = $calc["total_length"];
+            $customer_pricing_rate = $calc["customer_pricing_rate"];
+            $discount = $calc["discount"];
+            $product_price = $calc["product_price"];
+            $savings = $calc["savings"];
+            $stock_qty = $calc["stock_qty"];
 
-            $picture_path = !empty($product['main_image'])
-            ? "../" .$product['main_image']
-            : $default_image;
-
-            $images_directory = "../images/drawing/";
-
-            $customer_pricing = getPricingCategory($category_id, $customer_details_pricing) / 100;
-
-            $estimate_length = isset($values["estimate_length"]) && is_numeric($values["estimate_length"]) ? floatval($values["estimate_length"]) : 1;
-            $estimate_length_inch = isset($values["estimate_length_inch"]) && is_numeric($values["estimate_length_inch"]) ? floatval($values["estimate_length_inch"]) : 0;
-
-            $total_length = $estimate_length + ($estimate_length_inch / 12);
-            if($total_length == 0){
-                $total_length = 1;
-            }
-
-            $amount_discount = isset($values["amount_discount"]) && is_numeric($values["amount_discount"]) ? floatval($values["amount_discount"]) : 0;
-
-            $quantity = isset($values["quantity_cart"]) && is_numeric($values["quantity_cart"]) ? floatval($values["quantity_cart"]) : 0;
-            $unit_price = isset($values["unit_price"]) && is_numeric($values["unit_price"]) ? floatval($values["unit_price"]) : 0;
-
-            $product_price = ($quantity * $unit_price * $total_length) - $amount_discount;
-
-            if (!empty($values["is_custom"]) && $values["is_custom"] == 1) {
-                $custom_multiplier = floatval(getCustomMultiplier($category_id));
-                $product_price += $product_price * $custom_multiplier;
-            }
-
-            $color_id = $values["custom_color"];
-            $color_details = getColorDetails($color_id);
-            if (isset($values["used_discount"])){
-                $discount = isset($values["used_discount"]) ? floatval($values["used_discount"]) / 100 : 0;
-            }
-
-            $color_id      = $values["custom_color"];
-            $grade         = intval($product["custom_grade"]);
-            $gauge         = intval($product["custom_gauge"]);
-            $profile       = intval($values["custom_profile"]);
-
-            $multiplier = getMultiplierValue($color_id, $grade, $gauge);
-            $product_price *= $multiplier;
-
-            $sold_by_feet = $product['sold_by_feet'];
-
-            $subtotal = $product_price;
-            $customer_price = $product_price * (1 - $discount) * (1 - $customer_pricing);
-            $customer_savings += $product_price - $customer_price;
-            $totalquantity += $values["quantity_cart"];
+            $customer_savings += $savings;
+            $totalquantity += $quantity;
             $total += $subtotal;
             $total_customer_price += $customer_price;
             $total_tax = number_format((floatval($total_customer_price)) * $tax, 2);
+            $total_weight += $product["weight"] * $quantity;
 
-            $total_weight += $product["weight"] * $values["quantity_cart"];
             $no++;
         }
     }
+
     $_SESSION["total_quantity"] = $totalquantity;
     $_SESSION["grandtotal"] = $total;
     $total_customer_price = floatval(str_replace(',', '', $total_customer_price));
@@ -296,11 +233,11 @@ if(isset($_POST['fetch_order'])){
 
             <div class="row text-start">
                 <!-- Left Side -->
-                <div class="col-lg-8" style="color: #ffffff !important;">
+                <div class="col-lg-8">
                 
 
                 <!-- Contact Information -->
-                <div class="card mb-3" style="color: #ffffff !important;">
+                <div class="card mb-3">
                     <div class="card-header bg-white d-flex justify-content-between align-items-center">
                         <span><i class="fa fa-check-circle text-success me-2"></i>Contact Information</span>
                         <?php 
@@ -370,7 +307,7 @@ if(isset($_POST['fetch_order'])){
                             <div class="col-md-3">
                                 <label for="customer_tax" class="form-label">Tax Status</label>
                                 <div class="mb-2">
-                                    <select class="form-control py-0 ps-5 select2" id="customer_tax">
+                                    <select class="form-control py-0 ps-5" id="customer_tax">
                                         <option value="">All Tax Status</option>
                                         <?php
                                             $query_tax_status = "SELECT * FROM customer_tax WHERE status = 1 ORDER BY tax_status_desc ASC";
@@ -398,7 +335,7 @@ if(isset($_POST['fetch_order'])){
                 </div>
 
                 <!-- Job Details -->
-                <div class="card mb-3" style="color: #ffffff !important;">
+                <div class="card mb-3">
                     <div class="card-header bg-white d-flex justify-content-between align-items-center">
                         <span><i class="fa fa-check-circle text-success me-2"></i>Job Details</span>
                     </div>
@@ -489,7 +426,7 @@ if(isset($_POST['fetch_order'])){
                 </div>
 
                 <!-- Pickup Details -->
-                <div class="card mb-3" style="color: #ffffff !important;">
+                <div class="card mb-3">
                     <div class="card-header bg-white">
                     <i class="fa fa-check-circle text-success me-2"></i>Pickup Details
                     </div>
@@ -499,16 +436,40 @@ if(isset($_POST['fetch_order'])){
                             <p class="mb-1"><?= getCustomerAddress($_SESSION["customer_id"]) ?></p>
                         </div>
                         <div class="mb-3">
-                            <label class="form-label">How would you like to pick up your order?</label>
+                            <div class="row align-items-start">
+                                <div class="col-6">
+                                    <label class="form-label fw-bold">How would you like to pick up your order?</label>
 
-                            <div class="form-check">
-                                <input class="form-check-input" type="radio" name="order_delivery_method" id="pickup_option" value="pickup" checked>
-                                <label class="form-check-label" for="pickup_option">Pickup</label>
-                            </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="order_delivery_method" id="pickup_option" value="pickup" checked>
+                                        <label class="form-check-label" for="pickup_option">Pickup</label>
+                                    </div>
 
-                            <div class="form-check">
-                                <input class="form-check-input" type="radio" name="order_delivery_method" id="deliver_option" value="deliver">
-                                <label class="form-check-label" for="delivery_option">Delivery</label>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="order_delivery_method" id="deliver_option" value="deliver">
+                                        <label class="form-check-label" for="deliver_option">Delivery</label>
+                                    </div>
+                                </div>
+
+                                <div class="col-6">
+                                    <label class="form-label fw-bold">Scheduled Pickup/Delivery</label>
+
+                                    <div class="row">
+                                        <div class="col-6">
+                                            <div class="mb-2">
+                                                <label for="scheduled-date" class="form-label">Date:</label>
+                                                <input type="text" id="scheduled-date" class="form-control" placeholder="YYYY-MM-DD">
+                                            </div>
+                                        </div>
+
+                                        <div class="col-6">
+                                            <div>
+                                                <label for="scheduled-time" class="form-label">Time:</label>
+                                                <select id="scheduled-time" class="form-control" name="select_time"></select>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
 
                             <div id="truck_div" class="col-md-3 mb-3 d-none">
@@ -595,7 +556,7 @@ if(isset($_POST['fetch_order'])){
                 </div>
 
                 <!-- Payment -->
-                <div class="card mb-3" style="color: #ffffff !important;">
+                <div class="card mb-3">
                     <div class="card-header bg-white">
                     <i class="fa fa-check-circle text-success me-2"></i>Payment
                     </div>
@@ -605,26 +566,26 @@ if(isset($_POST['fetch_order'])){
                         <div id="paymentOptions">
                             <label class="form-label fw-bold">Select Payment Method</label><br>
 
-                            <div class="form-check form-check-inline <?= empty($customer_details['payment_pickup']) ? 'd-none' : '' ?>">
-                                <input class="form-check-input" type="radio" name="payMethod" id="payPickup" value="pickup">
-                                <label class="form-check-label" for="payPickup">
-                                    <i class="fa-solid fa-store me-1"></i>Pay at Pick-Up
+                            <div class="form-check form-check-inline <?= empty($customer_details['payment_cash']) ? 'd-none' : '' ?>">
+                                <input class="form-check-input" type="radio" name="payMethod" id="payCash" value="cash">
+                                <label class="form-check-label" for="payCash">
+                                    <i class="fa-solid fa-money-bill-wave me-1"></i>Cash
                                 </label>
                             </div>
 
-                            <div class="form-check form-check-inline <?= empty($customer_details['payment_delivery']) ? 'd-none' : '' ?>">
-                                <input class="form-check-input" type="radio" name="payMethod" id="payDelivery" value="delivery">
-                                <label class="form-check-label" for="payDelivery">
-                                    <i class="fa-solid fa-truck me-1"></i>Pay at Delivery
+                            <div class="form-check form-check-inline <?= empty($customer_details['payment_check']) ? 'd-none' : '' ?>">
+                                <input class="form-check-input" type="radio" name="payMethod" id="payCheck" value="check">
+                                <label class="form-check-label" for="payCheck">
+                                    <i class="fa-solid fa-file-invoice-dollar me-1"></i>Check
                                 </label>
                             </div>
 
-                            <!-- <div class="form-check form-check-inline <?= empty($customer_details['payment_card']) ? 'd-none' : '' ?>">
+                            <div class="form-check form-check-inline <?= empty($customer_details['payment_card']) ? 'd-none' : '' ?>">
                                 <input class="form-check-input" type="radio" name="payMethod" id="payCard" value="card">
                                 <label class="form-check-label" for="payCard">
                                     <i class="fa-brands fa-cc-visa me-1"></i>Credit/Debit Card
                                 </label>
-                            </div> -->
+                            </div>
 
                             <div class="form-check form-check-inline <?= empty($customer_details['charge_net_30']) ? 'd-none' : '' ?>">
                                 <input class="form-check-input" type="radio" name="payMethod" id="payNet30" value="net30">
@@ -652,7 +613,7 @@ if(isset($_POST['fetch_order'])){
 
                 <!-- Right Side (Order Summary) -->
                 <div class="col-lg-4">
-                <div class="card" style="color: #ffffff !important;">
+                <div class="card">
                     <div class="card-header bg-white">
                     <strong>Order Summary</strong>
                     </div>
@@ -723,80 +684,63 @@ if(isset($_POST['fetch_order'])){
     </div>
 
     <script>
-        function init_select_cash(){
-            $("#customer_select_cash").autocomplete({
-                source: function(request, response) {
-                    $.ajax({
-                        url: "pages/cashier_ajax.php",
-                        type: 'post',
-                        dataType: "json",
-                        data: {
-                            search_customer: request.term
-                        },
-                        success: function(data) {
-                            response(data);
-                        },
-                        error: function(xhr, status, error) {
-                            console.log("Error: " + xhr.responseText);
-                        }
-                    });
-                },
-                select: function(event, ui) {
-                    $('#customer_select_cash').val(ui.item.label);
-                    $('#customer_id_cash').val(ui.item.value);
-                    return false;
-                },
-                focus: function(event, ui) {
-                    $('#customer_select_cash').val(ui.item.label);
-                    return false;
-                },
-                appendTo: "#cashmodal", 
-                open: function() {
-                    $(".ui-autocomplete").css("z-index", 1050);
+        function populateTimeSelect() {
+            const $timeSelect = $('#scheduled-time');
+            $timeSelect.empty();
+
+            const now = new Date();
+            const currentMinutes = now.getHours() * 60 + now.getMinutes();
+
+            let closestOption = null;
+            let smallestDiff = Infinity;
+
+            for (let h = 8; h <= 16; h++) {
+                const totalMinutes = h * 60;
+                const diff = Math.abs(totalMinutes - currentMinutes);
+
+                const hourStr = h.toString().padStart(2, '0');
+                const minStr = '00';
+                const ampm = h < 12 ? 'AM' : 'PM';
+                const displayHour = h % 12 === 0 ? 12 : h % 12;
+
+                const optionText = `${displayHour}:${minStr} ${ampm}`;
+                const optionValue = `${hourStr}:${minStr}`;
+
+                const $option = $('<option>', { value: optionValue, text: optionText });
+                $timeSelect.append($option);
+
+                if (diff < smallestDiff) {
+                    smallestDiff = diff;
+                    closestOption = optionValue;
+                }
+            }
+
+            $timeSelect.val(closestOption);
+        }
+
+        $(document).ready(function() {
+            const today = new Date();
+            const minSelectableDate = new Date(today);
+            minSelectableDate.setDate(today.getDate() + 2);
+
+            const year = today.getFullYear();
+
+            $('#scheduled-date').flatpickr({
+                dateFormat: 'Y-m-d',
+                minDate: minSelectableDate,
+                maxDate: `${year}-12-31`,
+                disable: [
+                    date => (date.getDay() === 0 || date.getDay() === 6)
+                ],
+                allowInput: true,
+                disableMobile: true,
+                clickOpens: true,
+                locale: {
+                    firstDayOfWeek: 0
                 }
             });
-        }
-        $(document).ready(function() {
-            init_select_cash();
 
-            $(document).on('change', '#customer_select_cash', function(event) {
-                var customer_id = $('#customer_id_cash').val();
-                $.ajax({
-                    url: 'pages/cashier_ajax.php',
-                    type: 'POST',
-                    data: {
-                        customer_id: customer_id,
-                        change_customer: "change_customer"
-                    },
-                    success: function(response) {
-                        if (response.trim() == 'success') {
-                            loadOrderContents();
-                        }
-                    },
-                    error: function(jqXHR, textStatus, errorThrown) {
-                        alert('Error: ' + textStatus + ' - ' + errorThrown);
-                    }
-                });
-            });
-
-            $(document).on('click', '#customer_change_cash', function(event) {
-                $.ajax({
-                    url: 'pages/cashier_ajax.php',
-                    type: 'POST',
-                    data: {
-                        unset_customer: "unset_customer"
-                    },
-                    success: function(response) {
-                        loadOrderContents();
-                        $('#next_page_order').removeClass("d-none");
-                        $('#prev_page_order').addClass("d-none");
-                        $('#save_order').addClass("d-none");
-                    },
-                    error: function(jqXHR, textStatus, errorThrown) {
-                        alert('Error: ' + textStatus + ' - ' + errorThrown);
-                    }
-                });
-            });
+            populateTimeSelect();
             
             $(document).on('click', '#cancel_change_address_order', function(event) {
                 loadOrderContents();
@@ -855,55 +799,12 @@ if(isset($_POST['fetch_order'])){
                 }
             });
 
-            $('#customer_tax').each(function () {
-                $(this).select2({
-                    width: '100%',
-                    placeholder: "Select Customer Tax...",
-                    dropdownAutoWidth: true,
-                    dropdownParent: $(this).parent()
-                });
-            });
-
             var originalData = {
                 fname: $('#order_deliver_fname').val(),
                 lname: $('#order_deliver_lname').val(),
                 phone: $('#order_deliver_phone').val(),
                 email: $('#order_deliver_email').val()
             };
-
-            $('.toggle_add_customer').on('click', function(e) {
-                e.preventDefault();
-
-                const $editForm = $('#edit_contact_info');
-                const $displayForm = $('#display_contact_info');
-                const $paymentOptions = $('#paymentOptions .form-check');
-
-                const isEditing = $editForm.hasClass('d-none');
-
-                $editForm.toggleClass('d-none', !isEditing);
-                $displayForm.toggleClass('d-none', isEditing);
-
-                $editForm.find('input').prop('readonly', !isEditing)
-                                    .toggleClass('form-control', isEditing)
-                                    .toggleClass('form-control-plaintext', !isEditing);
-
-                $editForm.find('select').each(function() {
-                    const $select = $(this);
-                    if (isEditing) {
-                        if ($select.data('readonly')) {
-                            $select.select2();
-                            $select.removeClass('select-readonly');
-                            $select.data('readonly', false);
-                        }
-                    } else {
-                        if (!$select.data('readonly')) {
-                            $select.select2('destroy');
-                            $select.addClass('select-readonly');
-                            $select.data('readonly', true);
-                        }
-                    }
-                });
-            });
 
             $('.toggle_edit_info').on('click', function (e) {
                 e.preventDefault();

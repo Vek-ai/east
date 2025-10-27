@@ -36,6 +36,19 @@ if(isset($_POST['fetch_prompt_quantity'])){
             z-index: 10;
             margin-top: 5px;
         }
+        .drag-handle {
+            cursor: move;
+            font-size: 18px;
+            user-select: none;
+        }
+
+        .sortable-placeholder {
+            background: #f8f9fa;
+            border: 2px dashed #ccc;
+            height: 3rem;
+            margin: 5px 0;
+            border-radius: 5px;
+        }
     </style>
     <?php
         if (!empty($product_details)) {
@@ -70,7 +83,7 @@ if(isset($_POST['fetch_prompt_quantity'])){
 
                 switch ($highestProfile) {
                     case 14: // low-rib
-                        include "../../cashier33/pages/panel_layouts/low_rib.php";
+                        include "../../cashier3/pages/panel_layouts/low_rib.php";
                         break;
                     case 15: // hi-rib
                         include "../../cashier3/pages/panel_layouts/hi_rib.php";
@@ -178,17 +191,19 @@ if(isset($_POST['fetch_prompt_quantity'])){
                 lengthFeetArr.push(parseFloat($(this).find('.length_feet').val()) || 0);
                 lengthInchArr.push($(this).find('.length_inch').val() || 0);
 
-                panelOptionArr.push($(this).find('select[name="panel_option"]').val() || 'solid');
+                panelOptionArr.push($(this).find('select[name="panel_option[]"]').val() || '');
             });
 
             const bends = parseInt($('#bend_product').val()) || 0;
             const hems = parseInt($('#hem_product').val()) || 0;
             const color = parseInt($('#qty-color').val()) || 0;
+            const grade = parseInt($('#qty-grade').val()) || 0;
+            const gauge = parseInt($('#qty-gauge').val()) || 0;
             const soldByFeet = <?= $sold_by_feet; ?>;
             const basePrice = <?= $basePrice; ?>;
 
             $.ajax({
-                url: 'pages/cashier3_quantity_modal.php',
+                url: 'pages/cashier_quantity_modal.php',
                 method: 'POST',
                 data: {
                     product_id: product_id,
@@ -201,6 +216,8 @@ if(isset($_POST['fetch_prompt_quantity'])){
                     hems: hems,
                     basePrice: basePrice,
                     color: color,
+                    grade: grade,
+                    gauge: gauge,
                     fetch_price: 'fetch_price'
                 },
                 success: function(response) {
@@ -221,7 +238,7 @@ if(isset($_POST['fetch_prompt_quantity'])){
             }
 
             $.ajax({
-                url: 'pages/cashier3_quantity_modal.php',
+                url: 'pages/cashier_quantity_modal.php',
                 method: 'POST',
                 dataType: 'json',
                 data: {
@@ -280,11 +297,17 @@ if(isset($_POST['fetch_prompt_quantity'])){
             let bundleCount = 1;
             let bundleVisible = false;
             let product_system = <?= !empty($product_system) ? $product_system : 'null' ?>;
-            
 
             $(document).on('change', '#qty-color, #qty-grade, #qty-gauge', function() {
                 fetchCoilStock();
                 calculateProductCost();
+            });
+
+            $(document).on('input', '.length_feet', function() {
+                let val = parseFloat($(this).val());
+                if (!isNaN(val)) {
+                    $(this).val(Math.floor(val));
+                }
             });
 
             $(document).on("change", ".fraction_input", function() {
@@ -335,13 +358,49 @@ if(isset($_POST['fetch_prompt_quantity'])){
                     $('#productFormCol').removeClass('col-12').addClass('col-9');
                     $('#bundleSection').removeClass('d-none');
                     $('.bundle-checkbox-wrapper, .bundle-checkbox-header').removeClass('d-none');
+                    $('body').addClass('bundle-mode');
                 } else {
                     $('#productFormCol').removeClass('col-9').addClass('col-12');
                     $('#bundleSection').addClass('d-none');
                     $('.bundle-checkbox-wrapper, .bundle-checkbox-header').addClass('d-none');
                     $('.bundle-checkbox').prop('checked', false);
+                    $('body').removeClass('bundle-mode');
                 }
             });
+
+            function enableBundleDragDrop() {
+                
+                $("#unbundledRows, #bundleGroups .bundle-group").each(function () {
+                    if ($(this).data("ui-sortable")) {
+                        $(this).sortable("destroy");
+                    }
+                });
+
+                $("#unbundledRows, .bundle-rows").sortable({
+                    connectWith: "#unbundledRows, .bundle-rows",
+                    handle: ".drag-handle",
+                    placeholder: "sortable-placeholder",
+                    tolerance: "pointer",
+                    revert: 150,
+                    start: function (event, ui) {
+                        ui.placeholder.height(ui.item.outerHeight());
+                    },
+                    update: function (event, ui) {
+                        const $item = ui.item;
+                        const $bundleWrapper = $item.closest(".bundle-wrapper");
+
+                        if ($bundleWrapper.length) {
+                            const bundleName = $bundleWrapper.find("h6").text().replace(/^Bundle \d+: /, "");
+                            $item.find('input[name="bundle_name[]"]').val(bundleName);
+                        } else {
+                            $item.find('input[name="bundle_name[]"]').val('');
+                        }
+                    }
+                }).disableSelection();
+            }
+
+
+            enableBundleDragDrop();
 
             $(document).off('click', '#addToBundleBtn').on('click', '#addToBundleBtn', function () {
                 const bundleName = $('#bundleName').val().trim();
@@ -350,14 +409,7 @@ if(isset($_POST['fetch_prompt_quantity'])){
                     return;
                 }
 
-                $('.bundle-checkbox:checked').each(function () {
-                    $(this)
-                        .closest('.quantity-length-container')
-                        .find('input[name="bundle_name[]"]')
-                        .val(bundleName);
-                });
-
-                let $selectedRows = $('.bundle-checkbox:checked').closest('.quantity-length-container');
+                const $selectedRows = $('.bundle-checkbox:checked').closest('.quantity-length-container');
                 if ($selectedRows.length === 0) {
                     alert("Please select at least one row to add to the bundle");
                     return;
@@ -373,13 +425,19 @@ if(isset($_POST['fetch_prompt_quantity'])){
                     </div>
                 `);
 
-                $selectedRows.appendTo($bundleWrapper.find('.bundle-rows'));
+                $selectedRows.each(function () {
+                    $(this)
+                        .find('input[name="bundle_name[]"]').val(bundleName)
+                        .end()
+                        .appendTo($bundleWrapper.find('.bundle-rows'));
+                });
 
                 $('#bundleGroups').append($bundleWrapper);
 
+                enableBundleDragDrop();
+
                 $('#bundleName').val('');
                 $('#bundleCounter').text(++bundleCount);
-
                 $('#bundleSection').addClass('d-none');
                 $('.bundle-checkbox-wrapper, .bundle-checkbox-header').addClass('d-none');
                 $('.bundle-checkbox').prop('checked', false);
@@ -434,17 +492,12 @@ if (isset($_POST['fetch_price'])) {
     $panelDripStops  = $_POST['panel_drip_stop'] ?? [];
     $bends           = isset($_POST['bends']) ? intval($_POST['bends']) : 0;
     $hems            = isset($_POST['hems']) ? intval($_POST['hems']) : 0;
-    $color_id           = isset($_POST['color']) ? intval($_POST['color']) : 0;
 
     $product = getProductDetails($product_id);
-    $color_details = getColorDetails($color_id);
-    $category_id   = intval($product["product_category"]);
-    $productSystem = intval($product["product_system"]);
-    $grade         = intval($product["grade"]);
-    $gauge         = intval($product["gauge"]);
-    $colorGroup    = intval($color_details['color_group']);
 
-    $color_mult = fetchColorMultiplier($colorGroup, $productSystem, $grade, $gauge, $category_id);
+    $color_id      = intval($_POST['color']);
+    $grade         = intval($_POST["grade"]);
+    $gauge         = intval($_POST["gauge"]);
 
     $totalPrice = 0;
     if ($product_id > 0) {
@@ -468,14 +521,16 @@ if (isset($_POST['fetch_price'])) {
                 $panelType,
                 $soldByFeet,
                 $bends,
-                $hems
+                $hems,
+                $color_id,
+                $grade,
+                $gauge
             );
         }
     }
 
-    $totalPrice *= $color_mult;
-
     echo number_format($totalPrice, 2);
+    //echo print_r($panelTypes);
 }
 
 if (isset($_POST['fetch_stock_coil'])) {

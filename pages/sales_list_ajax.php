@@ -260,7 +260,7 @@ if(isset($_POST['fetch_order_details'])){
                     <?php
                             $totalquantity += $row['quantity'] ;
                             $total_actual_price += $row['discounted_price'];
-                            $total_disc_price += $row['discounted_price'] * $row['quantity'];
+                            $total_disc_price += $row['discounted_price'];
                             }
                         }
                     }
@@ -272,7 +272,7 @@ if(isset($_POST['fetch_order_details'])){
                         <td colspan="4">Total</td>
                         <td><?= $totalquantity ?></td>
                         <td></td>
-                        <td class="text-end">$ <?= number_format($total_actual_price,2) ?></td>
+                        <td class="text-end"></td>
                         <td class="text-end">$ <?= number_format($total_disc_price,2) ?></td>
                     </tr>
                 </tfoot>

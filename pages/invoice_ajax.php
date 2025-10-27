@@ -27,6 +27,8 @@ if(isset($_REQUEST['action'])) {
             $shipping_comp_details = getShippingCompanyDetails($order_details['shipping_company']);
             $shipping_company = $shipping_comp_details['shipping_company'];
 
+            $deliver_method = $order_details['deliver_method'];
+
             $response = array();
             ?>
             <style>
@@ -109,6 +111,13 @@ if(isset($_REQUEST['action'])) {
                                                             4 => ['label' => 'Delivered', 'class' => 'badge bg-success']
                                                         ];
 
+                                                        if($deliver_method == 'pickup'){
+                                                            $is_pickup = true;
+
+                                                            $status_prod_labels[2]['label'] = 'Ready for Pick-up';
+                                                            $status_prod_labels[4]['label'] = 'Picked Up';
+                                                        }
+
                                                         $status_prod = $status_prod_labels[$status_prod_db];
                                                     ?> 
                                                         <tr> 
@@ -162,11 +171,11 @@ if(isset($_REQUEST['action'])) {
 
                                             <tfoot>
                                                 <tr>
-                                                    <td colspan="6" class="text-end">Total</td>
+                                                    <td colspan="5" class="text-end">Total</td>
                                                     <td><?= $totalquantity ?></td>
                                                     <td></td>
                                                     <td></td>
-                                                    <td class="text-end">$ <?= number_format($total_amount,2) ?></td>
+                                                    <td class="text-end">$ <?= number_format($total_disc_price,2) ?></td>
                                                 </tr>
                                             </tfoot>
                                         </table>

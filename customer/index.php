@@ -48,6 +48,7 @@ foreach ($cartItems as $item) {
   <link href="https://unpkg.com/dropzone@6.0.0-beta.1/dist/dropzone.css" rel="stylesheet" type="text/css" />
   <link rel="stylesheet" href="https://code.jquery.com/ui/1.13.1/themes/smoothness/jquery-ui.css">
   <link rel="stylesheet" href="https://cdn.datatables.net/responsive/2.4.1/css/responsive.dataTables.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
   
 
   <!-- Core Css -->
@@ -486,6 +487,7 @@ foreach ($cartItems as $item) {
   <script src="../assets/libs/owl.carousel/dist/owl.carousel.min.js"></script>
   <script src="https://unpkg.com/dropzone@6.0.0-beta.1/dist/dropzone-min.js"></script>
   <script src="https://cdn.datatables.net/responsive/2.4.1/js/dataTables.responsive.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 
   <script>
   function handleTheme() {

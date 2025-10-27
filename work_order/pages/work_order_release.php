@@ -251,6 +251,7 @@ $page_title = "Work Order Released";
                                     case 1: $statusText = 'New'; $statusClass = 'badge bg-primary'; break;
                                     case 2: $statusText = 'Processing'; $statusClass = 'badge bg-warning text-dark'; break;
                                     case 3: $statusText = 'Done'; $statusClass = 'badge bg-success'; break;
+                                    case 4: $statusText = 'Released'; $statusClass = 'badge bg-success'; break;
                                 }
                             ?>
                             <tr data-batch-id="<?= $batch_id ?>">
