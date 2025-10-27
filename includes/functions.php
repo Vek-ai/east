@@ -1539,14 +1539,17 @@ function getCartDataByCustomerId($customer_id) {
     global $conn;
 
     $customer_id = (int)$customer_id;
-    
-    $query = "SELECT * FROM customer_cart WHERE customer_id = $customer_id";
+    $cartData = [];
+
+    $query = "SELECT * FROM customer_cart WHERE customer_id = $customer_id ORDER BY id ASC";
     $result = mysqli_query($conn, $query);
 
-    $cartData = [];
     if ($result) {
         while ($row = mysqli_fetch_assoc($result)) {
-            $cartData[] = $row;
+            $lineKey = (int)$row['id'];
+            $cartData[$lineKey] = $row;
+
+            $cartData[$lineKey]['line'] = $lineKey;
         }
     }
 

@@ -1919,6 +1919,8 @@ if(isset($_POST['fetch_cart'])){
                         });
                     });
 
+                    console.log(order)
+
                     $.ajax({
                         url: 'pages/cashier_ajax.php',
                         type: 'POST',

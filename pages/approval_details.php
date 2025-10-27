@@ -92,7 +92,6 @@ $permission = $_SESSION['permission'];
                                             <th>Length</th>
                                             <th class="text-center">Quantity</th>
                                             <th class="text-center">Details</th>
-                                            <th class="text-center">Price</th>
                                             <th class="text-center">Customer Price</th>
                                             <th></th>
                                         </tr>
@@ -170,7 +169,6 @@ $permission = $_SESSION['permission'];
                                                         }
                                                         ?>
                                                     </td>
-                                                    <td class="text-end">$<?= number_format($row['actual_price'],2) ?></td>
                                                     <td class="text-end">
                                                         <a 
                                                             href="javascript:void(0)" 
@@ -209,7 +207,7 @@ $permission = $_SESSION['permission'];
 
                                     <tfoot>
                                         <tr>
-                                            <td class="text-end" colspan="6">Total</td>
+                                            <td class="text-end" colspan="5">Total</td>
                                             <td class="text-center"><?= $totalquantity ?></td>
                                             <td></td>
                                             <td class="text-end">$<?= number_format($total_actual_price,2) ?></td>

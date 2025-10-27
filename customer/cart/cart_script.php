@@ -124,7 +124,6 @@ function getPlaceName(lat, lng, inputId) {
                 $('#est_lng').val(lng);
 
                 calculateDeliveryAmount();
-                calculateDeliveryAmountEst();
 
             } else {
                 console.error("Address not found for these coordinates.");
@@ -289,39 +288,11 @@ function calculateDeliveryAmount() {
     $('#estimated_points').text('+' + estimated_points);
 }
 
-
 function number_format(number, decimals = 2) {
     return parseFloat(number).toLocaleString('en-US', {
         minimumFractionDigits: decimals,
         maximumFractionDigits: decimals
     });
-}
-
-
-function calculateDeliveryAmountEst() {
-    var customerLat = parseFloat($('#est_lat').val());
-    var customerLng = parseFloat($('#est_lng').val());
-    var lat2Float = parseFloat(lat2);
-    var lng2Float = parseFloat(lng2);
-
-    var deliver_method = $('#est_delivery_method').val();
-
-    if(deliver_method == 'pickup'){
-        $('#est_delivery_amt').val(0).trigger('change');
-    }else{
-        if (customerLat !== 0 && customerLng !== 0 && lat2Float !== 0 && lng2Float !== 0) {
-            const point1 = new google.maps.LatLng(customerLat, customerLng);
-            const point2 = new google.maps.LatLng(lat2Float, lng2Float);
-            const distanceInMeters = google.maps.geometry.spherical.computeDistanceBetween(point1, point2);
-            const distanceInMiles = distanceInMeters / 1609.34;
-            var deliveryAmount = amtPerMile * distanceInMiles;
-            deliveryAmount = deliveryAmount.toFixed(2);
-        } else {
-            deliveryAmount = amtDeliveryDefault.toFixed(2);
-        }
-
-        $('#est_delivery_amt').val(deliveryAmount).trigger('change');
-    }
 }
 
 function updateColor(element){
@@ -362,54 +333,8 @@ function updateGrade(element){
             set_grade: "set_grade"
         },
         success: function(response) {
-            console.log(response);
-        },
-        error: function(jqXHR, textStatus, errorThrown) {
-            alert('Error: ' + textStatus + ' - ' + errorThrown);
-        }
-    });
-}
-
-function updateEstimateBend(element){
-    var bend = $(element).val();
-    var id = $(element).data('id');
-    var line = $(element).data('line');
-
-    $.ajax({
-        url: 'pages/cashier_ajax.php',
-        type: 'POST',
-        data: {
-            bend: bend,
-            id: id,
-            line: line,
-            set_estimate_bend: "set_estimate_bend"
-        },
-        success: function(response) {
-            console.log(response);
-        },
-        error: function(jqXHR, textStatus, errorThrown) {
-            alert('Error: ' + textStatus + ' - ' + errorThrown);
-        }
-    });
-}
-
-function updateEstimateHem(element){
-    var hem = $(element).val();
-    var id = $(element).data('id');
-    var line = $(element).data('line');
-
-    $.ajax({
-        url: 'pages/cashier_ajax.php',
-        type: 'POST',
-        data: {
-            hem: hem,
-            id: id,
-            line: line,
-            set_estimate_hem: "set_estimate_hem"
-        },
-        success: function(response) {
+            console.log(response)
             loadCart();
-            loadEstimateContents();
         },
         error: function(jqXHR, textStatus, errorThrown) {
             alert('Error: ' + textStatus + ' - ' + errorThrown);
@@ -458,7 +383,6 @@ function updateEstimateLengthInch(element){
         success: function(response) {
             console.log(length_inch);
             loadCart();
-            loadEstimateContents();
         },
         error: function(jqXHR, textStatus, errorThrown) {
             alert('Error: ' + textStatus + ' - ' + errorThrown);
@@ -482,6 +406,7 @@ function updateEstimateHeight(element){
         },
         success: function(response) {
             console.log(response);
+            loadCart();
         },
         error: function(jqXHR, textStatus, errorThrown) {
             alert('Error: ' + textStatus + ' - ' + errorThrown);
@@ -504,6 +429,53 @@ function updateEstimateWidth(element){
         },
         success: function(response) {
             console.log(response);
+            loadCart();
+        },
+        error: function(jqXHR, textStatus, errorThrown) {
+            alert('Error: ' + textStatus + ' - ' + errorThrown);
+        }
+    });
+}
+
+function updatePanelType(element){
+    var panel_type = $(element).val();
+    var id = $(element).data('id');
+    var line = $(element).data('line');
+    $.ajax({
+        url: 'pages/cashier_ajax.php',
+        type: 'POST',
+        data: {
+            panel_type: panel_type,
+            id: id,
+            line: line,
+            set_panel_type: "set_panel_type"
+        },
+        success: function(response) {
+            console.log(response);
+            loadCart();
+        },
+        error: function(jqXHR, textStatus, errorThrown) {
+            alert('Error: ' + textStatus + ' - ' + errorThrown);
+        }
+    });
+}
+
+function updatePanelStyle(element){
+    var panel_style = $(element).val();
+    var id = $(element).data('id');
+    var line = $(element).data('line');
+    $.ajax({
+        url: 'pages/cashier_ajax.php',
+        type: 'POST',
+        data: {
+            panel_style: panel_style,
+            id: id,
+            line: line,
+            set_panel_style: "set_panel_style"
+        },
+        success: function(response) {
+            console.log(response);
+            loadCart();
         },
         error: function(jqXHR, textStatus, errorThrown) {
             alert('Error: ' + textStatus + ' - ' + errorThrown);
@@ -774,28 +746,6 @@ function loadOrderContents(){
     });
 }
 
-function loadEstimateContents(){
-    $.ajax({
-        url: 'pages/cashier_estimate_modal.php',
-        type: 'POST',
-        data: {
-            fetch_estimate: "fetch_estimate"
-        },
-        success: function(response) {
-            $('#estimate-tbl').html('');
-            $('#estimate-tbl').html(response);
-            calculateDeliveryAmountEst();
-            loadCartItemsHeader();
-            $('#next_page_est').removeClass("d-none");
-            $('#prev_page_est').addClass("d-none");
-            $('#save_estimate').addClass("d-none");
-        },
-        error: function(jqXHR, textStatus, errorThrown) {
-            alert('Error: ' + textStatus + ' - ' + errorThrown);
-        }
-    });
-}
-
 function addtocart(element) {
     var product_id = $(element).data('id');
     var line = $(element).data('line');
@@ -960,7 +910,6 @@ function duplicate_item(element) {
             duplicate_product: 'duplicate_product'
         },
         success: function(data) {
-            console.log(data);
             loadCart();
         },
         error: function(xhr, status, error) {
@@ -2204,39 +2153,6 @@ function formatSelected(state) {
     return $state;
 }
 
-function updatePrice() {
-    const basePrice = parseFloat($('#trim_unit_price').val()) || 0;
-    const is_custom = parseInt($('#is_custom_trim').val()) || 0;
-    const custom_multiplier_trim = parseFloat($('#custom_multiplier_trim').val()) || 1;
-
-    let totalPrice = 0;
-
-    $('.quantity-length-row').each(function () {
-        const feet = parseFloat($(this).find('.trim_length').val()) || 0;
-        const qty = parseFloat($(this).find('.trim_qty').val()) || 0; // default 0
-
-        totalPrice += basePrice * feet * qty;
-    });
-
-    if (is_custom === 1) {
-        totalPrice *= custom_multiplier_trim;
-    }
-
-    $('#trim_price').text(totalPrice.toFixed(2));
-}
-
-$(document).on('change', '.trim_length, .trim_qty', function() {
-    updatePrice();
-});
-
-$(document).on('change', '.trim_length_select', function() {
-    var value = $(this).val();
-    $('.trim_length').val(value);
-    updatePrice();
-});
-
-updatePrice();
-
 $(document).ready(function() {
     var panel_id = '<?= $panel_id ?>';
 
@@ -2666,8 +2582,10 @@ $(document).ready(function() {
     $(document).on('submit', '#specialTrimForm', function (event) {
         event.preventDefault();
 
-        var formData = new FormData(this);
+        var preselectedProfile = $('#select-profile').val();
+        const formData = new FormData(this);
         formData.append('save_trim', 'save_trim');
+        formData.append('profile', preselectedProfile);
 
         $.ajax({
             url: 'pages/cashier_ajax.php',
@@ -2676,9 +2594,42 @@ $(document).ready(function() {
             processData: false,
             contentType: false,
             success: function (response) {
-                console.log(response);
+                
                 loadCart();
                 $('#special_trim_modal').modal("hide");
+            },
+            error: function (xhr) {
+                console.error('Error:', xhr.responseText);
+            }
+        });
+    });
+
+    $(document).on('submit', '#trim_form', function (event) {
+        event.preventDefault();
+
+        var preselectedProfile = $('#select-profile').val();
+        const formData = new FormData(this);
+        formData.append('save_trim', 'save_trim');
+        formData.append('profile', preselectedProfile);
+
+        var dimension_ids = [];
+        $(this).find('select[name="length[]"]').each(function() {
+            var selectedOption = $(this).find('option:selected');
+            var dimId = selectedOption.data('id') || 0;
+            dimension_ids.push(dimId);
+        });
+
+        formData.append('dimension_ids', JSON.stringify(dimension_ids));
+
+        $.ajax({
+            url: 'pages/cashier_ajax.php',
+            type: 'POST',
+            data: formData,
+            processData: false,
+            contentType: false,
+            success: function (response) {
+                $('.modal').modal("hide");
+                loadCart();
             },
             error: function (xhr) {
                 console.error('Error:', xhr.responseText);
@@ -2962,12 +2913,13 @@ $(document).ready(function() {
                         alert('Process Failed.');
                         console.log(response);
                     } else {
-                        alert('Unexpected response from server.');
+                        alert('Process Failed.');
                         console.log(response);
                     }
                 },
                 error: function (jqXHR, textStatus, errorThrown) {
-                    alert('Error: ' + textStatus + ' - ' + jqXHR.responseText);
+                    alert('Process Failed.');
+                    console.log('Error: ' + textStatus + ' - ' + jqXHR.responseText);
                 }
             });
 
@@ -3013,7 +2965,8 @@ $(document).ready(function() {
                     }
                 },
                 error: function (jqXHR, textStatus, errorThrown) {
-                    alert('Error: ' + textStatus + ' - ' + errorThrown);
+                    alert('Process Failed.');
+                    console.log('Error: ' + textStatus + ' - ' + jqXHR.responseText);
                 }
             });
         }
@@ -3052,41 +3005,94 @@ $(document).ready(function() {
         $('#save_order').click();
     });  
 
-    var isAddingCustomer = 0;
-    $(document).on('click', '#addCustomerFinalize', function() {
+    $(document).on('click', '.toggle_add_customer', function(e) {
+        e.preventDefault();
+
         const $editForm = $('#edit_contact_info');
-        const $btn = $(this);
+        const $displayForm = $('#display_contact_info');
+        const $paymentOptions = $('#paymentOptions .form-check');
 
-        const isActive = !$editForm.find('input').first().prop('readonly'); // true if already editable
+        const isEditing = $editForm.hasClass('d-none');
 
-        isAddingCustomer = !isActive ? 0 : 1;
+        const savedData = sessionStorage.getItem('new_customer');
+        if (savedData) {
+            const data = JSON.parse(savedData);
 
-        $editForm.find('input').prop('readonly', isActive)
-                            .toggleClass('form-control', !isActive)
-                            .toggleClass('form-control-plaintext', isActive);
+            $('#order_deliver_fname').val(data.first_name || '');
+            $('#order_deliver_lname').val(data.last_name || '');
+            $('#order_deliver_phone').val(data.phone || '');
+            $('#order_deliver_email').val(data.email || '');
+            $('#customer_tax').val(data.tax_status || '');
+            $('#tax_exempt_number').val(data.tax_exempt_number || '');
+
+            if ($editForm.hasClass('d-none')) {
+                $editForm.removeClass('d-none');
+                $displayForm.addClass('d-none');
+            }
+        }
+
+        $editForm.toggleClass('d-none', !isEditing);
+        $displayForm.toggleClass('d-none', isEditing);
+
+        $editForm.find('input').prop('readonly', !isEditing)
+            .toggleClass('form-control', isEditing)
+            .toggleClass('form-control-plaintext', !isEditing);
 
         $editForm.find('select').each(function() {
             const $select = $(this);
-            if (isActive) {
-                if (!$select.data('readonly')) {
-                    $select.select2('destroy');
-                    $select.addClass('select-readonly');
-                    $select.data('readonly', true);
-                }
-            } else {
+            if (isEditing) {
                 if ($select.data('readonly')) {
                     $select.select2();
                     $select.removeClass('select-readonly');
                     $select.data('readonly', false);
                 }
+            } else {
+                if (!$select.data('readonly')) {
+                    $select.select2('destroy');
+                    $select.addClass('select-readonly');
+                    $select.data('readonly', true);
+                }
             }
         });
-
-        $('#paymentOptions .form-check').toggleClass('d-none', !isActive);
-
-        $btn.text(isActive ? 'Add New Customer' : 'Change New Customer');
     });
 
+    var orderIdSaved = '';
+    var customerIdSaved = '';
+
+    function updatePrintLinks(orderId) {
+        const baseUrl = window.location.origin + '/';
+        //const baseUrl = window.location.origin + '/temps/east/';
+
+        const links = {
+            'print_order': 'print_order_total.php',
+            'print_deliver': 'print_order_delivery.php',
+
+            'print_base_customer': 'print_order_product.php',
+            'print_perft_customer': 'print_order_product_per_ft.php',
+            'print_pereach_customer': 'print_order_product_per_each.php',
+            'print_all_customer': 'print_order_product_all.php',
+            'print_summary_customer': 'print_order_total.php',
+
+            'print_base_retail': 'print_order_product.php',
+            'print_perft_retail': 'print_order_product_per_ft.php',
+            'print_pereach_retail': 'print_order_product_per_each.php',
+            'print_all_retail': 'print_order_product_all.php',
+            'print_summary_retail': 'print_order_total.php',
+
+            'print_load_ekm': 'print_load_copy.php',
+            'print_delivery_ekm': 'print_order_delivery.php'
+        };
+
+        for (const id in links) {
+            const $btn = $('#' + id);
+            if ($btn.length) {
+                $btn.attr({
+                    href: baseUrl + links[id] + '?id=' + orderId,
+                    target: '_blank'
+                });
+            }
+        }
+    }
 
     $(document).on('click', '#save_order', function(event) {
         event.preventDefault();
@@ -3112,13 +3118,13 @@ $(document).ready(function() {
         var applyStoreCredit = $('#applyStoreCredit').is(':checked') ? $('#applyStoreCredit').val() : 0;
         var applyJobDeposit = $('#pay_via_job_deposit').is(':checked') ? $('#pay_via_job_deposit').val() : 0;
 
+        var scheduled_date = $('#scheduled-date').val();
+        var scheduled_time = $('#scheduled-time').val();
+
         var payment_method = $('[name="payMethod"]:checked').val();
         var deliver_method = $('input[name="order_delivery_method"]:checked').val();
 
         if(payment_method){
-
-            console.log(isAddingCustomer);
-
             $.ajax({
                 url: 'pages/cashier_ajax.php',
                 type: 'POST',
@@ -3141,34 +3147,30 @@ $(document).ready(function() {
                     deliver_email: deliver_email,
                     customer_tax: customer_tax,
                     tax_exempt_number: tax_exempt_number,
-                    isAddingCustomer: isAddingCustomer,
                     applyStoreCredit: applyStoreCredit,
                     applyJobDeposit: applyJobDeposit,
                     payment_method: payment_method,
                     truck: truck,
                     contractor_id: contractor_id,
+                    scheduled_date: scheduled_date,
+                    scheduled_time: scheduled_time,
                     save_order: 'save_order'
                 },
                 success: function(response) {
+                    console.log(response);
                     if (response.success) {
                         alert("Order successfully saved.");
-                        $('#print_order_category').attr('href', '/print_order_product.php?id=' + response.order_id);
-                        $('#print_order').attr('href', '/print_order_total.php?id=' + response.order_id);
-                        $('#print_deliver').attr('href', '/print_order_delivery.php?id=' + response.order_id);
-                        $('#print_order_category').removeClass('d-none');
-                        $('#print_order').removeClass('d-none');
-                        $('#print_deliver').removeClass('d-none');
 
-                        
+                        orderIdSaved = response.order_id;
+                        customerIdSaved = response.customer_id;
+
+                        $('#print_order_category, #print_order, #print_deliver').removeClass('d-none');
+                        updatePrintLinks(orderIdSaved);
+
+                        $('#btnApprovalModal, #save_order, #save_order_alt, #save_estimate, #prev_page_order').addClass('d-none');
                     } else if (response.error) {
                         alert(response.error);
                     }
-
-                    $('#btnApprovalModal').addClass('d-none');
-                    $('#save_order').addClass('d-none');
-                    $('#save_order_alt').addClass('d-none');
-                    $('#save_estimate').addClass('d-none');
-                    $('#prev_page_order').addClass('d-none');
                 },
                 error: function(jqXHR, textStatus, errorThrown) {
                     console.log('Response Text: ' + jqXHR.responseText);
@@ -3502,17 +3504,6 @@ $(document).ready(function() {
         });
     });
 
-    $(document).on('click', '#view_estimate', function(event) {
-        $('.modal').modal('hide');
-        loadEstimateContents();
-        $('#next_page_est').removeClass("d-none");
-        $('#prev_page_est').addClass("d-none");
-        $('#save_estimate').addClass("d-none");
-        $('#print_estimate_category').addClass('d-none');
-        $('#print_estimate').addClass('d-none');
-        $('#view_estimate_modal').modal('show');
-    });
-
     $(document).on('click', '#view_order', function(event) {
         $('.modal').modal('hide');
         loadOrderContents();
@@ -3523,6 +3514,132 @@ $(document).ready(function() {
         $('#print_deliver').addClass('d-none');
         $('#cashmodal').modal('show');
     });
+
+    var order_url = '';
+
+    $(document).on('click', '#print_order_category', function () {
+        const $baseBtn = $('#print_base_customer');
+
+        $('.btn-show-pdf').removeClass('btn-warning').addClass('btn-primary');
+        $baseBtn.addClass('btn-warning').removeClass('btn-primary');
+
+        pdfUrl = $baseBtn.attr('href');
+        order_url = pdfUrl;
+
+        $('#pdfFrame').attr('src', pdfUrl);
+        $('#pdfModal').modal('show');
+    });
+
+    var pdfUrl = '';
+    var isPrinting = false;
+
+    $(document).on('click', '.btn-show-pdf', function (e) {
+        e.preventDefault();
+
+        $('.btn-show-pdf')
+            .removeClass('btn-warning')
+            .addClass('btn-primary');
+
+        $(this)
+            .removeClass('btn-primary')
+            .addClass('btn-warning');
+
+        pdfUrl = $(this).attr('href');
+        $('#pdfFrame').attr('src', pdfUrl);
+        $('#pdfModal').modal('show');
+    });
+
+    $(document).on('click', '#printBtn', function (e) {
+        e.preventDefault();
+
+        if (isPrinting) return;
+        isPrinting = true;
+
+        const $iframe = $('#pdfFrame');
+        $iframe.off('load').one('load', function () {
+            try {
+                this.contentWindow.focus();
+                this.contentWindow.print();
+            } catch (err) {
+                alert("Failed to print PDF.");
+            }
+            isPrinting = false;
+        });
+
+        $iframe.attr('src', pdfUrl);
+        $('#pdfModal').modal('show');
+    });
+
+    $(document).on('click', '#downloadBtn', function (e) {
+        e.preventDefault();
+
+        const link = $('<a>')
+            .attr('href', pdfUrl)
+            .attr('download', '')
+            .appendTo('body');
+
+        link[0].click();
+        link.remove();
+    });
+
+    $(document).on('click', '#email_order_btn', function () {
+        $('#send_order_id').val(orderIdSaved);
+        $('#send_order_customer').val(customerIdSaved);
+        $('#order_url').val(order_url);
+
+        $('#sendOrderModal').modal('show');
+    });
+
+    $(document).on('submit', '.send_order_form', function (e) {
+        e.preventDefault();
+
+        const $form = $(this);
+        const $button = $form.find('button[type="submit"]');
+        const originalText = $button.text();
+
+        const formData = new FormData(this);
+        formData.append('send_order', 'send_order');
+
+        $.ajax({
+            url: 'pages/cashier_ajax.php',
+            type: 'POST',
+            data: formData,
+            processData: false,
+            contentType: false,
+            beforeSend: function () {
+                $button.prop('disabled', true).text('Sending...');
+            },
+            success: function (response) {
+                console.log(response);
+                let res = {};
+                try {
+                    res = JSON.parse(response);
+                } catch (e) {
+                    alert('Invalid response from server.');
+                    return;
+                }
+
+                let msg = '';
+                if (res.results) {
+                    if (res.results.email) {
+                        msg += 'Email: ' + res.results.email.message + '\n';
+                    }
+                } else {
+                    msg = res.message || 'Operation complete.';
+                }
+
+                alert(msg);
+            },
+            error: function () {
+                alert('Failed to send message.');
+            },
+            complete: function () {
+                $button.prop('disabled', false).text(originalText);
+                $('.modal').modal('hide');
+            }
+        });
+    });
+
 
     $(document).on('click', '#prev_page_order', function(event) {
         $('.modal').modal('hide');
@@ -3655,30 +3772,6 @@ $(document).ready(function() {
         }
     });
 
-    $(document).on('submit', '#trim_form', function (event) {
-        event.preventDefault();
-
-        const formData = new FormData(this);
-        formData.append('save_trim', 'save_trim');
-        var preselectedProfile = $('#select-profile').val();
-        formData.append('profile', preselectedProfile);
-        $.ajax({
-            url: 'pages/cashier_ajax.php',
-            type: 'POST',
-            data: formData,
-            processData: false,
-            contentType: false,
-            success: function (response) {
-                console.log(response);
-                $('.modal').modal("hide");
-                loadCart();
-            },
-            error: function (xhr) {
-                console.error('Error:', xhr.responseText);
-            }
-        });
-    });
-
     $(document).on('submit', '#lumber_form', function (event) {
         event.preventDefault();
 
@@ -3686,6 +3779,7 @@ $(document).ready(function() {
         formData.append('save_custom_length', 'save_custom_length');
         var preselectedProfile = $('#select-profile').val();
         formData.append('profile', preselectedProfile);
+
         $.ajax({
             url: 'pages/cashier_ajax.php',
             type: 'POST',
@@ -3919,10 +4013,6 @@ $(document).ready(function() {
 
     performSearch('');
 
-    $(document).on('change', '#est_delivery_method', function () {
-        calculateDeliveryAmountEst();
-    });
-
     $(document).on('change', 'input[name="order_delivery_method"]', function () {
         const selectedMethod = $(this).val();
 
@@ -3984,32 +4074,6 @@ $(document).ready(function() {
         }
     });
 
-    $(document).on('click', '.sortArrowSec', function () {
-        let $btn = $(this);
-        let productId = $btn.data('id');
-        let line = $btn.data('line');
-        let direction = $btn.hasClass('sort-up') ? 'up' : 'down';
-
-        $.ajax({
-            url: 'pages/cashier_ajax.php',
-            type: 'POST',
-            data: {
-                reorder_cart: 'reorder_cart',
-                product_id: productId,
-                line: line,
-                direction: direction
-            },
-            success: function (response) {
-                loadCart();
-            },
-            error: function () {
-                alert('Error reordering cart.');
-            }
-        });
-    });
-
-
-
     $(document).on('click', '.addToBundleCartBtn', function () {
         let $section = $(this).closest('.bundleCartSection');
         let bundleName = $section.find('.bundleNameCart').val().trim();
@@ -4038,6 +4102,7 @@ $(document).ready(function() {
                 bundle_name: bundleName
             },
             success: function (res) {
+                console.log(res);
                 loadCart();
             }
         });
@@ -4162,4 +4227,5 @@ $(document).ready(function() {
     });
 
 });
+
 

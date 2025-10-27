@@ -35,7 +35,7 @@ if(isset($_POST['fetch_modal'])){
         if (!empty($product_details)) {
             $category_id = $product_details['product_category'];
         ?>
-        <input type="hidden" id="product_id" name="id" value="<?= $id ?>" />
+        <input type="hidden" id="trim_product_id" name="id" value="<?= $id ?>" />
         <input type="hidden" id="trim_unit_price" name="price" value="<?= $product_details['unit_price'] ?>" />
         <input type="hidden" id="custom_multiplier_trim" name="custom_multiplier" value="<?= $custom_multiplier ?>" />
         <input type="hidden" id="is_pre_order" name="is_pre_order" value="0" />
@@ -143,19 +143,20 @@ if(isset($_POST['fetch_modal'])){
                 </div>
 
                 <div class="col-3 col-6-md">
-                    <select class="form-control mb-0 trim_length_select">
-                        <option value="0" selected>Select Length</option>
+                    <select class="form-control mb-0 trim_length_select" name="length[]">
+                        <option value="" selected>Select Length</option>
                         <?php
                         $lengths = getProductAvailableLengths($id);
                         foreach ($lengths as $entry) {
                             $product_length = htmlspecialchars($entry['length']);
                             $length_in_feet = htmlspecialchars($entry['feet']);
+                            $dimension_id   = htmlspecialchars($entry['dimension_id']);
                             $selected = ($length_in_feet == 1.0) ? 'selected' : '';
-                            echo "<option value=\"$length_in_feet\" $selected>$product_length</option>";
+                            echo "<option value=\"$length_in_feet\" data-id=\"$dimension_id\" $selected>$product_length</option>";
                         }
                         ?>
                     </select>
-                    <input type="hidden" name="length[]" class="form-control mb-0 trim_length">
+                    <input type="hidden" name="length_hidden[]" class="form-control mb-0 trim_length">
                 </div>
 
                 <div class="col-3 col-6-md notes-col d-none">
@@ -207,6 +208,56 @@ if(isset($_POST['fetch_modal'])){
 
         <script>
             $(document).ready(function () {
+                function updatePrice() {
+                    const product_id = $('#trim_product_id').val();
+                    const quantities = [];
+                    const lengthFeetArr = [];
+
+                    $('.quantity-length-row').each(function() {
+                        const qty = parseInt($(this).find('.trim_qty').val()) || 0;
+                        quantities.push(qty);
+
+                        const lengthFeet = parseFloat($(this).find('.trim_length_select').val()) || 0;
+                        lengthFeetArr.push(lengthFeet);
+                    });
+
+                    const color = parseInt($('#trim-color').val()) || 0;
+                    const grade = parseInt($('#trim-grade').val()) || 0;
+                    const gauge = parseInt($('#trim-gauge').val()) || 0;
+
+                    console.log(color);
+                    console.log(grade);
+                    console.log(gauge);
+
+                    $.ajax({
+                        url: 'pages/cashier_trim_modal.php',
+                        method: 'POST',
+                        data: {
+                            product_id: product_id,
+                            quantity: quantities,
+                            lengthFeet: lengthFeetArr,
+                            color: color,
+                            grade: grade,
+                            gauge: gauge,
+                            fetch_price: 'fetch_price'
+                        },
+                        success: function(response) {
+                            $('#trim_price').text(response);
+                        }
+                    });
+                }
+
+
+                $(document).on('change', '.trim_length, .trim_qty, #trim-color, #trim-grade, #trim-gauge', function() {
+                    updatePrice();
+                });
+
+                $(document).on('change', '.trim_length_select', function() {
+                    var value = $(this).val();
+                    $('.trim_length').val(value);
+                    updatePrice();
+                });
+
                 function fetchCoilStock() {
                     const color = parseInt($('#trim-color').val()) || 0;
                     const grade = parseInt($('#trim-grade').val()) || 0;
@@ -291,6 +342,52 @@ if(isset($_POST['fetch_modal'])){
             });
         </script>
 <?php
+}
+
+if (isset($_POST['fetch_price'])) {
+    global $conn;
+
+    $product_id = isset($_POST['product_id']) ? intval($_POST['product_id']) : 0;
+    $quantities = $_POST['quantity'] ?? [];
+    $lengthFeet = $_POST['lengthFeet'] ?? []; // match JS key
+
+    $color_id = isset($_POST['color']) ? intval($_POST['color']) : 0;
+    $grade    = isset($_POST['grade']) ? intval($_POST['grade']) : 0;
+    $gauge    = isset($_POST['gauge']) ? intval($_POST['gauge']) : 0;
+
+    $totalPrice = 0;
+
+    if ($product_id > 0) {
+        $product = getProductDetails($product_id);
+        $basePrice = floatval($product['unit_price']);
+        $soldByFeet = intval($product['sold_by_feet'] ?? 1);
+
+        foreach ($quantities as $index => $qty) {
+            if ($qty <= 0) continue;
+
+            $feet = isset($lengthFeet[$index]) && $lengthFeet[$index] !== '' ? floatval($lengthFeet[$index]) : 0;
+
+            if ($feet <= 0) continue;
+
+            $totalPrice += $qty * calculateUnitPrice(
+                $basePrice,
+                $feet,
+                '',
+                '',
+                '',
+                '',
+                '',
+                $color_id,
+                $grade,
+                $gauge
+            );
+
+            $totalPrice += $qty * $unitPrice;
+        }
+    }
+
+    echo number_format($totalPrice, 2);
+    
 }
 
 if (isset($_POST['fetch_stock_coil'])) {
