@@ -78,7 +78,6 @@ if(isset($_REQUEST['action'])) {
                                                     <th class="text-center">Quantity</th>
                                                     <th class="text-center">Status</th>
                                                     <th class="text-center">Dimensions</th>
-                                                    <th class="text-center">Price</th>
                                                     <th class="text-center">Customer Price</th>
                                                 </tr>
                                             </thead>
@@ -149,7 +148,6 @@ if(isset($_REQUEST['action'])) {
                                                                 }
                                                                 ?>
                                                             </td>
-                                                            <td class="text-end">$ <?= number_format($row['actual_price'],2) ?></td>
                                                             <td class="text-end">$ <?= number_format($row['discounted_price'],2) ?></td>
                                                         </tr>
                                                 <?php
