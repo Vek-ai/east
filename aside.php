@@ -10,6 +10,7 @@ $allowed_categories = [
                       'Employees', 
                       'Warehouse', 
                       'Products Properties', 
+                      'Coils',
                       'Settings',
                       'Help & Support',
                     ];
