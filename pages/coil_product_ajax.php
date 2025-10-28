@@ -370,56 +370,69 @@ if(isset($_REQUEST['action'])) {
                         <label class="form-label">Sold As</label>
                         <div class="mb-3">
                             <select id="color_sold_as" class="form-control select2-edit" name="color_sold_as">
-                                <option value="" >Select Color...</option>
+                                <option value="">Select Color...</option>
                                 <?php
-                                $query_paint_colors = "SELECT * FROM paint_colors WHERE hidden = '0' AND color_status = '1' ORDER BY `color_name` ASC";
-                                $result_paint_colors = mysqli_query($conn, $query_paint_colors);            
-                                while ($row_paint_colors = mysqli_fetch_array($result_paint_colors)) {
-                                    $selected = (($row['color_sold_as'] ?? '') == $row_paint_colors['color_id']) ? 'selected' : '';
-                                ?>
-                                    <option value="<?= $row_paint_colors['color_id'] ?>" <?= $selected ?>><?= $row_paint_colors['color_name'] ?></option>
-                                <?php
+                                $query_paint_colors = "
+                                    SELECT color_id, color_name 
+                                    FROM paint_colors 
+                                    WHERE hidden = '0' AND color_status = '1'
+                                    ORDER BY color_name ASC
+                                ";
+                                $result_paint_colors = mysqli_query($conn, $query_paint_colors);
+
+                                $unique_colors = [];
+                                while ($row_paint_colors = mysqli_fetch_assoc($result_paint_colors)) {
+                                    $name = trim(strtolower($row_paint_colors['color_name']));
+                                    if (!isset($unique_colors[$name])) {
+                                        $unique_colors[$name] = $row_paint_colors;
+                                    }
                                 }
+
+                                foreach ($unique_colors as $color) {
+                                    $selected = (($row['color_sold_as'] ?? '') == $color['color_id']) ? 'selected' : '';
                                 ?>
+                                    <option value="<?= $color['color_id'] ?>" <?= $selected ?>>
+                                        <?= htmlspecialchars($color['color_name']) ?>
+                                    </option>
+                                <?php } ?>
                             </select>
                         </div>
                     </div>
+
                     <div class="col-md-3">
                         <label class="form-label">Actual Color</label>
                         <div class="mb-3">
                             <select id="actual_color" class="form-control select2-edit colors-edit" name="actual_color">
-                                <option value="" >Select Color...</option>
+                                <option value="">Select Color...</option>
                                 <?php
-                                $query_paint_colors = "SELECT * FROM paint_colors WHERE hidden = '0' AND color_status = '1' ORDER BY `color_name` ASC";
-                                $result_paint_colors = mysqli_query($conn, $query_paint_colors);            
-                                while ($row_paint_colors = mysqli_fetch_array($result_paint_colors)) {
-                                    $selected = (($row['actual_color'] ?? '') == $row_paint_colors['color_id']) ? 'selected' : '';
+                                foreach ($unique_colors as $color) {
+                                    $selected = (($row['actual_color'] ?? '') == $color['color_id']) ? 'selected' : '';
                                 ?>
-                                    <option value="<?= $row_paint_colors['color_id'] ?>" <?= $selected ?>><?= $row_paint_colors['color_name'] ?></option>
-                                <?php   
-                                }
-                                ?>
+                                    <option value="<?= $color['color_id'] ?>" <?= $selected ?>>
+                                        <?= htmlspecialchars($color['color_name']) ?>
+                                    </option>
+                                <?php } ?>
                             </select>
                         </div>
                     </div>
+
                     <div class="col-md-3">
                         <label class="form-label">Close EKM Color</label>
                         <div class="mb-3">
                             <select id="color_close" class="form-control select2-edit colors-edit" name="color_close">
-                                <option value="" >Select Color...</option>
+                                <option value="">Select Color...</option>
                                 <?php
-                                $query_paint_colors = "SELECT * FROM paint_colors WHERE hidden = '0' AND color_status = '1' ORDER BY `color_name` ASC";
-                                $result_paint_colors = mysqli_query($conn, $query_paint_colors);            
-                                while ($row_paint_colors = mysqli_fetch_array($result_paint_colors)) {
-                                    $selected = (($row['color_close'] ?? '') == $row_paint_colors['color_id']) ? 'selected' : '';
+                                foreach ($unique_colors as $color) {
+                                    $selected = (($row['color_close'] ?? '') == $color['color_id']) ? 'selected' : '';
                                 ?>
-                                    <option value="<?= $row_paint_colors['color_id'] ?>" <?= $selected ?>><?= $row_paint_colors['color_name'] ?></option>
-                                <?php
-                                }
-                                ?>
+                                    <option value="<?= $color['color_id'] ?>" <?= $selected ?>>
+                                        <?= htmlspecialchars($color['color_name']) ?>
+                                    </option>
+                                <?php } ?>
                             </select>
                         </div>
                     </div>
+
                     <div class="col-md-3">
                         <div class="mb-3">
                             <div class="d-flex justify-content-between align-items-center">
