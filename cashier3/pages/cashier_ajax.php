@@ -20,8 +20,10 @@ $special_trim_id = 66;
 $screw_id = 16;
 
 function findCartKey($cart, $product_id, $line) {
-    if (isset($cart[$line]) && $cart[$line]['product_id'] == $product_id) {
-        return $line;
+    foreach ($cart as $key => $item) {
+        if ($item['product_id'] == $product_id && $item['line'] == $line) {
+            return $key;
+        }
     }
     return false;
 }
@@ -54,15 +56,9 @@ if (isset($_POST['modifyquantity']) || isset($_POST['duplicate_product'])) {
     $newLine = !empty($_SESSION["cart"]) ? max(array_column($_SESSION["cart"], 'line')) + 1 : 1;
 
     if (isset($_POST['duplicate_product']) && $line > 0) {
-        $oldItem = null;
-        foreach ($_SESSION['cart'] as $key => $item) {
-            if ($item['line'] == $line) {
-                $oldItem = $item;
-                break;
-            }
-        }
-
-        if ($oldItem) {
+        $key = findCartKey($_SESSION["cart"], $product_id, $line);
+        if ($key !== false) {
+            $oldItem = $_SESSION['cart'][$key];
             $oldItem['line'] = $newLine;
             $oldItem['quantity_cart'] = $qty;
             $_SESSION['cart'][$newLine] = $oldItem;
@@ -71,17 +67,7 @@ if (isset($_POST['modifyquantity']) || isset($_POST['duplicate_product'])) {
         }
     }
 
-    if ($line > 0 && isset($_SESSION['cart'][$line])) {
-        $key = $line;
-    } else {
-        $key = false;
-        foreach ($_SESSION['cart'] as $k => $item) {
-            if ($item['product_id'] == $product_id) {
-                $key = $k;
-                break;
-            }
-        }
-    }
+    $key = findCartKey($_SESSION["cart"], $product_id, $line);
 
     if ($key !== false) {
         if (isset($_POST['setquantity'])) {
@@ -115,22 +101,22 @@ if (isset($_POST['modifyquantity']) || isset($_POST['duplicate_product'])) {
         $unitPrice = calculateUnitPrice($basePrice, 0, 0, '', $row['sold_by_feet'], 0, 0);
 
         $_SESSION["cart"][$newLine] = [
-            'product_id'         => $row['product_id'],
-            'product_item'       => getProductName($row['product_id']),
-            'unit_price'         => $unitPrice,
-            'line'               => $newLine,
-            'quantity_ttl'       => $totalStock,
-            'quantity_in_stock'  => $quantityInStock,
-            'quantity_cart'      => $item_quantity,
-            'estimate_width'     => $row['width'],
-            'estimate_length'    => '',
-            'estimate_length_inch' => '',
-            'usage'              => 0,
-            'custom_color'       => '',
-            'weight'             => $weight,
-            'supplier_id'        => $row['supplier_id'],
-            'custom_grade'       => (int)$row['grade'],
-            'custom_profile'     => (int)$row['profile'],
+            'product_id'          => $row['product_id'],
+            'product_item'        => getProductName($row['product_id']),
+            'unit_price'          => $unitPrice,
+            'line'                => $newLine,
+            'quantity_ttl'        => $totalStock,
+            'quantity_in_stock'   => $quantityInStock,
+            'quantity_cart'       => $item_quantity,
+            'estimate_width'      => $row['width'],
+            'estimate_length'     => '',
+            'estimate_length_inch'=> '',
+            'usage'               => 0,
+            'custom_color'        => '',
+            'weight'              => $weight,
+            'supplier_id'         => $row['supplier_id'],
+            'custom_grade'        => (int)$row['grade'],
+            'custom_profile'      => (int)$row['profile'],
         ];
     }
 }
@@ -620,6 +606,30 @@ if (isset($_POST['set_grade'])) {
         $_SESSION["cart"][$key]['custom_grade'] = !empty($grade) ? $grade : "";
     }
     echo "grade id: $grade, Prod id: $product_id, Line: $line, Key: $key";
+}
+
+if (isset($_POST['set_screw_length'])) {
+    $product_id = mysqli_real_escape_string($conn, $_POST['product_id']);
+    $line = mysqli_real_escape_string($conn, $_POST['line']);
+    $screw_length = mysqli_real_escape_string($conn, $_POST['screw_length']);
+
+    $key = findCartKey($_SESSION["cart"], $product_id, $line);
+    if ($key !== false && isset($_SESSION["cart"][$key])) {
+        $_SESSION["cart"][$key]['screw_length'] = !empty($screw_length) ? $screw_length : "";
+    }
+    echo "screw_length id: $screw_length, Prod id: $product_id, Line: $line, Key: $key";
+}
+
+if (isset($_POST['set_screw_type'])) {
+    $product_id = mysqli_real_escape_string($conn, $_POST['product_id']);
+    $line = mysqli_real_escape_string($conn, $_POST['line']);
+    $screw_type = mysqli_real_escape_string($conn, $_POST['screw_type']);
+
+    $key = findCartKey($_SESSION["cart"], $product_id, $line);
+    if ($key !== false && isset($_SESSION["cart"][$key])) {
+        $_SESSION["cart"][$key]['screw_type'] = !empty($screw_type) ? $screw_type : "";
+    }
+    echo "screw_type id: $screw_type, Prod id: $product_id, Line: $line, Key: $key";
 }
 
 if (isset($_POST['set_estimate_data'])) {
@@ -1810,6 +1820,7 @@ if (isset($_POST['save_custom_length'])) {
     $inch_list   = $_POST['length_inch'] ?? [];
     $prices      = $_POST['price'] ?? [];
     $color_id    = $_POST['color_id'] ?? [];
+    $dimension_id    = $_POST['dimension_id'] ?? [];
     $notes       = $_POST['notes'] ?? [];
 
     if (!isset($_SESSION["cart"])) {
@@ -1828,8 +1839,15 @@ if (isset($_POST['save_custom_length'])) {
             $estimate_length_in = round(floatval($inch_list[$idx] ?? 0), 2);
             $price              = floatval($prices[$idx] ?? 0);
             $custom_color       = intval($color_id[$idx] ?? 0);
+            $dimension          = intval($dimension_id[$idx] ?? 0);
             $note               = $notes[$idx] ?? '';
 
+            $dimension_value = '';
+            if(!empty($dimension)){
+                $dimension_details = getDimensionDetails($dimension);
+                $dimension_value = $dimension_details['dimension'];
+            }
+            
             if ($quantity <= 0) continue;
 
             $found = false;
@@ -1839,7 +1857,8 @@ if (isset($_POST['save_custom_length'])) {
                     $item['estimate_length'] == $estimate_length &&
                     $item['estimate_length_inch'] == $estimate_length_in &&
                     $item['custom_profile'] == $profile &&
-                    $item['custom_color'] == $custom_color
+                    $item['custom_color'] == $custom_color &&
+                    $item['dimension'] == $dimension_value
                 ) {
                     $item['quantity_cart'] += $quantity;
                     $found = true;
@@ -1864,6 +1883,8 @@ if (isset($_POST['save_custom_length'])) {
                     'estimate_length_inch'=> $estimate_length_in,
                     'usage'               => 0,
                     'custom_color'        => $custom_color,
+                    'screw_length'        => $dimension_value,
+                    'screw_type'          => 'SD',
                     'weight'              => 0,
                     'supplier_id'         => '',
                     'custom_grade'        => '',

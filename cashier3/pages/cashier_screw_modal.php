@@ -49,7 +49,7 @@ if(isset($_POST['fetch_modal'])){
                     <input type="number" name="quantity[]" class="form-control mb-1 screw_quantity" value="" placeholder="Enter Quantity">
                 </div>
                 <div class="col">
-                    <select id="dimension_select" name="dimension_id" class="form-control">
+                    <select id="dimension_select" name="dimension_id[]" class="form-control">
                         <option value="" hidden>Select Size</option>
                         <?php foreach ($inventoryItems as $item) { 
                             $colorId   = $item['color_id'] ?? 0;

@@ -2242,6 +2242,61 @@ $editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) :
         });
     }
 
+    function updateScrewLength(element) {
+        var product_id = $(element).data('id');
+        var line = $(element).data('line');
+        var screw_length = $(element).val();
+        $.ajax({
+            url: "pages/cashier_ajax.php",
+            type: "POST",
+            data: {
+                product_id: product_id,
+                line: line,
+                screw_length: screw_length,
+                set_screw_length: 'set_screw_length'
+            },
+            success: function(data) {
+                loadCart();
+                console.log(data);
+            },
+            error: function(xhr, status, error) {
+                console.error("AJAX Error:", {
+                    status: status,
+                    error: error,
+                    responseText: xhr.responseText
+                });
+            }
+        });
+    }
+
+    function updateScrewType(element) {
+        var product_id = $(element).data('id');
+        var line = $(element).data('line');
+        var screw_type = $(element).val();
+
+        $.ajax({
+            url: "pages/cashier_ajax.php",
+            type: "POST",
+            data: {
+                product_id: product_id,
+                line: line,
+                screw_type: screw_type,
+                set_screw_type: 'set_screw_type'
+            },
+            success: function(data) {
+                loadCart();
+                console.log(data);
+            },
+            error: function(xhr, status, error) {
+                console.error("AJAX Error:", {
+                    status: status,
+                    error: error,
+                    responseText: xhr.responseText
+                });
+            }
+        });
+    }
+
     function delete_item(element) {
         var id = $(element).data('id');
         var line = $(element).data('line');

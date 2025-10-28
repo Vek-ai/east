@@ -334,17 +334,28 @@ if(isset($_POST['fetch_cart'])){
                                         <?php
                                         $query_colors = "SELECT Product_id, color_id FROM inventory WHERE Product_id = '$product_id'";
                                         $result_colors = mysqli_query($conn, $query_colors);
+
                                         $inventory_color_ids = [];
                                         while ($row_colors = mysqli_fetch_array($result_colors)) {
-                                            if (empty($row_colors['color_id']) || $row_colors['color_id'] == 0) {
-                                                continue;
+                                            $color_id = intval($row_colors['color_id']);
+                                            if ($color_id > 0 && !in_array($color_id, $inventory_color_ids)) {
+                                                $inventory_color_ids[] = $color_id;
                                             }
-                                            $inventory_color_ids[] = $row_colors['color_id'];
-                                            $selected = ($first_calc['color_id'] == $row_colors['color_id']) ? 'selected' : '';
-                                            $colorDetails = getColorDetails($row_colors['color_id']);
-                                            $colorHex = getColorHexFromColorID($row_colors['color_id']);
+                                        }
+
+                                        if (!empty($items[0]['custom_color'])) {
+                                            $custom_color_id = intval($items[0]['custom_color']);
+                                            if (!in_array($custom_color_id, $inventory_color_ids)) {
+                                                $inventory_color_ids[] = $custom_color_id;
+                                            }
+                                        }
+
+                                        foreach ($inventory_color_ids as $color_id) {
+                                            $colorDetails = getColorDetails($color_id);
+                                            $colorHex = getColorHexFromColorID($color_id);
                                             $colorName = $colorDetails['color_name'] ?? '';
-                                            echo "<option value='{$row_colors['color_id']}' data-color='{$colorHex}' data-grade='{$product['grade']}' {$selected}>{$colorName}</option>";
+                                            $selected = ($first_calc['color_id'] == $color_id) ? 'selected' : '';
+                                            echo "<option value='{$color_id}' data-color='{$colorHex}' data-grade='{$product['grade']}' {$selected}>{$colorName}</option>";
                                         }
                                         ?>
                                     </select>
@@ -778,15 +789,29 @@ if(isset($_POST['fetch_cart'])){
                                         <?php
                                         $query_colors = "SELECT Product_id, color_id FROM inventory WHERE Product_id = '$product_id'";
                                         $result_colors = mysqli_query($conn, $query_colors);
+
+                                        $inventory_color_ids = [];
+
                                         while ($row_colors = mysqli_fetch_array($result_colors)) {
-                                            if (empty($row_colors['color_id']) || $row_colors['color_id'] == 0) {
-                                                continue;
+                                            $color_id = intval($row_colors['color_id']);
+                                            if ($color_id > 0 && !in_array($color_id, $inventory_color_ids)) {
+                                                $inventory_color_ids[] = $color_id;
                                             }
-                                            $selected = ($first_calc['color_id'] == $row_colors['color_id']) ? 'selected' : '';
-                                            $colorDetails = getColorDetails($row_colors['color_id']);
-                                            $colorHex = getColorHexFromColorID($row_colors['color_id']);
+                                        }
+
+                                        if (!empty($items[0]['custom_color'])) {
+                                            $custom_color_id = intval($items[0]['custom_color']);
+                                            if (!in_array($custom_color_id, $inventory_color_ids)) {
+                                                $inventory_color_ids[] = $custom_color_id;
+                                            }
+                                        }
+
+                                        foreach ($inventory_color_ids as $color_id) {
+                                            $colorDetails = getColorDetails($color_id);
+                                            $colorHex = getColorHexFromColorID($color_id);
                                             $colorName = $colorDetails['color_name'] ?? '';
-                                            echo "<option value='{$row_colors['color_id']}' data-color='{$colorHex}' {$selected}>{$colorName}</option>";
+                                            $selected = ($first_calc['color_id'] == $color_id) ? 'selected' : '';
+                                            echo "<option value='{$color_id}' data-color='{$colorHex}' {$selected}>{$colorName}</option>";
                                         }
                                         ?>
                                     </select>
@@ -856,6 +881,7 @@ if(isset($_POST['fetch_cart'])){
                             <?php
                             foreach ($items as $values) {
                                 $item = calculateCartItem($values);
+                                
                                 $product = $item['product'];
                                 $line = $item['line'];
                                 $quantity = $item['quantity'];
@@ -901,7 +927,7 @@ if(isset($_POST['fetch_cart'])){
                                             </div>
 
                                             <span class="<?= $show_unique_product_id ? '' : 'd-none' ?>">
-                                                <?= htmlspecialchars($unique_prod_id) ?>
+                                                <?= $unique_prod_id ?>
                                             </span>
 
                                             <?php if (!empty($values["note"])){ ?>
@@ -1048,7 +1074,7 @@ if(isset($_POST['fetch_cart'])){
                             $picture_path = $first_calc['picture_path'];
                             $stock_text = $first_calc['stock_text'];
                             $multiplier = $first_calc['multiplier'];
-                            $product_id_abbrev = $first_calc['product_id_abbrev'];
+                            $product_id_abbrev = $first_calc['parent_prod_id'];
                             ?>
 
                             <tr class="thick-border" data-mult="<?= $multiplier ?>">
@@ -1073,15 +1099,29 @@ if(isset($_POST['fetch_cart'])){
                                         <?php
                                         $query_colors = "SELECT Product_id, color_id FROM inventory WHERE Product_id = '$product_id'";
                                         $result_colors = mysqli_query($conn, $query_colors);
+
+                                        $inventory_color_ids = [];
+
                                         while ($row_colors = mysqli_fetch_array($result_colors)) {
-                                            if (empty($row_colors['color_id']) || $row_colors['color_id'] == 0) {
-                                                continue;
+                                            $color_id = intval($row_colors['color_id']);
+                                            if ($color_id > 0 && !in_array($color_id, $inventory_color_ids)) {
+                                                $inventory_color_ids[] = $color_id;
                                             }
-                                            $selected = ($first_calc['color_id'] == $row_colors['color_id']) ? 'selected' : '';
-                                            $colorDetails = getColorDetails($row_colors['color_id']);
-                                            $colorHex = getColorHexFromColorID($row_colors['color_id']);
+                                        }
+
+                                        if (!empty($items[0]['custom_color'])) {
+                                            $custom_color_id = intval($items[0]['custom_color']);
+                                            if (!in_array($custom_color_id, $inventory_color_ids)) {
+                                                $inventory_color_ids[] = $custom_color_id;
+                                            }
+                                        }
+
+                                        foreach ($inventory_color_ids as $color_id) {
+                                            $colorDetails = getColorDetails($color_id);
+                                            $colorHex = getColorHexFromColorID($color_id);
                                             $colorName = $colorDetails['color_name'] ?? '';
-                                            echo "<option value='{$row_colors['color_id']}' data-color='{$colorHex}' {$selected}>{$colorName}</option>";
+                                            $selected = ($first_calc['color_id'] == $color_id) ? 'selected' : '';
+                                            echo "<option value='{$color_id}' data-color='{$colorHex}' {$selected}>{$colorName}</option>";
                                         }
                                         ?>
                                     </select>
@@ -1162,7 +1202,7 @@ if(isset($_POST['fetch_cart'])){
                                 $sold_by_feet = $item['sold_by_feet'];
                                 $linear_price =$item['linear_price'];
                                 $panel_price = $item['panel_price'];
-                                $product_id_abbrev = $item['product_id_abbrev'];
+                                $product_id_abbrev = $item['unique_prod_id'];
                                 ?>
 
                                 <tr data-id="<?= $product_id ?>" data-line="<?= $line ?>" data-line="<?= $line ?>" data-bundle="<?= $values['bundle_name'] ?? '' ?>">
@@ -1224,10 +1264,57 @@ if(isset($_POST['fetch_cart'])){
                                             </button>
                                         </div>
                                     </td>
+                                    <?php 
+                                    $inventoryItems = getAvailableInventory($product_id);
+                                    ?>
+
                                     <td class="text-center">
-                                        
+                                        <select class="form-control screw_length_cart" 
+                                                name="screw_length" 
+                                                onchange="updateScrewLength(this)" 
+                                                data-line="<?= $line; ?>" 
+                                                data-id="<?= $product_id; ?>">
+                                            <option value="" hidden>Select Length</option>
+                                            <?php foreach ($inventoryItems as $item) { 
+                                                $dimension = trim($item['dimension'] ?? '');
+                                                $unit      = trim($item['dimension_unit'] ?? '');
+                                                
+                                                if ($dimension !== '') { 
+                                                    $selected = ($values['screw_length'] ?? '') === $dimension ? 'selected' : '';
+                                            ?>
+                                                    <option 
+                                                        value="<?= $item['dimension'] ?>"
+                                                        <?= $selected ?>
+                                                    >
+                                                        <?= htmlspecialchars($dimension) ?> <?= htmlspecialchars($unit) ?>
+                                                    </option>
+                                            <?php } } ?>
+                                        </select>
                                     </td>
-                                    <td class="text-center"></td>
+
+                                    <td class="text-center">
+                                        <select class="form-control screw_type_cart" 
+                                                name="screw_type" 
+                                                onchange="updateScrewType(this)" 
+                                                data-line="<?= $line; ?>" 
+                                                data-id="<?= $product_id; ?>">
+                                            <?php 
+                                            $screwTypes = [
+                                                'SD'  => 'Self-Driller',
+                                                'PT'  => 'Pointed-Tip',
+                                                'ZXL' => 'ProZ ZXL Long Life',
+                                                'STL' => 'Stainless Steel'
+                                            ];
+                                            $selectedType = $values['screw_type'] ?? '';
+                                            ?>
+                                            <option value="" hidden>Select Type</option>
+                                            <?php foreach ($screwTypes as $key => $label): ?>
+                                                <option value="<?= $key ?>" <?= ($selectedType === $key) ? 'selected' : '' ?>>
+                                                    <?= $label ?>
+                                                </option>
+                                            <?php endforeach; ?>
+                                        </select>
+                                    </td>
                                     <td class="text-center">
                                         <div class="d-flex flex-row align-items-center flex-nowrap w-auto">
                                             <fieldset class="border p-1 d-inline-flex align-items-center flex-nowrap">
@@ -1320,7 +1407,7 @@ if(isset($_POST['fetch_cart'])){
                             $picture_path = $first_calc['picture_path'];
                             $stock_text = $first_calc['stock_text'];
                             $multiplier = $first_calc['multiplier'];
-                            $product_id_abbrev = $first_calc['product_id_abbrev'];
+                            $product_id_abbrev = $first_calc['parent_prod_id'];
                             ?>
 
                             <tr class="thick-border" data-mult="<?= $multiplier ?>">
@@ -1345,15 +1432,29 @@ if(isset($_POST['fetch_cart'])){
                                         <?php
                                         $query_colors = "SELECT Product_id, color_id FROM inventory WHERE Product_id = '$product_id'";
                                         $result_colors = mysqli_query($conn, $query_colors);
+
+                                        $inventory_color_ids = [];
+
                                         while ($row_colors = mysqli_fetch_array($result_colors)) {
-                                            if (empty($row_colors['color_id']) || $row_colors['color_id'] == 0) {
-                                                continue;
+                                            $color_id = intval($row_colors['color_id']);
+                                            if ($color_id > 0 && !in_array($color_id, $inventory_color_ids)) {
+                                                $inventory_color_ids[] = $color_id;
                                             }
-                                            $selected = ($first_calc['color_id'] == $row_colors['color_id']) ? 'selected' : '';
-                                            $colorDetails = getColorDetails($row_colors['color_id']);
-                                            $colorHex = getColorHexFromColorID($row_colors['color_id']);
+                                        }
+
+                                        if (!empty($items[0]['custom_color'])) {
+                                            $custom_color_id = intval($items[0]['custom_color']);
+                                            if (!in_array($custom_color_id, $inventory_color_ids)) {
+                                                $inventory_color_ids[] = $custom_color_id;
+                                            }
+                                        }
+
+                                        foreach ($inventory_color_ids as $color_id) {
+                                            $colorDetails = getColorDetails($color_id);
+                                            $colorHex = getColorHexFromColorID($color_id);
                                             $colorName = $colorDetails['color_name'] ?? '';
-                                            echo "<option value='{$row_colors['color_id']}' data-color='{$colorHex}' {$selected}>{$colorName}</option>";
+                                            $selected = ($first_calc['color_id'] == $color_id) ? 'selected' : '';
+                                            echo "<option value='{$color_id}' data-color='{$colorHex}' {$selected}>{$colorName}</option>";
                                         }
                                         ?>
                                     </select>
@@ -1434,7 +1535,7 @@ if(isset($_POST['fetch_cart'])){
                                 $sold_by_feet = $item['sold_by_feet'];
                                 $linear_price =$item['linear_price'];
                                 $panel_price = $item['panel_price'];
-                                $product_id_abbrev = $item['product_id_abbrev'];
+                                $product_id_abbrev = $item['unique_prod_id'];
                                 ?>
 
                                 <tr data-id="<?= $product_id ?>" data-line="<?= $line ?>" data-line="<?= $line ?>" data-bundle="<?= $values['bundle_name'] ?? '' ?>">
@@ -1591,7 +1692,7 @@ if(isset($_POST['fetch_cart'])){
                             $picture_path = $first_calc['picture_path'];
                             $stock_text = $first_calc['stock_text'];
                             $multiplier = $first_calc['multiplier'];
-                            $product_id_abbrev = $first_calc['product_id_abbrev'];
+                            $product_id_abbrev = $first_calc['parent_prod_id'];
                             ?>
 
                             <tr class="thick-border" data-mult="<?= $multiplier ?>">
@@ -1616,15 +1717,29 @@ if(isset($_POST['fetch_cart'])){
                                         <?php
                                         $query_colors = "SELECT Product_id, color_id FROM inventory WHERE Product_id = '$product_id'";
                                         $result_colors = mysqli_query($conn, $query_colors);
+
+                                        $inventory_color_ids = [];
+
                                         while ($row_colors = mysqli_fetch_array($result_colors)) {
-                                            if (empty($row_colors['color_id']) || $row_colors['color_id'] == 0) {
-                                                continue;
+                                            $color_id = intval($row_colors['color_id']);
+                                            if ($color_id > 0 && !in_array($color_id, $inventory_color_ids)) {
+                                                $inventory_color_ids[] = $color_id;
                                             }
-                                            $selected = ($first_calc['color_id'] == $row_colors['color_id']) ? 'selected' : '';
-                                            $colorDetails = getColorDetails($row_colors['color_id']);
-                                            $colorHex = getColorHexFromColorID($row_colors['color_id']);
+                                        }
+
+                                        if (!empty($items[0]['custom_color'])) {
+                                            $custom_color_id = intval($items[0]['custom_color']);
+                                            if (!in_array($custom_color_id, $inventory_color_ids)) {
+                                                $inventory_color_ids[] = $custom_color_id;
+                                            }
+                                        }
+
+                                        foreach ($inventory_color_ids as $color_id) {
+                                            $colorDetails = getColorDetails($color_id);
+                                            $colorHex = getColorHexFromColorID($color_id);
                                             $colorName = $colorDetails['color_name'] ?? '';
-                                            echo "<option value='{$row_colors['color_id']}' data-color='{$colorHex}' {$selected}>{$colorName}</option>";
+                                            $selected = ($first_calc['color_id'] == $color_id) ? 'selected' : '';
+                                            echo "<option value='{$color_id}' data-color='{$colorHex}' {$selected}>{$colorName}</option>";
                                         }
                                         ?>
                                     </select>
@@ -1705,7 +1820,7 @@ if(isset($_POST['fetch_cart'])){
                                 $sold_by_feet = $item['sold_by_feet'];
                                 $linear_price =$item['linear_price'];
                                 $panel_price = $item['panel_price'];
-                                $product_id_abbrev = $item['product_id_abbrev'];
+                                $product_id_abbrev = $item['unique_prod_id'];
                                 ?>
 
                                 <tr data-id="<?= $product_id ?>" data-line="<?= $line ?>" data-line="<?= $line ?>" data-bundle="<?= $values['bundle_name'] ?? '' ?>">
