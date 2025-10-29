@@ -974,9 +974,11 @@ if (isset($_POST['save_order'])) {
     header('Content-Type: application/json');
     $response = [];
 
-    $credit_amt = floatval($_POST['credit_amt']);
-    $cash_amt = floatval($_POST['cash_amt']);
-    $job_id = intval($_POST['job_id']);
+    $discount = floatval($_POST['discount'] ?? 0);
+    $posted_credit_amt = isset($_POST['credit_amt']) ? floatval($_POST['credit_amt']) : null;
+    $posted_cash_amt   = isset($_POST['cash_amt']) ? floatval($_POST['cash_amt']) : null;
+
+    $job_id = intval($_POST['job_id'] ?? 0);
     $job_name = mysqli_real_escape_string($conn, $_POST['job_name'] ?? '');
     $job_po = mysqli_real_escape_string($conn, $_POST['job_po'] ?? '');
     $deliver_method = mysqli_real_escape_string($conn, $_POST['deliver_method'] ?? 'pickup');
@@ -984,11 +986,10 @@ if (isset($_POST['save_order'])) {
     $deliver_city = mysqli_real_escape_string($conn, $_POST['deliver_city'] ?? '');
     $deliver_state = mysqli_real_escape_string($conn, $_POST['deliver_state'] ?? '');
     $deliver_zip = mysqli_real_escape_string($conn, $_POST['deliver_zip'] ?? '');
-    $delivery_amt = mysqli_real_escape_string($conn, $_POST['delivery_amt'] ?? '');
-    
-    $pay_type = mysqli_real_escape_string($conn, $_POST['payment_method'] ?? '');
+    $delivery_amt = floatval($_POST['delivery_amt'] ?? 0);
+
     $contractor_id = mysqli_real_escape_string($conn, $_POST['contractor_id'] ?? '');
-    $truck = intval($_POST['truck']);
+    $truck = intval($_POST['truck'] ?? 0);
 
     $deliver_fname = mysqli_real_escape_string($conn, $_POST['deliver_fname'] ?? '');
     $deliver_lname = mysqli_real_escape_string($conn, $_POST['deliver_lname'] ?? '');
@@ -996,47 +997,49 @@ if (isset($_POST['save_order'])) {
     $deliver_email = mysqli_real_escape_string($conn, $_POST['deliver_email'] ?? '');
     $customer_tax = mysqli_real_escape_string($conn, $_POST['customer_tax'] ?? '');
     $tax_exempt_number = mysqli_real_escape_string($conn, $_POST['tax_exempt_number'] ?? '');
-    $isAddingCustomer = mysqli_real_escape_string($conn, $_POST['isAddingCustomer'] ?? 0);
+    $isAddingCustomer = intval($_POST['isAddingCustomer'] ?? 0);
 
     $scheduled_date = mysqli_real_escape_string($conn, $_POST['scheduled_date'] ?? '');
     $scheduled_time = mysqli_real_escape_string($conn, $_POST['scheduled_time'] ?? '');
 
+    $applyStoreCredit = floatval($_POST['applyStoreCredit'] ?? 0);
+    $applyJobDeposit = floatval($_POST['applyJobDeposit'] ?? 0);
+
+    $pay_cash     = floatval($_POST['pay_cash'] ?? 0);
+    $pay_card     = floatval($_POST['pay_card'] ?? 0);
+    $pay_check    = floatval($_POST['pay_check'] ?? 0);
+    $pay_pickup   = floatval($_POST['pay_pickup'] ?? 0);
+    $pay_delivery = floatval($_POST['pay_delivery'] ?? 0);
+    $pay_net30    = floatval($_POST['pay_net30'] ?? 0);
+
+    $pay_types = [];
+    if ($pay_cash > 0)   $pay_types[] = 'cash';
+    if ($pay_card > 0)   $pay_types[] = 'card';
+    if ($pay_check > 0)  $pay_types[] = 'check';
+    if ($pay_pickup > 0) $pay_types[] = 'pickup';
+    if ($pay_delivery > 0) $pay_types[] = 'delivery';
+    if ($pay_net30 > 0)  $pay_types[] = 'net30';
+    $pay_type_label = implode(',', $pay_types);
+
+    $payments_cash_like   = $pay_cash + $pay_card + $pay_check;
+    $payments_credit_like = $pay_pickup + $pay_delivery + $pay_net30;
+
     if (empty($scheduled_date) && empty($scheduled_time)) {
         $scheduled_datetime = '';
     } else {
-        if (empty($scheduled_date) && !empty($scheduled_time)) {
-            $scheduled_date = date('Y-m-d');
-        }
-
-        if (!empty($scheduled_date) && empty($scheduled_time)) {
-            $scheduled_time = '06:00';
-        }
-
+        if (empty($scheduled_date) && !empty($scheduled_time)) $scheduled_date = date('Y-m-d');
+        if (!empty($scheduled_date) && empty($scheduled_time)) $scheduled_time = '06:00';
         $scheduled_datetime = date('Y-m-d H:i:s', strtotime("$scheduled_date $scheduled_time"));
     }
 
     $customer_id = $_SESSION['customer_id'] ?? null;
-
     if (empty($customer_id)) {
         if ($isAddingCustomer == 1) {
             $sql = "INSERT INTO customer (
-                        customer_first_name, 
-                        customer_last_name, 
-                        contact_email, 
-                        contact_phone, 
-                        tax_status, 
-                        tax_exempt_number, 
-                        created_at
+                        customer_first_name, customer_last_name, contact_email, contact_phone, tax_status, tax_exempt_number, created_at
                     ) VALUES (
-                        '$deliver_fname', 
-                        '$deliver_lname', 
-                        '$deliver_email', 
-                        '$deliver_phone', 
-                        '$customer_tax', 
-                        '$tax_exempt_number', 
-                        NOW()
+                        '$deliver_fname', '$deliver_lname', '$deliver_email', '$deliver_phone', '$customer_tax', '$tax_exempt_number', NOW()
                     )";
-
             if (mysqli_query($conn, $sql)) {
                 $customer_id = mysqli_insert_id($conn);
                 $_SESSION['customer_id'] = $customer_id;
@@ -1046,7 +1049,7 @@ if (isset($_POST['save_order'])) {
                 exit;
             }
         } else {
-            $response['error'] = "Customer ID ($isAddingCustomer) is not set and not adding new customer.";
+            $response['error'] = "Customer ID is not set and not adding new customer.";
             echo json_encode($response);
             exit;
         }
@@ -1058,10 +1061,7 @@ if (isset($_POST['save_order'])) {
         exit;
     }
 
-    $applyStoreCredit = floatval($_POST['applyStoreCredit']);
-    $applyJobDeposit = floatval($_POST['applyJobDeposit']);
-
-    $estimateid = intval($_SESSION['estimateid']);
+    $estimateid = intval($_SESSION['estimateid'] ?? 0);
     $customerid = intval($_SESSION['customer_id']);
     $cashierid = intval($_SESSION['userid']);
     $station_id = intval($_SESSION['station'] ?? 0);
@@ -1085,7 +1085,7 @@ if (isset($_POST['save_order'])) {
 
     $total_price = 0;
     $total_discounted_price = 0;
-    $pre_orders = array();
+    $pre_orders = [];
     foreach ($cart as $item) {
         $calculated = calculateCartItem($item);
         $actual_price = $calculated['product_price'];
@@ -1095,20 +1095,20 @@ if (isset($_POST['save_order'])) {
         $total_discounted_price += $discounted_price;
     }
 
-    $original_cash_amt = floatval($cash_amt);
+    $original_cash_amt = $payments_cash_like;
+    $original_credit_amt = $payments_credit_like;
+
     $store_credit = floatval($customer_details['store_credit']);
     $charge_net_30 = floatval($customer_details['charge_net_30']);
 
-    if ($pay_type == 'net30' && $charge_net_30 < $total_discounted_price) {
+    // ---- Net30 approval (if net30 was used) ----
+    if ($pay_net30 > 0 && $charge_net_30 < $total_discounted_price) {
         $result = createNet30Approval(
             $customerid,
             $cashierid,
-            $pay_type,
+            'net30',
             $charge_net_30,
-            [
-                'job_po' => $job_po,
-                'job_name' => $job_name
-            ],
+            ['job_po' => $job_po, 'job_name' => $job_name],
             [
                 'deliver_address' => $deliver_address,
                 'deliver_city'    => $deliver_city,
@@ -1121,14 +1121,11 @@ if (isset($_POST['save_order'])) {
             $tax_rate,
             $discount_default
         );
-
         if (!$result['success']) {
             echo json_encode($result);
             exit;
         }
     }
-
-    $job_balance = getJobDepositTotal($job_id);
 
     $credit_to_apply = 0;
     $job_deposit_applied = 0;
@@ -1137,82 +1134,81 @@ if (isset($_POST['save_order'])) {
     if ($applyStoreCredit && $store_credit > 0) {
         $credit_to_apply = min($store_credit, $original_cash_amt);
         $new_store_credit = $store_credit - $credit_to_apply;
-        $cash_amt = $original_cash_amt - $credit_to_apply;
+        $collected_cash_after_store = $original_cash_amt - $credit_to_apply;
     } else {
-        $cash_amt = $original_cash_amt;
+        $collected_cash_after_store = $original_cash_amt;
     }
 
-    if ($pay_type == 'net30' && $charge_net_30 > 0) {
-        $net30_applied = min($charge_net_30, $cash_amt);
-        $new_charge_net_30 = $charge_net_30 - $net30_applied;
-        $cash_amt = $cash_amt - $net30_applied;
-    }
-
+    $job_balance = getJobDepositTotal($job_id);
     if ($applyJobDeposit && $job_balance > 0) {
-        $job_deposit_applied = min($job_balance, $cash_amt);
-        $cash_amt -= $job_deposit_applied;
+        $job_deposit_applied = min($job_balance, $collected_cash_after_store);
+        $collected_cash_after_store -= $job_deposit_applied;
     }
 
-    if ($pay_type == 'delivery' || $pay_type == 'pickup') {
-        $credit_amt = $cash_amt;
-        $cash_amt = 0;
-    }
+    $cash_amt   = max(0, $collected_cash_after_store);
+    $credit_amt = $original_credit_amt;
 
     if ($cash_amt == 0 && $credit_amt == 0 && $applyJobDeposit) {
-        $pay_type = 'job_deposit';
+        $pay_type_label = 'job_deposit';
+    } else {
+        $pay_type_label = $pay_type_label;
     }
 
-    $query = "INSERT INTO orders (estimateid, cashier, station, total_price, discounted_price, discount_percent, order_date, scheduled_date, customerid, originalcustomerid, cash_amt, credit_amt, job_name, job_po, deliver_address,  deliver_city,  deliver_state,  deliver_zip, delivery_amt, deliver_method, deliver_fname, deliver_lname, pay_type, tax_status, tax_exempt_number, truck, contractor_id) 
-              VALUES ('$estimateid', '$cashierid', '$station_id', '$total_price', '$total_discounted_price', '".($discount * 100)."', '$order_date', '$scheduled_datetime', '$customerid', '$customerid', '$cash_amt', '$credit_amt' , '$job_name' , '$job_po' , '$deliver_address', '$deliver_city', '$deliver_state', '$deliver_zip' , '$delivery_amt', '$deliver_method' , '$deliver_fname' , '$deliver_lname', '$pay_type', '$tax_status', '$tax_exempt_number', '$truck', '$contractor_id')";
-    
-    if ($conn->query($query) === TRUE) {
+    $check_no = mysqli_real_escape_string($conn, $_POST['check_no'] ?? '');
+    $check_number = (!empty($check_no) && $pay_check > 0) ? "'" . mysqli_real_escape_string($conn, $check_no) . "'" : "NULL";
+
+    $discount_percent = ($discount * 100);
+    $sql_insert = "
+        INSERT INTO orders (
+            estimateid, cashier, station, total_price, discounted_price, discount_percent,
+            order_date, scheduled_date, customerid, originalcustomerid,
+            cash_amt, credit_amt, job_name, job_po,
+            deliver_address, deliver_city, deliver_state, deliver_zip,
+            delivery_amt, deliver_method, deliver_fname, deliver_lname,
+            pay_type, pay_cash, pay_card, pay_check, pay_pickup, pay_delivery, pay_net30,
+            tax_status, tax_exempt_number, truck, contractor_id
+        ) VALUES (
+            '$estimateid', '$cashierid', '$station_id', '$total_price', '$total_discounted_price', '$discount_percent',
+            '$order_date', '$scheduled_datetime', '$customerid', '$customerid',
+            '$cash_amt', '$credit_amt', '$job_name', '$job_po',
+            '$deliver_address', '$deliver_city', '$deliver_state', '$deliver_zip',
+            '$delivery_amt', '$deliver_method', '$deliver_fname', '$deliver_lname',
+            '".mysqli_real_escape_string($conn,$pay_type_label)."',
+            '$pay_cash', '$pay_card', '$pay_check', '$pay_pickup', '$pay_delivery', '$pay_net30',
+            '$tax_status', '$tax_exempt_number', '$truck', '$contractor_id'
+        )
+    ";
+
+    if ($conn->query($sql_insert) === TRUE) {
         $orderid = $conn->insert_id;
 
         addPoints($customerid, $orderid);
 
-        $job_id = intval($job_id);
         $po_number = mysqli_real_escape_string($conn, $job_po);
         $created_by = mysqli_real_escape_string($conn, $cashierid);
         $reference_no = mysqli_real_escape_string($conn, $orderid);
         $description = 'Materials Purchased';
-        $check_number = ($payment_method === 'check' && !empty($check_no)) ? "'".mysqli_real_escape_string($conn, $check_no)."'" : "NULL";
 
-        if ($pay_type == 'net30') {
-            $update_sql = "UPDATE customer SET charge_net_30 = $new_charge_net_30 WHERE customer_id = $customerid";
-            if (!mysqli_query($conn, $update_sql)) {
-                $response['error'] = 'Update Error: ' . mysqli_error($conn);
-            }
+        if ($pay_net30 > 0) {
+            $net30_applied = min($charge_net_30, $pay_net30);
+            if ($net30_applied > 0) {
+                $new_charge_net_30 = $charge_net_30 - $net30_applied;
+                $update_sql = "UPDATE customer SET charge_net_30 = $new_charge_net_30 WHERE customer_id = $customerid";
+                if (!mysqli_query($conn, $update_sql)) {
+                    $response['error'] = 'Update Error: ' . mysqli_error($conn);
+                }
 
-            $insert_sql = "
-                INSERT INTO customer_net30_history (customer_id, credit_amount, credit_type, reference_type, reference_id, created_at)
-                VALUES (
-                    $customerid,
-                    $net30_applied,
-                    'use',
-                    'order',
-                    $orderid,
-                    NOW()
-                )
-            ";
-            if (!mysqli_query($conn, $insert_sql)) {
-                $response['error'] = 'Ledger Insert Error: ' . mysqli_error($conn);
-            }
-
-            $sql = "
-                INSERT INTO job_ledger (
-                    job_id, customer_id, entry_type, amount, po_number, reference_no, description, 
-                    check_number, created_by, created_at, payment_method
-                ) VALUES (
-                    '$job_id', '$customerid', 'credit', '$net30_applied', '$po_number', '$reference_no', '$description',
-                    NULL, '$created_by', NOW(), '$pay_type'
-                )
-            ";
-            if (!mysqli_query($conn, $sql)) {
-                $response['error'] = 'Ledger Insert Error: ' . mysqli_error($conn);
+                $insert_sql = "
+                    INSERT INTO customer_net30_history (customer_id, credit_amount, credit_type, reference_type, reference_id, created_at)
+                    VALUES ($customerid, $net30_applied, 'use', 'order', $orderid, NOW())
+                ";
+                if (!mysqli_query($conn, $insert_sql)) {
+                    $response['error'] = 'Ledger Insert Error: ' . mysqli_error($conn);
+                }
             }
         }
 
-        if ($applyStoreCredit) {
+        if ($applyStoreCredit && $credit_to_apply > 0) {
             $update_sql = "UPDATE customer SET store_credit = $new_store_credit WHERE customer_id = $customerid";
             if (!mysqli_query($conn, $update_sql)) {
                 $response['error'] = 'Update Error: ' . mysqli_error($conn);
@@ -1220,95 +1216,105 @@ if (isset($_POST['save_order'])) {
 
             $insert_sql = "
                 INSERT INTO customer_store_credit_history (customer_id, credit_amount, credit_type, reference_type, reference_id, created_at)
-                VALUES (
-                    $customerid,
-                    $credit_to_apply,
-                    'use',
-                    'order',
-                    $orderid,
-                    NOW()
-                )
+                VALUES ($customerid, $credit_to_apply, 'use', 'order', $orderid, NOW())
             ";
             if (!mysqli_query($conn, $insert_sql)) {
                 $response['error'] = 'Ledger Insert Error: ' . mysqli_error($conn);
             }
         }
 
-        if (!empty($job_id)) {
-            if ($applyJobDeposit && $job_balance > 0 && $job_deposit_applied > 0) {
-                $amount = number_format($job_deposit_applied, 2, '.', '');
-                $sql = "
-                    INSERT INTO job_ledger (
-                        job_id, customer_id, entry_type, amount, po_number, reference_no, description, check_number, created_by, created_at, payment_method
-                    ) VALUES (
-                        '$job_id', '$customerid', 'usage', '$amount', '$po_number', '$reference_no', '$description', $check_number, '$created_by', NOW(), 'job_deposit'
-                    )
-                ";
-                if (!mysqli_query($conn, $sql)) {
-                    $response['error'] = 'Ledger Insert Error (usage): ' . mysqli_error($conn);
-                } else {
-                    $remaining_to_apply = $job_deposit_applied;
-
-                    $query_deposits = "
-                        SELECT deposit_id, deposit_remaining 
-                        FROM job_deposits 
-                        WHERE job_id = '$job_id' AND deposit_status = 1 AND deposit_remaining > 0 
-                        ORDER BY created_at ASC
-                    ";
-                    $result_deposits = mysqli_query($conn, $query_deposits);
-
-                    while ($row = mysqli_fetch_assoc($result_deposits)) {
-                        $deposit_id = $row['deposit_id'];
-                        $remaining = floatval($row['deposit_remaining']);
-
-                        if ($remaining_to_apply <= 0) {
-                            break;
-                        }
-
-                        $used = min($remaining, $remaining_to_apply);
-                        $new_remaining = $remaining - $used;
-                        $new_status = ($new_remaining <= 0) ? 2 : 1;
-
-                        $update_deposit = "
-                            UPDATE job_deposits
-                            SET deposit_remaining = $new_remaining,
-                                deposit_status = $new_status
-                            WHERE deposit_id = $deposit_id
-                        ";
-                        mysqli_query($conn, $update_deposit);
-
-                        $remaining_to_apply -= $used;
-                    }
-                }
-            }
-        }
-        
-        $entry_type = ($pay_type == 'delivery' || $pay_type == 'pickup' || $pay_type == 'net30') ? 'credit' : 'usage';
-        $cash_amt = floatval($cash_amt);
-        $credit_amt = floatval($credit_amt);
-        $amount = $cash_amt != 0 ? $cash_amt : $credit_amt;
-
-        if ($amount > 0) {
-            $amount = number_format($amount, 2, '.', '');
+        if ($applyJobDeposit && $job_deposit_applied > 0) {
+            $amount = number_format($job_deposit_applied, 2, '.', '');
             $sql = "
                 INSERT INTO job_ledger (
-                    job_id, customer_id, entry_type, amount, po_number, reference_no, description, 
-                    check_number, created_by, created_at, payment_method
+                    job_id, customer_id, entry_type, amount, po_number, reference_no, description, check_number, created_by, created_at, payment_method
                 ) VALUES (
-                    '$job_id', '$customerid', '$entry_type', '$amount', '$po_number', '$reference_no', '$description',
-                    NULL, '$created_by', NOW(), '$pay_type'
+                    '$job_id', '$customerid', 'usage', '$amount', '$po_number', '$reference_no', '$description', $check_number, '$created_by', NOW(), 'job_deposit'
                 )
             ";
             if (!mysqli_query($conn, $sql)) {
-                $response['error'] = 'Ledger Insert Error ($entry_type): ' . mysqli_error($conn);
+                $response['error'] = 'Ledger Insert Error (usage): ' . mysqli_error($conn);
+            } else {
+                $remaining_to_apply = $job_deposit_applied;
+                $query_deposits = "
+                    SELECT deposit_id, deposit_remaining 
+                    FROM job_deposits 
+                    WHERE job_id = '$job_id' AND deposit_status = 1 AND deposit_remaining > 0 
+                    ORDER BY created_at ASC
+                ";
+                $result_deposits = mysqli_query($conn, $query_deposits);
+                while ($row = mysqli_fetch_assoc($result_deposits)) {
+                    $deposit_id = $row['deposit_id'];
+                    $remaining = floatval($row['deposit_remaining']);
+                    if ($remaining_to_apply <= 0) break;
+                    $used = min($remaining, $remaining_to_apply);
+                    $new_remaining = $remaining - $used;
+                    $new_status = ($new_remaining <= 0) ? 2 : 1;
+                    $update_deposit = "
+                        UPDATE job_deposits
+                        SET deposit_remaining = $new_remaining,
+                            deposit_status = $new_status
+                        WHERE deposit_id = $deposit_id
+                    ";
+                    mysqli_query($conn, $update_deposit);
+                    $remaining_to_apply -= $used;
+                }
             }
         }
 
-        if ($pay_type == 'cash' || $pay_type == 'check' || $pay_type == 'card') {
-            recordCashInflow($pay_type, 'sales_payment', $cash_amt);
+        if ($pay_cash > 0) {
+            $amt = number_format($pay_cash, 2, '.', '');
+            $sql = "
+                INSERT INTO job_ledger (job_id, customer_id, entry_type, amount, po_number, reference_no, description, check_number, created_by, created_at, payment_method)
+                VALUES ('$job_id', '$customerid', 'usage', '$amt', '$po_number', '$reference_no', '$description', NULL, '$created_by', NOW(), 'cash')
+            ";
+            mysqli_query($conn, $sql);
+            recordCashInflow('cash', 'sales_payment', $pay_cash);
+        }
+        if ($pay_card > 0) {
+            $amt = number_format($pay_card, 2, '.', '');
+            $sql = "
+                INSERT INTO job_ledger (job_id, customer_id, entry_type, amount, po_number, reference_no, description, check_number, created_by, created_at, payment_method)
+                VALUES ('$job_id', '$customerid', 'usage', '$amt', '$po_number', '$reference_no', '$description', NULL, '$created_by', NOW(), 'card')
+            ";
+            mysqli_query($conn, $sql);
+            recordCashInflow('card', 'sales_payment', $pay_card);
+        }
+        if ($pay_check > 0) {
+            $amt = number_format($pay_check, 2, '.', '');
+            $sql = "
+                INSERT INTO job_ledger (job_id, customer_id, entry_type, amount, po_number, reference_no, description, check_number, created_by, created_at, payment_method)
+                VALUES ('$job_id', '$customerid', 'usage', '$amt', '$po_number', '$reference_no', '$description', $check_number, '$created_by', NOW(), 'check')
+            ";
+            mysqli_query($conn, $sql);
+            recordCashInflow('check', 'sales_payment', $pay_check);
         }
 
-        $values = [];
+        if ($pay_pickup > 0) {
+            $amt = number_format($pay_pickup, 2, '.', '');
+            $sql = "
+                INSERT INTO job_ledger (job_id, customer_id, entry_type, amount, po_number, reference_no, description, check_number, created_by, created_at, payment_method)
+                VALUES ('$job_id', '$customerid', 'credit', '$amt', '$po_number', '$reference_no', 'Pickup Order', NULL, '$created_by', NOW(), 'pickup')
+            ";
+            mysqli_query($conn, $sql);
+        }
+        if ($pay_delivery > 0) {
+            $amt = number_format($pay_delivery, 2, '.', '');
+            $sql = "
+                INSERT INTO job_ledger (job_id, customer_id, entry_type, amount, po_number, reference_no, description, check_number, created_by, created_at, payment_method)
+                VALUES ('$job_id', '$customerid', 'credit', '$amt', '$po_number', '$reference_no', 'Delivery Order', NULL, '$created_by', NOW(), 'delivery')
+            ";
+            mysqli_query($conn, $sql);
+        }
+        if ($pay_net30 > 0) {
+            $amt = number_format($pay_net30, 2, '.', '');
+            $sql = "
+                INSERT INTO job_ledger (job_id, customer_id, entry_type, amount, po_number, reference_no, description, check_number, created_by, created_at, payment_method)
+                VALUES ('$job_id', '$customerid', 'credit', '$amt', '$po_number', '$reference_no', 'Net30 Charge', NULL, '$created_by', NOW(), 'net30')
+            ";
+            mysqli_query($conn, $sql);
+        }
+
         foreach ($cart as $item) {
             $calc = calculateCartItem($item);
 
@@ -1325,7 +1331,7 @@ if (isset($_POST['save_order'])) {
             $grade           = $calc['grade'];
             $gauge           = $calc['gauge'];
             $profile         = $calc['profile'];
-            $discount        = $calc['discount'];
+            $discount_item        = $calc['discount'];
 
             $stiff_stand_seam  = $item['stiff_stand_seam'] ?? '0';
             $stiff_board_batten = $item['stiff_board_batten'] ?? '0';
@@ -1390,6 +1396,7 @@ if (isset($_POST['save_order'])) {
                     '$product_id', '$category_id', '$color_id', '$grade', '$gauge'
                 )";
                 mysqli_query($conn, $insert_query);
+                $pre_orders[] = $product_id;
             }
 
             $current_stock = getProductStockTotal($product_id);
@@ -1408,7 +1415,7 @@ if (isset($_POST['save_order'])) {
                 $list_items .= '</ul>';
 
                 $subject = "Out of stock Product has been Ordered!";
-                $response = $emailSender->sendOutOfStockEmail($admin_email, $subject, $list_items);
+                $response_email = $emailSender->sendOutOfStockEmail($admin_email, $subject, $list_items);
 
                 $actorId = $cashierid;
                 $actionType = 'no_stock_order';
@@ -1422,24 +1429,18 @@ if (isset($_POST['save_order'])) {
 
         if (!empty($pre_orders)) {
             $list_items = '<ul style="list-style-type: none; padding-left: 0;">';
-            foreach ($pre_orders as $key => $value) {
-                $label = ucfirst(str_replace('_', ' ', $key));
-                $list_items .= "
-                    <li style='margin-bottom: 8px;'>
-                        <span style='display: inline-block; min-width: 140px; font-weight: bold; color: #333;'>$label:</span>
-                        <span style='color: #555;'>" . htmlspecialchars($value) . "</span>
-                    </li>";
+            foreach ($pre_orders as $prod) {
+                $list_items .= "<li style='margin-bottom: 8px;'><span style='display: inline-block; min-width: 140px; font-weight: bold; color: #333;'>Product ID:</span><span style='color: #555;'>".htmlspecialchars($prod)."</span></li>";
             }
             $list_items .= '</ul>';
-        
+
             $subject ="Out of Stock items has been preordered";
-            $response = $emailSender->sendPreOrderEmail($admin_email, $subject, $list_items);
-            if (!$response['success']) {
-                $response['error'] = "Failed to send mail. " . ($response['error'] ?? '');
+            $resp = $emailSender->sendPreOrderEmail($admin_email, $subject, $list_items);
+            if (!$resp['success']) {
+                $response['error'] = "Failed to send mail. " . ($resp['error'] ?? '');
             }
 
             $actorId = $cashierid;
-            $actor_name = get_staff_name($actorId);
             $actionType = 'pre_order';
             $targetId = $orderid;
             $targetType = "Pre-Order";
@@ -1468,36 +1469,28 @@ if (isset($_POST['save_order'])) {
             $response['customer_id'] = $_SESSION['customer_id'];
 
             unset($_SESSION['cart']);
+        } else {
+            $response['message'] = "Error inserting order estimate records: " . $conn->error;
+        }
 
-            if($applyStoreCredit){
-
-            }
-
-            $customer_total_orders = getCustomerOrderTotal($customerid);
-            $customer_details = getCustomerDetails($customerid);
-            $isLoyalty = $customer_details['loyalty'];
-
-            if (!$isLoyalty) {
-                $query_loyalty = "SELECT * FROM loyalty_program WHERE date_from <= CURDATE() AND date_to >= CURDATE()";
-                $result_loyalty = $conn->query($query_loyalty);
-
-                if ($result_loyalty && $result_loyalty->num_rows > 0) {
-                    while ($row_loyalty = $result_loyalty->fetch_assoc()) {
-                        $accumulated_loyalty_required = $row_loyalty['accumulated_total_orders'];
-
-                        if ($customer_total_orders >= $accumulated_loyalty_required) {
-                            $query_update_loyalty = "UPDATE customer SET loyalty = 1 WHERE customer_id = $customerid";
-                            if ($conn->query($query_update_loyalty) === TRUE) {
-                                $response['message'] = 'Added Customer to Loyalty Program';
-                            }
+        $customer_total_orders = getCustomerOrderTotal($customerid);
+        $customer_details = getCustomerDetails($customerid);
+        $isLoyalty = $customer_details['loyalty'];
+        if (!$isLoyalty) {
+            $query_loyalty = "SELECT * FROM loyalty_program WHERE date_from <= CURDATE() AND date_to >= CURDATE()";
+            $result_loyalty = $conn->query($query_loyalty);
+            if ($result_loyalty && $result_loyalty->num_rows > 0) {
+                while ($row_loyalty = $result_loyalty->fetch_assoc()) {
+                    $accumulated_loyalty_required = $row_loyalty['accumulated_total_orders'];
+                    if ($customer_total_orders >= $accumulated_loyalty_required) {
+                        $query_update_loyalty = "UPDATE customer SET loyalty = 1 WHERE customer_id = $customerid";
+                        if ($conn->query($query_update_loyalty) === TRUE) {
+                            $response['message'] = 'Added Customer to Loyalty Program';
                         }
                     }
                 }
             }
-        }else{
-            $response['message'] = "Error inserting order estimate records: " . $conn->error;
         }
-        
 
         unset($_SESSION['customer_id']);
     } else {

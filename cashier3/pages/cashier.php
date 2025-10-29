@@ -4619,6 +4619,7 @@ $editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) :
 
         $(document).on('click', '#save_order', function(event) {
             event.preventDefault();
+
             var discount = $('#order_discount').val();
             var delivery_amt = $('#delivery_amt').val();
             var cash_amt = $('#order_payable_amt').val();
@@ -4644,15 +4645,29 @@ $editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) :
             var scheduled_date = $('#scheduled-date').val();
             var scheduled_time = $('#scheduled-time').val();
 
-            var payment_method = $('[name="payMethod"]:checked').val();
             var deliver_method = $('input[name="order_delivery_method"]:checked').val();
 
             const savedData = sessionStorage.getItem('new_customer');
-            if (savedData) {
-                isAddingCustomer = 1;
-            }
+            var isAddingCustomer = savedData ? 1 : 0;
 
-            if(payment_method){
+            var pay_cash = $('#payCash').is(':checked') ? parseFloat($('#cashAmount').val()) || 0 : 0;
+            var pay_card = $('#payCard').is(':checked') ? parseFloat($('#cardAmount').val()) || 0 : 0;
+            var pay_check = $('#payCheck').is(':checked') ? parseFloat($('#checkAmount').val()) || 0 : 0;
+            var pay_pickup = $('#payPickup').is(':checked') ? parseFloat($('#pickupAmount').val()) || 0 : 0;
+            var pay_delivery = $('#payDelivery').is(':checked') ? parseFloat($('#deliveryAmount').val()) || 0 : 0;
+            var pay_net30 = $('#payNet30').is(':checked') ? parseFloat($('#net30Amount').val()) || 0 : 0;
+
+            if (
+                pay_cash <= 0 &&
+                pay_card <= 0 &&
+                pay_check <= 0 &&
+                pay_pickup <= 0 &&
+                pay_delivery <= 0 &&
+                pay_net30 <= 0
+            ) {
+                alert("Please enter at least one payment amount!");
+                return;
+            }else{
                 $.ajax({
                     url: 'pages/cashier_ajax.php',
                     type: 'POST',
@@ -4678,11 +4693,18 @@ $editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) :
                         isAddingCustomer: isAddingCustomer,
                         applyStoreCredit: applyStoreCredit,
                         applyJobDeposit: applyJobDeposit,
-                        payment_method: payment_method,
                         truck: truck,
                         contractor_id: contractor_id,
                         scheduled_date: scheduled_date,
                         scheduled_time: scheduled_time,
+
+                        pay_cash: pay_cash,
+                        pay_card: pay_card,
+                        pay_check: pay_check,
+                        pay_pickup: pay_pickup,
+                        pay_delivery: pay_delivery,
+                        pay_net30: pay_net30,
+
                         save_order: 'save_order'
                     },
                     success: function(response) {
@@ -4706,10 +4728,7 @@ $editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) :
                         console.log('Error: ' + textStatus + ' - ' + errorThrown);
                     }
                 });
-            }else{
-                alert("Please select payment method!");
             }
-            
         });
 
         $(document).on('click', '#submitApprovalBtn', function(event) {

@@ -578,71 +578,138 @@ if(isset($_POST['fetch_order'])){
                 <!-- Payment -->
                 <div class="card mb-3">
                     <div class="card-header bg-white">
-                    <i class="fa fa-check-circle text-success me-2"></i>Payment
+                        <i class="fa fa-check-circle text-success me-2"></i>Payment
                     </div>
                     <div class="card-body">
-                    
-                    <div class="mb-3 text-white">
-                        <div id="paymentOptions">
-                            <label class="form-label fw-bold">Select Payment Method</label><br>
-
-                            <div class="form-check form-check-inline <?= empty($customer_details['payment_pickup']) ? 'd-none' : '' ?>">
-                                <input class="form-check-input" type="radio" name="payMethod" id="payPickup" value="pickup">
-                                <label class="form-check-label" for="payPickup">
-                                    <i class="fa-solid fa-store me-1"></i>Pay at Pick-Up
-                                </label>
-                            </div>
-
-                            <div class="form-check form-check-inline <?= empty($customer_details['payment_delivery']) ? 'd-none' : '' ?>">
-                                <input class="form-check-input" type="radio" name="payMethod" id="payDelivery" value="delivery">
-                                <label class="form-check-label" for="payDelivery">
-                                    <i class="fa-solid fa-truck me-1"></i>Pay at Delivery
-                                </label>
-                            </div>
-
-                            <div class="form-check form-check-inline <?= empty($customer_details['payment_cash']) ? 'd-none' : '' ?>">
-                                <input class="form-check-input" type="radio" name="payMethod" id="payCash" value="cash">
-                                <label class="form-check-label" for="payCash">
-                                    <i class="fa-solid fa-money-bill-wave me-1"></i>Cash
-                                </label>
-                            </div>
-
-                            <div class="form-check form-check-inline <?= empty($customer_details['payment_check']) ? 'd-none' : '' ?>">
-                                <input class="form-check-input" type="radio" name="payMethod" id="payCheck" value="check">
-                                <label class="form-check-label" for="payCheck">
-                                    <i class="fa-solid fa-file-invoice-dollar me-1"></i>Check
-                                </label>
-                            </div>
-
-                            <div class="form-check form-check-inline <?= empty($customer_details['payment_card']) ? 'd-none' : '' ?>">
-                                <input class="form-check-input" type="radio" name="payMethod" id="payCard" value="card">
-                                <label class="form-check-label" for="payCard">
-                                    <i class="fa-brands fa-cc-visa me-1"></i>Credit/Debit Card
-                                </label>
-                            </div>
-
-                            <div class="form-check form-check-inline <?= empty($customer_details['charge_net_30']) ? 'd-none' : '' ?>">
-                                <input class="form-check-input" type="radio" name="payMethod" id="payNet30" value="net30">
-                                <label class="form-check-label" for="payNet30">
-                                    <i class="fa-solid fa-calendar-check me-1"></i>Charge Net 30
-                                </label>
-                            </div>
-                        </div>
-
-                    </div>
-
-                    <?php if (floatval($customer_details['store_credit']) > 0): ?>
                         <div class="mb-3 text-white">
-                            <div class="form-check mb-2">
-                                <input class="form-check-input" type="checkbox" id="applyStoreCredit" name="applyStoreCredit" value="1" >
-                                <label class="form-check-label text-white" for="applyStoreCredit">
-                                Apply Store Credit (Available: $<?= number_format(floatval($customer_details['store_credit']), 2) ?>)
-                                </label>
+                            <label class="form-label fw-bold mb-2">Select Payment Method(s)</label>
+
+                            <!-- Payment Options -->
+                            <div class="row gx-3 gy-4 text-center">
+
+                                <!-- Pay at Pickup -->
+                                <div class="col-2 <?= empty($customer_details['payment_pickup']) ? 'd-none' : '' ?>">
+                                    <div class="p-2">
+                                        <label class="form-label d-block mb-1">
+                                            <i class="fa-solid fa-store me-1"></i>Pay at Pick-Up
+                                        </label>
+                                        <div class="d-flex flex-column align-items-center">
+                                            <input class="form-check-input pay-method mb-2" type="checkbox" id="payPickup" name="payPickup" value="pickup"><br>
+                                            <div id="pickupAmountDiv" class="amount-div d-none mt-2 w-100">
+                                                <label class="form-label small text-center d-block mb-1">Amount</label>
+                                                <input type="number" class="form-control form-control-sm text-center" id="pickupAmount" name="pickupAmount" placeholder="0.00">
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Pay at Delivery -->
+                                <div class="col-2 <?= empty($customer_details['payment_delivery']) ? 'd-none' : '' ?>">
+                                    <div class="p-2">
+                                        <label class="form-label d-block mb-1">
+                                            <i class="fa-solid fa-truck me-1"></i>Pay at Delivery
+                                        </label>
+                                        <div class="d-flex flex-column align-items-center">
+                                            <input class="form-check-input pay-method mb-2" type="checkbox" id="payDelivery" name="payDelivery" value="delivery"><br>
+                                            <div id="deliveryAmountDiv" class="amount-div d-none mt-2 w-100">
+                                                <label class="form-label small text-center d-block mb-1">Amount</label>
+                                                <input type="number" class="form-control form-control-sm text-center" id="deliveryAmount" name="deliveryAmount" placeholder="0.00">
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Cash -->
+                                <div class="col-2 <?= empty($customer_details['payment_cash']) ? 'd-none' : '' ?>">
+                                    <div class="p-2">
+                                        <label class="form-label d-block mb-1">
+                                            <i class="fa-solid fa-money-bill-wave me-1"></i>Cash
+                                        </label>
+                                        <div class="d-flex flex-column align-items-center">
+                                            <input class="form-check-input pay-method mb-2" type="checkbox" id="payCash" name="payCash" value="cash"><br>
+                                            <div id="cashAmountDiv" class="amount-div d-none mt-2 w-100">
+                                                <label class="form-label small text-center d-block mb-1">Amount</label>
+                                                <input type="number" class="form-control form-control-sm text-center" id="cashAmount" name="cashAmount" placeholder="0.00">
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Check -->
+                                <div class="col-2 <?= empty($customer_details['payment_check']) ? 'd-none' : '' ?>">
+                                    <div class="p-2">
+                                        <label class="form-label d-block mb-1">
+                                            <i class="fa-solid fa-file-invoice-dollar me-1"></i>Check
+                                        </label>
+                                        <div class="d-flex flex-column align-items-center">
+                                            <input class="form-check-input pay-method mb-2" type="checkbox" id="payCheck" name="payCheck" value="check"><br>
+                                            <div id="checkAmountDiv" class="amount-div d-none mt-2 w-100">
+                                                <label class="form-label small text-center d-block mb-1">Amount</label>
+                                                <input type="number" class="form-control form-control-sm text-center" id="checkAmount" name="checkAmount" placeholder="0.00">
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Card -->
+                                <div class="col-2 <?= empty($customer_details['payment_card']) ? 'd-none' : '' ?>">
+                                    <div class="p-2">
+                                        <label class="form-label d-block mb-1">
+                                            <i class="fa-brands fa-cc-visa me-1"></i>Credit/Debit
+                                        </label>
+                                        <div class="d-flex flex-column align-items-center">
+                                            <input class="form-check-input pay-method mb-2" type="checkbox" id="payCard" name="payCard" value="card"><br>
+                                            <div id="cardAmountDiv" class="amount-div d-none mt-2 w-100">
+                                                <label class="form-label small text-center d-block mb-1">Amount</label>
+                                                <input type="number" class="form-control form-control-sm text-center" id="cardAmount" name="cardAmount" placeholder="0.00">
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Net 30 -->
+                                <div class="col-2 <?= empty($customer_details['charge_net_30']) ? 'd-none' : '' ?>">
+                                    <div class="p-2">
+                                        <label class="form-label d-block mb-1">
+                                            <i class="fa-solid fa-calendar-check me-1"></i>Charge Net 30
+                                        </label>
+                                        <div class="d-flex flex-column align-items-center">
+                                            <input class="form-check-input pay-method mb-2" type="checkbox" id="payNet30" name="payNet30" value="net30"><br>
+                                            <div id="net30AmountDiv" class="amount-div d-none mt-2 w-100">
+                                                <label class="form-label small text-center d-block mb-1">Amount</label>
+                                                <input type="number" class="form-control form-control-sm text-center" id="net30Amount" name="net30Amount" placeholder="0.00">
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                        <div class="row mb-3 text-white align-items-center">
+                            <?php if (floatval($customer_details['store_credit']) > 0): ?>
+                            <div class="col mb-2">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="applyStoreCredit" name="applyStoreCredit" value="1">
+                                    <label class="form-check-label text-white" for="applyStoreCredit">
+                                        Apply Store Credit (Available: $<?= number_format(floatval($customer_details['store_credit']), 2) ?>)
+                                    </label>
+                                </div>
+                            </div>
+                            <?php endif; ?>
+                            <div class="col mb-2">
+                                <div class="form-group">
+                                    <label class="form-label" for="authorization_no">Authorization #</label>
+                                    <input class="form-control form-control-sm" type="text" id="authorization_no" name="authorization_no" placeholder="Enter authorization number">
+                                </div>
                             </div>
                         </div>
-                    <?php endif; ?>
+
                     </div>
-                </div>
+                    </div>
+
+
                 </div>
 
                 <!-- Right Side (Order Summary) -->
@@ -1100,6 +1167,19 @@ if(isset($_POST['fetch_order'])){
                         templateResult: formatOption,
                         templateSelection: formatSelected
                     });
+                }
+            });
+
+            $('.pay-method').on('change', function() {
+                const method = $(this).val();
+                const div = $('#' + method + 'AmountDiv');
+
+                if ($(this).is(':checked')) {
+                    div.removeClass('d-none');
+                    div.find('input').focus();
+                } else {
+                    div.addClass('d-none');
+                    div.find('input').val('');
                 }
             });
         });
