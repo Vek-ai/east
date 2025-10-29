@@ -468,38 +468,43 @@ if(isset($_REQUEST['action'])) {
             $order_date = date('F d, Y', strtotime($row['order_date']));
             $order_time = date('h:i A', strtotime($row['order_date']));
 
+            $pay_cash     = floatval($row['pay_cash']);
+            $pay_card     = floatval($row['pay_card']);
+            $pay_check    = floatval($row['pay_check']);
+            $pay_pickup   = floatval($row['pay_pickup']);
+            $pay_delivery = floatval($row['pay_delivery']);
+            $pay_net30    = floatval($row['pay_net30']);
+
+            if (($pay_cash + $pay_card + $pay_check + $pay_pickup + $pay_delivery + $pay_net30) <= 0) continue;
+            $credit_total = $pay_pickup + $pay_delivery + $pay_net30;
+
+            if ($credit_total > 0) {
+                if ($total_paid >= $credit_total) {
+                    $credit_status = 'bg-success';
+                } elseif ($total_paid > 0) {
+                    $credit_status = 'bg-warning text-dark';
+                } else {
+                    $credit_status = 'bg-danger';
+                }
+            } else {
+                $credit_status = 'bg-success';
+            }
+
+            $always_paid = 'bg-success';
+
             $parts = [
-                'Cash'     => floatval($row['pay_cash']),
-                'Card'     => floatval($row['pay_card']),
-                'Check'    => floatval($row['pay_check']),
-                'Pickup'   => floatval($row['pay_pickup']),
-                'Delivery' => floatval($row['pay_delivery']),
-                'Net 30'   => floatval($row['pay_net30'])
+                'Cash'     => [$pay_cash, $always_paid],
+                'Card'     => [$pay_card, $always_paid],
+                'Check'    => [$pay_check, $always_paid],
+                'Pickup'   => [$pay_pickup, $credit_status],
+                'Delivery' => [$pay_delivery, $credit_status],
+                'Net 30'   => [$pay_net30, $credit_status],
             ];
 
-            $hasPart = false;
-            foreach ($parts as $amt) { if ($amt > 0) { $hasPart = true; break; } }
-            if (!$hasPart) continue;
-
-            $remaining_paid = $total_paid;
-
-            foreach ($parts as $label => $amount) {
+            foreach ($parts as $label => [$amount, $class]) {
                 if ($amount <= 0) continue;
 
-                $allocated = min($remaining_paid, $amount);
-                $remaining_paid -= $allocated;
-
-                if (in_array($label, ['Cash', 'Card', 'Check'])) {
-                    $status_class = 'bg-success';
-                } elseif ($allocated <= 0) {
-                    $status_class = 'bg-danger';
-                } elseif ($allocated < $amount) {
-                    $status_class = 'bg-warning text-dark';
-                } else {
-                    $status_class = 'bg-success';
-                }
-
-                $badge = '<span class="badge ' . $status_class . '">' . htmlspecialchars($label) . '</span>';
+                $badge = '<span class="badge ' . $class . '">' . htmlspecialchars($label) . '</span>';
 
                 $response_html .= '
                     <tr class="text-center">
