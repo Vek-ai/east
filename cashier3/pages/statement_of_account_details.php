@@ -519,6 +519,7 @@ $permission = $_SESSION['permission'];
 
         $('#paymentForm').on('submit', function(event) {
             event.preventDefault(); 
+            
             var formData = new FormData(this);
             formData.append('action', 'payment_receivable');
 
@@ -530,9 +531,15 @@ $permission = $_SESSION['permission'];
                 contentType: false,
                 dataType: 'json',
                 success: function(response) {
-                    console.log(response);
-                    $('.modal').modal("hide");
+                    console.log("✅ Server response:", response);
 
+                    if (response.debug) {
+                        console.group("💬 Debug Info (payment_receivable)");
+                        console.table(response.debug);
+                        console.groupEnd();
+                    }
+
+                    $('.modal').modal("hide");
                     if (response.status === "success") {
                         $('#responseHeader').text("Success");
                         $('#responseMsg').text(response.message || "Payment saved successfully!");
@@ -542,18 +549,24 @@ $permission = $_SESSION['permission'];
                         $('#response-modal').on('hide.bs.modal', function () {
                             location.reload();
                         });
-                    } else {
+                    } 
+                    else {
+                        let msg = response.message || "Process Failed";
+                        if (response.debug) msg += "\n\nCheck console for debug info.";
+                        
                         $('#responseHeader').text("Failed");
-                        $('#responseMsg').text(response.message || "Process Failed");
+                        $('#responseMsg').text(msg);
                         $('#responseHeaderContainer').removeClass("bg-success").addClass("bg-danger");
                         $('#response-modal').modal("show");
                     }
                 },
                 error: function(jqXHR, textStatus, errorThrown) {
+                    console.error("AJAX error:", textStatus, errorThrown, jqXHR.responseText);
                     alert('Error: ' + textStatus + ' - ' + errorThrown);
                 }
             });
         });
+
 
         $(document).on('click', '.view-order-details', function(event) {
             event.preventDefault(); 

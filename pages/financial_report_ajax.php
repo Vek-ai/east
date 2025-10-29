@@ -408,7 +408,6 @@ if(isset($_REQUEST['action'])) {
         exit;
     }
 
-
     if ($action == 'fetch_daily_sales') {
         $date = mysqli_real_escape_string($conn, $_POST['date']);
         $response_html = '';
@@ -435,7 +434,7 @@ if(isset($_REQUEST['action'])) {
         $result = mysqli_query($conn, $query);
 
         if (!$result || mysqli_num_rows($result) === 0) {
-            echo '<div class="alert alert-info text-center">No receivable orders found for this date.</div>';
+            echo '<div class="alert alert-info text-center">No sales found for this date.</div>';
             exit;
         }
 
@@ -462,39 +461,64 @@ if(isset($_REQUEST['action'])) {
 
         while ($row = mysqli_fetch_assoc($result)) {
             $orderid = $row['orderid'];
-            $pay_type = strtolower(trim($row['pay_type']));
             $expected_amount = floatval($row['discounted_price']);
             $total_paid = floatval(getOrderTotalPayments($orderid));
+            $customer_name = htmlspecialchars($row['customer_name']);
+            $salesperson = htmlspecialchars(get_staff_name($row['cashier']));
+            $order_date = date('F d, Y', strtotime($row['order_date']));
+            $order_time = date('h:i A', strtotime($row['order_date']));
 
-            if (in_array($pay_type, ['cash', 'card', 'check'])) {
-                $badge_class = 'bg-success';
-            } else {
-                if ($total_paid <= 0) {
-                    $badge_class = 'bg-danger';
-                } elseif ($total_paid < $expected_amount) {
-                    $badge_class = 'bg-warning text-dark';
+            $parts = [
+                'Cash'     => floatval($row['pay_cash']),
+                'Card'     => floatval($row['pay_card']),
+                'Check'    => floatval($row['pay_check']),
+                'Pickup'   => floatval($row['pay_pickup']),
+                'Delivery' => floatval($row['pay_delivery']),
+                'Net 30'   => floatval($row['pay_net30'])
+            ];
+
+            $hasPart = false;
+            foreach ($parts as $amt) { if ($amt > 0) { $hasPart = true; break; } }
+            if (!$hasPart) continue;
+
+            $remaining_paid = $total_paid;
+
+            foreach ($parts as $label => $amount) {
+                if ($amount <= 0) continue;
+
+                $allocated = min($remaining_paid, $amount);
+                $remaining_paid -= $allocated;
+
+                if (in_array($label, ['Cash', 'Card', 'Check'])) {
+                    $status_class = 'bg-success';
+                } elseif ($allocated <= 0) {
+                    $status_class = 'bg-danger';
+                } elseif ($allocated < $amount) {
+                    $status_class = 'bg-warning text-dark';
                 } else {
-                    $badge_class = 'bg-success';
+                    $status_class = 'bg-success';
                 }
+
+                $badge = '<span class="badge ' . $status_class . '">' . htmlspecialchars($label) . '</span>';
+
+                $response_html .= '
+                    <tr class="text-center">
+                        <td>' . htmlspecialchars($orderid) . '</td>
+                        <td>' . $customer_name . '</td>
+                        <td class="text-end">₱' . number_format($amount, 2) . '</td>
+                        <td>' . $order_date . '</td>
+                        <td>' . $order_time . '</td>
+                        <td>' . $badge . '</td>
+                        <td>' . $salesperson . '</td>
+                    </tr>
+                ';
+
+                $total_amount += $amount;
             }
-
-            $response_html .= '
-                <tr class="text-center">
-                    <td>' . htmlspecialchars($orderid) . '</td>
-                    <td>' . htmlspecialchars($row['customer_name']) . '</td>
-                    <td class="text-end">₱' . number_format($expected_amount, 2) . '</td>
-                    <td>' . date('F d, Y', strtotime($row['order_date'])) . '</td>
-                    <td>' . date('h:i A', strtotime($row['order_date'])) . '</td>
-                    <td><span class="badge ' . $badge_class . '">' . ucfirst($pay_type) . '</span></td>
-                    <td>' . htmlspecialchars(get_staff_name($row['cashier'])) . '</td>
-                </tr>
-            ';
-
-            $total_amount += $expected_amount;
         }
 
         if ($total_amount == 0) {
-            echo '<div class="alert alert-info text-center">No unpaid receivables for this date.</div>';
+            echo '<div class="alert alert-info text-center">No sales found for this date.</div>';
             exit;
         }
 
@@ -533,7 +557,11 @@ if(isset($_REQUEST['action'])) {
             FROM orders AS o
             LEFT JOIN customer AS c ON c.customer_id = o.originalcustomerid
             WHERE o.status != 6
-            AND o.pay_type IN ('net30', 'pickup', 'delivery')
+            AND (
+                o.pay_pickup > 0 OR 
+                o.pay_delivery > 0 OR 
+                o.pay_net30 > 0
+            )
             AND o.order_date BETWEEN '$date_start' AND '$date_end'
             ORDER BY o.order_date DESC
         ";
@@ -568,41 +596,55 @@ if(isset($_REQUEST['action'])) {
 
         while ($row = mysqli_fetch_assoc($result)) {
             $orderid = $row['orderid'];
-            $pay_type = strtolower(trim($row['pay_type']));
-            $expected_amount = floatval($row['discounted_price']);
+            $customer_name = htmlspecialchars($row['customer_name']);
+            $salesperson = htmlspecialchars(get_staff_name($row['cashier']));
+            $order_date = date('F d, Y', strtotime($row['order_date']));
+            $order_time = date('h:i A', strtotime($row['order_date']));
+
             $total_paid = floatval(getOrderTotalPayments($orderid));
 
-            if (in_array($pay_type, ['cash', 'card', 'check'])) {
-                $badge_class = 'bg-success';
-            } else {
-                if ($total_paid <= 0) {
-                    $badge_class = 'bg-danger';
-                } elseif ($total_paid < $expected_amount) {
-                    $badge_class = 'bg-warning text-dark';
+            $parts = [
+                'Pickup'   => floatval($row['pay_pickup']),
+                'Delivery' => floatval($row['pay_delivery']),
+                'Net 30'   => floatval($row['pay_net30'])
+            ];
+
+            $remaining_paid = $total_paid;
+
+            foreach ($parts as $label => $amount) {
+                if ($amount <= 0) continue;
+
+                $allocated = min($remaining_paid, $amount);
+                $remaining_paid -= $allocated;
+
+                if ($allocated <= 0) {
+                    $status_class = 'bg-danger';
+                } elseif ($allocated < $amount) {
+                    $status_class = 'bg-warning text-dark';
                 } else {
-                    $badge_class = 'bg-success';
+                    $status_class = 'bg-success';
                 }
+
+                $badge = '<span class="badge ' . $status_class . '">' . htmlspecialchars($label) . '</span>';
+
+                $response_html .= '
+                    <tr class="text-center">
+                        <td>' . htmlspecialchars($orderid) . '</td>
+                        <td>' . $customer_name . '</td>
+                        <td class="text-end">₱' . number_format($amount, 2) . '</td>
+                        <td>' . $order_date . '</td>
+                        <td>' . $order_time . '</td>
+                        <td>' . $badge . '</td>
+                        <td>' . $salesperson . '</td>
+                    </tr>
+                ';
+
+                $total_amount += $amount;
             }
-
-            $display_pay_type = ($pay_type === 'net30' || $pay_type === 'net 30') ? 'Charge Net 30' : ucfirst($pay_type);
-
-            $response_html .= '
-                <tr class="text-center">
-                    <td>' . htmlspecialchars($orderid) . '</td>
-                    <td>' . htmlspecialchars($row['customer_name']) . '</td>
-                    <td class="text-end">₱' . number_format($expected_amount, 2) . '</td>
-                    <td>' . date('F d, Y', strtotime($row['order_date'])) . '</td>
-                    <td>' . date('h:i A', strtotime($row['order_date'])) . '</td>
-                    <td><span class="badge ' . $badge_class . '">' . htmlspecialchars($display_pay_type) . '</span></td>
-                    <td>' . htmlspecialchars(get_staff_name($row['cashier'])) . '</td>
-                </tr>
-            ';
-
-            $total_amount += $expected_amount;
         }
 
         if ($total_amount == 0) {
-            echo '<div class="alert alert-info text-center">No unpaid receivables for this date.</div>';
+            echo '<div class="alert alert-info text-center">No receivable orders found for this date.</div>';
             exit;
         }
 
@@ -621,6 +663,7 @@ if(isset($_REQUEST['action'])) {
         echo $response_html;
         exit;
     }
+
 
     mysqli_close($conn);
 }

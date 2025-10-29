@@ -156,6 +156,9 @@ if(isset($_REQUEST['action'])) {
     }
 
     if ($action == "payment_receivable") {
+        $debug = false;
+        $debug_log = [];
+
         $ledger_ids_raw = $_POST['ledger_id'] ?? '';
         $ledger_ids = array_filter(array_map('intval', explode(',', $ledger_ids_raw)));
         $total_payment = floatval($_POST['payment_amount'] ?? 0);
@@ -167,8 +170,20 @@ if(isset($_REQUEST['action'])) {
         $cashier = $_SESSION['userid'] ?? 0;
         $check_no_sql = $payment_method === 'cheque' ? "'" . mysqli_real_escape_string($conn, $check_no) . "'" : "NULL";
 
+        $debug_log[] = [
+            'ledger_ids' => $ledger_ids,
+            'total_payment' => $total_payment,
+            'payment_method' => $payment_method,
+            'reference_no' => $reference_no,
+            'check_no_sql' => $check_no_sql
+        ];
+
         if (empty($ledger_ids) || $total_payment <= 0) {
-            echo json_encode(['status' => 'error', 'message' => 'Invalid input: missing ledger IDs or payment amount.']);
+            echo json_encode([
+                'status' => 'error',
+                'message' => 'Invalid input: missing ledger IDs or payment amount.',
+                'debug' => $debug_log
+            ]);
             return;
         }
 
@@ -185,7 +200,11 @@ if(isset($_REQUEST['action'])) {
 
         $result = mysqli_query($conn, $query);
         if (!$result) {
-            echo json_encode(['status' => 'error', 'message' => 'Failed to fetch ledger: ' . mysqli_error($conn)]);
+            echo json_encode([
+                'status' => 'error',
+                'message' => 'Failed to fetch ledger: ' . mysqli_error($conn),
+                'query' => $query
+            ]);
             return;
         }
 
@@ -198,6 +217,14 @@ if(isset($_REQUEST['action'])) {
             $credit = floatval($row['credit_amount']);
             $paid = floatval($row['total_paid']);
             $balance = max(0, $credit - $paid);
+
+            $debug_log[] = [
+                'ledger_id' => $ledger_id,
+                'credit' => $credit,
+                'paid' => $paid,
+                'balance' => $balance,
+                'remaining_before' => $remaining_payment
+            ];
 
             if ($balance <= 0 || $remaining_payment <= 0) continue;
 
@@ -238,6 +265,7 @@ if(isset($_REQUEST['action'])) {
                 $success = true;
                 $total_inserted++;
 
+                $debug_log[] = ['insert_success' => $ledger_id, 'amount' => $to_pay];
                 recordCashInflow($payment_method, 'receivable_payment', $to_pay);
 
                 $orderids_query = "
@@ -268,6 +296,12 @@ if(isset($_REQUEST['action'])) {
                         $paid_result = mysqli_query($conn, $paid_query);
                         $total_paid = mysqli_fetch_assoc($paid_result)['total_paid'] ?? 0;
 
+                        $debug_log[] = [
+                            'orderid' => $orderid,
+                            'order_total' => $order_total,
+                            'total_paid' => $total_paid
+                        ];
+
                         if (floatval($total_paid) >= floatval($order_total)) {
                             mysqli_query($conn, "
                                 UPDATE order_product
@@ -281,12 +315,25 @@ if(isset($_REQUEST['action'])) {
                 $success = false;
                 echo json_encode([
                     'status' => 'error',
-                    'message' => 'Failed to insert payment for ledger ID ' . $ledger_id . ': ' . mysqli_error($conn)
+                    'message' => 'Failed to insert payment for ledger ID ' . $ledger_id . ': ' . mysqli_error($conn),
+                    'insert_query' => $insert,
+                    'debug' => $debug_log
                 ]);
                 break;
             }
 
             $remaining_payment -= $to_pay;
+        }
+
+        if ($debug) {
+            echo json_encode([
+                'status' => $success ? 'success' : 'failed',
+                'message' => $success ? 'Payment recorded successfully.' : 'No payment recorded.',
+                'total_inserted' => $total_inserted,
+                'remaining_payment' => $remaining_payment,
+                'debug' => $debug_log
+            ]);
+            return;
         }
 
         if ($success) {
@@ -304,6 +351,7 @@ if(isset($_REQUEST['action'])) {
             ]);
         }
     }
+
 
     if ($action == "payment_history") {
         $ledger_id = intval($_POST['ledger_id'] ?? 0);

@@ -519,40 +519,54 @@ $permission = $_SESSION['permission'];
 
         $('#paymentForm').on('submit', function(event) {
             event.preventDefault(); 
+            
             var formData = new FormData(this);
             formData.append('action', 'payment_receivable');
+
             $.ajax({
                 url: 'pages/statement_of_account_details_ajax.php',
                 type: 'POST',
                 data: formData,
                 processData: false,
                 contentType: false,
+                dataType: 'json',
                 success: function(response) {
+                    console.log("✅ Server response:", response);
+
+                    if (response.debug) {
+                        console.group("💬 Debug Info (payment_receivable)");
+                        console.table(response.debug);
+                        console.groupEnd();
+                    }
+
                     $('.modal').modal("hide");
-                    if (response == "success") {
+                    if (response.status === "success") {
                         $('#responseHeader').text("Success");
-                        $('#responseMsg').text("Payment saved successfully!");
-                        $('#responseHeaderContainer').removeClass("bg-danger");
-                        $('#responseHeaderContainer').addClass("bg-success");
+                        $('#responseMsg').text(response.message || "Payment saved successfully!");
+                        $('#responseHeaderContainer').removeClass("bg-danger").addClass("bg-success");
                         $('#response-modal').modal("show");
 
                         $('#response-modal').on('hide.bs.modal', function () {
-                                location.reload();
+                            location.reload();
                         });
-                    } else {
+                    } 
+                    else {
+                        let msg = response.message || "Process Failed";
+                        if (response.debug) msg += "\n\nCheck console for debug info.";
+                        
                         $('#responseHeader').text("Failed");
-                        $('#responseMsg').text("Process Failed");
-                        console.log("Response: "+response);
-                        $('#responseHeaderContainer').removeClass("bg-success");
-                        $('#responseHeaderContainer').addClass("bg-danger");
+                        $('#responseMsg').text(msg);
+                        $('#responseHeaderContainer').removeClass("bg-success").addClass("bg-danger");
                         $('#response-modal').modal("show");
                     }
                 },
                 error: function(jqXHR, textStatus, errorThrown) {
+                    console.error("AJAX error:", textStatus, errorThrown, jqXHR.responseText);
                     alert('Error: ' + textStatus + ' - ' + errorThrown);
                 }
             });
         });
+
 
         $(document).on('click', '.view-order-details', function(event) {
             event.preventDefault(); 
