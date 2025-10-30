@@ -202,55 +202,24 @@ if (isset($_REQUEST['query'])) {
     if (!empty($searchQuery)) {
         $attrs = getProductAttributes($searchQuery);
 
-        if (!empty($attrs)) {
-            $conditions = [];
-
-            if (!empty($attrs['category'])) {
-                $conditions[] = "p.product_category = '{$attrs['category']}'";
-            }
-
-            if (!empty($attrs['profile'])) {
-                $conditions[] = "(JSON_VALID(p.profile) AND 
-                                (JSON_CONTAINS(p.profile, '\"" . intval($attrs['profile']) . "\"') 
-                                OR JSON_CONTAINS(p.profile, '" . intval($attrs['profile']) . "')))";
-            }
-
-            if (!empty($attrs['grade'])) {
-                $conditions[] = "(JSON_VALID(p.grade) AND 
-                                (JSON_CONTAINS(p.grade, '\"" . intval($attrs['grade']) . "\"') 
-                                OR JSON_CONTAINS(p.grade, '" . intval($attrs['grade']) . "')))";
-            }
-
-            if (!empty($attrs['gauge'])) {
-                $conditions[] = "(JSON_VALID(p.gauge) AND 
-                                (JSON_CONTAINS(p.gauge, '\"" . intval($attrs['gauge']) . "\"') 
-                                OR JSON_CONTAINS(p.gauge, '" . intval($attrs['gauge']) . "')))";
-            }
-
-            if (!empty($attrs['type'])) {
-                $conditions[] = "(JSON_VALID(p.product_type) AND 
-                                (JSON_CONTAINS(p.product_type, '\"" . intval($attrs['type']) . "\"') 
-                                OR JSON_CONTAINS(p.product_type, '" . intval($attrs['type']) . "')))";
-            }
-
-            if (!empty($attrs['color'])) {
-                $conditions[] = "p.color = '{$attrs['color']}'";
-            }
-
-            if (!empty($conditions)) {
-                $query_product .= " AND (" . implode(' AND ', $conditions) . ")";
-            } else {
-                $query_product .= " AND (p.product_item LIKE '%$searchQuery%' OR p.description LIKE '%$searchQuery%')";
-            }
+        if (!empty($attrs) && array_filter($attrs)) {
+            if (!empty($attrs['color']))     $color_id    = (int) $attrs['color'];
+            if (!empty($attrs['grade']))     $grade       = (int) $attrs['grade'];
+            if (!empty($attrs['gauge']))     $gauge_id    = (int) $attrs['gauge'];
+            if (!empty($attrs['type']))      $type_id     = (int) $attrs['type'];
+            if (!empty($attrs['profile']))   $profile_id  = (int) $attrs['profile'];
+            if (!empty($attrs['category']))  $category_id = (int) $attrs['category'];
         } else {
             $query_product .= " AND (p.product_item LIKE '%$searchQuery%' OR p.description LIKE '%$searchQuery%')";
         }
-
     }
 
-
-    if (!empty($color_id)) { 
-        $query_product .= " AND i.color_id = '$color_id'"; 
+    if (!empty($color_id)) {
+        $query_product .= " AND JSON_VALID(p.color_paint) 
+                            AND (
+                                JSON_CONTAINS(p.color_paint, '\"" . intval($color_id) . "\"') 
+                                OR JSON_CONTAINS(p.color_paint, '" . intval($color_id) . "')
+                            )";
     }
 
     if (!empty($grade)) {
