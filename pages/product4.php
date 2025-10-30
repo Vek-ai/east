@@ -1245,6 +1245,8 @@ function showCol($name) {
         $(document).on('submit', '#product_form', function(event) {
             event.preventDefault(); 
 
+            $('#color_paint option:disabled').prop('disabled', false);
+
             var formData = new FormData(this);
             formData.append('action', 'add_update');
 

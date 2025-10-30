@@ -99,14 +99,16 @@ if(isset($_REQUEST['action'])) {
             $toDelete = array_diff($existingColors, $color_paint);
 
             if (!empty($toDelete)) {
-                $deleteIds = implode(',', $toDelete);
-                mysqli_query($conn, "DELETE FROM product_color_assign WHERE product_id = '$product_id' AND color_id IN ($deleteIds)");
+                mysqli_query($conn, "DELETE FROM product_color_assign WHERE product_id = '$product_id' AND color_id IN (".implode(',', $toDelete).")");
             }
 
             foreach ($toAdd as $colorId) {
                 mysqli_query($conn, "INSERT INTO product_color_assign (product_id, color_id, `date`, `time`, assigned_by) 
                                     VALUES ($product_id, $colorId, '$date', '$time', $assignedBy)");
             }
+
+            $allColors = array_unique(array_merge($color_paint, $existingColors));
+            mysqli_query($conn, "UPDATE product SET color = '".json_encode($allColors)."' WHERE product_id = '$product_id'");
         }
 
         if (!empty($_FILES['picture_path']['name'][0])) {
