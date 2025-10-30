@@ -238,7 +238,7 @@ if (isset($_REQUEST['query'])) {
             }
 
             if (!empty($conditions)) {
-                $query_product .= " AND (" . implode(' OR ', $conditions) . ")";
+                $query_product .= " AND (" . implode(' AND ', $conditions) . ")";
             } else {
                 $query_product .= " AND (p.product_item LIKE '%$searchQuery%' OR p.description LIKE '%$searchQuery%')";
             }
