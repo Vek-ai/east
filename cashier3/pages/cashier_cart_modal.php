@@ -254,9 +254,7 @@ if(isset($_POST['fetch_cart'])){
                         foreach ($_SESSION["cart"] as $values) {
                             $pid = $values["product_id"];
                             $product_details = getProductDetails($pid);
-                            $category = $product_details['product_category'];
-
-                            if ($category != $panel_id) continue;
+                            $category = (int) $product_details['product_category'];
 
                             $group_fields = [
                                 'product_id' => $pid,
@@ -266,11 +264,17 @@ if(isset($_POST['fetch_cart'])){
                             ];
                             $group_key = implode('_', $group_fields);
 
-                            if (!isset($panel_cart[$group_key])) {
-                                $panel_cart[$group_key] = [];
+                            if ($category === $lumber_id) {
+                                $lumber_cart[$group_key][] = $values;
+                            } elseif ($category === $trim_id) {
+                                $trim_cart[$group_key][] = $values;
+                            } elseif ($category === $panel_id) {
+                                $panel_cart[$group_key][] = $values;
+                            } elseif ($category === $screw_id) {
+                                $screw_cart[$group_key][] = $values;
+                            } else {
+                                $others_cart[$group_key][] = $values;
                             }
-
-                            $panel_cart[$group_key][] = $values;
                         }
 
                         foreach ($panel_cart as $group_key => $items) {
