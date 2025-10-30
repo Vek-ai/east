@@ -102,9 +102,16 @@ function getProductDetails($product_id) {
 
 function getAvailabilityDetails($id) {
     global $conn;
-    $id = mysqli_real_escape_string($conn, $id);
+
+    if (empty($id)) {
+        return [];
+    }
+
+    $id = mysqli_real_escape_string($conn, (string)$id);
+
     $query = "SELECT * FROM product_availability WHERE product_availability_id = '$id'";
     $result = mysqli_query($conn, $query);
+
     $product_availability = [];
     if ($row = mysqli_fetch_assoc($result)) {
         $product_availability = $row;
