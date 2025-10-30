@@ -200,7 +200,7 @@ if (isset($_REQUEST['query'])) {
     ";
 
     if (!empty($searchQuery)) {
-        $attrs = getProductAttributes((int)$searchQuery);
+        $attrs = getProductAttributes($searchQuery);
 
         if (!empty($attrs)) {
             $conditions = [];
