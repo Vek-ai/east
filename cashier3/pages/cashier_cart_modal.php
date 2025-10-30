@@ -256,30 +256,25 @@ if(isset($_POST['fetch_cart'])){
                             $product_details = getProductDetails($pid);
                             $category = $product_details['product_category'];
 
-                            switch ($category) {
-                                case $lumber_id:
-                                    $lumber_cart[$pid][] = $values;
-                                    break;
+                            if ($category != $panel_id) continue;
 
-                                case $trim_id:
-                                    $trim_cart[$pid][] = $values;
-                                    break;
+                            $group_fields = [
+                                'product_id' => $pid,
+                                'color_id'   => (int) ($values['custom_color'] ?? 0),
+                                'grade_id'   => (int) ($values['custom_grade'] ?? 0),
+                                'gauge_id'   => (int) ($values['custom_gauge'] ?? 0),
+                            ];
+                            $group_key = implode('_', $group_fields);
 
-                                case $panel_id:
-                                    $panel_cart[$pid][] = $values;
-                                    break;
-
-                                case $screw_id:
-                                    $screw_cart[$pid][] = $values;
-                                    break;
-
-                                default:
-                                    $others_cart[$pid][] = $values;
-                                    break;
+                            if (!isset($panel_cart[$group_key])) {
+                                $panel_cart[$group_key] = [];
                             }
+
+                            $panel_cart[$group_key][] = $values;
                         }
 
-                        foreach ($panel_cart as $product_id => $items) {
+                        foreach ($panel_cart as $group_key => $items) {
+                            [$product_id, $color_id, $grade_id, $gauge_id] = explode('_', $group_key);
                             $group_id = uniqid('group_');
                             $total_qty = 0;
                             $total_length_cart = 0;
@@ -752,7 +747,8 @@ if(isset($_POST['fetch_cart'])){
                             }
                         }
 
-                        foreach ($trim_cart as $product_id => $items) {
+                        foreach ($trim_cart as $group_key => $items) {
+                            [$product_id, $color_id, $grade_id, $gauge_id] = explode('_', $group_key);
                             $total_qty = 0;
                             $total_length_cart = 0;
                             $total_price_actual = 0;
@@ -1069,7 +1065,8 @@ if(isset($_POST['fetch_cart'])){
                             }
                         }
 
-                        foreach ($screw_cart as $product_id => $items) {
+                        foreach ($screw_cart as $group_key => $items) {
+                            [$product_id, $color_id, $grade_id, $gauge_id] = explode('_', $group_key);
                             $total_qty = 0;
                             $total_length_cart = 0;
                             $total_price_actual = 0;
@@ -1410,7 +1407,8 @@ if(isset($_POST['fetch_cart'])){
                             }
                         }
 
-                        foreach ($lumber_cart as $product_id => $items) {
+                        foreach ($lumber_cart as $group_key => $items) {
+                            [$product_id, $color_id, $grade_id, $gauge_id] = explode('_', $group_key);
                             $total_qty = 0;
                             $total_length_cart = 0;
                             $total_price_actual = 0;
@@ -1702,7 +1700,8 @@ if(isset($_POST['fetch_cart'])){
                             }
                         }
 
-                        foreach ($others_cart as $product_id => $items) {
+                        foreach ($others_cart as $group_key => $items) {
+                            [$product_id, $color_id, $grade_id, $gauge_id] = explode('_', $group_key);
                             $total_qty = 0;
                             $total_length_cart = 0;
                             $total_price_actual = 0;
