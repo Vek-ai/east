@@ -4304,6 +4304,26 @@ function processCoilTransaction($coil_id, $length_used, $work_orders, $is_waste 
     return true;
 }
 
+function getAssignedProductColors($product_id) {
+    global $conn;
 
+    $product_id = intval($product_id);
+    $colorIds = [];
+
+    $query = "SELECT color_id 
+              FROM product_color_assign 
+              WHERE product_id = $product_id 
+              AND status = 1";
+
+    $result = mysqli_query($conn, $query);
+
+    if ($result && mysqli_num_rows($result) > 0) {
+        while ($row = mysqli_fetch_assoc($result)) {
+            $colorIds[] = intval($row['color_id']);
+        }
+    }
+
+    return $colorIds;
+}
 
 ?>

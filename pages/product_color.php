@@ -989,6 +989,19 @@ $permission = $_SESSION['permission'];
             window.location.href = "pages/product_color_ajax.php?action=download_excel";
         });
 
+        $(document).on('submit', '#download_class_form', function (e) {
+            e.preventDefault();
+
+            const selectedClass = $('#select-download-class').val() || '';
+            if (selectedClass === '') {
+                alert('Please select a classification to download.');
+                return;
+            }
+
+            const downloadUrl = 'pages/product_color_ajax.php?action=download_classifications&class=' + encodeURIComponent(selectedClass);
+            window.location.href = downloadUrl;
+        });
+
         $(document).on('click', '#readUploadBtn', function(event) {
             $.ajax({
                 url: 'pages/product_color_ajax.php',

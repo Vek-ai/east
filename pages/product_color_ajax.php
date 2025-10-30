@@ -550,9 +550,14 @@ if(isset($_REQUEST['action'])) {
         $classification = mysqli_real_escape_string($conn, $_REQUEST['class'] ?? '');
 
         $classifications = [
-            'product_system' => [
-                'columns' => ['product_system_id', 'product_system'],
-                'table' => 'product_system',
+            'product_category' => [
+                'columns' => ['product_category_id', 'product_category'],
+                'table' => 'product_category',
+                'where' => "status = '1'"
+            ],
+            'product_profile' => [
+                'columns' => ['profile_type_id', 'profile_type'],
+                'table' => 'profile_type',
                 'where' => "status = '1'"
             ],
             'product_gauge' => [
@@ -560,14 +565,9 @@ if(isset($_REQUEST['action'])) {
                 'table' => 'product_gauge',
                 'where' => "status = '1'"
             ],
-            'product_coating' => [
-                'columns' => ['product_coating_id', 'product_coating'],
-                'table' => 'product_coating',
-                'where' => "status = '1'"
-            ],
-            'color_group_name' => [
-                'columns' => ['color_group_name_id', 'color_group_name'],
-                'table' => 'color_group_name',
+            'product_grade' => [
+                'columns' => ['product_grade_id', 'product_grade'],
+                'table' => 'product_grade',
                 'where' => "status = '1'"
             ]
         ];

@@ -20,6 +20,8 @@ if(isset($_POST['fetch_prompt_quantity'])){
     $product_details = getProductDetails($id);
     $type_details = getProductTypeDetails($product_details['product_type']);
     $is_special = $type_details['special'];
+
+    $available_colors = getAssignedProductColors($id);
     ?>
     <style>
         .tooltip-custom {
