@@ -62,19 +62,27 @@ if(isset($_POST['fetch_modal'])){
                     <option value="" data-category="">All Colors</option>
                     <optgroup label="Product Colors">
                         <?php
-                        $query_color = "SELECT MIN(color_id) AS color_id, color_name, product_category FROM paint_colors 
-                                        WHERE hidden = '0' AND color_status = '1' $category_condition
-                                        GROUP BY color_name 
-                                        ORDER BY color_name ASC";
-
-                        $result_color = mysqli_query($conn, $query_color);
-                        while ($row_color = mysqli_fetch_array($result_color)) {
+                        $assigned_colors = getAssignedProductColors($id);
+                        if (!empty($assigned_colors)) {
+                            $color_ids_str = implode(',', array_map('intval', $assigned_colors));
+                            $query_colors = "
+                                SELECT color_id, color_name, product_category
+                                FROM paint_colors
+                                WHERE color_id IN ($color_ids_str)
+                                AND hidden = 0
+                                AND color_status = 1
+                                ORDER BY color_name ASC
+                            ";
+                            $result_colors = mysqli_query($conn, $query_colors);
+                            while ($row = mysqli_fetch_assoc($result_colors)) {
+                            ?>
+                                <option value="<?= htmlspecialchars($row['color_id']) ?>" 
+                                        data-category="<?= htmlspecialchars($row['product_category']) ?>">
+                                        <?= htmlspecialchars($row['color_name']) ?>
+                                    </option>
+                            <?php } 
+                        }
                         ?>
-                            <option value="<?= htmlspecialchars($row_color['color_id']) ?>" 
-                                    data-category="<?= htmlspecialchars($row_color['product_category']) ?>">
-                                <?= htmlspecialchars($row_color['color_name']) ?>
-                            </option>
-                        <?php } ?>
                     </optgroup>
                 </select>
             </div>

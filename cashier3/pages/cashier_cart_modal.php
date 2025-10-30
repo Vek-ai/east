@@ -333,25 +333,16 @@ if(isset($_POST['fetch_cart'])){
                                             data-line="<?= $items[0]['line'] ?>" data-id="<?= $product_id ?>">
                                         <option value="">Select Color...</option>
                                         <?php
-                                        $query_colors = "SELECT Product_id, color_id FROM inventory WHERE Product_id = '$product_id'";
-                                        $result_colors = mysqli_query($conn, $query_colors);
-
-                                        $inventory_color_ids = [];
-                                        while ($row_colors = mysqli_fetch_array($result_colors)) {
-                                            $color_id = intval($row_colors['color_id']);
-                                            if ($color_id > 0 && !in_array($color_id, $inventory_color_ids)) {
-                                                $inventory_color_ids[] = $color_id;
-                                            }
-                                        }
+                                        $assigned_colors = getAssignedProductColors($product_id);
 
                                         if (!empty($items[0]['custom_color'])) {
                                             $custom_color_id = intval($items[0]['custom_color']);
-                                            if (!in_array($custom_color_id, $inventory_color_ids)) {
-                                                $inventory_color_ids[] = $custom_color_id;
+                                            if (!in_array($custom_color_id, $assigned_colors)) {
+                                                $assigned_colors[] = $custom_color_id;
                                             }
                                         }
 
-                                        foreach ($inventory_color_ids as $color_id) {
+                                        foreach ($assigned_colors as $color_id) {
                                             $colorDetails = getColorDetails($color_id);
                                             $colorHex = getColorHexFromColorID($color_id);
                                             $colorName = $colorDetails['color_name'] ?? '';
@@ -360,6 +351,7 @@ if(isset($_POST['fetch_cart'])){
                                         }
                                         ?>
                                     </select>
+
                                 </td>
 
                                 <td class="text-center">
@@ -803,34 +795,25 @@ if(isset($_POST['fetch_cart'])){
                                             data-line="<?= $items[0]['line'] ?>" data-id="<?= $product_id ?>">
                                         <option value="">Select Color...</option>
                                         <?php
-                                        $query_colors = "SELECT Product_id, color_id FROM inventory WHERE Product_id = '$product_id'";
-                                        $result_colors = mysqli_query($conn, $query_colors);
-
-                                        $inventory_color_ids = [];
-
-                                        while ($row_colors = mysqli_fetch_array($result_colors)) {
-                                            $color_id = intval($row_colors['color_id']);
-                                            if ($color_id > 0 && !in_array($color_id, $inventory_color_ids)) {
-                                                $inventory_color_ids[] = $color_id;
-                                            }
-                                        }
+                                        $assigned_colors = getAssignedProductColors($product_id);
 
                                         if (!empty($items[0]['custom_color'])) {
                                             $custom_color_id = intval($items[0]['custom_color']);
-                                            if (!in_array($custom_color_id, $inventory_color_ids)) {
-                                                $inventory_color_ids[] = $custom_color_id;
+                                            if (!in_array($custom_color_id, $assigned_colors)) {
+                                                $assigned_colors[] = $custom_color_id;
                                             }
                                         }
 
-                                        foreach ($inventory_color_ids as $color_id) {
+                                        foreach ($assigned_colors as $color_id) {
                                             $colorDetails = getColorDetails($color_id);
                                             $colorHex = getColorHexFromColorID($color_id);
                                             $colorName = $colorDetails['color_name'] ?? '';
                                             $selected = ($first_calc['color_id'] == $color_id) ? 'selected' : '';
-                                            echo "<option value='{$color_id}' data-color='{$colorHex}' {$selected}>{$colorName}</option>";
+                                            echo "<option value='{$color_id}' data-color='{$colorHex}' data-grade='{$product['grade']}' {$selected}>{$colorName}</option>";
                                         }
                                         ?>
                                     </select>
+
                                 </td>
 
                                 <td class="text-center">
@@ -1129,34 +1112,25 @@ if(isset($_POST['fetch_cart'])){
                                             data-line="<?= $items[0]['line'] ?>" data-id="<?= $product_id ?>">
                                         <option value="">Select Color...</option>
                                         <?php
-                                        $query_colors = "SELECT Product_id, color_id FROM inventory WHERE Product_id = '$product_id'";
-                                        $result_colors = mysqli_query($conn, $query_colors);
-
-                                        $inventory_color_ids = [];
-
-                                        while ($row_colors = mysqli_fetch_array($result_colors)) {
-                                            $color_id = intval($row_colors['color_id']);
-                                            if ($color_id > 0 && !in_array($color_id, $inventory_color_ids)) {
-                                                $inventory_color_ids[] = $color_id;
-                                            }
-                                        }
+                                        $assigned_colors = getAssignedProductColors($product_id);
 
                                         if (!empty($items[0]['custom_color'])) {
                                             $custom_color_id = intval($items[0]['custom_color']);
-                                            if (!in_array($custom_color_id, $inventory_color_ids)) {
-                                                $inventory_color_ids[] = $custom_color_id;
+                                            if (!in_array($custom_color_id, $assigned_colors)) {
+                                                $assigned_colors[] = $custom_color_id;
                                             }
                                         }
 
-                                        foreach ($inventory_color_ids as $color_id) {
+                                        foreach ($assigned_colors as $color_id) {
                                             $colorDetails = getColorDetails($color_id);
                                             $colorHex = getColorHexFromColorID($color_id);
                                             $colorName = $colorDetails['color_name'] ?? '';
                                             $selected = ($first_calc['color_id'] == $color_id) ? 'selected' : '';
-                                            echo "<option value='{$color_id}' data-color='{$colorHex}' {$selected}>{$colorName}</option>";
+                                            echo "<option value='{$color_id}' data-color='{$colorHex}' data-grade='{$product['grade']}' {$selected}>{$colorName}</option>";
                                         }
                                         ?>
                                     </select>
+
                                 </td>
 
                                 <td class="text-center">
@@ -1479,34 +1453,25 @@ if(isset($_POST['fetch_cart'])){
                                             data-line="<?= $items[0]['line'] ?>" data-id="<?= $product_id ?>">
                                         <option value="">Select Color...</option>
                                         <?php
-                                        $query_colors = "SELECT Product_id, color_id FROM inventory WHERE Product_id = '$product_id'";
-                                        $result_colors = mysqli_query($conn, $query_colors);
-
-                                        $inventory_color_ids = [];
-
-                                        while ($row_colors = mysqli_fetch_array($result_colors)) {
-                                            $color_id = intval($row_colors['color_id']);
-                                            if ($color_id > 0 && !in_array($color_id, $inventory_color_ids)) {
-                                                $inventory_color_ids[] = $color_id;
-                                            }
-                                        }
+                                        $assigned_colors = getAssignedProductColors($product_id);
 
                                         if (!empty($items[0]['custom_color'])) {
                                             $custom_color_id = intval($items[0]['custom_color']);
-                                            if (!in_array($custom_color_id, $inventory_color_ids)) {
-                                                $inventory_color_ids[] = $custom_color_id;
+                                            if (!in_array($custom_color_id, $assigned_colors)) {
+                                                $assigned_colors[] = $custom_color_id;
                                             }
                                         }
 
-                                        foreach ($inventory_color_ids as $color_id) {
+                                        foreach ($assigned_colors as $color_id) {
                                             $colorDetails = getColorDetails($color_id);
                                             $colorHex = getColorHexFromColorID($color_id);
                                             $colorName = $colorDetails['color_name'] ?? '';
                                             $selected = ($first_calc['color_id'] == $color_id) ? 'selected' : '';
-                                            echo "<option value='{$color_id}' data-color='{$colorHex}' {$selected}>{$colorName}</option>";
+                                            echo "<option value='{$color_id}' data-color='{$colorHex}' data-grade='{$product['grade']}' {$selected}>{$colorName}</option>";
                                         }
                                         ?>
                                     </select>
+
                                 </td>
 
                                 <td class="text-center">
@@ -1780,34 +1745,25 @@ if(isset($_POST['fetch_cart'])){
                                             data-line="<?= $items[0]['line'] ?>" data-id="<?= $product_id ?>">
                                         <option value="">Select Color...</option>
                                         <?php
-                                        $query_colors = "SELECT Product_id, color_id FROM inventory WHERE Product_id = '$product_id'";
-                                        $result_colors = mysqli_query($conn, $query_colors);
-
-                                        $inventory_color_ids = [];
-
-                                        while ($row_colors = mysqli_fetch_array($result_colors)) {
-                                            $color_id = intval($row_colors['color_id']);
-                                            if ($color_id > 0 && !in_array($color_id, $inventory_color_ids)) {
-                                                $inventory_color_ids[] = $color_id;
-                                            }
-                                        }
+                                        $assigned_colors = getAssignedProductColors($product_id);
 
                                         if (!empty($items[0]['custom_color'])) {
                                             $custom_color_id = intval($items[0]['custom_color']);
-                                            if (!in_array($custom_color_id, $inventory_color_ids)) {
-                                                $inventory_color_ids[] = $custom_color_id;
+                                            if (!in_array($custom_color_id, $assigned_colors)) {
+                                                $assigned_colors[] = $custom_color_id;
                                             }
                                         }
 
-                                        foreach ($inventory_color_ids as $color_id) {
+                                        foreach ($assigned_colors as $color_id) {
                                             $colorDetails = getColorDetails($color_id);
                                             $colorHex = getColorHexFromColorID($color_id);
                                             $colorName = $colorDetails['color_name'] ?? '';
                                             $selected = ($first_calc['color_id'] == $color_id) ? 'selected' : '';
-                                            echo "<option value='{$color_id}' data-color='{$colorHex}' {$selected}>{$colorName}</option>";
+                                            echo "<option value='{$color_id}' data-color='{$colorHex}' data-grade='{$product['grade']}' {$selected}>{$colorName}</option>";
                                         }
                                         ?>
                                     </select>
+
                                 </td>
 
                                 <td class="text-center">

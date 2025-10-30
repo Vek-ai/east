@@ -172,7 +172,6 @@ if (isset($_REQUEST['query'])) {
     $type_id    = (int) ($_REQUEST['type_id'] ?? 0);
     $profile_id = (int) ($_REQUEST['profile_id'] ?? 0);
     $category_id = (int) ($_REQUEST['category_id'] ?? 0);
-    $category_id = isset($_REQUEST['category_id']) ? mysqli_real_escape_string($conn, $_REQUEST['category_id']) : '';
     $onlyInStock = isset($_REQUEST['onlyInStock']) ? filter_var($_REQUEST['onlyInStock'], FILTER_VALIDATE_BOOLEAN) : false;
     $onlyPromotions = isset($_REQUEST['onlyPromotions']) ? filter_var($_REQUEST['onlyPromotions'], FILTER_VALIDATE_BOOLEAN) : false;
     $onlyOnSale = isset($_REQUEST['onlyOnSale']) ? filter_var($_REQUEST['onlyOnSale'], FILTER_VALIDATE_BOOLEAN) : false;
@@ -201,7 +200,44 @@ if (isset($_REQUEST['query'])) {
     ";
 
     if (!empty($searchQuery)) {
-        $query_product .= " AND (p.product_item LIKE '%$searchQuery%' OR p.description LIKE '%$searchQuery%')";
+        $attrs = getProductAttributes((int)$searchQuery);
+
+        if (!empty($attrs)) {
+            $conditions = [];
+
+            if (!empty($attrs['category'])) {
+                $conditions[] = "p.product_category = '{$attrs['category']}'";
+                $category_id = (int)$attrs['category'];
+            }
+            if (!empty($attrs['profile'])) {
+                $conditions[] = "p.profile = '{$attrs['profile']}'";
+                $profile_id = (int)$attrs['profile'];
+            }
+            if (!empty($attrs['grade'])) {
+                $conditions[] = "p.grade = '{$attrs['grade']}'";
+                $grade = (int)$attrs['grade'];
+            }
+            if (!empty($attrs['gauge'])) {
+                $conditions[] = "p.gauge = '{$attrs['gauge']}'";
+                $gauge_id = (int)$attrs['gauge'];
+            }
+            if (!empty($attrs['type'])) {
+                $conditions[] = "p.product_type = '{$attrs['type']}'";
+                $type_id = (int)$attrs['type'];
+            }
+            if (!empty($attrs['color'])) {
+                $conditions[] = "p.color = '{$attrs['color']}'";
+                $color_id = (int)$attrs['color'];
+            }
+
+            if (!empty($conditions)) {
+                $query_product .= " AND (p.product_id = '$searchQuery' OR " . implode(' OR ', $conditions) . ")";
+            } else {
+                $query_product .= " AND (p.product_item LIKE '%$searchQuery%' OR p.description LIKE '%$searchQuery%')";
+            }
+        } else {
+            $query_product .= " AND (p.product_item LIKE '%$searchQuery%' OR p.description LIKE '%$searchQuery%')";
+        }
     }
 
     if (!empty($color_id)) { 
@@ -276,6 +312,11 @@ if (isset($_REQUEST['query'])) {
 
     if (mysqli_num_rows($result_product) > 0) {
         while ($row_product = mysqli_fetch_array($result_product)) {
+
+            $id_attrib = [];
+            if (!empty($row_product['product_id'])) {
+                $id_attrib = getProductAttributes($row_product['product_id']);
+            }
 
             $product_length = $row_product['length'];
             $product_width = $row_product['width'];

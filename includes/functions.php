@@ -4326,4 +4326,29 @@ function getAssignedProductColors($product_id) {
     return $colorIds;
 }
 
+function getProductAttributes($product_id) {
+    global $conn;
+
+    $product_id = mysqli_real_escape_string($conn, $product_id);
+    $query = "SELECT category, profile, grade, gauge, type, color 
+              FROM product_abr 
+              WHERE product_id = '$product_id' 
+              LIMIT 1";
+              
+    $result = mysqli_query($conn, $query);
+    
+    if ($result && mysqli_num_rows($result) > 0) {
+        return mysqli_fetch_assoc($result);
+    }
+
+    return [
+        'category' => null,
+        'profile' => null,
+        'grade' => null,
+        'gauge' => null,
+        'type' => null,
+        'color' => null
+    ];
+}
+
 ?>
