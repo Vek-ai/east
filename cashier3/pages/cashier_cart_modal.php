@@ -104,19 +104,19 @@ if(isset($_POST['fetch_cart'])){
         .table-fixed th:nth-child(1),
         .table-fixed td:nth-child(1) { width: 5%; }
         .table-fixed th:nth-child(2),
-        .table-fixed td:nth-child(2) { width: 15%; }
+        .table-fixed td:nth-child(2) { width: 13%; }
         .table-fixed th:nth-child(3),
         .table-fixed td:nth-child(3) { width: 7%; }
         .table-fixed th:nth-child(4),
-        .table-fixed td:nth-child(4) { width: 12%; }
+        .table-fixed td:nth-child(4) { width: 11%; }
         .table-fixed th:nth-child(5),
-        .table-fixed td:nth-child(5) { width: 13%; }
+        .table-fixed td:nth-child(5) { width: 11%; }
         .table-fixed th:nth-child(6),
         .table-fixed td:nth-child(6) { width: 7%; }
         .table-fixed th:nth-child(7),
         .table-fixed td:nth-child(7) { width: 7%; }
         .table-fixed th:nth-child(8),
-        .table-fixed td:nth-child(8) { width: 9%; }
+        .table-fixed td:nth-child(8) { width: 7%; }
         .table-fixed th:nth-child(9),
         .table-fixed td:nth-child(9) { width: 7%; }
         .table-fixed th:nth-child(10),
@@ -124,7 +124,7 @@ if(isset($_POST['fetch_cart'])){
         .table-fixed th:nth-child(11),
         .table-fixed td:nth-child(11) { width: 7%; }
         .table-fixed th:nth-child(12),
-        .table-fixed td:nth-child(12) { width: 3%; }
+        .table-fixed td:nth-child(12) { width: 7%; }
 
         input[readonly] {
             border: none;               
@@ -219,6 +219,7 @@ if(isset($_POST['fetch_cart'])){
                         <th>Description</th>
                         <th class="text-center">Color</th>
                         <th class="text-center">Grade</th>
+                        <th class="text-center">Gauge</th>
                         <th class="text-center">Profile</th>
                         <th class="text-center pl-3">Quantity</th>
                         <th class="text-center">Length</th>
@@ -377,6 +378,22 @@ if(isset($_POST['fetch_cart'])){
                                     </select>
                                 </td>
 
+                                <td class="text-center">
+                                    <select id="gauge<?= $items[0]['line'] ?>" class="form-control gauge-cart" 
+                                            name="gauge" onchange="updateGauge(this)" 
+                                            data-line="<?= $items[0]['line'] ?>" data-id="<?= $product_id ?>">
+                                        <option value="">Select Gauge...</option>
+                                        <?php
+                                        $query_gauge = "SELECT * FROM product_gauge WHERE status = 1";
+                                        $result_gauge = mysqli_query($conn, $query_gauge);
+                                        while ($row_gauge = mysqli_fetch_array($result_gauge)) {
+                                            $selected = ($first_calc['gauge'] == $row_gauge['product_gauge_id']) ? 'selected' : '';
+                                            echo "<option value='{$row_gauge['product_gauge_id']}' {$selected}>{$row_gauge['product_gauge']}</option>";
+                                        }
+                                        ?>
+                                    </select>
+                                </td>
+
                                 <td class="text-center"><?= getProfileTypeName($first_calc['profile']) ?></td>
 
                                 <td class="text-center"><?= $total_qty ?></td>
@@ -428,7 +445,7 @@ if(isset($_POST['fetch_cart'])){
                                 $bundle_count++;
                                 ?>
                                 <tr class="thick-border d-none bundleCartSection">
-                                    <td class="text-center" colspan="10">
+                                    <td class="text-center" colspan="12">
                                         <div class="text-end">
                                             <div class="card p-3 mb-0 d-inline-block text-center">
                                                 <h6 class="fw-bold">Add Bundle Info</h6>
@@ -444,7 +461,7 @@ if(isset($_POST['fetch_cart'])){
                                 </tr>
 
                                 <tr class="thick-border create_bundle_row">
-                                    <th class="text-center" colspan="2">
+                                    <th class="text-center" colspan="3">
                                         <?php if (!empty($bundle_name)) : ?>
                                             (<?= $bundle_name ?>)
                                         <?php else: ?>
@@ -494,9 +511,11 @@ if(isset($_POST['fetch_cart'])){
                                     ?>
 
                                     <tr data-abbrev="<?= $item['unique_prod_id'] ?>" data-id="<?= $product_id ?>" data-line="<?= $line ?>" data-line="<?= $line ?>" data-bundle="<?= $values['bundle_name'] ?? '' ?>">
+                                        
                                         <td>
                                             <?php
                                             if($category_id == $trim_id){
+                                                
                                                 if(!empty($values["custom_trim_src"])){
                                                 ?>
                                                 <a href="javascript:void(0);" class="drawingContainer" id="custom_trim_draw" data-line="<?php echo $line; ?>" data-id="<?php echo $product_id; ?>" data-drawing="<?= $drawing_data ?>">
@@ -517,16 +536,12 @@ if(isset($_POST['fetch_cart'])){
                                             <?php } ?>
                                         </td>
                                         <td class="text-center align-middle">
-                                            <div class="d-flex align-items-center gap-2 justify-content-start">
-                                                <?php
-                                                if(!empty($values['bundle_name'])){
-                                                ?>
-                                                    <i class="fa fa-bars fa-lg drag-handle" style="cursor: move;"></i>
-                                                <?php
-                                                }
-                                                ?>
+                                            <div class="d-flex align-items-center gap-2 justify-content-start flex-nowrap text-truncate" style="overflow: hidden;">
+                                                <?php if (!empty($values['bundle_name'])): ?>
+                                                    <i class="fa fa-bars fa-lg drag-handle" style="cursor: move; flex-shrink: 0;"></i>
+                                                <?php endif; ?>
 
-                                                <div class="bundle-checkbox-cart d-none">
+                                                <div class="bundle-checkbox-cart d-none flex-shrink-0">
                                                     <div class="form-check m-0">
                                                         <input class="form-check-input bundle-checkbox-cart" 
                                                             type="checkbox" 
@@ -536,17 +551,18 @@ if(isset($_POST['fetch_cart'])){
                                                     </div>
                                                 </div>
 
-                                                <span class="<?= $show_unique_product_id ? '' : 'd-none' ?>">
+                                                <span class="<?= $show_unique_product_id ? '' : 'd-none' ?> text-truncate" style="flex-grow: 1; overflow: hidden;">
                                                     <?= htmlspecialchars($unique_prod_id) ?>
                                                 </span>
 
-                                                <?php if (!empty($values["note"])){ ?>
-                                                    <span class="text-muted small">
+                                                <?php if (!empty($values["note"])): ?>
+                                                    <span class="text-muted small text-truncate" style="flex-grow: 1; overflow: hidden;">
                                                         Notes: <?= htmlspecialchars($values["note"]) ?>
                                                     </span>
-                                                <?php } ?>
+                                                <?php endif; ?>
                                             </div>
                                         </td>
+                                        <td></td>
                                         <td class="text-center">
                                             <div class="input-group d-inline-flex align-items-center flex-nowrap w-auto">
                                                 <button class="btn btn-primary btn-sm p-1" type="button"
@@ -833,6 +849,22 @@ if(isset($_POST['fetch_cart'])){
                                     </select>
                                 </td>
 
+                                <td class="text-center">
+                                    <select id="gauge<?= $items[0]['line'] ?>" class="form-control gauge-cart" 
+                                            name="gauge" onchange="updateGauge(this)" 
+                                            data-line="<?= $items[0]['line'] ?>" data-id="<?= $product_id ?>">
+                                        <option value="">Select Gauge...</option>
+                                        <?php
+                                        $query_gauge = "SELECT * FROM product_gauge WHERE status = 1";
+                                        $result_gauge = mysqli_query($conn, $query_gauge);
+                                        while ($row_gauge = mysqli_fetch_array($result_gauge)) {
+                                            $selected = ($first_calc['gauge'] == $row_gauge['product_gauge_id']) ? 'selected' : '';
+                                            echo "<option value='{$row_gauge['product_gauge_id']}' {$selected}>{$row_gauge['product_gauge']}</option>";
+                                        }
+                                        ?>
+                                    </select>
+                                </td>
+
                                 <td class="text-center"><?= getProfileTypeName($first_calc['profile']) ?></td>
 
                                 <td class="text-center"><?= $total_qty ?></td>
@@ -858,7 +890,7 @@ if(isset($_POST['fetch_cart'])){
                             </tr>
 
                             <tr class="thick-border create_bundle_row">
-                                <th class="text-center" colspan="2"></th>
+                                <th class="text-center" colspan="3"></th>
                                 <th class="text-center">Qty</th>
                                 <th class="text-center">Length</th>
                                 <th class="text-center"></th>
@@ -912,10 +944,9 @@ if(isset($_POST['fetch_cart'])){
                                             <?php endif; ?>
                                         <?php endif; ?>
                                     </td>
-                                    <td class="text-start">
-                                        <div class="d-flex align-items-center gap-2 justify-content-start">
+                                    <td class="text-center">
+                                        <div class="d-flex align-items-center gap-2 justify-content-center">
                                             
-
                                             <div class="bundle-checkbox-cart d-none">
                                                 <div class="form-check m-0">
                                                     <input class="form-check-input bundle-checkbox-cart" 
@@ -937,6 +968,7 @@ if(isset($_POST['fetch_cart'])){
                                             <?php } ?>
                                         </div>
                                     </td>
+                                    <td></td>
                                     <td class="text-center">
                                         <div class="input-group d-inline-flex align-items-center flex-nowrap w-auto">
                                             <button class="btn btn-primary btn-sm p-1" type="button" data-line="<?= $line; ?>" data-id="<?= $product_id; ?>" onClick="deductquantity(this)">
@@ -1143,6 +1175,22 @@ if(isset($_POST['fetch_cart'])){
                                     </select>
                                 </td>
 
+                                <td class="text-center">
+                                    <select id="gauge<?= $items[0]['line'] ?>" class="form-control gauge-cart" 
+                                            name="gauge" onchange="updateGauge(this)" 
+                                            data-line="<?= $items[0]['line'] ?>" data-id="<?= $product_id ?>">
+                                        <option value="">Select Gauge...</option>
+                                        <?php
+                                        $query_gauge = "SELECT * FROM product_gauge WHERE status = 1";
+                                        $result_gauge = mysqli_query($conn, $query_gauge);
+                                        while ($row_gauge = mysqli_fetch_array($result_gauge)) {
+                                            $selected = ($first_calc['gauge'] == $row_gauge['product_gauge_id']) ? 'selected' : '';
+                                            echo "<option value='{$row_gauge['product_gauge_id']}' {$selected}>{$row_gauge['product_gauge']}</option>";
+                                        }
+                                        ?>
+                                    </select>
+                                </td>
+
                                 <td class="text-center"><?= getProfileTypeName($first_calc['profile']) ?></td>
 
                                 <td class="text-center"><?= $total_qty ?></td>
@@ -1168,7 +1216,7 @@ if(isset($_POST['fetch_cart'])){
                             </tr>
 
                             <tr class="thick-border create_bundle_row">
-                                <th class="text-center" colspan="2"></th>
+                                <th class="text-center" colspan="3"></th>
                                 <th class="text-center">Qty</th>
                                 <th class="text-center">Length</th>
                                 <th class="text-center">Type</th>
@@ -1221,8 +1269,8 @@ if(isset($_POST['fetch_cart'])){
                                             <?php endif; ?>
                                         <?php endif; ?>
                                     </td>
-                                    <td class="text-start">
-                                        <div class="d-flex align-items-center gap-2 justify-content-start">
+                                    <td class="text-center">
+                                        <div class="d-flex align-items-center gap-2 justify-content-center">
 
                                             <div class="bundle-checkbox-cart d-none">
                                                 <div class="form-check m-0">
@@ -1245,6 +1293,7 @@ if(isset($_POST['fetch_cart'])){
                                             <?php } ?>
                                         </div>
                                     </td>
+                                    <td></td>
                                     <td class="text-center">
                                         <div class="input-group d-inline-flex align-items-center flex-nowrap w-auto">
                                             <button class="btn btn-primary btn-sm p-1" type="button" data-line="<?= $line; ?>" data-id="<?= $product_id; ?>" onClick="deductquantity(this)">
@@ -1476,6 +1525,22 @@ if(isset($_POST['fetch_cart'])){
                                     </select>
                                 </td>
 
+                                <td class="text-center">
+                                    <select id="gauge<?= $items[0]['line'] ?>" class="form-control gauge-cart" 
+                                            name="gauge" onchange="updateGauge(this)" 
+                                            data-line="<?= $items[0]['line'] ?>" data-id="<?= $product_id ?>">
+                                        <option value="">Select Gauge...</option>
+                                        <?php
+                                        $query_gauge = "SELECT * FROM product_gauge WHERE status = 1";
+                                        $result_gauge = mysqli_query($conn, $query_gauge);
+                                        while ($row_gauge = mysqli_fetch_array($result_gauge)) {
+                                            $selected = ($first_calc['gauge'] == $row_gauge['product_gauge_id']) ? 'selected' : '';
+                                            echo "<option value='{$row_gauge['product_gauge_id']}' {$selected}>{$row_gauge['product_gauge']}</option>";
+                                        }
+                                        ?>
+                                    </select>
+                                </td>
+
                                 <td class="text-center"><?= getProfileTypeName($first_calc['profile']) ?></td>
 
                                 <td class="text-center"><?= $total_qty ?></td>
@@ -1501,7 +1566,7 @@ if(isset($_POST['fetch_cart'])){
                             </tr>
 
                             <tr class="thick-border create_bundle_row">
-                                <th class="text-center" colspan="2"></th>
+                                <th class="text-center" colspan="3"></th>
                                 <th class="text-center">Qty</th>
                                 <th class="text-center">Qty in Pack</th>
                                 <th class="text-center"></th>
@@ -1555,9 +1620,8 @@ if(isset($_POST['fetch_cart'])){
                                         <?php endif; ?>
                                     </td>
                                     <td class="text-center">
-                                        <div class="d-flex align-items-center gap-2 justify-content-start">
+                                        <div class="d-flex align-items-center gap-2 justify-content-center">
                                             
-
                                             <div class="bundle-checkbox-cart d-none">
                                                 <div class="form-check m-0">
                                                     <input class="form-check-input bundle-checkbox-cart" 
@@ -1579,6 +1643,7 @@ if(isset($_POST['fetch_cart'])){
                                             <?php } ?>
                                         </div>
                                     </td>
+                                    <td></td>
                                     <td class="text-center">
                                         <div class="input-group d-inline-flex align-items-center flex-nowrap w-auto">
                                             <button class="btn btn-primary btn-sm p-1" type="button" data-line="<?= $line; ?>" data-id="<?= $product_id; ?>" onClick="deductquantity(this)">
@@ -1761,6 +1826,22 @@ if(isset($_POST['fetch_cart'])){
                                     </select>
                                 </td>
 
+                                <td class="text-center">
+                                    <select id="gauge<?= $items[0]['line'] ?>" class="form-control gauge-cart" 
+                                            name="gauge" onchange="updateGauge(this)" 
+                                            data-line="<?= $items[0]['line'] ?>" data-id="<?= $product_id ?>">
+                                        <option value="">Select Gauge...</option>
+                                        <?php
+                                        $query_gauge = "SELECT * FROM product_gauge WHERE status = 1";
+                                        $result_gauge = mysqli_query($conn, $query_gauge);
+                                        while ($row_gauge = mysqli_fetch_array($result_gauge)) {
+                                            $selected = ($first_calc['gauge'] == $row_gauge['product_gauge_id']) ? 'selected' : '';
+                                            echo "<option value='{$row_gauge['product_gauge_id']}' {$selected}>{$row_gauge['product_gauge']}</option>";
+                                        }
+                                        ?>
+                                    </select>
+                                </td>
+
                                 <td class="text-center"><?= getProfileTypeName($first_calc['profile']) ?></td>
 
                                 <td class="text-center"><?= $total_qty ?></td>
@@ -1786,7 +1867,7 @@ if(isset($_POST['fetch_cart'])){
                             </tr>
 
                             <tr class="thick-border create_bundle_row">
-                                <th class="text-center" colspan="2"></th>
+                                <th class="text-center" colspan="3"></th>
                                 <th class="text-center">Qty</th>
                                 <th class="text-center">Qty in Pack</th>
                                 <th class="text-center"></th>
@@ -1840,9 +1921,8 @@ if(isset($_POST['fetch_cart'])){
                                         <?php endif; ?>
                                     </td>
                                     <td class="text-center">
-                                        <div class="d-flex align-items-center gap-2 justify-content-start">
+                                        <div class="d-flex align-items-center gap-2 justify-content-center">
                                             
-
                                             <div class="bundle-checkbox-cart d-none">
                                                 <div class="form-check m-0">
                                                     <input class="form-check-input bundle-checkbox-cart" 
@@ -1864,6 +1944,7 @@ if(isset($_POST['fetch_cart'])){
                                             <?php } ?>
                                         </div>
                                     </td>
+                                    <td></td>
                                     <td class="text-center">
                                         <div class="input-group d-inline-flex align-items-center flex-nowrap w-auto">
                                             <button class="btn btn-primary btn-sm p-1" type="button" data-line="<?= $line; ?>" data-id="<?= $product_id; ?>" onClick="deductquantity(this)">
@@ -1982,7 +2063,7 @@ if(isset($_POST['fetch_cart'])){
                         <td><?= number_format(floatval($total_weight), 2) ?> LBS</td>
                         <td colspan="2" class="text-end">Total Quantity:</td>
                         <td colspan="1" class=""><span id="qty_ttl"><?= $totalquantity ?></span></td>
-                        <td colspan="2" class="text-end">Customer Savings: </td>
+                        <td colspan="3" class="text-end">Customer Savings: </td>
                         <td colspan="1" class="text-end"><span id="ammount_due">$<?= number_format($customer_savings,2) ?></span></td>
                         <td colspan="1"></td>
                     </tr>
@@ -2400,6 +2481,19 @@ if(isset($_POST['fetch_cart'])){
             });
 
             $(".grade-cart").each(function() {
+                if ($(this).data('select2')) {
+                    $(this).select2('destroy');
+                }
+
+                $(this).select2({
+                    width: '300px',
+                    placeholder: "Select...",
+                    dropdownAutoWidth: true,
+                    dropdownParent: $('.modal.show')
+                });
+            });
+
+            $(".gauge-cart").each(function() {
                 if ($(this).data('select2')) {
                     $(this).select2('destroy');
                 }

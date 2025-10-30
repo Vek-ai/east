@@ -2067,30 +2067,9 @@ $editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) :
                 $('#cart-tbl').html(response); 
                 loadCartItemsHeader();
                 applySort();
-
-                updateAllColspans();
             },
             error: function(jqXHR, textStatus, errorThrown) {
                 alert('Error: ' + textStatus + ' - ' + errorThrown);
-            }
-        });
-    }
-
-    $(document).on("dblclick", ".customer_price_col", function () {
-        $(".price_col").toggleClass("d-none");
-
-        updateAllColspans();
-    });
-
-    function updateAllColspans() {
-        let colCount = $("#customer_select_cart tr:first td:visible, table tr:first th:visible").length;
-
-        $("td[colspan], th[colspan]").not(".bundleCartSection td, .create_bundle_row td, .create_bundle_row th").each(function () {
-            let current = parseInt($(this).attr("colspan"), 10);
-            if ($(".price_col").is(":visible")) {
-                $(this).attr("colspan", current + 1);
-            } else {
-                $(this).attr("colspan", current - 1);
             }
         });
     }

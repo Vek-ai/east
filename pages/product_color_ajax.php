@@ -258,6 +258,7 @@ if(isset($_REQUEST['action'])) {
 
         $includedColumns = [ 
             'id',
+            'color_name',
             'product_category',
             'profile',
             'grade',
@@ -477,6 +478,7 @@ if(isset($_REQUEST['action'])) {
     
             $includedColumns = [ 
                 'id',
+                'color_name',
                 'product_category',
                 'profile',
                 'grade',
