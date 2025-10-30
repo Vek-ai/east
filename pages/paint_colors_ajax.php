@@ -127,7 +127,7 @@ if(isset($_REQUEST['action'])) {
                     <div class="col-md-4">
                         <label class="form-label">Provider</label>
                         <div class="mb-3">
-                            <select id="provider" class="form-control select2-edit" name="provider" required>
+                            <select id="provider" class="form-control select2-edit" name="provider">
                                 <option value="" >Select One...</option>
                                 <?php
                                 $query_rows = "SELECT * FROM paint_providers";
