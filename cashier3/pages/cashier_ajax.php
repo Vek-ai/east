@@ -207,38 +207,47 @@ if (isset($_REQUEST['query'])) {
 
             if (!empty($attrs['category'])) {
                 $conditions[] = "p.product_category = '{$attrs['category']}'";
-                $category_id = (int)$attrs['category'];
             }
+
             if (!empty($attrs['profile'])) {
-                $conditions[] = "p.profile = '{$attrs['profile']}'";
-                $profile_id = (int)$attrs['profile'];
+                $conditions[] = "(JSON_VALID(p.profile) AND 
+                                (JSON_CONTAINS(p.profile, '\"" . intval($attrs['profile']) . "\"') 
+                                OR JSON_CONTAINS(p.profile, '" . intval($attrs['profile']) . "')))";
             }
+
             if (!empty($attrs['grade'])) {
-                $conditions[] = "p.grade = '{$attrs['grade']}'";
-                $grade = (int)$attrs['grade'];
+                $conditions[] = "(JSON_VALID(p.grade) AND 
+                                (JSON_CONTAINS(p.grade, '\"" . intval($attrs['grade']) . "\"') 
+                                OR JSON_CONTAINS(p.grade, '" . intval($attrs['grade']) . "')))";
             }
+
             if (!empty($attrs['gauge'])) {
-                $conditions[] = "p.gauge = '{$attrs['gauge']}'";
-                $gauge_id = (int)$attrs['gauge'];
+                $conditions[] = "(JSON_VALID(p.gauge) AND 
+                                (JSON_CONTAINS(p.gauge, '\"" . intval($attrs['gauge']) . "\"') 
+                                OR JSON_CONTAINS(p.gauge, '" . intval($attrs['gauge']) . "')))";
             }
+
             if (!empty($attrs['type'])) {
-                $conditions[] = "p.product_type = '{$attrs['type']}'";
-                $type_id = (int)$attrs['type'];
+                $conditions[] = "(JSON_VALID(p.product_type) AND 
+                                (JSON_CONTAINS(p.product_type, '\"" . intval($attrs['type']) . "\"') 
+                                OR JSON_CONTAINS(p.product_type, '" . intval($attrs['type']) . "')))";
             }
+
             if (!empty($attrs['color'])) {
                 $conditions[] = "p.color = '{$attrs['color']}'";
-                $color_id = (int)$attrs['color'];
             }
 
             if (!empty($conditions)) {
-                $query_product .= " AND (p.product_id = '$searchQuery' OR " . implode(' OR ', $conditions) . ")";
+                $query_product .= " AND (" . implode(' OR ', $conditions) . ")";
             } else {
                 $query_product .= " AND (p.product_item LIKE '%$searchQuery%' OR p.description LIKE '%$searchQuery%')";
             }
         } else {
             $query_product .= " AND (p.product_item LIKE '%$searchQuery%' OR p.description LIKE '%$searchQuery%')";
         }
+
     }
+
 
     if (!empty($color_id)) { 
         $query_product .= " AND i.color_id = '$color_id'"; 
@@ -510,8 +519,8 @@ if (isset($_REQUEST['query'])) {
         $tableHTML .= '<tr><td colspan="8" class="text-center">No products found</td></tr>';
     }
     
-    //echo $tableHTML;
     echo $tableHTML;
+    //echo $query_product;
 }
 
 if (isset($_POST['set_usage'])) {
