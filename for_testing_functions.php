@@ -15,7 +15,10 @@ $productResult = mysqli_query($conn, $productQuery);
 while ($product = mysqli_fetch_assoc($productResult)) {
     $productId = intval($product['product_id']);
     
-    $productColors = json_decode($product['color'], true) ?: [];
+    $productColors = json_decode($product['color'], true);
+    if (!is_array($productColors)) {
+        $productColors = $productColors ? [$productColors] : [];
+    }
     $productColors = array_map('intval', $productColors);
     
     $assignedColorsQuery = "SELECT color_id FROM product_color_assign WHERE product_id = $productId";
@@ -32,8 +35,7 @@ while ($product = mysqli_fetch_assoc($productResult)) {
         $toDelete = array_diff($assignedColors, $allColors);
         if (!empty($toDelete)) {
             $idsStr = implode(',', $toDelete);
-            $deleteQuery = "DELETE FROM product_color_assign 
-                            WHERE product_id = $productId AND color_id IN ($idsStr)";
+            $deleteQuery = "DELETE FROM product_color_assign WHERE product_id = $productId AND color_id IN ($idsStr)";
             mysqli_query($conn, $deleteQuery);
         }
     }
@@ -43,9 +45,7 @@ while ($product = mysqli_fetch_assoc($productResult)) {
         $date = date('Y-m-d');
         $time = date('H:i:s');
         $colorId = intval($colorId);
-        $insertQuery = "INSERT INTO product_color_assign 
-                        (product_id, color_id, `date`, `time`, assigned_by)
-                        VALUES ($productId, $colorId, '$date', '$time', $assignedBy)";
+        $insertQuery = "INSERT INTO product_color_assign (product_id, color_id, `date`, `time`, assigned_by) VALUES ($productId, $colorId, '$date', '$time', $assignedBy)";
         mysqli_query($conn, $insertQuery);
     }
 
@@ -54,5 +54,4 @@ while ($product = mysqli_fetch_assoc($productResult)) {
 }
 
 echo "Product colors synchronization completed successfully.";
-
 ?>
