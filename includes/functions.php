@@ -3105,11 +3105,11 @@ function calculateCartItem($values) {
     $product_type= $product['product_type'];
 
     $stock_text = ($stock_qty > 0)
-        ? '<a href="javascript:void(0);" id="view_in_stock" data-id="' . htmlspecialchars($data_id, ENT_QUOTES, 'UTF-8') . '" class="d-flex align-items-center">
+        ? '<a href="javascript:void(0);" id="view_in_stock" data-id="' . htmlspecialchars($data_id, ENT_QUOTES, 'UTF-8') . '" class="d-flex justify-content-center align-items-center">
                 <span class="text-bg-success p-1 rounded-circle"></span>
                 <span class="ms-2 fs-3">In Stock</span>
            </a>'
-        : '<a href="javascript:void(0);" id="view_out_of_stock" data-id="' . htmlspecialchars($data_id, ENT_QUOTES, 'UTF-8') . '" class="d-flex align-items-center">
+        : '<a href="javascript:void(0);" id="view_out_of_stock" data-id="' . htmlspecialchars($data_id, ENT_QUOTES, 'UTF-8') . '" class="d-flex justify-content-center align-items-center">
                 <span class="text-bg-danger p-1 rounded-circle"></span>
                 <span class="ms-2 fs-3">Out of Stock</span>
            </a>';

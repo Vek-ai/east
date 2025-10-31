@@ -892,7 +892,12 @@ if (isset($_REQUEST['fetch_edit_sales'])) {
         exit;
     }
 
-    $query = "SELECT orderid, pay_type, deliver_method FROM orders WHERE orderid = '$orderid' LIMIT 1";
+    $query = "
+        SELECT orderid, pay_type, deliver_method, scheduled_date, customerid, contractor_id 
+        FROM orders 
+        WHERE orderid = '$orderid' 
+        LIMIT 1
+    ";
     $result = mysqli_query($conn, $query);
 
     if (!$result || mysqli_num_rows($result) === 0) {
@@ -903,24 +908,87 @@ if (isset($_REQUEST['fetch_edit_sales'])) {
     $order = mysqli_fetch_assoc($result);
     $payType = $order['pay_type'];
     $deliverMethod = $order['deliver_method'];
-?>
-    <form id="editSalesForm">
+    $scheduled_date = $order['scheduled_date'];
+    $customerid = $order['customerid'];
+    $contractor_id = $order['contractor_id'];
+
+    $date = $scheduled_date ? date('Y-m-d', strtotime($scheduled_date)) : '';
+    $time = $scheduled_date ? date('H:i', strtotime($scheduled_date)) : '';
+    ?>
+    <style>
+        .datepicker table tr td.disabled,
+        .datepicker table tr td.disabled:hover {
+            color: #000 !important;
+            opacity: 1 !important;
+            cursor: not-allowed;
+        }
+    </style>
+
+    <form id="editSalesForm" onsubmit="return false;">
         <input type="hidden" name="orderid" value="<?= $orderid ?>">
 
         <div class="mb-3">
-            <label class="form-label fw-bold">Order ID: <?= $orderid ?></label>
+            <label class="form-label fw-bold">Order ID:</label>
+            <span class="ms-2"><?= $orderid ?></span>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label fw-bold">Customer</label>
+            <select name="customerid" id="customerid" class="form-select" required>
+                <option value="" hidden>-- Select Customer --</option>
+                <?php
+                $cust_q = mysqli_query($conn, "SELECT customer_id AS id FROM customer WHERE status = 1 ORDER BY customer_first_name ASC");
+                while ($cust = mysqli_fetch_assoc($cust_q)) {
+                    $selected = ($cust['id'] == $customerid) ? 'selected' : '';
+                    $cust_name = get_customer_name($cust['id']);
+                    echo "<option value='{$cust['id']}' $selected>{$cust_name}</option>";
+                }
+                ?>
+            </select>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label fw-bold">Contractor</label>
+            <select name="contractor_id" id="contractor_id" class="form-select">
+                <option value="" hidden>-- Select Contractor --</option>
+                <?php
+                $contractor_q = mysqli_query($conn, "SELECT customer_id AS id FROM customer WHERE is_contractor = '1' ORDER BY customer_first_name ASC");
+                while ($con = mysqli_fetch_assoc($contractor_q)) {
+                    $selected = ($con['id'] == $contractor_id) ? 'selected' : '';
+                    $con_name = get_customer_name($con['id']);
+                    echo "<option value='{$con['id']}' $selected>{$con_name}</option>";
+                }
+                ?>
+            </select>
         </div>
 
         <div class="mb-3">
             <label class="form-label fw-bold">Payment Method</label>
-            <select class="form-select" name="payMethod" id="payMethod" required>
-                <option value="" hidden>-- Select Payment Method --</option>
-                <option value="pickup" <?= $payType === 'pickup' ? 'selected' : '' ?>>Pay at Pick-Up</option>
-                <option value="delivery" <?= $payType === 'delivery' ? 'selected' : '' ?>>Pay at Delivery</option>
-                <option value="cash" <?= $payType === 'cash' ? 'selected' : '' ?>>Cash</option>
-                <option value="check" <?= $payType === 'check' ? 'selected' : '' ?>>Check</option>
-                <option value="card" <?= $payType === 'card' ? 'selected' : '' ?>>Credit/Debit Card</option>
-            </select>
+            <div>
+                <select class="form-select"
+                        name="payMethod[]"
+                        id="payMethod"
+                        multiple="multiple"
+                        required>
+                    <?php
+                    $payTypeLabels = [
+                        'pickup'   => 'Pickup',
+                        'delivery' => 'Delivery',
+                        'cash'     => 'Cash',
+                        'check'    => 'Check',
+                        'card'     => 'Credit/Debit Card',
+                        'net30'    => 'Charge Net 30'
+                    ];
+
+                    $selectedPayTypes = array_map('trim', explode(',', $payType));
+
+                    foreach ($payTypeLabels as $value => $label) {
+                        $selected = in_array($value, $selectedPayTypes) ? 'selected' : '';
+                        echo "<option value='$value' $selected>$label</option>";
+                    }
+                    ?>
+                </select>
+            </div>
         </div>
 
         <div class="mb-3">
@@ -932,28 +1000,106 @@ if (isset($_REQUEST['fetch_edit_sales'])) {
             </select>
         </div>
 
+        <div class="mb-3 row">
+            <div class="col-md-6">
+                <label class="form-label fw-bold">Scheduled Date</label>
+                <input type="text" 
+                       name="scheduled_date" 
+                       id="scheduled_date" 
+                       class="form-control" 
+                       value="<?= $date ?>" 
+                       placeholder="Select date" 
+                       autocomplete="off"
+                       required>
+            </div>
+            <div class="col-md-6">
+                <label class="form-label fw-bold">Scheduled Time</label>
+                <select name="scheduled_time" id="scheduled_time" class="form-select" required>
+                    <option value="" hidden>-- Select Time --</option>
+                    <?php
+                    for ($h = 8; $h <= 16; $h++) {
+                        $hour_12 = date("g:i A", strtotime("$h:00"));
+                        $hour_24 = date("H:i", strtotime("$h:00"));
+                        $selected = ($hour_24 === $time) ? 'selected' : '';
+                        echo "<option value='$hour_24' $selected>$hour_12</option>";
+                    }
+                    ?>
+                </select>
+            </div>
+        </div>
+
         <div class="text-end">
             <button type="submit" class="btn btn-primary btn-sm">Save Changes</button>
         </div>
     </form>
-<?php
+
+    <script>
+        $(function() {
+            $('#scheduled_date').datepicker({
+                format: 'yyyy-mm-dd',          // Bootstrap version uses 'format', not 'dateFormat'
+                startDate: new Date(),         // Today onwards
+                daysOfWeekDisabled: [0,6],     // Disable Sun/Sat
+                autoclose: true,
+                todayHighlight: true
+            });
+
+            $('#payMethod').select2({
+                placeholder: 'Select Payment Method(s)',
+                width: '100%',
+                allowClear: true,
+                dropdownParent: $('#resultModal')
+            });
+
+            $('#payMethod').on('select2:unselecting', function(e) {
+                e.preventDefault();
+            });
+        });
+    </script>
+
+    <?php
 }
+
 
 if (isset($_POST['edit_sales'])) {
     $orderid = intval($_POST['orderid']);
-    $payMethod = mysqli_real_escape_string($conn, $_POST['payMethod']);
-    $deliveryMethod = mysqli_real_escape_string($conn, $_POST['deliveryMethod']);
+
+    $customerid = intval($_POST['customerid'] ?? 0);
+    $contractor_id = intval($_POST['contractor_id'] ?? 0);
+
+    $payMethodArray = $_POST['payMethod'] ?? [];
+    if (is_array($payMethodArray)) {
+        $payMethodArray = array_map('trim', $payMethodArray);
+        $payMethodArray = array_filter($payMethodArray);
+        $payMethod = implode(',', $payMethodArray);
+    } else {
+        $payMethod = trim($payMethodArray);
+    }
+    $payMethod = mysqli_real_escape_string($conn, $payMethod);
+
+    $deliveryMethod = mysqli_real_escape_string($conn, $_POST['deliveryMethod'] ?? '');
+
+    $scheduled_date = mysqli_real_escape_string($conn, $_POST['scheduled_date'] ?? '');
+    $scheduled_time = mysqli_real_escape_string($conn, $_POST['scheduled_time'] ?? '');
+    $scheduled_datetime = $scheduled_date && $scheduled_time
+        ? date('Y-m-d H:i:s', strtotime("$scheduled_date $scheduled_time"))
+        : null;
 
     $query = "
         UPDATE orders 
-        SET pay_type = '$payMethod', deliver_method = '$deliveryMethod', is_edited = 1 
+        SET 
+            customerid = '$customerid',
+            contractor_id = '$contractor_id',
+            pay_type = '$payMethod',
+            deliver_method = '$deliveryMethod',
+            scheduled_date = " . ($scheduled_datetime ? "'$scheduled_datetime'" : "NULL") . ",
+            is_edited = 1 
         WHERE orderid = '$orderid'
     ";
 
     if (mysqli_query($conn, $query)) {
         echo '<div class="alert alert-success text-center mb-0">Sales record updated successfully!</div>';
     } else {
-        echo '<div class="alert alert-danger text-center mb-0">Error updating record</div>';
+        echo '<div class="alert alert-danger text-center mb-0">Error updating record: ' . mysqli_error($conn) . '</div>';
     }
 }
 

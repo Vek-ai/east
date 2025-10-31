@@ -33,6 +33,8 @@ $includedColumns = [
     'coating',
     'grade',
     'gauge',
+    'coil_code',
+    'sleeve_code',
     'main_image',
     'color_sold_as',
     'actual_color',
@@ -89,6 +91,10 @@ if(isset($_REQUEST['action'])) {
         $notes = mysqli_real_escape_string($conn, $_POST['notes'] ?? '');
         $lb_per_ft = ($actual_start_length != 0) ? ($weight / $actual_start_length) : 0;
         $remaining_feet = floatval($_POST['remaining_feet'] ?? 0);
+        
+        $coil_code = mysqli_real_escape_string($conn, $_POST['coil_code'] ?? '');
+        $sleeve_code = mysqli_real_escape_string($conn, $_POST['sleeve_code'] ?? '');
+
         $user_id = intval($_SESSION['userid'] ?? 0);
 
         $checkQuery = "SELECT * FROM coil_product WHERE coil_id = '$coil_id'";
@@ -127,6 +133,8 @@ if(isset($_REQUEST['action'])) {
                     coating = '$coating',
                     grade = '$grade',
                     gauge = '$gauge',
+                    coil_code = '$coil_code',
+                    sleeve_code = '$sleeve_code',
                     date = '$date',
                     date_inventory = '$date_inventory',
                     year = '$year',
@@ -173,7 +181,7 @@ if(isset($_REQUEST['action'])) {
             }
             $insertQuery = "
                 INSERT INTO coil_product (
-                    coil_id, entry_no, warehouse, coil_class, coating, grade, gauge,
+                    coil_id, entry_no, warehouse, coil_class, coating, grade, gauge, coil_code, sleeve_code,
                     date, date_inventory, year, month, weight, thickness, width, round_width,
                     stated_length, actual_start_length, color_sold_as, actual_color, color_close,
                     color_group, paint_supplier, invoice_price, price_per_ft, price_per_in,
@@ -181,7 +189,7 @@ if(isset($_REQUEST['action'])) {
                     notes, remaining_feet, lb_per_ft, current_weight, main_image,
                     added_date, added_by
                 ) VALUES (
-                    '$coil_id', '$entry_no', '$warehouse', '$coil_class', '$coating', '$grade', '$gauge',
+                    '$coil_id', '$entry_no', '$warehouse', '$coil_class', '$coating', '$grade', '$gauge', '$coil_code', '$sleeve_code',
                     '$date', '$date_inventory', '$year', '$month', '$weight', '$thickness', '$width', '$round_width',
                     '$stated_length', '$actual_start_length', '$color_sold_as', '$actual_color', '$color_close',
                     '$color_group_json', '$paint_supplier', '$invoice_price', '$price_per_ft', '$price_per_in',
@@ -320,6 +328,18 @@ if(isset($_REQUEST['action'])) {
                             </select>
                         </div>
                     </div>
+                    <div class="col-md-3">
+                        <div class="mb-3">
+                            <label class="form-label">Coil Code</label>
+                            <input type="text" id="coil_code" name="coil_code" class="form-control" value="<?= $row['coil_code'] ?? '' ?>" />
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="mb-3">
+                            <label class="form-label">Sleeve Code</label>
+                            <input type="text" id="sleeve_code" name="sleeve_code" class="form-control" value="<?= $row['sleeve_code'] ?? '' ?>" />
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -367,7 +387,7 @@ if(isset($_REQUEST['action'])) {
             <div class="card-body border rounded p-3">
                 <div class="row">
                     <div class="col-md-3">
-                        <label class="form-label">Sold As</label>
+                        <label class="form-label">Purchased Color</label>
                         <div class="mb-3">
                             <select id="color_sold_as" class="form-control select2-edit" name="color_sold_as">
                                 <option value="">Select Color...</option>
@@ -400,7 +420,7 @@ if(isset($_REQUEST['action'])) {
                     </div>
 
                     <div class="col-md-3">
-                        <label class="form-label">Actual Color</label>
+                        <label class="form-label">Actual Color/Sold As</label>
                         <div class="mb-3">
                             <select id="actual_color" class="form-control select2-edit colors-edit" name="actual_color">
                                 <option value="">Select Color...</option>

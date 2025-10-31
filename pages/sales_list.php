@@ -668,19 +668,17 @@ function showCol($name) {
                                     </a>
                                 `;
                                 <?php if ($permission === 'edit'): ?>
-                                    if (order.payment_status === 'not_paid') {
-                                        actionButtons += `
-                                            <a href="javascript:void(0)" class="text-primary" id="edit_order_details" data-id="${order.orderid}">
-                                                <i class="fa fa-pencil"></i>
-                                            </a>
-                                            <a href="javascript:void(0)" 
-                                                class="close_out_sale btn btn-danger-gradient btn-sm p-0" 
-                                                data-id="${order.orderid}" data-bs-toggle="tooltip" 
-                                                title="Close Out Sale">
-                                                    <iconify-icon icon="solar:close-circle-outline" class="text-danger fs-6"></iconify-icon>
-                                            </a>
-                                        `;
-                                    }
+                                    actionButtons += `
+                                        <a href="javascript:void(0)" class="text-primary" id="edit_order_details" data-id="${order.orderid}">
+                                            <i class="fa fa-pencil"></i>
+                                        </a>
+                                        <a href="javascript:void(0)" 
+                                            class="close_out_sale btn btn-danger-gradient btn-sm p-0" 
+                                            data-id="${order.orderid}" data-bs-toggle="tooltip" 
+                                            title="Close Out Sale">
+                                                <iconify-icon icon="solar:close-circle-outline" class="text-danger fs-6"></iconify-icon>
+                                        </a>
+                                    `;
                                 <?php endif; ?>
                                 rowData.push(actionButtons);
                             <?php endif; ?>

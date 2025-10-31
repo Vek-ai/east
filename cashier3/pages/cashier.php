@@ -3567,7 +3567,7 @@ $editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) :
         var $state = $( 
             '<span class="d-flex align-items-center justify-content-center">' + 
                 '<span class="rounded-circle d-block p-1" style="background-color:' + color + '; width: 25px; height: 25px;"></span>' +
-                '&nbsp;' +
+                state.text + 
             '</span>'
         );
         return $state;

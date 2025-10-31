@@ -102,19 +102,19 @@ if(isset($_POST['fetch_cart'])){
         }
 
         .table-fixed th:nth-child(1),
-        .table-fixed td:nth-child(1) { width: 5%; }
+        .table-fixed td:nth-child(1) { width: 15%; }
         .table-fixed th:nth-child(2),
-        .table-fixed td:nth-child(2) { width: 13%; }
+        .table-fixed td:nth-child(2) { width: 8%; }
         .table-fixed th:nth-child(3),
-        .table-fixed td:nth-child(3) { width: 7%; }
+        .table-fixed td:nth-child(3) { width: 8%; }
         .table-fixed th:nth-child(4),
-        .table-fixed td:nth-child(4) { width: 11%; }
+        .table-fixed td:nth-child(4) { width: 8%; }
         .table-fixed th:nth-child(5),
-        .table-fixed td:nth-child(5) { width: 11%; }
+        .table-fixed td:nth-child(5) { width: 8%; }
         .table-fixed th:nth-child(6),
-        .table-fixed td:nth-child(6) { width: 7%; }
+        .table-fixed td:nth-child(6) { width: 8%; }
         .table-fixed th:nth-child(7),
-        .table-fixed td:nth-child(7) { width: 7%; }
+        .table-fixed td:nth-child(7) { width: 8%; }
         .table-fixed th:nth-child(8),
         .table-fixed td:nth-child(8) { width: 7%; }
         .table-fixed th:nth-child(9),
@@ -212,10 +212,9 @@ if(isset($_POST['fetch_cart'])){
     <input type='hidden' id='customer_id_cart' name="customer_id"/>
     <div class="card-body">
         <div class="product-details table-responsive text-nowrap">
-            <table id="cartTable" class="table table-hover table-fixed mb-0 text-md-nowrap">
+            <table id="cartTable" class="table table-hover table-fixed mb-0">
                 <thead>
                     <tr>
-                        <th class="small">Image</th>
                         <th>Description</th>
                         <th class="text-center">Color</th>
                         <th class="text-center">Grade</th>
@@ -313,9 +312,6 @@ if(isset($_POST['fetch_cart'])){
                             ?>
 
                             <tr class="thick-border" data-mult="<?= $multiplier ?>">
-                                <td class="text-center">
-                                    <img src="<?= $picture_path ?>" class="rounded-circle" width="56" height="56" alt="product-img">
-                                </td>
                                 <td>
                                     <a href="javascript:void(0);" data-id="<?= $product_id ?>" class="d-flex align-items-center view_product_details">
                                         <h6 class="fw-semibold mb-0 fs-4"><?= htmlspecialchars($items[0]['product_item']) ?></h6>
@@ -426,7 +422,7 @@ if(isset($_POST['fetch_cart'])){
                                 if (!empty($bundle_name)) {
                                     ?>
                                     <tr class="thick-border">
-                                        <td class="text-center" colspan="3">Bundle <?= $bundle_count ?></td>
+                                        <td class="text-center" colspan="2">Bundle <?= $bundle_count ?></td>
                                         <td class="text-center" colspan="4"></td>
                                         <td class="text-center">Bundle <?= $bundle_count ?></td>
                                         <td class="text-center" colspan="3"></td>
@@ -436,7 +432,7 @@ if(isset($_POST['fetch_cart'])){
                                 $bundle_count++;
                                 ?>
                                 <tr class="thick-border d-none bundleCartSection">
-                                    <td class="text-center" colspan="12">
+                                    <td class="text-center" colspan="11">
                                         <div class="text-end">
                                             <div class="card p-3 mb-0 d-inline-block text-center">
                                                 <h6 class="fw-bold">Add Bundle Info</h6>
@@ -452,7 +448,7 @@ if(isset($_POST['fetch_cart'])){
                                 </tr>
 
                                 <tr class="thick-border create_bundle_row">
-                                    <th class="text-center" colspan="3">
+                                    <th class="text-center" colspan="2">
                                         <?php if (!empty($bundle_name)) : ?>
                                             (<?= $bundle_name ?>)
                                         <?php else: ?>
@@ -476,7 +472,7 @@ if(isset($_POST['fetch_cart'])){
                                             Price
                                         </span>
                                     </th>
-                                    <th class="text-center <?= $show_panel_price ? '' : 'd-none' ?>">Customer Price</th>
+                                    <th class="text-center <?= $show_panel_price ? '' : 'd-none' ?>">Price</th>
                                     <th class="text-center"></th>
                                 </tr>
 
@@ -502,35 +498,9 @@ if(isset($_POST['fetch_cart'])){
                                     ?>
 
                                     <tr data-abbrev="<?= $item['unique_prod_id'] ?>" data-id="<?= $product_id ?>" data-line="<?= $line ?>" data-line="<?= $line ?>" data-bundle="<?= $values['bundle_name'] ?? '' ?>">
-                                        
-                                        <td>
-                                            <?php
-                                            if($category_id == $trim_id){
-                                                
-                                                if(!empty($values["custom_trim_src"])){
-                                                ?>
-                                                <a href="javascript:void(0);" class="drawingContainer" id="custom_trim_draw" data-line="<?php echo $line; ?>" data-id="<?php echo $product_id; ?>" data-drawing="<?= $drawing_data ?>">
-                                                    <div class="align-items-center text-center w-100">
-                                                        <img src="<?= $images_directory.$values["custom_trim_src"] ?>" class="rounded-circle " alt="materialpro-img" width="56" height="56">
-                                                    </div>
-                                                </a>
-                                                <?php
-                                                }else{
-                                                ?>
-                                                <a href="javascript:void(0);" id="custom_trim_draw" class="drawingContainer btn btn-primary py-1 px-2 d-flex justify-content-center align-items-center" data-drawing="<?= $drawing_data ?>" data-line="<?php echo $line; ?>" data-id="<?php echo $product_id; ?>">
-                                                    Draw Here
-                                                </a>
-                                                <?php
-                                                }
-                                                ?>
-                                                
-                                            <?php } ?>
-                                        </td>
-                                        <td class="text-center align-middle">
+                                        <td class="text-start align-middle">
                                             <div class="d-flex align-items-center gap-2 justify-content-start flex-nowrap text-truncate" style="overflow: hidden;">
-                                                <?php if (!empty($values['bundle_name'])): ?>
-                                                    <i class="fa fa-bars fa-lg drag-handle" style="cursor: move; flex-shrink: 0;"></i>
-                                                <?php endif; ?>
+                                                <i class="fa fa-bars fa-lg drag-handle" style="cursor: move; flex-shrink: 0;"></i>
 
                                                 <div class="bundle-checkbox-cart d-none flex-shrink-0">
                                                     <div class="form-check m-0">
@@ -570,7 +540,7 @@ if(isset($_POST['fetch_cart'])){
                                                     data-line="<?php echo $line; ?>"
                                                     data-id="<?php echo $product_id; ?>"
                                                     id="item_quantity<?php echo $product_id;?>"
-                                                    style="width: 45px;">
+                                                    >
 
                                                 <button class="btn btn-primary btn-sm p-1" type="button"
                                                     data-line="<?php echo $line; ?>" 
@@ -580,40 +550,22 @@ if(isset($_POST['fetch_cart'])){
                                                 </button>
                                             </div>
                                         </td>
-                                        <td class="text-center">
-                                            <div class="d-flex flex-row align-items-center flex-nowrap w-auto">
-                                                <input class="form-control form-control-sm text-center px-1" 
-                                                    type="text" 
-                                                    value="<?= $product['width'] ?? ''; ?>" 
-                                                    placeholder="W" 
-                                                    size="5" 
-                                                    style="width: 40px;" 
-                                                    data-line="<?= $line; ?>" 
-                                                    data-id="<?= $product_id; ?>" 
-                                                    <?= !empty($product['width']) ? 'readonly' : '' ?>>
-
-                                                <span class="mx-1">X</span>
-
-                                                <fieldset class="border p-1 d-inline-flex align-items-center flex-nowrap">
-                                                    <div class="input-group d-flex align-items-center flex-nowrap w-auto">
-                                                        <input class="form-control form-control-sm text-center px-1 mr-1" 
+                                        <td class="text-center align-middle">
+                                            <div class="d-flex flex-row align-items-center flex-nowrap w-100 justify-content-center">
+                                                <fieldset class="border p-1 d-flex align-items-center flex-nowrap w-100 justify-content-center mb-0">
+                                                    <div class="input-group d-flex align-items-center flex-nowrap w-100">
+                                                        <input class="form-control form-control-sm text-center px-1 flex-fill me-1" 
                                                             type="text" 
-                                                            value="<?= round(floatval($values['estimate_length']),2) ?>" 
-                                                            step="0.001" 
+                                                            value="<?= round(floatval($values['estimate_length']), 2) ?>" 
                                                             placeholder="FT" 
-                                                            size="5" 
-                                                            style="width: 40px;" 
                                                             data-line="<?= $line; ?>" 
                                                             data-id="<?= $product_id; ?>" 
                                                             onchange="updateEstimateLength(this)">
-                                                        
-                                                        <input class="form-control form-control-sm text-center px-1" 
+
+                                                        <input class="form-control form-control-sm text-center px-1 flex-fill" 
                                                             type="text" 
-                                                            value="<?= round(floatval($values['estimate_length_inch']),2) ?>" 
-                                                            step="0.001" 
+                                                            value="<?= round(floatval($values['estimate_length_inch']), 2) ?>" 
                                                             placeholder="IN" 
-                                                            size="5" 
-                                                            style="width: 40px;" 
                                                             data-line="<?= $line; ?>" 
                                                             data-id="<?= $product_id; ?>" 
                                                             onchange="updateEstimateLengthInch(this)">
@@ -776,9 +728,6 @@ if(isset($_POST['fetch_cart'])){
                             ?>
 
                             <tr class="thick-border" data-mult="<?= $multiplier ?>">
-                                <td class="text-center">
-                                    <img src="<?= $picture_path ?>" class="rounded-circle" width="56" height="56" alt="product-img">
-                                </td>
                                 <td>
                                     <a href="javascript:void(0);" data-id="<?= $product_id ?>" class="d-flex align-items-center view_product_details">
                                         <h6 class="fw-semibold mb-0 fs-4"><?= htmlspecialchars($items[0]['product_item']) ?></h6>
@@ -873,7 +822,7 @@ if(isset($_POST['fetch_cart'])){
                             </tr>
 
                             <tr class="thick-border create_bundle_row">
-                                <th class="text-center" colspan="3"></th>
+                                <th class="text-center" colspan="2"></th>
                                 <th class="text-center">Qty</th>
                                 <th class="text-center">Length</th>
                                 <th class="text-center"></th>
@@ -889,7 +838,7 @@ if(isset($_POST['fetch_cart'])){
                                         Price
                                     </span>
                                 </th>
-                                <th class="text-center <?= $show_trim_price ? '' : 'd-none' ?>">Customer Price</th>
+                                <th class="text-center <?= $show_trim_price ? '' : 'd-none' ?>">Price</th>
                                 <th class="text-center"></th>
                             </tr>
 
@@ -912,23 +861,9 @@ if(isset($_POST['fetch_cart'])){
                                 ?>
 
                                 <tr data-id="<?= $product_id ?>" data-line="<?= $line ?>" data-line="<?= $line ?>" data-bundle="<?= $values['bundle_name'] ?? '' ?>">
-                                    <td>
-                                        <?php if($category_id == $trim_id): ?>
-                                            <?php if(!empty($values["custom_trim_src"])): ?>
-                                                <a href="javascript:void(0);" class="drawingContainer" id="custom_trim_draw" data-line="<?= $line; ?>" data-id="<?= $product_id; ?>" data-drawing="<?= $drawing_data ?>">
-                                                    <div class="align-items-center text-center w-100">
-                                                        <img src="<?= $images_directory.$values["custom_trim_src"] ?>" class="rounded-circle" width="56" height="56">
-                                                    </div>
-                                                </a>
-                                            <?php else: ?>
-                                                <a href="javascript:void(0);" id="custom_trim_draw" class="drawingContainer btn btn-primary py-1 px-2 d-flex justify-content-center align-items-center" data-drawing="<?= $drawing_data ?>" data-line="<?= $line; ?>" data-id="<?= $product_id; ?>">
-                                                    Draw Here
-                                                </a>
-                                            <?php endif; ?>
-                                        <?php endif; ?>
-                                    </td>
-                                    <td class="text-center">
-                                        <div class="d-flex align-items-center gap-2 justify-content-center">
+                                    <td class="text-start align-middle">
+                                        <div class="d-flex align-items-center gap-2">
+                                            <i class="fa fa-bars fa-lg drag-handle" style="cursor: move; flex-shrink: 0;"></i>
                                             
                                             <div class="bundle-checkbox-cart d-none">
                                                 <div class="form-check m-0">
@@ -964,42 +899,29 @@ if(isset($_POST['fetch_cart'])){
                                                 onchange="updatequantity(this)"
                                                 data-line="<?= $line; ?>"
                                                 data-id="<?= $product_id; ?>"
-                                                style="width: 45px;">
+                                                >
 
                                             <button class="btn btn-primary btn-sm p-1" type="button" data-line="<?= $line; ?>" data-id="<?= $product_id; ?>" onClick="addquantity(this)">
                                                 <i class="fa fa-plus"></i>
                                             </button>
                                         </div>
                                     </td>
-                                    <td class="text-center">
-                                        <div class="d-flex flex-row align-items-center flex-nowrap w-auto">
-                                            <input class="form-control form-control-sm text-center px-1" 
-                                                type="text" 
-                                                value="<?= $product['width'] ?? ''; ?>" 
-                                                placeholder="W" 
-                                                style="width: 40px;" 
-                                                data-line="<?= $line; ?>" 
-                                                data-id="<?= $product_id; ?>" 
-                                                <?= !empty($product['width']) ? 'readonly' : '' ?>>
-
-                                            <span class="mx-1">X</span>
-
-                                            <fieldset class="border p-1 d-inline-flex align-items-center flex-nowrap">
-                                                <div class="input-group d-flex align-items-center flex-nowrap w-auto">
-                                                    <input class="form-control form-control-sm text-center px-1" 
+                                    <td class="text-center align-middle">
+                                        <div class="d-flex flex-row align-items-center flex-nowrap w-100 justify-content-center">
+                                            <fieldset class="border p-1 d-flex align-items-center flex-nowrap w-100 justify-content-center mb-0">
+                                                <div class="input-group d-flex align-items-center flex-nowrap w-100">
+                                                    <input class="form-control form-control-sm text-center px-1 flex-fill me-1" 
                                                         type="text" 
-                                                        value="<?= round(floatval($values['estimate_length']),2) ?>" 
+                                                        value="<?= round(floatval($values['estimate_length']), 2) ?>" 
                                                         placeholder="FT" 
-                                                        style="width: 40px;" 
                                                         data-line="<?= $line; ?>" 
                                                         data-id="<?= $product_id; ?>" 
                                                         onchange="updateEstimateLength(this)">
-                                                    
-                                                    <input class="form-control form-control-sm text-center px-1" 
+
+                                                    <input class="form-control form-control-sm text-center px-1 flex-fill" 
                                                         type="text" 
-                                                        value="<?= round(floatval($values['estimate_length_inch']),2) ?>" 
+                                                        value="<?= round(floatval($values['estimate_length_inch']), 2) ?>" 
                                                         placeholder="IN" 
-                                                        style="width: 40px;" 
                                                         data-line="<?= $line; ?>" 
                                                         data-id="<?= $product_id; ?>" 
                                                         onchange="updateEstimateLengthInch(this)">
@@ -1094,9 +1016,6 @@ if(isset($_POST['fetch_cart'])){
                             ?>
 
                             <tr class="thick-border" data-mult="<?= $multiplier ?>">
-                                <td class="text-center">
-                                    <img src="<?= $picture_path ?>" class="rounded-circle" width="56" height="56" alt="product-img">
-                                </td>
                                 <td>
                                     <a href="javascript:void(0);" data-id="<?= $product_id ?>" class="d-flex align-items-center view_product_details">
                                         <h6 class="fw-semibold mb-0 fs-4"><?= htmlspecialchars($items[0]['product_item']) ?></h6>
@@ -1191,7 +1110,7 @@ if(isset($_POST['fetch_cart'])){
                             </tr>
 
                             <tr class="thick-border create_bundle_row">
-                                <th class="text-center" colspan="3"></th>
+                                <th class="text-center" colspan="2"></th>
                                 <th class="text-center">Qty</th>
                                 <th class="text-center">Length</th>
                                 <th class="text-center">Type</th>
@@ -1207,7 +1126,7 @@ if(isset($_POST['fetch_cart'])){
                                         Price
                                     </span>
                                 </th>
-                                <th class="text-center <?= $show_screw_price ? '' : 'd-none' ?>">Customer Price</th>
+                                <th class="text-center <?= $show_screw_price ? '' : 'd-none' ?>">Price</th>
                                 <th class="text-center"></th>
                             </tr>
 
@@ -1229,23 +1148,9 @@ if(isset($_POST['fetch_cart'])){
                                 ?>
 
                                 <tr data-id="<?= $product_id ?>" data-line="<?= $line ?>" data-line="<?= $line ?>" data-bundle="<?= $values['bundle_name'] ?? '' ?>">
-                                    <td>
-                                        <?php if($category_id == $trim_id): ?>
-                                            <?php if(!empty($values["custom_trim_src"])): ?>
-                                                <a href="javascript:void(0);" class="drawingContainer" id="custom_trim_draw" data-line="<?= $line; ?>" data-id="<?= $product_id; ?>" data-drawing="<?= $drawing_data ?>">
-                                                    <div class="align-items-center text-center w-100">
-                                                        <img src="<?= $images_directory.$values["custom_trim_src"] ?>" class="rounded-circle" width="56" height="56">
-                                                    </div>
-                                                </a>
-                                            <?php else: ?>
-                                                <a href="javascript:void(0);" id="custom_trim_draw" class="drawingContainer btn btn-primary py-1 px-2 d-flex justify-content-center align-items-center" data-drawing="<?= $drawing_data ?>" data-line="<?= $line; ?>" data-id="<?= $product_id; ?>">
-                                                    Draw Here
-                                                </a>
-                                            <?php endif; ?>
-                                        <?php endif; ?>
-                                    </td>
-                                    <td class="text-center">
-                                        <div class="d-flex align-items-center gap-2 justify-content-center">
+                                    <td class="text-start align-middle">
+                                        <div class="d-flex align-items-center gap-2">
+                                            <i class="fa fa-bars fa-lg drag-handle" style="cursor: move; flex-shrink: 0;"></i>
 
                                             <div class="bundle-checkbox-cart d-none">
                                                 <div class="form-check m-0">
@@ -1281,7 +1186,7 @@ if(isset($_POST['fetch_cart'])){
                                                 onchange="updatequantity(this)"
                                                 data-line="<?= $line; ?>"
                                                 data-id="<?= $product_id; ?>"
-                                                style="width: 45px;">
+                                                >
 
                                             <button class="btn btn-primary btn-sm p-1" type="button" data-line="<?= $line; ?>" data-id="<?= $product_id; ?>" onClick="addquantity(this)">
                                                 <i class="fa fa-plus"></i>
@@ -1342,7 +1247,7 @@ if(isset($_POST['fetch_cart'])){
                                     <td class="text-center">
                                         <div class="d-flex flex-row align-items-center flex-nowrap w-auto">
                                             <fieldset class="border p-1 d-inline-flex align-items-center flex-nowrap">
-                                                <div class="input-group d-flex align-items-center flex-nowrap w-auto">
+                                                <div class="input-group d-flex align-items-center flex-nowrap w-100">
                                                     <input class="form-control form-control-sm text-center px-1" 
                                                         type="text" 
                                                         value="<?= round(floatval($values['estimate_length']),2) ?>" 
@@ -1436,9 +1341,6 @@ if(isset($_POST['fetch_cart'])){
                             ?>
 
                             <tr class="thick-border" data-mult="<?= $multiplier ?>">
-                                <td class="text-center">
-                                    <img src="<?= $picture_path ?>" class="rounded-circle" width="56" height="56" alt="product-img">
-                                </td>
                                 <td>
                                     <a href="javascript:void(0);" data-id="<?= $product_id ?>" class="d-flex align-items-center view_product_details">
                                         <h6 class="fw-semibold mb-0 fs-4"><?= htmlspecialchars($items[0]['product_item']) ?></h6>
@@ -1533,7 +1435,7 @@ if(isset($_POST['fetch_cart'])){
                             </tr>
 
                             <tr class="thick-border create_bundle_row">
-                                <th class="text-center" colspan="3"></th>
+                                <th class="text-center" colspan="2"></th>
                                 <th class="text-center">Qty</th>
                                 <th class="text-center">Qty in Pack</th>
                                 <th class="text-center"></th>
@@ -1549,7 +1451,7 @@ if(isset($_POST['fetch_cart'])){
                                         Price
                                     </span>
                                 </th>
-                                <th class="text-center <?= $show_each_price ? '' : 'd-none' ?>">Customer Price</th>
+                                <th class="text-center <?= $show_each_price ? '' : 'd-none' ?>">Price</th>
                                 <th class="text-center"></th>
                             </tr>
 
@@ -1571,23 +1473,10 @@ if(isset($_POST['fetch_cart'])){
                                 ?>
 
                                 <tr data-id="<?= $product_id ?>" data-line="<?= $line ?>" data-line="<?= $line ?>" data-bundle="<?= $values['bundle_name'] ?? '' ?>">
-                                    <td>
-                                        <?php if($category_id == $trim_id): ?>
-                                            <?php if(!empty($values["custom_trim_src"])): ?>
-                                                <a href="javascript:void(0);" class="drawingContainer" id="custom_trim_draw" data-line="<?= $line; ?>" data-id="<?= $product_id; ?>" data-drawing="<?= $drawing_data ?>">
-                                                    <div class="align-items-center text-center w-100">
-                                                        <img src="<?= $images_directory.$values["custom_trim_src"] ?>" class="rounded-circle" width="56" height="56">
-                                                    </div>
-                                                </a>
-                                            <?php else: ?>
-                                                <a href="javascript:void(0);" id="custom_trim_draw" class="drawingContainer btn btn-primary py-1 px-2 d-flex justify-content-center align-items-center" data-drawing="<?= $drawing_data ?>" data-line="<?= $line; ?>" data-id="<?= $product_id; ?>">
-                                                    Draw Here
-                                                </a>
-                                            <?php endif; ?>
-                                        <?php endif; ?>
-                                    </td>
-                                    <td class="text-center">
-                                        <div class="d-flex align-items-center gap-2 justify-content-center">
+                                    
+                                    <td class="text-start align-middle">
+                                        <div class="d-flex align-items-center gap-2">
+                                            <i class="fa fa-bars fa-lg drag-handle" style="cursor: move; flex-shrink: 0;"></i>
                                             
                                             <div class="bundle-checkbox-cart d-none">
                                                 <div class="form-check m-0">
@@ -1623,7 +1512,7 @@ if(isset($_POST['fetch_cart'])){
                                                 onchange="updatequantity(this)"
                                                 data-line="<?= $line; ?>"
                                                 data-id="<?= $product_id; ?>"
-                                                style="width: 45px;">
+                                                >
 
                                             <button class="btn btn-primary btn-sm p-1" type="button" data-line="<?= $line; ?>" data-id="<?= $product_id; ?>" onClick="addquantity(this)">
                                                 <i class="fa fa-plus"></i>
@@ -1633,7 +1522,7 @@ if(isset($_POST['fetch_cart'])){
                                     <td class="text-center">
                                         <div class="d-flex flex-row align-items-center flex-nowrap w-auto">
                                             <fieldset class="border p-1 d-inline-flex align-items-center flex-nowrap">
-                                                <div class="input-group d-flex align-items-center flex-nowrap w-auto">
+                                                <div class="input-group d-flex align-items-center flex-nowrap w-100">
                                                     <input class="form-control form-control-sm text-center px-1" 
                                                         type="text" 
                                                         value="<?= round(floatval($values['estimate_length']),2) ?>" 
@@ -1729,9 +1618,6 @@ if(isset($_POST['fetch_cart'])){
                             ?>
 
                             <tr class="thick-border" data-mult="<?= $multiplier ?>">
-                                <td class="text-center">
-                                    <img src="<?= $picture_path ?>" class="rounded-circle" width="56" height="56" alt="product-img">
-                                </td>
                                 <td>
                                     <a href="javascript:void(0);" data-id="<?= $product_id ?>" class="d-flex align-items-center view_product_details">
                                         <h6 class="fw-semibold mb-0 fs-4"><?= htmlspecialchars($items[0]['product_item']) ?></h6>
@@ -1826,7 +1712,7 @@ if(isset($_POST['fetch_cart'])){
                             </tr>
 
                             <tr class="thick-border create_bundle_row">
-                                <th class="text-center" colspan="3"></th>
+                                <th class="text-center" colspan="2"></th>
                                 <th class="text-center">Qty</th>
                                 <th class="text-center">Qty in Pack</th>
                                 <th class="text-center"></th>
@@ -1842,7 +1728,7 @@ if(isset($_POST['fetch_cart'])){
                                         Price
                                     </span>
                                 </th>
-                                <th class="text-center <?= $show_each_price ? '' : 'd-none' ?>">Customer Price</th>
+                                <th class="text-center <?= $show_each_price ? '' : 'd-none' ?>">Price</th>
                                 <th class="text-center"></th>
                             </tr>
 
@@ -1864,23 +1750,10 @@ if(isset($_POST['fetch_cart'])){
                                 ?>
 
                                 <tr data-id="<?= $product_id ?>" data-line="<?= $line ?>" data-line="<?= $line ?>" data-bundle="<?= $values['bundle_name'] ?? '' ?>">
-                                    <td>
-                                        <?php if($category_id == $trim_id): ?>
-                                            <?php if(!empty($values["custom_trim_src"])): ?>
-                                                <a href="javascript:void(0);" class="drawingContainer" id="custom_trim_draw" data-line="<?= $line; ?>" data-id="<?= $product_id; ?>" data-drawing="<?= $drawing_data ?>">
-                                                    <div class="align-items-center text-center w-100">
-                                                        <img src="<?= $images_directory.$values["custom_trim_src"] ?>" class="rounded-circle" width="56" height="56">
-                                                    </div>
-                                                </a>
-                                            <?php else: ?>
-                                                <a href="javascript:void(0);" id="custom_trim_draw" class="drawingContainer btn btn-primary py-1 px-2 d-flex justify-content-center align-items-center" data-drawing="<?= $drawing_data ?>" data-line="<?= $line; ?>" data-id="<?= $product_id; ?>">
-                                                    Draw Here
-                                                </a>
-                                            <?php endif; ?>
-                                        <?php endif; ?>
-                                    </td>
-                                    <td class="text-center">
-                                        <div class="d-flex align-items-center gap-2 justify-content-center">
+                                    
+                                    <td class="text-start align-middle">
+                                        <div class="d-flex align-items-center gap-2">
+                                            <i class="fa fa-bars fa-lg drag-handle" style="cursor: move; flex-shrink: 0;"></i>
                                             
                                             <div class="bundle-checkbox-cart d-none">
                                                 <div class="form-check m-0">
@@ -1916,7 +1789,7 @@ if(isset($_POST['fetch_cart'])){
                                                 onchange="updatequantity(this)"
                                                 data-line="<?= $line; ?>"
                                                 data-id="<?= $product_id; ?>"
-                                                style="width: 45px;">
+                                                >
 
                                             <button class="btn btn-primary btn-sm p-1" type="button" data-line="<?= $line; ?>" data-id="<?= $product_id; ?>" onClick="addquantity(this)">
                                                 <i class="fa fa-plus"></i>
@@ -1926,7 +1799,7 @@ if(isset($_POST['fetch_cart'])){
                                     <td class="text-center">
                                         <div class="d-flex flex-row align-items-center flex-nowrap w-auto">
                                             <fieldset class="border p-1 d-inline-flex align-items-center flex-nowrap">
-                                                <div class="input-group d-flex align-items-center flex-nowrap w-auto">
+                                                <div class="input-group d-flex align-items-center flex-nowrap w-100">
                                                     <input class="form-control form-control-sm text-center px-1" 
                                                         type="text" 
                                                         value="<?= round(floatval($values['estimate_length']),2) ?>" 
@@ -2018,10 +1891,10 @@ if(isset($_POST['fetch_cart'])){
                     }
                     ?>
                     <tr>
-                        <td colspan="3" class="text-end">Total Weight</td>
-                        <td><?= number_format(floatval($total_weight), 2) ?> LBS</td>
-                        <td colspan="2" class="text-end">Total Quantity:</td>
-                        <td colspan="1" class=""><span id="qty_ttl"><?= $totalquantity ?></span></td>
+                        <td colspan="2" class="text-start align-middle">Total Weight <?= number_format(floatval($total_weight), 2) ?> LBS</td>
+                        <td></td>
+                        <td colspan="2" class="text-center">Total Quantity: <span id="qty_ttl"><?= $totalquantity ?></span></td>
+                        <td colspan="1"></td>
                         <td colspan="3" class="text-end">Customer Savings: </td>
                         <td colspan="1" class="text-end"><span id="ammount_due">$<?= number_format($customer_savings,2) ?></span></td>
                         <td colspan="1"></td>
@@ -2430,7 +2303,6 @@ if(isset($_POST['fetch_cart'])){
                     dropdownAutoWidth: true,
                     dropdownParent: $('.modal.show'),
                     templateResult: formatOption,
-                    templateSelection: formatSelected,
                     language: {
                         noResults: function() {
                             return "No paint color";

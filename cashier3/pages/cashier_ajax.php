@@ -323,13 +323,13 @@ if (isset($_REQUEST['query'])) {
 
             if ($row_product['total_quantity'] > 0) {
                 $stock_text = '
-                    <a href="javascript:void(0);" id="view_in_stock" data-id="' . $row_product['product_id'] . '" class="d-flex align-items-center">
+                    <a href="javascript:void(0);" id="view_in_stock" data-id="' . $row_product['product_id'] . '" class="d-flex justify-content-center align-items-center">
                         <span class="text-bg-success p-1 rounded-circle"></span>
                         <span class="ms-2">In Stock</span>
                     </a>';
             } else {
                 $stock_text = '
-                    <a href="javascript:void(0);" id="view_out_of_stock" data-id="' . $row_product['product_id'] . '" class="d-flex align-items-center">
+                    <a href="javascript:void(0);" id="view_out_of_stock" data-id="' . $row_product['product_id'] . '" class="d-flex justify-content-center align-items-center">
                         <span class="text-bg-danger p-1 rounded-circle"></span>
                         <span class="ms-2">Out of Stock</span>
                     </a>';
