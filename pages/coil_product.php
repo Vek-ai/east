@@ -257,7 +257,7 @@ $permission = $_SESSION['permission'];
                         <table id="productList" class="table search-table align-middle text-wrap">
                             <thead class="header-item">
                             <th>Coil #</th>
-                            <th>Color Sold As</th>
+                            <th>Purchased Color</th>
                             <th>Grade</th>
                             <th>Supplier</th>
                             <th>Remaining Ft</th>
