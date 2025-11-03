@@ -764,6 +764,58 @@ function showCol($name) {
     </div>
 </div>
 
+<div class="modal fade" id="columnFilterModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-sm modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header py-2">
+        <h6 class="modal-title">Filter Column</h6>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body" style="max-height:400px; overflow:auto;">
+        <input type="text" id="filterSearchInput" class="form-control form-control-sm mb-2" placeholder="Search options...">
+
+        <div id="filterOptions"></div>
+      </div>
+      <div class="modal-footer py-2">
+        <button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">Cancel</button>
+        <button type="button" class="btn btn-sm btn-primary" id="applyFilterBtn">Apply</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="numericFilterModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-sm modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header py-2">
+        <h6 class="modal-title">Numeric Filter</h6>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <div class="mb-2">
+          <label class="form-label mb-1">Condition</label>
+          <select id="numericCondition" class="form-select form-select-sm">
+            <option value="=">Equal to ( = )</option>
+            <option value=">=">Greater Than or Equal to ( >= )</option>
+            <option value="<=">Less Than or Equal to ( <= )</option>
+            <option value="between">Between</option>
+          </select>
+        </div>
+        <div class="mb-2">
+          <input type="number" class="form-control form-control-sm" id="numericValue1" placeholder="Enter value">
+        </div>
+        <div class="mb-2 d-none" id="numericValue2Container">
+          <input type="number" class="form-control form-control-sm" id="numericValue2" placeholder="Enter second value">
+        </div>
+      </div>
+      <div class="modal-footer py-2">
+        <button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">Cancel</button>
+        <button type="button" class="btn btn-sm btn-primary" id="applyNumericFilter">Apply</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <script>
     function isValidURL(str) {
         try {
@@ -783,6 +835,11 @@ function showCol($name) {
         var pdfUrl = '';
         var isPrinting = false;
         var print_order_id = '';
+
+        let filterColumnIndex = null;
+        let filterUniqueValues = [];
+        let columnFilters = {};
+        let numericFilters = {};
 
         var active_order_id = 0;
 
@@ -1405,7 +1462,6 @@ function showCol($name) {
             });
         });
 
-
         function filterTable() {
             var textSearch = $('#text-srh').val().toLowerCase();
             var isActive = $('#toggleActive').is(':checked');
@@ -1452,24 +1508,148 @@ function showCol($name) {
 
         $(document).on('change', '#toggleActive', filterTable);
 
+        $('#order_list_tbl thead th').each(function (i) {
+            const th = $(this);
+            if (!th.find('.filter-trigger').length) {
+                th.append(`<span class="filter-trigger ms-2" style="cursor:pointer; font-size:12px; color:#ccc;" title="Filter"><i class="fa fa-filter"></i></span>`);
+            }
+
+            th.find('.filter-trigger').on('click', function (e) {
+                e.stopPropagation();
+                currentColIndex = i;
+
+                const colData = table
+                    .cells(null, i, { search: 'applied' })
+                    .nodes()
+                    .toArray()
+                    .map(td => {
+                        const $td = $(td);
+                        const searchAttr = $td.attr('data-search');
+                        if (searchAttr) return searchAttr;
+
+                        const childTexts = $td
+                            .children(':visible')
+                            .map(function () {
+                                return $(this).text().trim();
+                            })
+                            .get()
+                            .filter(Boolean);
+
+                        return childTexts.length ? childTexts.join('||') : $td.text().trim();
+                    })
+                    .filter(Boolean);
+
+                const values = [...new Set(colData.flatMap(v => v.split('||').map(x => x.trim())))].sort();
+                const looksNumeric = values.every(v => /^\$?\s?-?\d+(\.\d+)?$/.test(v.replace(/[,$]/g, '')));
+
+                if (looksNumeric) {
+                    $('#numericFilterModal .modal-title').text('Filter: ' + th.text().trim());
+                    $('#numericFilterModal').data('col-index', i);
+                    new bootstrap.Modal('#numericFilterModal').show();
+                } else {
+                    const prevSelected = columnFilters[i] || [];
+                    const allChecked = prevSelected.length === 0 || prevSelected.length === values.length;
+
+                    let html = `
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="selectAllFilters" ${allChecked ? 'checked' : ''}>
+                            <label class="form-check-label fw-bold" for="selectAllFilters">Select All</label>
+                        </div><hr class="my-2">
+                    `;
+                    values.forEach((v, idx) => {
+                        const checked = prevSelected.length === 0 || prevSelected.includes(v) ? 'checked' : '';
+                        html += `
+                            <div class="form-check">
+                                <input class="form-check-input filter-option" type="checkbox" id="filterOpt${i}_${idx}" value="${v}" ${checked}>
+                                <label class="form-check-label" for="filterOpt${i}_${idx}">${v}</label>
+                            </div>`;
+                    });
+
+                    $('#filterOptions').html(html);
+                    $('#columnFilterModal .modal-title').text('Filter: ' + th.text().trim());
+                    new bootstrap.Modal('#columnFilterModal').show();
+                }
+            });
+        });
+
         function updateSelectedTags() {
-            var displayDiv = $('#selected-tags');
+            const displayDiv = $('#selected-tags');
             displayDiv.empty();
 
             $('.filter-selection').each(function() {
-                var selectedOption = $(this).find('option:selected');
-                var selectedText = selectedOption.text().trim();
-                var filterName = $(this).data('filter-name');
+                const $select = $(this);
+                let selectedValues = $select.val();
 
-                if ($(this).val()) {
+                if (!selectedValues || selectedValues.length === 0) return;
+
+                if (Array.isArray(selectedValues))
+                    selectedValues = selectedValues.filter(v => v && v.trim() !== '');
+                else if (typeof selectedValues === 'string' && selectedValues.trim() === '')
+                    return;
+
+                if (selectedValues.length === 0) return;
+
+                const selectedTexts = $select.find('option:selected').map(function() {
+                    return $(this).text().trim();
+                }).get();
+
+                const filterName = $select.data('filter-name');
+                const joinedText = selectedTexts.join(', ');
+
+                displayDiv.append(`
+                    <div class="d-inline-block p-1 m-1 border rounded bg-light">
+                        <span class="text-dark">${filterName}: ${joinedText}</span>
+                        <button type="button" 
+                            class="btn-close btn-sm ms-1 remove-tag" 
+                            style="width: 0.75rem; height: 0.75rem;" 
+                            aria-label="Close" 
+                            data-select="#${$select.attr('id')}">
+                        </button>
+                    </div>
+                `);
+            });
+
+            Object.keys(columnFilters).forEach(function(index) {
+                const selected = columnFilters[index];
+                if (selected && selected.length) {
+                    const colName = $('#order_list_tbl thead th').eq(index).text().trim();
+                    const text = selected.join(', ');
                     displayDiv.append(`
                         <div class="d-inline-block p-1 m-1 border rounded bg-light">
-                            <span class="text-dark">${filterName}: ${selectedText}</span>
+                            <span class="text-dark">${colName}: ${text}</span>
                             <button type="button" 
-                                class="btn-close btn-sm ms-1 remove-tag" 
+                                class="btn-close btn-sm ms-1 remove-col-filter" 
                                 style="width: 0.75rem; height: 0.75rem;" 
                                 aria-label="Close" 
-                                data-select="#${$(this).attr('id')}">
+                                data-col="${index}">
+                            </button>
+                        </div>
+                    `);
+                }
+            });
+
+            Object.keys(numericFilters).forEach(function (index) {
+                const rule = numericFilters[index];
+                if (rule && rule.condition) {
+                    const colName = $('#order_list_tbl thead th').eq(index).text().trim();
+
+                    let conditionText = '';
+                    switch (rule.condition) {
+                        case '=': conditionText = `Equal to:  ${rule.val1}`; break;
+                        case '>=': conditionText = `Greater Than or Equal to: ${rule.val1}`; break;
+                        case '<=': conditionText = `Less Than or Equal to: ${rule.val1}`; break;
+                        case 'between': conditionText = `${rule.val1} – ${rule.val2}`; break;
+                        default: conditionText = `${rule.condition} ${rule.val1}`; break;
+                    }
+
+                    displayDiv.append(`
+                        <div class="d-inline-block p-1 m-1 border rounded bg-light">
+                            <span class="text-dark">${colName}: ${conditionText}</span>
+                            <button type="button" 
+                                class="btn-close btn-sm ms-1 remove-num-filter" 
+                                style="width: 0.75rem; height: 0.75rem;" 
+                                aria-label="Close" 
+                                data-col="${index}">
                             </button>
                         </div>
                     `);
@@ -1477,9 +1657,46 @@ function showCol($name) {
             });
 
             $('.remove-tag').on('click', function() {
-                $($(this).data('select')).val('').trigger('change');
+                const $target = $($(this).data('select'));
+                $target.val(null).trigger('change');
                 $(this).parent().remove();
             });
+
+            $('.remove-col-filter').on('click', function() {
+                const colIndex = $(this).data('col');
+                delete columnFilters[colIndex];
+                $(this).parent().remove();
+
+                table.columns().every(function(i) {
+                    const col = this;
+                    const selectedVals = columnFilters[i];
+                    if (selectedVals && selectedVals.length) {
+                        const regex = selectedVals
+                            .map(val => $.fn.dataTable.util.escapeRegex(
+                                $('<div>').html(val).text().trim()
+                            ))
+                            .join('|');
+                        col.search(regex, true, false);
+                    } else {
+                        col.search('');
+                    }
+                });
+
+                table.draw();
+            });
+
+            $('.remove-num-filter').off('click').on('click', function () {
+                const colIndex = $(this).data('col');
+                delete numericFilters[colIndex];
+                $(this).parent().remove();
+                applyAllFilters();
+            });
+
+            if (displayDiv.children().length > 0) {
+                displayDiv.show();
+            } else {
+                displayDiv.hide();
+            }
         }
 
         $(document).on('click', '.reset_filters', function () {
@@ -1489,7 +1706,110 @@ function showCol($name) {
 
             $('#text-srh').val('');
 
+            columnFilters = {};
+            table.columns().search('');
+            table.search('').draw();
+
+            $('#filterOptions').empty();
+            $('#columnFilterModal .modal-title').text('Filter');
+
             filterTable();
         });
+
+        $(document).on('keyup', '#filterSearchInput', function () {
+            const query = $(this).val().toLowerCase();
+            $('#filterOptions .form-check').each(function () {
+                const label = $(this).find('label').text().toLowerCase();
+                $(this).toggle(label.includes(query));
+            });
+        });
+
+        $(document).on('change', '#selectAllFilters', function () {
+            $('.filter-option').prop('checked', $(this).is(':checked'));
+        });
+
+        $('#applyFilterBtn').on('click', function () {
+            const checkedVals = $('.filter-option:checked').map((_, el) => $(el).val()).get();
+            columnFilters[currentColIndex] = checkedVals;
+            bootstrap.Modal.getInstance('#columnFilterModal').hide();
+            applyAllFilters();
+        });
+
+        $(document).on('change', '#numericCondition', function () {
+            $('#numericValue2Container').toggleClass('d-none', $(this).val() !== 'between');
+        });
+
+        $('#applyNumericFilter').on('click', function () {
+            const colIndex = $('#numericFilterModal').data('col-index');
+            const condition = $('#numericCondition').val();
+            const val1 = parseFloat($('#numericValue1').val());
+            const val2 = parseFloat($('#numericValue2').val());
+            if (isNaN(val1)) return alert('Enter a valid number.');
+
+            numericFilters[colIndex] = { condition, val1, val2: isNaN(val2) ? null : val2 };
+            bootstrap.Modal.getInstance('#numericFilterModal').hide();
+            applyAllFilters();
+        });
+
+        function resetDataTableFilters() {
+            $.fn.dataTable.ext.search = $.fn.dataTable.ext.search.filter(f => !f._colFilter);
+        }
+
+        function applyAllFilters() {
+            resetDataTableFilters();
+
+            $.fn.dataTable.ext.search.push(Object.assign((settings, data, dataIndex) => {
+                for (const [colIndex, selected] of Object.entries(columnFilters)) {
+                    const idx = parseInt(colIndex);
+                    const node = table.cell(dataIndex, idx).node();
+                    const $td = $(node);
+
+                    const searchAttr = $td.attr('data-search');
+                    let vals = [];
+
+                    if (searchAttr) {
+                        vals = searchAttr.split('||').map(v => v.trim());
+                    } else {
+                        const childTexts = $td
+                            .children(':visible')
+                            .map(function () {
+                                return $(this).text().trim();
+                            })
+                            .get()
+                            .filter(Boolean);
+                        const full = childTexts.length ? childTexts.join('||') : $td.text().trim();
+                        vals = full.split('||').map(v => v.trim());
+                    }
+
+                    if (selected && selected.length > 0) {
+                        const normalizedVals = vals.map(v => v.toLowerCase());
+                        const normalizedSelected = selected.map(v => v.toLowerCase());
+                        if (!normalizedSelected.some(v => normalizedVals.includes(v))) return false;
+                    }
+                }
+
+                for (const [colIndex, rule] of Object.entries(numericFilters)) {
+                    const idx = parseInt(colIndex);
+                    const node = table.cell(dataIndex, idx).node();
+                    const raw = $(node).attr('data-search') || $(node).text().trim();
+                    const num = parseFloat(raw.replace(/[^\d.-]/g, '')) || 0;
+
+                    switch (rule.condition) {
+                        case '=': if (num !== rule.val1) return false; break;
+                        case '>': if (num <= rule.val1) return false; break;
+                        case '<': if (num >= rule.val1) return false; break;
+                        case '>=': if (num < rule.val1) return false; break;
+                        case '<=': if (num > rule.val1) return false; break;
+                        case 'between':
+                            if (rule.val2 === null || num < rule.val1 || num > rule.val2) return false;
+                            break;
+                    }
+                }
+                return true;
+            }, { _colFilter: true }));
+
+            table.draw();
+            updateSelectedTags();
+        }
     });
 </script>
