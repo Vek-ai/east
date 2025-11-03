@@ -786,22 +786,27 @@ function showCol($name) {
             $.fn.dataTable.ext.search = $.fn.dataTable.ext.search.filter(f => !f._colFilter);
 
             $.fn.dataTable.ext.search.push(Object.assign(function (settings, data, dataIndex) {
-                if (filterColumnIndex === null) return true;
+                for (const [colIndex, selected] of Object.entries(columnFilters)) {
+                    const columnIdx = parseInt(colIndex);
+                    const cellNode = table.cell(dataIndex, columnIdx).node();
+                    const rawVal = $(cellNode).attr('data-search') || $(cellNode).text().trim();
+                    const cellValues = rawVal.split('||').map(v => v.trim());
 
-                const cellNode = table.cell(dataIndex, filterColumnIndex).node();
-                const rawVal = $(cellNode).attr('data-search') || $(cellNode).text().trim();
-                const cellValues = rawVal.split('||').map(v => v.trim());
+                    if (!selected || selected.length === 0 || selected.length === filterUniqueValues.length)
+                        continue;
 
-                const selected = columnFilters[filterColumnIndex];
-                if (!selected || selected.length === 0 || selected.length === filterUniqueValues.length)
-                    return true;
+                    if (!selected.some(v => cellValues.includes(v))) {
+                        return false;
+                    }
+                }
 
-                return selected.some(v => cellValues.includes(v));
+                return true;
             }, { _colFilter: true }));
 
             table.draw();
             updateSelectedTags();
         });
+
 
         $('#order_list_tbl_filter').hide();
 
