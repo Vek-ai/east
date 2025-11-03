@@ -671,7 +671,9 @@ function showCol($name) {
         <h6 class="modal-title">Filter Column</h6>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
-      <div class="modal-body" style="max-height:300px; overflow:auto;">
+      <div class="modal-body" style="max-height:400px; overflow:auto;">
+        <input type="text" id="filterSearchInput" class="form-control form-control-sm mb-2" placeholder="Search options...">
+
         <div id="filterOptions"></div>
       </div>
       <div class="modal-footer py-2">
@@ -709,6 +711,14 @@ function showCol($name) {
         let filterColumnIndex = null;
         let filterUniqueValues = [];
         let columnFilters = {};
+
+        $(document).on('keyup', '#filterSearchInput', function () {
+            const query = $(this).val().toLowerCase();
+            $('#filterOptions .form-check').each(function () {
+                const label = $(this).find('.form-check-label').text().toLowerCase();
+                $(this).toggle(label.includes(query));
+            });
+        });
 
         $('#order_list_tbl thead th').each(function (index) {
             const th = $(this);
