@@ -235,11 +235,26 @@ if (isset($_REQUEST['query'])) {
     ";
 
     if (!empty($searchQuery)) {
-        $query_product .= " AND (p.product_item LIKE '%$searchQuery%' OR p.description LIKE '%$searchQuery%')";
+        $attrs = getProductAttributes($searchQuery);
+
+        if (!empty($attrs) && array_filter($attrs)) {
+            if (!empty($attrs['color']))     $color_id    = (int) $attrs['color'];
+            if (!empty($attrs['grade']))     $grade       = (int) $attrs['grade'];
+            if (!empty($attrs['gauge']))     $gauge_id    = (int) $attrs['gauge'];
+            if (!empty($attrs['type']))      $type_id     = (int) $attrs['type'];
+            if (!empty($attrs['profile']))   $profile_id  = (int) $attrs['profile'];
+            if (!empty($attrs['category']))  $category_id = (int) $attrs['category'];
+        } else {
+            $query_product .= " AND (p.product_item LIKE '%$searchQuery%' OR p.description LIKE '%$searchQuery%')";
+        }
     }
 
-    if (!empty($color_id)) { 
-        $query_product .= " AND i.color_id = '$color_id'"; 
+    if (!empty($color_id)) {
+        $query_product .= " AND JSON_VALID(p.color_paint) 
+                            AND (
+                                JSON_CONTAINS(p.color_paint, '\"" . intval($color_id) . "\"') 
+                                OR JSON_CONTAINS(p.color_paint, '" . intval($color_id) . "')
+                            )";
     }
 
     if (!empty($grade)) {
@@ -573,6 +588,24 @@ if (isset($_POST['set_grade'])) {
     $customer_id = (int)$_SESSION['customer_id'];
 
     mysqli_query($conn, "UPDATE customer_cart SET custom_grade = '$grade' WHERE id= '$line'");
+}
+
+if (isset($_POST['set_screw_length'])) {
+    $product_id = mysqli_real_escape_string($conn, $_POST['id']);
+    $line = (int)$_POST['line'];
+    $screw_length = mysqli_real_escape_string($conn, $_POST['screw_length']);
+    $customer_id = (int)$_SESSION['customer_id'];
+
+    mysqli_query($conn, "UPDATE customer_cart SET screw_length = '$screw_length' WHERE id= '$line'");
+}
+
+if (isset($_POST['set_screw_type'])) {
+    $product_id = mysqli_real_escape_string($conn, $_POST['id']);
+    $line = (int)$_POST['line'];
+    $set_screw_type = mysqli_real_escape_string($conn, $_POST['set_screw_type']);
+    $customer_id = (int)$_SESSION['customer_id'];
+
+    mysqli_query($conn, "UPDATE customer_cart SET set_screw_type = '$set_screw_type' WHERE id= '$line'");
 }
 
 if (isset($_POST['set_panel_type'])) {
@@ -1336,14 +1369,15 @@ if (isset($_POST['save_custom_length'])) {
     $profile     = mysqli_real_escape_string($conn, $_POST['profile'] ?? 1);
     $customer_id = $_SESSION['customer_id'] ?? '';
 
-    $quantities  = $_POST['quantity'] ?? [];
-    $feet_list   = $_POST['length_feet'] ?? [];
-    $inch_list   = $_POST['length_inch'] ?? [];
-    $prices      = $_POST['price'] ?? [];
-    $color_id    = $_POST['color_id'] ?? [];
-    $notes       = $_POST['notes'] ?? [];
+    $quantities     = $_POST['quantity'] ?? [];
+    $feet_list      = $_POST['length_feet'] ?? [];
+    $inch_list      = $_POST['length_inch'] ?? [];
+    $prices         = $_POST['price'] ?? [];
+    $color_id       = $_POST['color_id'] ?? [];
+    $dimension_id   = $_POST['dimension_id'] ?? [];
+    $notes          = $_POST['notes'] ?? [];
 
-    $query = "SELECT * FROM product WHERE product_id = '$id'";
+    $query  = "SELECT * FROM product WHERE product_id = '$id'";
     $result = mysqli_query($conn, $query);
 
     if ($result && mysqli_num_rows($result) > 0) {
@@ -1355,61 +1389,64 @@ if (isset($_POST['save_custom_length'])) {
             $estimate_length_in = round(floatval($inch_list[$idx] ?? 0), 2);
             $price              = floatval($prices[$idx] ?? 0);
             $custom_color       = intval($color_id[$idx] ?? 0);
+            $dimension          = intval($dimension_id[$idx] ?? 0);
             $note               = $notes[$idx] ?? '';
 
-            if ($quantity <= 0 || ($estimate_length == 0 && $estimate_length_in == 0)) {
-                continue;
+            if ($quantity <= 0) continue;
+
+            $dimension_value = '';
+            if (!empty($dimension)) {
+                $dimension_details = getDimensionDetails($dimension);
+                $dimension_value   = $dimension_details['dimension'];
             }
 
             $noteEsc = mysqli_real_escape_string($conn, $note);
-            $checkSql = "SELECT id, quantity_cart 
-                         FROM customer_cart 
-                         WHERE customer_id = '$customer_id'
-                           AND product_id = '$id'
-                           AND estimate_length = '$estimate_length'
-                           AND estimate_length_inch = '$estimate_length_in'
-                           AND custom_profile = '$profile'
-                           AND custom_color = '$custom_color'
-                           AND note = '$noteEsc'
-                         LIMIT 1";
+
+            $checkSql = "
+                SELECT id, quantity_cart 
+                FROM customer_cart 
+                WHERE customer_id = '$customer_id'
+                  AND product_id = '$id'
+                  AND estimate_length = '$estimate_length'
+                  AND estimate_length_inch = '$estimate_length_in'
+                  AND custom_profile = '$profile'
+                  AND custom_color = '$custom_color'
+                  AND screw_length = '$dimension_value'
+                  AND note = '$noteEsc'
+                LIMIT 1";
             $checkRes = mysqli_query($conn, $checkSql);
 
             if ($existing = mysqli_fetch_assoc($checkRes)) {
                 $newQty = $existing['quantity_cart'] + $quantity;
-                updateCartRow(
-                    ['quantity_cart' => $newQty],
-                    ['id' => $existing['id']]
-                );
-
+                updateCartRow(['quantity_cart' => $newQty], ['id' => $existing['id']]);
             } else {
-                $item_array = array(
-                    'customer_id'         => $customer_id,
-                    'product_id'          => $row['product_id'],
-                    'product_item'        => $row['product_item'],
-                    'unit_price'          => $price,
-                    'line'                => 0,
-                    'quantity_ttl'        => getProductStockTotal($row['product_id']),
-                    'quantity_in_stock'   => 0,
-                    'quantity_cart'       => $quantity,
-                    'estimate_width'      => 0,
-                    'estimate_length'     => $estimate_length,
-                    'estimate_length_inch'=> $estimate_length_in,
-                    'usage'               => 0,
-                    'custom_color'        => $custom_color,
-                    'weight'              => 0,
-                    'supplier_id'         => '',
-                    'custom_grade'        => '',
-                    'custom_profile'      => $profile,
-                    'custom_gauge'        => '',
-                    'note'                => $note
-                );
+                $item_array = [
+                    'customer_id'          => $customer_id,
+                    'product_id'           => $row['product_id'],
+                    'product_item'         => $row['product_item'],
+                    'unit_price'           => $price,
+                    'line'                 => 0,
+                    'quantity_ttl'         => getProductStockTotal($row['product_id']),
+                    'quantity_in_stock'    => 0,
+                    'quantity_cart'        => $quantity,
+                    'estimate_width'       => 0,
+                    'estimate_length'      => $estimate_length,
+                    'estimate_length_inch' => $estimate_length_in,
+                    'prod_usage'           => 0,
+                    'custom_color'         => $custom_color,
+                    'screw_length'         => $dimension_value,
+                    'screw_type'           => 'SD',
+                    'weight'               => 0,
+                    'supplier_id'          => '',
+                    'custom_grade'         => '',
+                    'custom_profile'       => $profile,
+                    'custom_gauge'         => '',
+                    'note'                 => $note,
+                ];
 
                 $newId = insertCartRow($item_array);
                 if ($newId) {
-                    updateCartRow(
-                        ['line' => $newId],
-                        ['id' => $newId]
-                    );
+                    updateCartRow(['line' => $newId], ['id' => $newId]);
                 }
             }
         }

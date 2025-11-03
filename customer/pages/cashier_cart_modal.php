@@ -84,21 +84,21 @@ if(isset($_POST['fetch_cart'])){
         }
 
         .table-fixed th:nth-child(1),
-        .table-fixed td:nth-child(1) { width: 5%; }
+        .table-fixed td:nth-child(1) { width: 15%; }
         .table-fixed th:nth-child(2),
-        .table-fixed td:nth-child(2) { width: 15%; }
+        .table-fixed td:nth-child(2) { width: 8%; }
         .table-fixed th:nth-child(3),
-        .table-fixed td:nth-child(3) { width: 7%; }
+        .table-fixed td:nth-child(3) { width: 8%; }
         .table-fixed th:nth-child(4),
-        .table-fixed td:nth-child(4) { width: 12%; }
+        .table-fixed td:nth-child(4) { width: 8%; }
         .table-fixed th:nth-child(5),
-        .table-fixed td:nth-child(5) { width: 13%; }
+        .table-fixed td:nth-child(5) { width: 8%; }
         .table-fixed th:nth-child(6),
-        .table-fixed td:nth-child(6) { width: 7%; }
+        .table-fixed td:nth-child(6) { width: 8%; }
         .table-fixed th:nth-child(7),
-        .table-fixed td:nth-child(7) { width: 7%; }
+        .table-fixed td:nth-child(7) { width: 8%; }
         .table-fixed th:nth-child(8),
-        .table-fixed td:nth-child(8) { width: 9%; }
+        .table-fixed td:nth-child(8) { width: 7%; }
         .table-fixed th:nth-child(9),
         .table-fixed td:nth-child(9) { width: 7%; }
         .table-fixed th:nth-child(10),
@@ -106,7 +106,7 @@ if(isset($_POST['fetch_cart'])){
         .table-fixed th:nth-child(11),
         .table-fixed td:nth-child(11) { width: 7%; }
         .table-fixed th:nth-child(12),
-        .table-fixed td:nth-child(12) { width: 3%; }
+        .table-fixed td:nth-child(12) { width: 7%; }
 
         input[readonly] {
             border: none;               
@@ -151,7 +151,7 @@ if(isset($_POST['fetch_cart'])){
                 $credit_total = getCustomerCreditTotal($customer_id);
                 $store_credit = floatval($customer_details['store_credit'] ?? 0);
                 $customer_name = get_customer_name($_SESSION["customer_id"]);
-        ?>
+            ?>
             <div class="form-group row align-items-center">
                 <div class="d-flex flex-column gap-2">
                     <div>
@@ -179,13 +179,13 @@ if(isset($_POST['fetch_cart'])){
     <input type='hidden' id='customer_id_cart' name="customer_id"/>
     <div class="card-body">
         <div class="product-details table-responsive text-nowrap">
-            <table id="cartTable" class="table table-hover table-fixed mb-0 text-md-nowrap">
+            <table id="cartTable" class="table table-hover table-fixed mb-0">
                 <thead>
                     <tr>
-                        <th class="small">Image</th>
                         <th>Description</th>
                         <th class="text-center">Color</th>
                         <th class="text-center">Grade</th>
+                        <th class="text-center">Gauge</th>
                         <th class="text-center">Profile</th>
                         <th class="text-center pl-3">Quantity</th>
                         <th class="text-center">Length</th>
@@ -199,6 +199,7 @@ if(isset($_POST['fetch_cart'])){
                         <th class="text-center"> </th>
                     </tr>
                 </thead>
+                <script>console.log(<?= print_r(getCartDataByCustomerId($customer_id)) ?>)</script>
                 <tbody>
                     <?php 
                     $total = 0;
@@ -215,39 +216,38 @@ if(isset($_POST['fetch_cart'])){
                     $panel_cart  = [];
                     $screw_cart  = [];
                     $others_cart = [];
-
+                    
                     $cart = getCartDataByCustomerId($customer_id);
                     
                     if (!empty($cart)) {
                         foreach ($cart as $values) {
                             $pid = $values["product_id"];
                             $product_details = getProductDetails($pid);
-                            $category = $product_details['product_category'];
+                            $category = (int) $product_details['product_category'];
 
-                            switch ($category) {
-                                case $lumber_id:
-                                    $lumber_cart[$pid][] = $values;
-                                    break;
+                            $group_fields = [
+                                'product_id' => $pid,
+                                'color_id'   => (int) ($values['custom_color'] ?? 0),
+                                'grade_id'   => (int) ($values['custom_grade'] ?? 0),
+                                'gauge_id'   => (int) ($values['custom_gauge'] ?? 0),
+                            ];
+                            $group_key = implode('_', $group_fields);
 
-                                case $trim_id:
-                                    $trim_cart[$pid][] = $values;
-                                    break;
-
-                                case $panel_id:
-                                    $panel_cart[$pid][] = $values;
-                                    break;
-
-                                case $screw_id:
-                                    $screw_cart[$pid][] = $values;
-                                    break;
-
-                                default:
-                                    $others_cart[$pid][] = $values;
-                                    break;
+                            if ($category === $lumber_id) {
+                                $lumber_cart[$group_key][] = $values;
+                            } elseif ($category === $trim_id) {
+                                $trim_cart[$group_key][] = $values;
+                            } elseif ($category === $panel_id) {
+                                $panel_cart[$group_key][] = $values;
+                            } elseif ($category === $screw_id) {
+                                $screw_cart[$group_key][] = $values;
+                            } else {
+                                $others_cart[$group_key][] = $values;
                             }
                         }
 
-                        foreach ($panel_cart as $product_id => $items) {
+                        foreach ($panel_cart as $group_key => $items) {
+                            [$product_id, $color_id, $grade_id, $gauge_id] = explode('_', $group_key);
                             $group_id = uniqid('group_');
                             $total_qty = 0;
                             $total_length_cart = 0;
@@ -282,9 +282,6 @@ if(isset($_POST['fetch_cart'])){
                             ?>
 
                             <tr class="thick-border" data-mult="<?= $multiplier ?>">
-                                <td class="text-center">
-                                    <img src="<?= $picture_path ?>" class="rounded-circle" width="56" height="56" alt="product-img">
-                                </td>
                                 <td>
                                     <a href="javascript:void(0);" data-id="<?= $product_id ?>" class="d-flex align-items-center view_product_details">
                                         <h6 class="fw-semibold mb-0 fs-4"><?= htmlspecialchars($items[0]['product_item']) ?></h6>
@@ -301,22 +298,25 @@ if(isset($_POST['fetch_cart'])){
                                             data-line="<?= $items[0]['line'] ?>" data-id="<?= $product_id ?>">
                                         <option value="">Select Color...</option>
                                         <?php
-                                        $query_colors = "SELECT Product_id, color_id FROM inventory WHERE Product_id = '$product_id'";
-                                        $result_colors = mysqli_query($conn, $query_colors);
-                                        $inventory_color_ids = [];
-                                        while ($row_colors = mysqli_fetch_array($result_colors)) {
-                                            if (empty($row_colors['color_id']) || $row_colors['color_id'] == 0) {
-                                                continue;
+                                        $assigned_colors = getAssignedProductColors($product_id);
+
+                                        if (!empty($items[0]['custom_color'])) {
+                                            $custom_color_id = intval($items[0]['custom_color']);
+                                            if (!in_array($custom_color_id, $assigned_colors)) {
+                                                $assigned_colors[] = $custom_color_id;
                                             }
-                                            $inventory_color_ids[] = $row_colors['color_id'];
-                                            $selected = ($first_calc['color_id'] == $row_colors['color_id']) ? 'selected' : '';
-                                            $colorDetails = getColorDetails($row_colors['color_id']);
-                                            $colorHex = getColorHexFromColorID($row_colors['color_id']);
+                                        }
+
+                                        foreach ($assigned_colors as $color_id) {
+                                            $colorDetails = getColorDetails($color_id);
+                                            $colorHex = getColorHexFromColorID($color_id);
                                             $colorName = $colorDetails['color_name'] ?? '';
-                                            echo "<option value='{$row_colors['color_id']}' data-color='{$colorHex}' data-grade='{$product['grade']}' {$selected}>{$colorName}</option>";
+                                            $selected = ($first_calc['color_id'] == $color_id) ? 'selected' : '';
+                                            echo "<option value='{$color_id}' data-color='{$colorHex}' data-grade='{$product['grade']}' {$selected}>{$colorName}</option>";
                                         }
                                         ?>
                                     </select>
+
                                 </td>
 
                                 <td class="text-center">
@@ -330,6 +330,22 @@ if(isset($_POST['fetch_cart'])){
                                         while ($row_grade = mysqli_fetch_array($result_grade)) {
                                             $selected = ($first_calc['grade'] == $row_grade['product_grade_id']) ? 'selected' : '';
                                             echo "<option value='{$row_grade['product_grade_id']}' {$selected}>{$row_grade['product_grade']}</option>";
+                                        }
+                                        ?>
+                                    </select>
+                                </td>
+
+                                <td class="text-center">
+                                    <select id="gauge<?= $items[0]['line'] ?>" class="form-control gauge-cart" 
+                                            name="gauge" onchange="updateGauge(this)" 
+                                            data-line="<?= $items[0]['line'] ?>" data-id="<?= $product_id ?>">
+                                        <option value="">Select Gauge...</option>
+                                        <?php
+                                        $query_gauge = "SELECT * FROM product_gauge WHERE status = 1";
+                                        $result_gauge = mysqli_query($conn, $query_gauge);
+                                        while ($row_gauge = mysqli_fetch_array($result_gauge)) {
+                                            $selected = ($first_calc['gauge'] == $row_gauge['product_gauge_id']) ? 'selected' : '';
+                                            echo "<option value='{$row_gauge['product_gauge_id']}' {$selected}>{$row_gauge['product_gauge']}</option>";
                                         }
                                         ?>
                                     </select>
@@ -376,7 +392,7 @@ if(isset($_POST['fetch_cart'])){
                                 if (!empty($bundle_name)) {
                                     ?>
                                     <tr class="thick-border">
-                                        <td class="text-center" colspan="3">Bundle <?= $bundle_count ?></td>
+                                        <td class="text-center" colspan="2">Bundle <?= $bundle_count ?></td>
                                         <td class="text-center" colspan="4"></td>
                                         <td class="text-center">Bundle <?= $bundle_count ?></td>
                                         <td class="text-center" colspan="3"></td>
@@ -386,7 +402,7 @@ if(isset($_POST['fetch_cart'])){
                                 $bundle_count++;
                                 ?>
                                 <tr class="thick-border d-none bundleCartSection">
-                                    <td class="text-center" colspan="10">
+                                    <td class="text-center" colspan="11">
                                         <div class="text-end">
                                             <div class="card p-3 mb-0 d-inline-block text-center">
                                                 <h6 class="fw-bold">Add Bundle Info</h6>
@@ -426,7 +442,7 @@ if(isset($_POST['fetch_cart'])){
                                             Price
                                         </span>
                                     </th>
-                                    <th class="text-center <?= $show_panel_price ? '' : 'd-none' ?>">Customer Price</th>
+                                    <th class="text-center <?= $show_panel_price ? '' : 'd-none' ?>">Price</th>
                                     <th class="text-center"></th>
                                 </tr>
 
@@ -452,39 +468,11 @@ if(isset($_POST['fetch_cart'])){
                                     ?>
 
                                     <tr data-abbrev="<?= $item['unique_prod_id'] ?>" data-id="<?= $product_id ?>" data-line="<?= $line ?>" data-line="<?= $line ?>" data-bundle="<?= $values['bundle_name'] ?? '' ?>">
-                                        <td>
-                                            <?php
-                                            if($category_id == $trim_id){
-                                                if(!empty($values["custom_trim_src"])){
-                                                ?>
-                                                <a href="javascript:void(0);" class="drawingContainer" id="custom_trim_draw" data-line="<?php echo $line; ?>" data-id="<?php echo $product_id; ?>" data-drawing="<?= $drawing_data ?>">
-                                                    <div class="align-items-center text-center w-100">
-                                                        <img src="<?= $images_directory.$values["custom_trim_src"] ?>" class="rounded-circle " alt="materialpro-img" width="56" height="56">
-                                                    </div>
-                                                </a>
-                                                <?php
-                                                }else{
-                                                ?>
-                                                <a href="javascript:void(0);" id="custom_trim_draw" class="drawingContainer btn btn-primary py-1 px-2 d-flex justify-content-center align-items-center" data-drawing="<?= $drawing_data ?>" data-line="<?php echo $line; ?>" data-id="<?php echo $product_id; ?>">
-                                                    Draw Here
-                                                </a>
-                                                <?php
-                                                }
-                                                ?>
-                                                
-                                            <?php } ?>
-                                        </td>
-                                        <td class="text-center align-middle">
-                                            <div class="d-flex align-items-center gap-2 justify-content-start">
-                                                <?php
-                                                if(!empty($values['bundle_name'])){
-                                                ?>
-                                                    <i class="fa fa-bars fa-lg drag-handle" style="cursor: move;"></i>
-                                                <?php
-                                                }
-                                                ?>
+                                        <td class="text-start align-middle">
+                                            <div class="d-flex align-items-center gap-2 justify-content-start flex-nowrap text-truncate" style="overflow: hidden;">
+                                                <i class="fa fa-bars fa-lg drag-handle" style="cursor: move; flex-shrink: 0;"></i>
 
-                                                <div class="bundle-checkbox-cart d-none">
+                                                <div class="bundle-checkbox-cart d-none flex-shrink-0">
                                                     <div class="form-check m-0">
                                                         <input class="form-check-input bundle-checkbox-cart" 
                                                             type="checkbox" 
@@ -494,17 +482,18 @@ if(isset($_POST['fetch_cart'])){
                                                     </div>
                                                 </div>
 
-                                                <span class="<?= $show_unique_product_id ? '' : 'd-none' ?>">
+                                                <span class="<?= $show_unique_product_id ? '' : 'd-none' ?> text-truncate" style="flex-grow: 1; overflow: hidden;">
                                                     <?= htmlspecialchars($unique_prod_id) ?>
                                                 </span>
 
-                                                <?php if (!empty($values["note"])){ ?>
-                                                    <span class="text-muted small">
+                                                <?php if (!empty($values["note"])): ?>
+                                                    <span class="text-muted small text-truncate" style="flex-grow: 1; overflow: hidden;">
                                                         Notes: <?= htmlspecialchars($values["note"]) ?>
                                                     </span>
-                                                <?php } ?>
+                                                <?php endif; ?>
                                             </div>
                                         </td>
+                                        <td></td>
                                         <td class="text-center">
                                             <div class="input-group d-inline-flex align-items-center flex-nowrap w-auto">
                                                 <button class="btn btn-primary btn-sm p-1" type="button"
@@ -521,7 +510,7 @@ if(isset($_POST['fetch_cart'])){
                                                     data-line="<?php echo $line; ?>"
                                                     data-id="<?php echo $product_id; ?>"
                                                     id="item_quantity<?php echo $product_id;?>"
-                                                    style="width: 45px;">
+                                                    >
 
                                                 <button class="btn btn-primary btn-sm p-1" type="button"
                                                     data-line="<?php echo $line; ?>" 
@@ -531,40 +520,22 @@ if(isset($_POST['fetch_cart'])){
                                                 </button>
                                             </div>
                                         </td>
-                                        <td class="text-center">
-                                            <div class="d-flex flex-row align-items-center flex-nowrap w-auto">
-                                                <input class="form-control form-control-sm text-center px-1" 
-                                                    type="text" 
-                                                    value="<?= $product['width'] ?? ''; ?>" 
-                                                    placeholder="W" 
-                                                    size="5" 
-                                                    style="width: 40px;" 
-                                                    data-line="<?= $line; ?>" 
-                                                    data-id="<?= $product_id; ?>" 
-                                                    <?= !empty($product['width']) ? 'readonly' : '' ?>>
-
-                                                <span class="mx-1">X</span>
-
-                                                <fieldset class="border p-1 d-inline-flex align-items-center flex-nowrap">
-                                                    <div class="input-group d-flex align-items-center flex-nowrap w-auto">
-                                                        <input class="form-control form-control-sm text-center px-1 mr-1" 
+                                        <td class="text-center align-middle">
+                                            <div class="d-flex flex-row align-items-center flex-nowrap w-100 justify-content-center">
+                                                <fieldset class="border p-1 d-flex align-items-center flex-nowrap w-100 justify-content-center mb-0">
+                                                    <div class="input-group d-flex align-items-center flex-nowrap w-100">
+                                                        <input class="form-control form-control-sm text-center px-1 flex-fill me-1" 
                                                             type="text" 
-                                                            value="<?= round(floatval($values['estimate_length']),2) ?>" 
-                                                            step="0.001" 
+                                                            value="<?= round(floatval($values['estimate_length']), 2) ?>" 
                                                             placeholder="FT" 
-                                                            size="5" 
-                                                            style="width: 40px;" 
                                                             data-line="<?= $line; ?>" 
                                                             data-id="<?= $product_id; ?>" 
                                                             onchange="updateEstimateLength(this)">
-                                                        
-                                                        <input class="form-control form-control-sm text-center px-1" 
+
+                                                        <input class="form-control form-control-sm text-center px-1 flex-fill" 
                                                             type="text" 
-                                                            value="<?= round(floatval($values['estimate_length_inch']),2) ?>" 
-                                                            step="0.001" 
+                                                            value="<?= round(floatval($values['estimate_length_inch']), 2) ?>" 
                                                             placeholder="IN" 
-                                                            size="5" 
-                                                            style="width: 40px;" 
                                                             data-line="<?= $line; ?>" 
                                                             data-id="<?= $product_id; ?>" 
                                                             onchange="updateEstimateLengthInch(this)">
@@ -702,7 +673,8 @@ if(isset($_POST['fetch_cart'])){
                             }
                         }
 
-                        foreach ($trim_cart as $product_id => $items) {
+                        foreach ($trim_cart as $group_key => $items) {
+                            [$product_id, $color_id, $grade_id, $gauge_id] = explode('_', $group_key);
                             $total_qty = 0;
                             $total_length_cart = 0;
                             $total_price_actual = 0;
@@ -726,9 +698,6 @@ if(isset($_POST['fetch_cart'])){
                             ?>
 
                             <tr class="thick-border" data-mult="<?= $multiplier ?>">
-                                <td class="text-center">
-                                    <img src="<?= $picture_path ?>" class="rounded-circle" width="56" height="56" alt="product-img">
-                                </td>
                                 <td>
                                     <a href="javascript:void(0);" data-id="<?= $product_id ?>" class="d-flex align-items-center view_product_details">
                                         <h6 class="fw-semibold mb-0 fs-4"><?= htmlspecialchars($items[0]['product_item']) ?></h6>
@@ -745,20 +714,25 @@ if(isset($_POST['fetch_cart'])){
                                             data-line="<?= $items[0]['line'] ?>" data-id="<?= $product_id ?>">
                                         <option value="">Select Color...</option>
                                         <?php
-                                        $query_colors = "SELECT Product_id, color_id FROM inventory WHERE Product_id = '$product_id'";
-                                        $result_colors = mysqli_query($conn, $query_colors);
-                                        while ($row_colors = mysqli_fetch_array($result_colors)) {
-                                            if (empty($row_colors['color_id']) || $row_colors['color_id'] == 0) {
-                                                continue;
+                                        $assigned_colors = getAssignedProductColors($product_id);
+
+                                        if (!empty($items[0]['custom_color'])) {
+                                            $custom_color_id = intval($items[0]['custom_color']);
+                                            if (!in_array($custom_color_id, $assigned_colors)) {
+                                                $assigned_colors[] = $custom_color_id;
                                             }
-                                            $selected = ($first_calc['color_id'] == $row_colors['color_id']) ? 'selected' : '';
-                                            $colorDetails = getColorDetails($row_colors['color_id']);
-                                            $colorHex = getColorHexFromColorID($row_colors['color_id']);
+                                        }
+
+                                        foreach ($assigned_colors as $color_id) {
+                                            $colorDetails = getColorDetails($color_id);
+                                            $colorHex = getColorHexFromColorID($color_id);
                                             $colorName = $colorDetails['color_name'] ?? '';
-                                            echo "<option value='{$row_colors['color_id']}' data-color='{$colorHex}' {$selected}>{$colorName}</option>";
+                                            $selected = ($first_calc['color_id'] == $color_id) ? 'selected' : '';
+                                            echo "<option value='{$color_id}' data-color='{$colorHex}' data-grade='{$product['grade']}' {$selected}>{$colorName}</option>";
                                         }
                                         ?>
                                     </select>
+
                                 </td>
 
                                 <td class="text-center">
@@ -772,6 +746,22 @@ if(isset($_POST['fetch_cart'])){
                                         while ($row_grade = mysqli_fetch_array($result_grade)) {
                                             $selected = ($first_calc['grade'] == $row_grade['product_grade_id']) ? 'selected' : '';
                                             echo "<option value='{$row_grade['product_grade_id']}' {$selected}>{$row_grade['product_grade']}</option>";
+                                        }
+                                        ?>
+                                    </select>
+                                </td>
+
+                                <td class="text-center">
+                                    <select id="gauge<?= $items[0]['line'] ?>" class="form-control gauge-cart" 
+                                            name="gauge" onchange="updateGauge(this)" 
+                                            data-line="<?= $items[0]['line'] ?>" data-id="<?= $product_id ?>">
+                                        <option value="">Select Gauge...</option>
+                                        <?php
+                                        $query_gauge = "SELECT * FROM product_gauge WHERE status = 1";
+                                        $result_gauge = mysqli_query($conn, $query_gauge);
+                                        while ($row_gauge = mysqli_fetch_array($result_gauge)) {
+                                            $selected = ($first_calc['gauge'] == $row_gauge['product_gauge_id']) ? 'selected' : '';
+                                            echo "<option value='{$row_gauge['product_gauge_id']}' {$selected}>{$row_gauge['product_gauge']}</option>";
                                         }
                                         ?>
                                     </select>
@@ -818,13 +808,14 @@ if(isset($_POST['fetch_cart'])){
                                         Price
                                     </span>
                                 </th>
-                                <th class="text-center <?= $show_trim_price ? '' : 'd-none' ?>">Customer Price</th>
+                                <th class="text-center <?= $show_trim_price ? '' : 'd-none' ?>">Price</th>
                                 <th class="text-center"></th>
                             </tr>
 
                             <?php
                             foreach ($items as $values) {
                                 $item = calculateCartItem($values);
+                                
                                 $product = $item['product'];
                                 $line = $item['line'];
                                 $quantity = $item['quantity'];
@@ -840,25 +831,10 @@ if(isset($_POST['fetch_cart'])){
                                 ?>
 
                                 <tr data-id="<?= $product_id ?>" data-line="<?= $line ?>" data-line="<?= $line ?>" data-bundle="<?= $values['bundle_name'] ?? '' ?>">
-                                    <td>
-                                        <?php if($category_id == $trim_id): ?>
-                                            <?php if(!empty($values["custom_trim_src"])): ?>
-                                                <a href="javascript:void(0);" class="drawingContainer" id="custom_trim_draw" data-line="<?= $line; ?>" data-id="<?= $product_id; ?>" data-drawing="<?= $drawing_data ?>">
-                                                    <div class="align-items-center text-center w-100">
-                                                        <img src="<?= $images_directory.$values["custom_trim_src"] ?>" class="rounded-circle" width="56" height="56">
-                                                    </div>
-                                                </a>
-                                            <?php else: ?>
-                                                <a href="javascript:void(0);" id="custom_trim_draw" class="drawingContainer btn btn-primary py-1 px-2 d-flex justify-content-center align-items-center" data-drawing="<?= $drawing_data ?>" data-line="<?= $line; ?>" data-id="<?= $product_id; ?>">
-                                                    Draw Here
-                                                </a>
-                                            <?php endif; ?>
-                                        <?php endif; ?>
-                                    </td>
-                                    <td class="text-start">
-                                        <div class="d-flex align-items-center gap-2 justify-content-start">
+                                    <td class="text-start align-middle">
+                                        <div class="d-flex align-items-center gap-2">
+                                            <i class="fa fa-bars fa-lg drag-handle" style="cursor: move; flex-shrink: 0;"></i>
                                             
-
                                             <div class="bundle-checkbox-cart d-none">
                                                 <div class="form-check m-0">
                                                     <input class="form-check-input bundle-checkbox-cart" 
@@ -870,7 +846,7 @@ if(isset($_POST['fetch_cart'])){
                                             </div>
 
                                             <span class="<?= $show_unique_product_id ? '' : 'd-none' ?>">
-                                                <?= htmlspecialchars($unique_prod_id) ?>
+                                                <?= $unique_prod_id ?>
                                             </span>
 
                                             <?php if (!empty($values["note"])){ ?>
@@ -880,6 +856,7 @@ if(isset($_POST['fetch_cart'])){
                                             <?php } ?>
                                         </div>
                                     </td>
+                                    <td></td>
                                     <td class="text-center">
                                         <div class="input-group d-inline-flex align-items-center flex-nowrap w-auto">
                                             <button class="btn btn-primary btn-sm p-1" type="button" data-line="<?= $line; ?>" data-id="<?= $product_id; ?>" onClick="deductquantity(this)">
@@ -892,42 +869,29 @@ if(isset($_POST['fetch_cart'])){
                                                 onchange="updatequantity(this)"
                                                 data-line="<?= $line; ?>"
                                                 data-id="<?= $product_id; ?>"
-                                                style="width: 45px;">
+                                                >
 
                                             <button class="btn btn-primary btn-sm p-1" type="button" data-line="<?= $line; ?>" data-id="<?= $product_id; ?>" onClick="addquantity(this)">
                                                 <i class="fa fa-plus"></i>
                                             </button>
                                         </div>
                                     </td>
-                                    <td class="text-center">
-                                        <div class="d-flex flex-row align-items-center flex-nowrap w-auto">
-                                            <input class="form-control form-control-sm text-center px-1" 
-                                                type="text" 
-                                                value="<?= $product['width'] ?? ''; ?>" 
-                                                placeholder="W" 
-                                                style="width: 40px;" 
-                                                data-line="<?= $line; ?>" 
-                                                data-id="<?= $product_id; ?>" 
-                                                <?= !empty($product['width']) ? 'readonly' : '' ?>>
-
-                                            <span class="mx-1">X</span>
-
-                                            <fieldset class="border p-1 d-inline-flex align-items-center flex-nowrap">
-                                                <div class="input-group d-flex align-items-center flex-nowrap w-auto">
-                                                    <input class="form-control form-control-sm text-center px-1" 
+                                    <td class="text-center align-middle">
+                                        <div class="d-flex flex-row align-items-center flex-nowrap w-100 justify-content-center">
+                                            <fieldset class="border p-1 d-flex align-items-center flex-nowrap w-100 justify-content-center mb-0">
+                                                <div class="input-group d-flex align-items-center flex-nowrap w-100">
+                                                    <input class="form-control form-control-sm text-center px-1 flex-fill me-1" 
                                                         type="text" 
-                                                        value="<?= round(floatval($values['estimate_length']),2) ?>" 
+                                                        value="<?= round(floatval($values['estimate_length']), 2) ?>" 
                                                         placeholder="FT" 
-                                                        style="width: 40px;" 
                                                         data-line="<?= $line; ?>" 
                                                         data-id="<?= $product_id; ?>" 
                                                         onchange="updateEstimateLength(this)">
-                                                    
-                                                    <input class="form-control form-control-sm text-center px-1" 
+
+                                                    <input class="form-control form-control-sm text-center px-1 flex-fill" 
                                                         type="text" 
-                                                        value="<?= round(floatval($values['estimate_length_inch']),2) ?>" 
+                                                        value="<?= round(floatval($values['estimate_length_inch']), 2) ?>" 
                                                         placeholder="IN" 
-                                                        style="width: 40px;" 
                                                         data-line="<?= $line; ?>" 
                                                         data-id="<?= $product_id; ?>" 
                                                         onchange="updateEstimateLengthInch(this)">
@@ -997,7 +961,8 @@ if(isset($_POST['fetch_cart'])){
                             }
                         }
 
-                        foreach ($screw_cart as $product_id => $items) {
+                        foreach ($screw_cart as $group_key => $items) {
+                            [$product_id, $color_id, $grade_id, $gauge_id] = explode('_', $group_key);
                             $total_qty = 0;
                             $total_length_cart = 0;
                             $total_price_actual = 0;
@@ -1017,13 +982,10 @@ if(isset($_POST['fetch_cart'])){
                             $picture_path = $first_calc['picture_path'];
                             $stock_text = $first_calc['stock_text'];
                             $multiplier = $first_calc['multiplier'];
-                            $product_id_abbrev = $first_calc['product_id_abbrev'];
+                            $product_id_abbrev = $first_calc['parent_prod_id'];
                             ?>
 
                             <tr class="thick-border" data-mult="<?= $multiplier ?>">
-                                <td class="text-center">
-                                    <img src="<?= $picture_path ?>" class="rounded-circle" width="56" height="56" alt="product-img">
-                                </td>
                                 <td>
                                     <a href="javascript:void(0);" data-id="<?= $product_id ?>" class="d-flex align-items-center view_product_details">
                                         <h6 class="fw-semibold mb-0 fs-4"><?= htmlspecialchars($items[0]['product_item']) ?></h6>
@@ -1040,20 +1002,25 @@ if(isset($_POST['fetch_cart'])){
                                             data-line="<?= $items[0]['line'] ?>" data-id="<?= $product_id ?>">
                                         <option value="">Select Color...</option>
                                         <?php
-                                        $query_colors = "SELECT Product_id, color_id FROM inventory WHERE Product_id = '$product_id'";
-                                        $result_colors = mysqli_query($conn, $query_colors);
-                                        while ($row_colors = mysqli_fetch_array($result_colors)) {
-                                            if (empty($row_colors['color_id']) || $row_colors['color_id'] == 0) {
-                                                continue;
+                                        $assigned_colors = getAssignedProductColors($product_id);
+
+                                        if (!empty($items[0]['custom_color'])) {
+                                            $custom_color_id = intval($items[0]['custom_color']);
+                                            if (!in_array($custom_color_id, $assigned_colors)) {
+                                                $assigned_colors[] = $custom_color_id;
                                             }
-                                            $selected = ($first_calc['color_id'] == $row_colors['color_id']) ? 'selected' : '';
-                                            $colorDetails = getColorDetails($row_colors['color_id']);
-                                            $colorHex = getColorHexFromColorID($row_colors['color_id']);
+                                        }
+
+                                        foreach ($assigned_colors as $color_id) {
+                                            $colorDetails = getColorDetails($color_id);
+                                            $colorHex = getColorHexFromColorID($color_id);
                                             $colorName = $colorDetails['color_name'] ?? '';
-                                            echo "<option value='{$row_colors['color_id']}' data-color='{$colorHex}' {$selected}>{$colorName}</option>";
+                                            $selected = ($first_calc['color_id'] == $color_id) ? 'selected' : '';
+                                            echo "<option value='{$color_id}' data-color='{$colorHex}' data-grade='{$product['grade']}' {$selected}>{$colorName}</option>";
                                         }
                                         ?>
                                     </select>
+
                                 </td>
 
                                 <td class="text-center">
@@ -1067,6 +1034,22 @@ if(isset($_POST['fetch_cart'])){
                                         while ($row_grade = mysqli_fetch_array($result_grade)) {
                                             $selected = ($first_calc['grade'] == $row_grade['product_grade_id']) ? 'selected' : '';
                                             echo "<option value='{$row_grade['product_grade_id']}' {$selected}>{$row_grade['product_grade']}</option>";
+                                        }
+                                        ?>
+                                    </select>
+                                </td>
+
+                                <td class="text-center">
+                                    <select id="gauge<?= $items[0]['line'] ?>" class="form-control gauge-cart" 
+                                            name="gauge" onchange="updateGauge(this)" 
+                                            data-line="<?= $items[0]['line'] ?>" data-id="<?= $product_id ?>">
+                                        <option value="">Select Gauge...</option>
+                                        <?php
+                                        $query_gauge = "SELECT * FROM product_gauge WHERE status = 1";
+                                        $result_gauge = mysqli_query($conn, $query_gauge);
+                                        while ($row_gauge = mysqli_fetch_array($result_gauge)) {
+                                            $selected = ($first_calc['gauge'] == $row_gauge['product_gauge_id']) ? 'selected' : '';
+                                            echo "<option value='{$row_gauge['product_gauge_id']}' {$selected}>{$row_gauge['product_gauge']}</option>";
                                         }
                                         ?>
                                     </select>
@@ -1113,7 +1096,7 @@ if(isset($_POST['fetch_cart'])){
                                         Price
                                     </span>
                                 </th>
-                                <th class="text-center <?= $show_screw_price ? '' : 'd-none' ?>">Customer Price</th>
+                                <th class="text-center <?= $show_screw_price ? '' : 'd-none' ?>">Price</th>
                                 <th class="text-center"></th>
                             </tr>
 
@@ -1131,27 +1114,13 @@ if(isset($_POST['fetch_cart'])){
                                 $sold_by_feet = $item['sold_by_feet'];
                                 $linear_price =$item['linear_price'];
                                 $panel_price = $item['panel_price'];
-                                $product_id_abbrev = $item['product_id_abbrev'];
+                                $product_id_abbrev = $item['unique_prod_id'];
                                 ?>
 
                                 <tr data-id="<?= $product_id ?>" data-line="<?= $line ?>" data-line="<?= $line ?>" data-bundle="<?= $values['bundle_name'] ?? '' ?>">
-                                    <td>
-                                        <?php if($category_id == $trim_id): ?>
-                                            <?php if(!empty($values["custom_trim_src"])): ?>
-                                                <a href="javascript:void(0);" class="drawingContainer" id="custom_trim_draw" data-line="<?= $line; ?>" data-id="<?= $product_id; ?>" data-drawing="<?= $drawing_data ?>">
-                                                    <div class="align-items-center text-center w-100">
-                                                        <img src="<?= $images_directory.$values["custom_trim_src"] ?>" class="rounded-circle" width="56" height="56">
-                                                    </div>
-                                                </a>
-                                            <?php else: ?>
-                                                <a href="javascript:void(0);" id="custom_trim_draw" class="drawingContainer btn btn-primary py-1 px-2 d-flex justify-content-center align-items-center" data-drawing="<?= $drawing_data ?>" data-line="<?= $line; ?>" data-id="<?= $product_id; ?>">
-                                                    Draw Here
-                                                </a>
-                                            <?php endif; ?>
-                                        <?php endif; ?>
-                                    </td>
-                                    <td class="text-start">
-                                        <div class="d-flex align-items-center gap-2 justify-content-start">
+                                    <td class="text-start align-middle">
+                                        <div class="d-flex align-items-center gap-2">
+                                            <i class="fa fa-bars fa-lg drag-handle" style="cursor: move; flex-shrink: 0;"></i>
 
                                             <div class="bundle-checkbox-cart d-none">
                                                 <div class="form-check m-0">
@@ -1174,6 +1143,7 @@ if(isset($_POST['fetch_cart'])){
                                             <?php } ?>
                                         </div>
                                     </td>
+                                    <td></td>
                                     <td class="text-center">
                                         <div class="input-group d-inline-flex align-items-center flex-nowrap w-auto">
                                             <button class="btn btn-primary btn-sm p-1" type="button" data-line="<?= $line; ?>" data-id="<?= $product_id; ?>" onClick="deductquantity(this)">
@@ -1186,21 +1156,68 @@ if(isset($_POST['fetch_cart'])){
                                                 onchange="updatequantity(this)"
                                                 data-line="<?= $line; ?>"
                                                 data-id="<?= $product_id; ?>"
-                                                style="width: 45px;">
+                                                >
 
                                             <button class="btn btn-primary btn-sm p-1" type="button" data-line="<?= $line; ?>" data-id="<?= $product_id; ?>" onClick="addquantity(this)">
                                                 <i class="fa fa-plus"></i>
                                             </button>
                                         </div>
                                     </td>
+                                    <?php 
+                                    $inventoryItems = getAvailableInventory($product_id);
+                                    ?>
+
                                     <td class="text-center">
-                                        
+                                        <select class="form-control screw_length_cart" 
+                                                name="screw_length" 
+                                                onchange="updateScrewLength(this)" 
+                                                data-line="<?= $line; ?>" 
+                                                data-id="<?= $product_id; ?>">
+                                            <option value="" hidden>Select Length</option>
+                                            <?php foreach ($inventoryItems as $item) { 
+                                                $dimension = trim($item['dimension'] ?? '');
+                                                $unit      = trim($item['dimension_unit'] ?? '');
+                                                
+                                                if ($dimension !== '') { 
+                                                    $selected = ($values['screw_length'] ?? '') === $dimension ? 'selected' : '';
+                                            ?>
+                                                    <option 
+                                                        value="<?= $item['dimension'] ?>"
+                                                        <?= $selected ?>
+                                                    >
+                                                        <?= htmlspecialchars($dimension) ?> <?= htmlspecialchars($unit) ?>
+                                                    </option>
+                                            <?php } } ?>
+                                        </select>
                                     </td>
-                                    <td class="text-center"></td>
+
+                                    <td class="text-center">
+                                        <select class="form-control screw_type_cart" 
+                                                name="screw_type" 
+                                                onchange="updateScrewType(this)" 
+                                                data-line="<?= $line; ?>" 
+                                                data-id="<?= $product_id; ?>">
+                                            <?php 
+                                            $screwTypes = [
+                                                'SD'  => 'Self-Driller',
+                                                'PT'  => 'Pointed-Tip',
+                                                'ZXL' => 'ProZ ZXL Long Life',
+                                                'STL' => 'Stainless Steel'
+                                            ];
+                                            $selectedType = $values['screw_type'] ?? '';
+                                            ?>
+                                            <option value="" hidden>Select Type</option>
+                                            <?php foreach ($screwTypes as $key => $label): ?>
+                                                <option value="<?= $key ?>" <?= ($selectedType === $key) ? 'selected' : '' ?>>
+                                                    <?= $label ?>
+                                                </option>
+                                            <?php endforeach; ?>
+                                        </select>
+                                    </td>
                                     <td class="text-center">
                                         <div class="d-flex flex-row align-items-center flex-nowrap w-auto">
                                             <fieldset class="border p-1 d-inline-flex align-items-center flex-nowrap">
-                                                <div class="input-group d-flex align-items-center flex-nowrap w-auto">
+                                                <div class="input-group d-flex align-items-center flex-nowrap w-100">
                                                     <input class="form-control form-control-sm text-center px-1" 
                                                         type="text" 
                                                         value="<?= round(floatval($values['estimate_length']),2) ?>" 
@@ -1269,7 +1286,8 @@ if(isset($_POST['fetch_cart'])){
                             }
                         }
 
-                        foreach ($lumber_cart as $product_id => $items) {
+                        foreach ($lumber_cart as $group_key => $items) {
+                            [$product_id, $color_id, $grade_id, $gauge_id] = explode('_', $group_key);
                             $total_qty = 0;
                             $total_length_cart = 0;
                             $total_price_actual = 0;
@@ -1289,13 +1307,10 @@ if(isset($_POST['fetch_cart'])){
                             $picture_path = $first_calc['picture_path'];
                             $stock_text = $first_calc['stock_text'];
                             $multiplier = $first_calc['multiplier'];
-                            $product_id_abbrev = $first_calc['product_id_abbrev'];
+                            $product_id_abbrev = $first_calc['parent_prod_id'];
                             ?>
 
                             <tr class="thick-border" data-mult="<?= $multiplier ?>">
-                                <td class="text-center">
-                                    <img src="<?= $picture_path ?>" class="rounded-circle" width="56" height="56" alt="product-img">
-                                </td>
                                 <td>
                                     <a href="javascript:void(0);" data-id="<?= $product_id ?>" class="d-flex align-items-center view_product_details">
                                         <h6 class="fw-semibold mb-0 fs-4"><?= htmlspecialchars($items[0]['product_item']) ?></h6>
@@ -1312,20 +1327,25 @@ if(isset($_POST['fetch_cart'])){
                                             data-line="<?= $items[0]['line'] ?>" data-id="<?= $product_id ?>">
                                         <option value="">Select Color...</option>
                                         <?php
-                                        $query_colors = "SELECT Product_id, color_id FROM inventory WHERE Product_id = '$product_id'";
-                                        $result_colors = mysqli_query($conn, $query_colors);
-                                        while ($row_colors = mysqli_fetch_array($result_colors)) {
-                                            if (empty($row_colors['color_id']) || $row_colors['color_id'] == 0) {
-                                                continue;
+                                        $assigned_colors = getAssignedProductColors($product_id);
+
+                                        if (!empty($items[0]['custom_color'])) {
+                                            $custom_color_id = intval($items[0]['custom_color']);
+                                            if (!in_array($custom_color_id, $assigned_colors)) {
+                                                $assigned_colors[] = $custom_color_id;
                                             }
-                                            $selected = ($first_calc['color_id'] == $row_colors['color_id']) ? 'selected' : '';
-                                            $colorDetails = getColorDetails($row_colors['color_id']);
-                                            $colorHex = getColorHexFromColorID($row_colors['color_id']);
+                                        }
+
+                                        foreach ($assigned_colors as $color_id) {
+                                            $colorDetails = getColorDetails($color_id);
+                                            $colorHex = getColorHexFromColorID($color_id);
                                             $colorName = $colorDetails['color_name'] ?? '';
-                                            echo "<option value='{$row_colors['color_id']}' data-color='{$colorHex}' {$selected}>{$colorName}</option>";
+                                            $selected = ($first_calc['color_id'] == $color_id) ? 'selected' : '';
+                                            echo "<option value='{$color_id}' data-color='{$colorHex}' data-grade='{$product['grade']}' {$selected}>{$colorName}</option>";
                                         }
                                         ?>
                                     </select>
+
                                 </td>
 
                                 <td class="text-center">
@@ -1339,6 +1359,22 @@ if(isset($_POST['fetch_cart'])){
                                         while ($row_grade = mysqli_fetch_array($result_grade)) {
                                             $selected = ($first_calc['grade'] == $row_grade['product_grade_id']) ? 'selected' : '';
                                             echo "<option value='{$row_grade['product_grade_id']}' {$selected}>{$row_grade['product_grade']}</option>";
+                                        }
+                                        ?>
+                                    </select>
+                                </td>
+
+                                <td class="text-center">
+                                    <select id="gauge<?= $items[0]['line'] ?>" class="form-control gauge-cart" 
+                                            name="gauge" onchange="updateGauge(this)" 
+                                            data-line="<?= $items[0]['line'] ?>" data-id="<?= $product_id ?>">
+                                        <option value="">Select Gauge...</option>
+                                        <?php
+                                        $query_gauge = "SELECT * FROM product_gauge WHERE status = 1";
+                                        $result_gauge = mysqli_query($conn, $query_gauge);
+                                        while ($row_gauge = mysqli_fetch_array($result_gauge)) {
+                                            $selected = ($first_calc['gauge'] == $row_gauge['product_gauge_id']) ? 'selected' : '';
+                                            echo "<option value='{$row_gauge['product_gauge_id']}' {$selected}>{$row_gauge['product_gauge']}</option>";
                                         }
                                         ?>
                                     </select>
@@ -1385,7 +1421,7 @@ if(isset($_POST['fetch_cart'])){
                                         Price
                                     </span>
                                 </th>
-                                <th class="text-center <?= $show_each_price ? '' : 'd-none' ?>">Customer Price</th>
+                                <th class="text-center <?= $show_each_price ? '' : 'd-none' ?>">Price</th>
                                 <th class="text-center"></th>
                             </tr>
 
@@ -1403,29 +1439,15 @@ if(isset($_POST['fetch_cart'])){
                                 $sold_by_feet = $item['sold_by_feet'];
                                 $linear_price =$item['linear_price'];
                                 $panel_price = $item['panel_price'];
-                                $product_id_abbrev = $item['product_id_abbrev'];
+                                $product_id_abbrev = $item['unique_prod_id'];
                                 ?>
 
                                 <tr data-id="<?= $product_id ?>" data-line="<?= $line ?>" data-line="<?= $line ?>" data-bundle="<?= $values['bundle_name'] ?? '' ?>">
-                                    <td>
-                                        <?php if($category_id == $trim_id): ?>
-                                            <?php if(!empty($values["custom_trim_src"])): ?>
-                                                <a href="javascript:void(0);" class="drawingContainer" id="custom_trim_draw" data-line="<?= $line; ?>" data-id="<?= $product_id; ?>" data-drawing="<?= $drawing_data ?>">
-                                                    <div class="align-items-center text-center w-100">
-                                                        <img src="<?= $images_directory.$values["custom_trim_src"] ?>" class="rounded-circle" width="56" height="56">
-                                                    </div>
-                                                </a>
-                                            <?php else: ?>
-                                                <a href="javascript:void(0);" id="custom_trim_draw" class="drawingContainer btn btn-primary py-1 px-2 d-flex justify-content-center align-items-center" data-drawing="<?= $drawing_data ?>" data-line="<?= $line; ?>" data-id="<?= $product_id; ?>">
-                                                    Draw Here
-                                                </a>
-                                            <?php endif; ?>
-                                        <?php endif; ?>
-                                    </td>
-                                    <td class="text-center">
-                                        <div class="d-flex align-items-center gap-2 justify-content-start">
+                                    
+                                    <td class="text-start align-middle">
+                                        <div class="d-flex align-items-center gap-2">
+                                            <i class="fa fa-bars fa-lg drag-handle" style="cursor: move; flex-shrink: 0;"></i>
                                             
-
                                             <div class="bundle-checkbox-cart d-none">
                                                 <div class="form-check m-0">
                                                     <input class="form-check-input bundle-checkbox-cart" 
@@ -1447,6 +1469,7 @@ if(isset($_POST['fetch_cart'])){
                                             <?php } ?>
                                         </div>
                                     </td>
+                                    <td></td>
                                     <td class="text-center">
                                         <div class="input-group d-inline-flex align-items-center flex-nowrap w-auto">
                                             <button class="btn btn-primary btn-sm p-1" type="button" data-line="<?= $line; ?>" data-id="<?= $product_id; ?>" onClick="deductquantity(this)">
@@ -1459,7 +1482,7 @@ if(isset($_POST['fetch_cart'])){
                                                 onchange="updatequantity(this)"
                                                 data-line="<?= $line; ?>"
                                                 data-id="<?= $product_id; ?>"
-                                                style="width: 45px;">
+                                                >
 
                                             <button class="btn btn-primary btn-sm p-1" type="button" data-line="<?= $line; ?>" data-id="<?= $product_id; ?>" onClick="addquantity(this)">
                                                 <i class="fa fa-plus"></i>
@@ -1469,7 +1492,7 @@ if(isset($_POST['fetch_cart'])){
                                     <td class="text-center">
                                         <div class="d-flex flex-row align-items-center flex-nowrap w-auto">
                                             <fieldset class="border p-1 d-inline-flex align-items-center flex-nowrap">
-                                                <div class="input-group d-flex align-items-center flex-nowrap w-auto">
+                                                <div class="input-group d-flex align-items-center flex-nowrap w-100">
                                                     <input class="form-control form-control-sm text-center px-1" 
                                                         type="text" 
                                                         value="<?= round(floatval($values['estimate_length']),2) ?>" 
@@ -1540,7 +1563,8 @@ if(isset($_POST['fetch_cart'])){
                             }
                         }
 
-                        foreach ($others_cart as $product_id => $items) {
+                        foreach ($others_cart as $group_key => $items) {
+                            [$product_id, $color_id, $grade_id, $gauge_id] = explode('_', $group_key);
                             $total_qty = 0;
                             $total_length_cart = 0;
                             $total_price_actual = 0;
@@ -1560,13 +1584,10 @@ if(isset($_POST['fetch_cart'])){
                             $picture_path = $first_calc['picture_path'];
                             $stock_text = $first_calc['stock_text'];
                             $multiplier = $first_calc['multiplier'];
-                            $product_id_abbrev = $first_calc['product_id_abbrev'];
+                            $product_id_abbrev = $first_calc['parent_prod_id'];
                             ?>
 
                             <tr class="thick-border" data-mult="<?= $multiplier ?>">
-                                <td class="text-center">
-                                    <img src="<?= $picture_path ?>" class="rounded-circle" width="56" height="56" alt="product-img">
-                                </td>
                                 <td>
                                     <a href="javascript:void(0);" data-id="<?= $product_id ?>" class="d-flex align-items-center view_product_details">
                                         <h6 class="fw-semibold mb-0 fs-4"><?= htmlspecialchars($items[0]['product_item']) ?></h6>
@@ -1583,20 +1604,25 @@ if(isset($_POST['fetch_cart'])){
                                             data-line="<?= $items[0]['line'] ?>" data-id="<?= $product_id ?>">
                                         <option value="">Select Color...</option>
                                         <?php
-                                        $query_colors = "SELECT Product_id, color_id FROM inventory WHERE Product_id = '$product_id'";
-                                        $result_colors = mysqli_query($conn, $query_colors);
-                                        while ($row_colors = mysqli_fetch_array($result_colors)) {
-                                            if (empty($row_colors['color_id']) || $row_colors['color_id'] == 0) {
-                                                continue;
+                                        $assigned_colors = getAssignedProductColors($product_id);
+
+                                        if (!empty($items[0]['custom_color'])) {
+                                            $custom_color_id = intval($items[0]['custom_color']);
+                                            if (!in_array($custom_color_id, $assigned_colors)) {
+                                                $assigned_colors[] = $custom_color_id;
                                             }
-                                            $selected = ($first_calc['color_id'] == $row_colors['color_id']) ? 'selected' : '';
-                                            $colorDetails = getColorDetails($row_colors['color_id']);
-                                            $colorHex = getColorHexFromColorID($row_colors['color_id']);
+                                        }
+
+                                        foreach ($assigned_colors as $color_id) {
+                                            $colorDetails = getColorDetails($color_id);
+                                            $colorHex = getColorHexFromColorID($color_id);
                                             $colorName = $colorDetails['color_name'] ?? '';
-                                            echo "<option value='{$row_colors['color_id']}' data-color='{$colorHex}' {$selected}>{$colorName}</option>";
+                                            $selected = ($first_calc['color_id'] == $color_id) ? 'selected' : '';
+                                            echo "<option value='{$color_id}' data-color='{$colorHex}' data-grade='{$product['grade']}' {$selected}>{$colorName}</option>";
                                         }
                                         ?>
                                     </select>
+
                                 </td>
 
                                 <td class="text-center">
@@ -1610,6 +1636,22 @@ if(isset($_POST['fetch_cart'])){
                                         while ($row_grade = mysqli_fetch_array($result_grade)) {
                                             $selected = ($first_calc['grade'] == $row_grade['product_grade_id']) ? 'selected' : '';
                                             echo "<option value='{$row_grade['product_grade_id']}' {$selected}>{$row_grade['product_grade']}</option>";
+                                        }
+                                        ?>
+                                    </select>
+                                </td>
+
+                                <td class="text-center">
+                                    <select id="gauge<?= $items[0]['line'] ?>" class="form-control gauge-cart" 
+                                            name="gauge" onchange="updateGauge(this)" 
+                                            data-line="<?= $items[0]['line'] ?>" data-id="<?= $product_id ?>">
+                                        <option value="">Select Gauge...</option>
+                                        <?php
+                                        $query_gauge = "SELECT * FROM product_gauge WHERE status = 1";
+                                        $result_gauge = mysqli_query($conn, $query_gauge);
+                                        while ($row_gauge = mysqli_fetch_array($result_gauge)) {
+                                            $selected = ($first_calc['gauge'] == $row_gauge['product_gauge_id']) ? 'selected' : '';
+                                            echo "<option value='{$row_gauge['product_gauge_id']}' {$selected}>{$row_gauge['product_gauge']}</option>";
                                         }
                                         ?>
                                     </select>
@@ -1656,7 +1698,7 @@ if(isset($_POST['fetch_cart'])){
                                         Price
                                     </span>
                                 </th>
-                                <th class="text-center <?= $show_each_price ? '' : 'd-none' ?>">Customer Price</th>
+                                <th class="text-center <?= $show_each_price ? '' : 'd-none' ?>">Price</th>
                                 <th class="text-center"></th>
                             </tr>
 
@@ -1674,29 +1716,15 @@ if(isset($_POST['fetch_cart'])){
                                 $sold_by_feet = $item['sold_by_feet'];
                                 $linear_price =$item['linear_price'];
                                 $panel_price = $item['panel_price'];
-                                $product_id_abbrev = $item['product_id_abbrev'];
+                                $product_id_abbrev = $item['unique_prod_id'];
                                 ?>
 
                                 <tr data-id="<?= $product_id ?>" data-line="<?= $line ?>" data-line="<?= $line ?>" data-bundle="<?= $values['bundle_name'] ?? '' ?>">
-                                    <td>
-                                        <?php if($category_id == $trim_id): ?>
-                                            <?php if(!empty($values["custom_trim_src"])): ?>
-                                                <a href="javascript:void(0);" class="drawingContainer" id="custom_trim_draw" data-line="<?= $line; ?>" data-id="<?= $product_id; ?>" data-drawing="<?= $drawing_data ?>">
-                                                    <div class="align-items-center text-center w-100">
-                                                        <img src="<?= $images_directory.$values["custom_trim_src"] ?>" class="rounded-circle" width="56" height="56">
-                                                    </div>
-                                                </a>
-                                            <?php else: ?>
-                                                <a href="javascript:void(0);" id="custom_trim_draw" class="drawingContainer btn btn-primary py-1 px-2 d-flex justify-content-center align-items-center" data-drawing="<?= $drawing_data ?>" data-line="<?= $line; ?>" data-id="<?= $product_id; ?>">
-                                                    Draw Here
-                                                </a>
-                                            <?php endif; ?>
-                                        <?php endif; ?>
-                                    </td>
-                                    <td class="text-center">
-                                        <div class="d-flex align-items-center gap-2 justify-content-start">
+                                    
+                                    <td class="text-start align-middle">
+                                        <div class="d-flex align-items-center gap-2">
+                                            <i class="fa fa-bars fa-lg drag-handle" style="cursor: move; flex-shrink: 0;"></i>
                                             
-
                                             <div class="bundle-checkbox-cart d-none">
                                                 <div class="form-check m-0">
                                                     <input class="form-check-input bundle-checkbox-cart" 
@@ -1718,6 +1746,7 @@ if(isset($_POST['fetch_cart'])){
                                             <?php } ?>
                                         </div>
                                     </td>
+                                    <td></td>
                                     <td class="text-center">
                                         <div class="input-group d-inline-flex align-items-center flex-nowrap w-auto">
                                             <button class="btn btn-primary btn-sm p-1" type="button" data-line="<?= $line; ?>" data-id="<?= $product_id; ?>" onClick="deductquantity(this)">
@@ -1730,7 +1759,7 @@ if(isset($_POST['fetch_cart'])){
                                                 onchange="updatequantity(this)"
                                                 data-line="<?= $line; ?>"
                                                 data-id="<?= $product_id; ?>"
-                                                style="width: 45px;">
+                                                >
 
                                             <button class="btn btn-primary btn-sm p-1" type="button" data-line="<?= $line; ?>" data-id="<?= $product_id; ?>" onClick="addquantity(this)">
                                                 <i class="fa fa-plus"></i>
@@ -1740,7 +1769,7 @@ if(isset($_POST['fetch_cart'])){
                                     <td class="text-center">
                                         <div class="d-flex flex-row align-items-center flex-nowrap w-auto">
                                             <fieldset class="border p-1 d-inline-flex align-items-center flex-nowrap">
-                                                <div class="input-group d-flex align-items-center flex-nowrap w-auto">
+                                                <div class="input-group d-flex align-items-center flex-nowrap w-100">
                                                     <input class="form-control form-control-sm text-center px-1" 
                                                         type="text" 
                                                         value="<?= round(floatval($values['estimate_length']),2) ?>" 
@@ -1832,11 +1861,11 @@ if(isset($_POST['fetch_cart'])){
                     }
                     ?>
                     <tr>
-                        <td colspan="3" class="text-end">Total Weight</td>
-                        <td><?= number_format(floatval($total_weight), 2) ?> LBS</td>
-                        <td colspan="2" class="text-end">Total Quantity:</td>
-                        <td colspan="1" class=""><span id="qty_ttl"><?= $totalquantity ?></span></td>
-                        <td colspan="2" class="text-end">Customer Savings: </td>
+                        <td colspan="2" class="text-start align-middle">Total Weight <?= number_format(floatval($total_weight), 2) ?> LBS</td>
+                        <td></td>
+                        <td colspan="2" class="text-center">Total Quantity: <span id="qty_ttl"><?= $totalquantity ?></span></td>
+                        <td colspan="1"></td>
+                        <td colspan="3" class="text-end">Customer Savings: </td>
                         <td colspan="1" class="text-end"><span id="ammount_due">$<?= number_format($customer_savings,2) ?></span></td>
                         <td colspan="1"></td>
                     </tr>
@@ -1864,7 +1893,7 @@ if(isset($_POST['fetch_cart'])){
                 </tfoot>
             </table>
         </div>
-    </div>   
+    </div>  
 
     <script>
         $(document).ready(function() {
@@ -1919,8 +1948,6 @@ if(isset($_POST['fetch_cart'])){
                         });
                     });
 
-                    console.log(order)
-
                     $.ajax({
                         url: 'pages/cashier_ajax.php',
                         type: 'POST',
@@ -1952,7 +1979,6 @@ if(isset($_POST['fetch_cart'])){
                     dropdownAutoWidth: true,
                     dropdownParent: $('.modal.show'),
                     templateResult: formatOption,
-                    templateSelection: formatSelected,
                     language: {
                         noResults: function() {
                             return "No paint color";
@@ -1962,6 +1988,19 @@ if(isset($_POST['fetch_cart'])){
             });
 
             $(".grade-cart").each(function() {
+                if ($(this).data('select2')) {
+                    $(this).select2('destroy');
+                }
+
+                $(this).select2({
+                    width: '300px',
+                    placeholder: "Select...",
+                    dropdownAutoWidth: true,
+                    dropdownParent: $('.modal.show')
+                });
+            });
+
+            $(".gauge-cart").each(function() {
                 if ($(this).data('select2')) {
                     $(this).select2('destroy');
                 }
