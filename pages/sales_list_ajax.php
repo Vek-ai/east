@@ -117,13 +117,18 @@ if (isset($_POST['search_orders'])) {
     if ($result && mysqli_num_rows($result) > 0) {
         while ($row = mysqli_fetch_assoc($result)) {
             $orderid = $row['orderid'];
-            $pay_type = strtolower(trim($row['pay_type']));
-            $label = $status_labels[$pay_type]['label'] ?? ucfirst($pay_type);
+            $pay_types = array_map('trim', explode(',', strtolower($row['pay_type'])));
 
             $total_paid = getOrderTotalPayments($orderid);
             $expected_amount = floatval($row['discounted_price']);
 
-            if ($total_paid <= 0) {
+            $immediate_payments = ['cash', 'card', 'check'];
+            $is_immediate = count(array_intersect($pay_types, $immediate_payments)) > 0;
+
+            if ($is_immediate) {
+                $payment_status = 'paid_in_full';
+                $color = 'green';
+            } elseif ($total_paid <= 0) {
                 $payment_status = 'not_paid';
                 $color = 'red';
             } elseif ($total_paid < $expected_amount) {
@@ -137,9 +142,13 @@ if (isset($_POST['search_orders'])) {
             if (!empty($paid_status) && $payment_status !== $paid_status) {
                 continue;
             }
-            
 
-            $status_html = '<span class="badge" style="background-color: ' . $color . ';">' . htmlspecialchars($label) . '</span>';
+            $status_html = '';
+            foreach ($pay_types as $pt) {
+                if (empty($pt)) continue;
+                $label = $status_labels[$pt]['label'] ?? ucfirst($pt);
+                $status_html .= '<span class="badge me-1 mb-1" style="background-color:' . $color . ';">' . htmlspecialchars($label) . '</span>';
+            }
 
             $response['orders'][] = [
                 'orderid' => $row['orderid'],
