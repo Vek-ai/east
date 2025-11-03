@@ -631,8 +631,8 @@ function showCol($name) {
 
             Object.keys(columnFilters).forEach(function(index) {
                 const selected = columnFilters[index];
-                if (selected && selected.length && selected.length < filterUniqueValues.length) {
-                    const colName = $('#sales_table thead th').eq(index).text().trim();
+                if (selected && selected.length) {
+                    const colName = $('#order_list_tbl thead th').eq(index).text().trim();
                     const text = selected.join(', ');
                     displayDiv.append(`
                         <div class="d-inline-block p-1 m-1 border rounded bg-light">
