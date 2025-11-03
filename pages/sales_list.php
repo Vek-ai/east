@@ -782,11 +782,29 @@ function showCol($name) {
                 for (const [colIndex, selected] of Object.entries(columnFilters)) {
                     const idx = parseInt(colIndex);
                     const node = table.cell(dataIndex, idx).node();
-                    const raw = $(node).attr('data-search') || $(node).text().trim();
-                    const vals = raw.split('||').map(v => v.trim());
+                    const $td = $(node);
+
+                    const searchAttr = $td.attr('data-search');
+                    let vals = [];
+
+                    if (searchAttr) {
+                        vals = searchAttr.split('||').map(v => v.trim());
+                    } else {
+                        const childTexts = $td
+                            .children(':visible')
+                            .map(function () {
+                                return $(this).text().trim();
+                            })
+                            .get()
+                            .filter(Boolean);
+                        const full = childTexts.length ? childTexts.join('||') : $td.text().trim();
+                        vals = full.split('||').map(v => v.trim());
+                    }
 
                     if (selected && selected.length > 0) {
-                        if (!selected.some(v => vals.includes(v))) return false;
+                        const normalizedVals = vals.map(v => v.toLowerCase());
+                        const normalizedSelected = selected.map(v => v.toLowerCase());
+                        if (!normalizedSelected.some(v => normalizedVals.includes(v))) return false;
                     }
                 }
 
@@ -973,7 +991,21 @@ function showCol($name) {
                                 .cells(null, i, { search: 'applied' })
                                 .nodes()
                                 .toArray()
-                                .map(td => $(td).attr('data-search') || $(td).text().trim())
+                                .map(td => {
+                                    const $td = $(td);
+                                    const searchAttr = $td.attr('data-search');
+                                    if (searchAttr) return searchAttr;
+
+                                    const childTexts = $td
+                                        .children(':visible')
+                                        .map(function () {
+                                            return $(this).text().trim();
+                                        })
+                                        .get()
+                                        .filter(Boolean);
+
+                                    return childTexts.length ? childTexts.join('||') : $td.text().trim();
+                                })
                                 .filter(Boolean);
 
                             const values = [...new Set(colData.flatMap(v => v.split('||').map(x => x.trim())))].sort();
