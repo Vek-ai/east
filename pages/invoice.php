@@ -306,84 +306,113 @@ function showCol($name) {
                                             $label_info = $status_labels[$pay_type] ?? ['label' => '', 'style' => ''];
                                         ?>
                                         <tr
-                                            data-by="<?= $row['order_from'] ?>"
-                                            data-tax="<?= $customer_details['tax_status'] ?>"
+                                            data-by="<?= htmlspecialchars($row['order_from']) ?>"
+                                            data-tax="<?= htmlspecialchars($customer_details['tax_status']) ?>"
                                             data-month="<?= date('m', strtotime($row['order_date'])) ?>"
                                             data-year="<?= date('Y', strtotime($row['order_date'])) ?>"
-                                            data-payment="<?= $row['pay_type'] ?>"
-                                            data-cashier="<?= $row['cashier'] ?>"
-                                            data-status="<?= $status_code ?>"
+                                            data-payment="<?= htmlspecialchars($row['pay_type']) ?>"
+                                            data-cashier="<?= htmlspecialchars($row['cashier']) ?>"
+                                            data-status="<?= htmlspecialchars($status_code) ?>"
                                             data-completed="<?= $row['status'] == '4' ? '1' : '0' ?>"
                                         >
                                             <?php if (showCol('invoice_no')): ?>
-                                                <td style="color: #ffffff !important;">
+                                                <td style="color: #ffffff !important;" data-search="<?= $row["orderid"] ?>">
                                                     <?= $row["orderid"] ?>
                                                 </td>
                                             <?php endif; ?>
+
                                             <?php if (showCol('customer')): ?>
-                                                <td style="color: #ffffff !important;">
-                                                    <?php echo get_customer_name($row["customerid"]) ?>
+                                                <?php $customer_name = get_customer_name($row["customerid"]); ?>
+                                                <td style="color: #ffffff !important;" data-search="<?= htmlspecialchars($customer_name) ?>">
+                                                    <?= $customer_name ?>
                                                 </td>
                                             <?php endif; ?>
+
                                             <?php if (showCol('total_price')): ?>
-                                                <td style="color: #ffffff !important; text-align: right;">
-                                                    $ <?php echo number_format($row["discounted_price"],2) ?>
+                                                <?php $formatted_price = number_format($row["discounted_price"], 2); ?>
+                                                <td style="color: #ffffff !important; text-align: right;" data-search="<?= "$ " .$formatted_price ?>">
+                                                    $ <?= $formatted_price ?>
                                                 </td>
                                             <?php endif; ?>
+
                                             <?php if (showCol('order_date')): ?>
+                                                <?php
+                                                    $order_date_val = '';
+                                                    if (!empty($row["order_date"]) && $row["order_date"] !== '0000-00-00 00:00:00') {
+                                                        $order_date_val = date("F d, Y", strtotime($row["order_date"]));
+                                                    }
+                                                ?>
                                                 <td class="text-center" style="color: #ffffff !important;"
-                                                    <?php if (isset($row["order_date"]) && !empty($row["order_date"]) && $row["order_date"] !== '0000-00-00 00:00:00') : ?>
-                                                        data-order="<?= date('Y-m-d', strtotime($row["order_date"])) ?>"
-                                                    <?php endif; ?>
-                                                    >
-                                                    <?php 
-                                                        if (isset($row["order_date"]) && !empty($row["order_date"]) && $row["order_date"] !== '0000-00-00 00:00:00') {
-                                                            echo date("F d, Y", strtotime($row["order_date"]));
-                                                        } else {
-                                                            echo '';
-                                                        }
-                                                    ?>
+                                                    data-order="<?= date('Y-m-d', strtotime($row["order_date"])) ?>"
+                                                    data-search="<?= htmlspecialchars($order_date_val) ?>">
+                                                    <?= $order_date_val ?>
                                                 </td>
                                             <?php endif; ?>
+
                                             <?php if (showCol('deliver_method')): ?>
-                                                <td style="color: #ffffff !important;">
+                                                <td style="color: #ffffff !important;" data-search="<?= htmlspecialchars($row['deliver_method']) ?>">
                                                     <?= ucwords($row['deliver_method']); ?>
                                                 </td>
                                             <?php endif; ?>
-                                            <?php if (showCol('payment_method')): ?>
-                                                <td class="text-center" style="color: #ffffff !important;">
-                                                    <span class="badge" style="<?= $label_info['style'] ?>">
-                                                        <?= $label_info['label'] ?>
-                                                    </span>
+
+                                            <?php if (showCol('payment_method')): 
+                                                $payment_methods = array_map('trim', explode(',', $row['pay_type']));
+                                                $payment_labels = [];
+
+                                                foreach ($payment_methods as $method) {
+                                                    $method_key = strtolower($method);
+                                                    $label_info = $status_labels[$method_key] 
+                                                        ?? ['label' => ucfirst($method), 'style' => 'color: #fff; background-color: #6c757d;'];
+                                                    $payment_labels[] = $label_info['label'];
+                                                }
+
+                                                $search_payment = implode(' || ', $payment_labels);
+                                                ?>
+                                                <td class="text-center" style="color: #ffffff !important;" 
+                                                    data-search="<?= htmlspecialchars($search_payment) ?>">
+                                                    <?php foreach ($payment_methods as $method): 
+                                                        $method_key = strtolower($method);
+                                                        $label_info = $status_labels[$method_key] 
+                                                            ?? ['label' => ucfirst($method), 'style' => 'color: #fff; background-color: #6c757d;'];
+                                                    ?>
+                                                        <span class="badge me-1" style="<?= $label_info['style'] ?>">
+                                                            <?= $label_info['label'] ?>
+                                                        </span>
+                                                    <?php endforeach; ?>
                                                 </td>
                                             <?php endif; ?>
+
                                             <?php if (showCol('scheduled_delivery')): ?>
-                                                <td style="color: #ffffff !important;">
-                                                    <?php 
-                                                        if (isset($row["scheduled_date"]) && !empty($row["scheduled_date"]) && $row["delivered_date"] !== '0000-00-00 00:00:00') {
-                                                            echo date("F d, Y h:i A", strtotime($row["scheduled_date"]));
-                                                        } else {
-                                                            echo '';
-                                                        }
-                                                    ?>
+                                                <?php
+                                                    $sched_val = '';
+                                                    if (!empty($row["scheduled_date"]) && $row["scheduled_date"] !== '0000-00-00 00:00:00') {
+                                                        $sched_val = date("F d, Y h:i A", strtotime($row["scheduled_date"]));
+                                                    }
+                                                ?>
+                                                <td style="color: #ffffff !important;" data-search="<?= htmlspecialchars($sched_val) ?>">
+                                                    <?= $sched_val ?>
                                                 </td>
                                             <?php endif; ?>
+
                                             <?php if (showCol('completed_delivery')): ?>
-                                                <td style="color: #ffffff !important;">
-                                                    <?php 
-                                                        if (isset($row["delivered_date"]) && !empty($row["delivered_date"]) && $row["delivered_date"] !== '0000-00-00 00:00:00') {
-                                                            echo date("F d, Y", strtotime($row["delivered_date"]));
-                                                        } else {
-                                                            echo '';
-                                                        }
-                                                    ?>
+                                                <?php
+                                                    $delivered_val = '';
+                                                    if (!empty($row["delivered_date"]) && $row["delivered_date"] !== '0000-00-00 00:00:00') {
+                                                        $delivered_val = date("F d, Y", strtotime($row["delivered_date"]));
+                                                    }
+                                                ?>
+                                                <td style="color: #ffffff !important;" data-search="<?= htmlspecialchars($delivered_val) ?>">
+                                                    <?= $delivered_val ?>
                                                 </td>
                                             <?php endif; ?>
+
                                             <?php if (showCol('salesperson')): ?>
-                                                <td style="color: #ffffff !important;">
-                                                    <?= ucwords(get_staff_name($row["cashier"])) ?>
+                                                <?php $staff_name = ucwords(get_staff_name($row["cashier"])); ?>
+                                                <td style="color: #ffffff !important;" data-search="<?= htmlspecialchars($staff_name) ?>">
+                                                    <?= $staff_name ?>
                                                 </td>
                                             <?php endif; ?>
+
                                             <?php if (showCol('action')): ?>
                                                 <td class="text-center">
                                                     <button class="btn btn-danger-gradient btn-sm p-0 me-1" id="view_order_btn" type="button" data-id="<?php echo $row["orderid"]; ?>" data-bs-toggle="tooltip" title="View Order">
@@ -434,6 +463,7 @@ function showCol($name) {
                                                 </td>
                                             <?php endif; ?>
                                         </tr>
+
                                         <?php
                                         }
                                     } else {
@@ -634,6 +664,23 @@ function showCol($name) {
     </div>
 </div>
 
+<div class="modal fade" id="columnFilterModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-sm modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header py-2">
+        <h6 class="modal-title">Filter Column</h6>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body" style="max-height:300px; overflow:auto;">
+        <div id="filterOptions"></div>
+      </div>
+      <div class="modal-footer py-2">
+        <button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">Cancel</button>
+        <button type="button" class="btn btn-sm btn-primary" id="applyFilterBtn">Apply</button>
+      </div>
+    </div>
+  </div>
+</div>
 
 <script>
     function isValidURL(str) {
@@ -655,8 +702,95 @@ function showCol($name) {
         var isPrinting = false;
 
         var table = $('#order_list_tbl').DataTable({
-            "order": [],
-            "pageLength": 100
+            ordering: false,
+            pageLength: 100
+        });
+
+        let filterColumnIndex = null;
+        let filterUniqueValues = [];
+        let columnFilters = {};
+
+        $('#order_list_tbl thead th').each(function (index) {
+            const th = $(this);
+            th.css('cursor', 'pointer');
+
+            th.on('click', function () {
+                filterColumnIndex = index;
+
+                const columnData = table
+                    .cells(null, index, { search: 'applied' })
+                    .nodes()
+                    .toArray()
+                    .map(td => $(td).attr('data-search') || $(td).text().trim())
+                    .filter(v => v !== '');
+
+                const expandedValues = columnData.flatMap(v => v.split('||').map(x => x.trim()));
+                filterUniqueValues = [...new Set(expandedValues)].sort();
+
+                const prevSelected = columnFilters[index] || filterUniqueValues;
+
+                let html = `
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" id="selectAllFilters">
+                        <label class="form-check-label fw-bold" for="selectAllFilters">Select All</label>
+                    </div>
+                    <hr class="my-2">
+                `;
+
+                filterUniqueValues.forEach((v, i) => {
+                    const checked = prevSelected.includes(v) ? 'checked' : '';
+                    html += `
+                        <div class="form-check">
+                            <input class="form-check-input filter-option" type="checkbox"
+                                value="${v.replace(/"/g, '&quot;')}" id="filterOpt${i}" ${checked}>
+                            <label class="form-check-label" for="filterOpt${i}">${v}</label>
+                        </div>
+                    `;
+                });
+
+                $('#filterOptions').html(html);
+                const allChecked = prevSelected.length === filterUniqueValues.length;
+                $('#selectAllFilters').prop('checked', allChecked);
+
+                const modal = new bootstrap.Modal(document.getElementById('columnFilterModal'));
+                $('#columnFilterModal .modal-title').text('Filter: ' + th.text().trim());
+                modal.show();
+            });
+        });
+
+        $(document).on('change', '#selectAllFilters', function () {
+            $('.filter-option').prop('checked', $(this).is(':checked'));
+        });
+
+        $('#applyFilterBtn').on('click', function () {
+            const checkedVals = $('.filter-option:checked').map(function () {
+                return $(this).val();
+            }).get();
+
+            columnFilters[filterColumnIndex] = checkedVals;
+
+            const modalEl = document.getElementById('columnFilterModal');
+            const modal = bootstrap.Modal.getInstance(modalEl);
+            modal.hide();
+
+            $.fn.dataTable.ext.search = $.fn.dataTable.ext.search.filter(f => !f._colFilter);
+
+            $.fn.dataTable.ext.search.push(Object.assign(function (settings, data, dataIndex) {
+                if (filterColumnIndex === null) return true;
+
+                const cellNode = table.cell(dataIndex, filterColumnIndex).node();
+                const rawVal = $(cellNode).attr('data-search') || $(cellNode).text().trim();
+                const cellValues = rawVal.split('||').map(v => v.trim());
+
+                const selected = columnFilters[filterColumnIndex];
+                if (!selected || selected.length === 0 || selected.length === filterUniqueValues.length)
+                    return true;
+
+                return selected.some(v => cellValues.includes(v));
+            }, { _colFilter: true }));
+
+            table.draw();
+            updateSelectedTags();
         });
 
         $('#order_list_tbl_filter').hide();
@@ -856,9 +990,53 @@ function showCol($name) {
                 }
             });
 
+            Object.keys(columnFilters).forEach(function(index) {
+                const selected = columnFilters[index];
+                if (selected && selected.length && selected.length < filterUniqueValues.length) {
+                    const colName = $('#order_list_tbl thead th').eq(index).text().trim();
+                    const text = selected.join(', ');
+                    displayDiv.append(`
+                        <div class="d-inline-block p-1 m-1 border rounded bg-light">
+                            <span class="text-dark">${colName}: ${text}</span>
+                            <button type="button" 
+                                class="btn-close btn-sm ms-1 remove-col-filter" 
+                                style="width: 0.75rem; height: 0.75rem;" 
+                                aria-label="Close" 
+                                data-col="${index}">
+                            </button>
+                        </div>
+                    `);
+                }
+            });
+
             $('.remove-tag').on('click', function() {
                 $($(this).data('select')).val('').trigger('change');
                 $(this).parent().remove();
+            });
+
+            $('.remove-col-filter').on('click', function() {
+                const colIndex = $(this).data('col');
+                delete columnFilters[colIndex];
+                $(this).parent().remove();
+
+                table.columns().every(function(i) {
+                    const col = this;
+                    const selectedVals = columnFilters[i];
+
+                    if (selectedVals && selectedVals.length) {
+                        const regex = selectedVals
+                            .map(val => $.fn.dataTable.util.escapeRegex(
+                                $('<div>').html(val).text().trim()
+                            ))
+                            .join('|');
+
+                        col.search(regex, true, false);
+                    } else {
+                        col.search('');
+                    }
+                });
+
+                table.draw();
             });
         }
 
@@ -868,6 +1046,13 @@ function showCol($name) {
             });
 
             $('#text-srh').val('');
+
+            columnFilters = {};
+            table.columns().search('');
+            table.search('').draw();
+
+            $('#filterOptions').empty();
+            $('#columnFilterModal .modal-title').text('Filter');
 
             filterTable();
         });
