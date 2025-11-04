@@ -3060,8 +3060,8 @@ $(document).ready(function() {
     var customerIdSaved = '';
 
     function updatePrintLinks(orderId) {
-        //const baseUrl = window.location.origin + '/';
-        const baseUrl = window.location.origin + '/temps/east/';
+        const baseUrl = window.location.origin + '/';
+        //const baseUrl = window.location.origin + '/temps/east/';
 
         const links = {
             'print_base_customer': 'print_customer_product.php',
