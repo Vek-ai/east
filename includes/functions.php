@@ -4164,11 +4164,6 @@ function recordCashInflow($payment_method, $cash_flow_type, $amount = 0) {
     $received_by = isset($_SESSION['userid']) ? intval($_SESSION['userid']) : 0;
     $station_id  = isset($_SESSION['station']) ? intval($_SESSION['station']) : 0;
 
-    $allowed_methods = ['cash', 'card', 'cheque'];
-    if (!in_array($payment_method, $allowed_methods)) {
-        return false;
-    }
-
     $movement_type   = 'cash_inflow';
     $payment_method  = mysqli_real_escape_string($conn, $payment_method);
     $cash_flow_type  = mysqli_real_escape_string($conn, $cash_flow_type);
@@ -4182,7 +4177,6 @@ function recordCashInflow($payment_method, $cash_flow_type, $amount = 0) {
 
     return mysqli_query($conn, $sql);
 }
-
 
 function recordCashOutflow($payment_method, $cash_flow_type, $amount = 0) {
     global $conn;
