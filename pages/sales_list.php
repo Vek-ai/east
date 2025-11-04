@@ -804,6 +804,8 @@ function showCol($name) {
             $('#text-srh').val('');
 
             columnFilters = {};
+            dateFilters = {};
+            numericFilters = {};
             table.columns().search('');
             table.search('').draw();
 

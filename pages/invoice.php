@@ -1360,8 +1360,6 @@ function showCol($name) {
 
         $(document).on('input', '#text-srh', filterTable);
 
-        
-
         $(document).on('click', '.reset_filters', function () {
             $('.filter-selection').each(function () {
                 $(this).val(null).trigger('change.select2');
@@ -1370,6 +1368,8 @@ function showCol($name) {
             $('#text-srh').val('');
 
             columnFilters = {};
+            dateFilters = {};
+            numericFilters = {};
             table.columns().search('');
             table.search('').draw();
 
