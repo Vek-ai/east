@@ -762,7 +762,7 @@ function showCol($name) {
         var isPrinting = false;
 
         var table = $('#order_list_tbl').DataTable({
-            ordering: false,
+            order: [],
             pageLength: 100
         });
 
@@ -808,11 +808,21 @@ function showCol($name) {
             const simple = raw.match(/^(\d{4})-(\d{2})-(\d{2})$/) || raw.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
             if (simple) {
                 let [ , a, b, c ] = simple;
+                let year, month, day;
                 if (a.length === 4) {
-                    return new Date(a, parseInt(b, 10) - 1, parseInt(c, 10)).getTime();
+                    year = parseInt(a, 10);
+                    month = parseInt(b, 10) - 1;
+                    day = parseInt(c, 10);
                 } else {
-                    return new Date(c, parseInt(a, 10) - 1, parseInt(b, 10)).getTime();
+                    year = parseInt(c, 10);
+                    month = parseInt(a, 10) - 1;
+                    day = parseInt(b, 10);
                 }
+
+                const d = new Date();
+                d.setFullYear(year, month, day);
+                d.setHours(0, 0, 0, 0);
+                return d.getTime();
             }
             return NaN;
         }
@@ -820,15 +830,33 @@ function showCol($name) {
         function applyAllFilters() {
             resetDataTableFilters();
 
-            $.fn.dataTable.ext.search.push(Object.assign((settings, data, dataIndex) => {
+            $.fn.dataTable.ext.search.push(function(settings, data, dataIndex) {
                 for (const [colIndex, selected] of Object.entries(columnFilters)) {
                     const idx = parseInt(colIndex);
                     const node = table.cell(dataIndex, idx).node();
-                    const raw = $(node).attr('data-search') || $(node).text().trim();
-                    const vals = raw.split('||').map(v => v.trim());
+                    const $td = $(node);
+
+                    const searchAttr = $td.attr('data-search');
+                    let vals = [];
+
+                    if (searchAttr) {
+                        vals = searchAttr.split('||').map(v => v.trim());
+                    } else {
+                        const childTexts = $td
+                            .children(':visible')
+                            .map(function() {
+                                return $(this).text().trim();
+                            })
+                            .get()
+                            .filter(Boolean);
+                        const full = childTexts.length ? childTexts.join('||') : $td.text().trim();
+                        vals = full.split('||').map(v => v.trim());
+                    }
 
                     if (selected && selected.length > 0) {
-                        if (!selected.some(v => vals.includes(v))) return false;
+                        const normalizedVals = vals.map(v => v.toLowerCase());
+                        const normalizedSelected = selected.map(v => v.toLowerCase());
+                        if (!normalizedSelected.some(v => normalizedVals.includes(v))) return false;
                     }
                 }
 
@@ -855,26 +883,35 @@ function showCol($name) {
                     const node = table.cell(dataIndex, idx).node();
                     const raw = $(node).attr('data-search') || $(node).text().trim();
 
-                    const cellDate = Date.parse(raw);
-                    if (isNaN(cellDate)) continue;
+                    const cellDate = parseTextToDate(raw);
+                    if (isNaN(cellDate)) {
+                        if (rule.from || rule.to) return false;
+                        continue;
+                    }
 
-                    const fromDate = rule.from ? Date.parse(rule.from) : null;
-                    let toDate = rule.to ? Date.parse(rule.to) : null;
-                    if (toDate && !/\d{1,2}:\d{2}/.test(rule.to)) {
-                        const d = new Date(toDate);
-                        d.setHours(23, 59, 59, 999);
-                        toDate = d.getTime();
+                    let fromDate = null, toDate = null;
+
+                    if (rule.from) {
+                        const [y, m, d] = rule.from.split('-').map(Number);
+                        const f = new Date(y, m - 1, d, 0, 0, 0, 0);
+                        fromDate = f.getTime();
+                    }
+
+                    if (rule.to) {
+                        const [y, m, d] = rule.to.split('-').map(Number);
+                        const t = new Date(y, m - 1, d, 23, 59, 59, 999);
+                        toDate = t.getTime();
                     }
 
                     if (fromDate && cellDate < fromDate) return false;
                     if (toDate && cellDate > toDate) return false;
                 }
-                
+
                 return true;
-            }, { _colFilter: true }));
+            });
 
             table.draw();
-            updateSelectedTags?.();
+            updateSelectedTags();
         }
 
         $(document).on('keyup', '#filterSearchInput', function () {
