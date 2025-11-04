@@ -816,6 +816,32 @@ function showCol($name) {
   </div>
 </div>
 
+<div class="modal fade" id="dateFilterModal" tabindex="-1">
+  <div class="modal-dialog modal-sm modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Date Filter</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <div class="mb-2">
+          <label for="dateFrom" class="form-label">Date From</label>
+          <input type="date" id="dateFrom" class="form-control">
+        </div>
+        <div class="mb-2">
+          <label for="dateTo" class="form-label">Date To</label>
+          <input type="date" id="dateTo" class="form-control">
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">Cancel</button>
+        <button type="button" class="btn btn-sm btn-primary" id="applyDateFilter">Apply</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
 <script>
     function isValidURL(str) {
         try {
@@ -840,6 +866,7 @@ function showCol($name) {
         let filterUniqueValues = [];
         let columnFilters = {};
         let numericFilters = {};
+        let dateFilters = {};
 
         var active_order_id = 0;
 
@@ -1518,6 +1545,7 @@ function showCol($name) {
                 e.stopPropagation();
                 currentColIndex = i;
 
+                const thClasses = th.attr('class') || '';
                 const colData = table
                     .cells(null, i, { search: 'applied' })
                     .nodes()
@@ -1539,38 +1567,71 @@ function showCol($name) {
                     })
                     .filter(Boolean);
 
-                const values = [...new Set(colData.flatMap(v => v.split('||').map(x => x.trim())))].sort();
-                const looksNumeric = values.every(v => /^\$?\s?-?\d+(\.\d+)?$/.test(v.replace(/[,$]/g, '')));
+                const values = [...new Set(
+                    colData.flatMap(v => v.split('||').map(x => x.trim()))
+                )].sort();
+
+                const hasValues = values.length > 0;
+
+                if (thClasses.includes('filter-date')) {
+                    $('#dateFilterModal .modal-title').text('Filter: ' + th.text().trim());
+                    $('#dateFilterModal').data('col-index', i);
+                    new bootstrap.Modal('#dateFilterModal').show();
+                    return;
+                }
+
+                if (thClasses.includes('filter-numeric')) {
+                    $('#numericFilterModal .modal-title').text('Filter: ' + th.text().trim());
+                    $('#numericFilterModal').data('col-index', i);
+                    new bootstrap.Modal('#numericFilterModal').show();
+                    return;
+                }
+
+                if (thClasses.includes('filter-select')) {
+                    showSelectFilter(values, th, i);
+                    return;
+                }
+
+                const looksNumeric = hasValues && values.every(v => /^\$?\s?-?\d+(\.\d+)?$/.test(v.replace(/[,$]/g, '')));
+                const looksDate = hasValues && values.every(v => !isNaN(parseTextToDate(v)));
 
                 if (looksNumeric) {
                     $('#numericFilterModal .modal-title').text('Filter: ' + th.text().trim());
                     $('#numericFilterModal').data('col-index', i);
                     new bootstrap.Modal('#numericFilterModal').show();
+                } else if (looksDate) {
+                    $('#dateFilterModal .modal-title').text('Filter: ' + th.text().trim());
+                    $('#dateFilterModal').data('col-index', i);
+                    new bootstrap.Modal('#dateFilterModal').show();
                 } else {
-                    const prevSelected = columnFilters[i] || [];
-                    const allChecked = prevSelected.length === 0 || prevSelected.length === values.length;
-
-                    let html = `
-                        <div class="form-check">
-                            <input class="form-check-input" type="checkbox" id="selectAllFilters" ${allChecked ? 'checked' : ''}>
-                            <label class="form-check-label fw-bold" for="selectAllFilters">Select All</label>
-                        </div><hr class="my-2">
-                    `;
-                    values.forEach((v, idx) => {
-                        const checked = prevSelected.length === 0 || prevSelected.includes(v) ? 'checked' : '';
-                        html += `
-                            <div class="form-check">
-                                <input class="form-check-input filter-option" type="checkbox" id="filterOpt${i}_${idx}" value="${v}" ${checked}>
-                                <label class="form-check-label" for="filterOpt${i}_${idx}">${v}</label>
-                            </div>`;
-                    });
-
-                    $('#filterOptions').html(html);
-                    $('#columnFilterModal .modal-title').text('Filter: ' + th.text().trim());
-                    new bootstrap.Modal('#columnFilterModal').show();
+                    showSelectFilter(values, th, i);
                 }
             });
         });
+
+        function showSelectFilter(values, th, i) {
+            const prevSelected = columnFilters[i] || [];
+            const allChecked = prevSelected.length === 0 || prevSelected.length === values.length;
+
+            let html = `
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" id="selectAllFilters" ${allChecked ? 'checked' : ''}>
+                    <label class="form-check-label fw-bold" for="selectAllFilters">Select All</label>
+                </div><hr class="my-2">
+            `;
+            values.forEach((v, idx) => {
+                const checked = prevSelected.length === 0 || prevSelected.includes(v) ? 'checked' : '';
+                html += `
+                    <div class="form-check">
+                        <input class="form-check-input filter-option" type="checkbox" id="filterOpt${i}_${idx}" value="${v}" ${checked}>
+                        <label class="form-check-label" for="filterOpt${i}_${idx}">${v}</label>
+                    </div>`;
+            });
+
+            $('#filterOptions').html(html);
+            $('#columnFilterModal .modal-title').text('Filter: ' + th.text().trim());
+            new bootstrap.Modal('#columnFilterModal').show();
+        }
 
         function updateSelectedTags() {
             const displayDiv = $('#selected-tags');
@@ -1656,6 +1717,26 @@ function showCol($name) {
                 }
             });
 
+            Object.keys(dateFilters).forEach(function (index) {
+                const rule = dateFilters[index];
+                if (rule && (rule.from || rule.to)) {
+                    const colName = $('#sales_table thead th').eq(index).text().trim();
+                    const text = `${rule.from || ''}${rule.from && rule.to ? ' – ' : ''}${rule.to || ''}`;
+
+                    displayDiv.append(`
+                        <div class="d-inline-block p-1 m-1 border rounded bg-light">
+                            <span class="text-dark">${colName}: ${text}</span>
+                            <button type="button" 
+                                class="btn-close btn-sm ms-1 remove-date-filter" 
+                                style="width: 0.75rem; height: 0.75rem;" 
+                                aria-label="Close" 
+                                data-col="${index}">
+                            </button>
+                        </div>
+                    `);
+                }
+            });
+
             $('.remove-tag').on('click', function() {
                 const $target = $($(this).data('select'));
                 $target.val(null).trigger('change');
@@ -1688,6 +1769,13 @@ function showCol($name) {
             $('.remove-num-filter').off('click').on('click', function () {
                 const colIndex = $(this).data('col');
                 delete numericFilters[colIndex];
+                $(this).parent().remove();
+                applyAllFilters();
+            });
+
+            $('.remove-date-filter').off('click').on('click', function () {
+                const colIndex = $(this).data('col');
+                delete dateFilters[colIndex];
                 $(this).parent().remove();
                 applyAllFilters();
             });
@@ -1751,8 +1839,65 @@ function showCol($name) {
             applyAllFilters();
         });
 
+        $('#applyDateFilter').on('click', function () {
+            const colIndex = $('#dateFilterModal').data('col-index');
+            const from = $('#dateFrom').val();
+            const to = $('#dateTo').val();
+
+            if (!from && !to) {
+                alert('Please select at least one date.');
+                return;
+            }
+
+            dateFilters[colIndex] = { from, to };
+            bootstrap.Modal.getInstance('#dateFilterModal').hide();
+            applyAllFilters();
+        });
+
         function resetDataTableFilters() {
             $.fn.dataTable.ext.search = $.fn.dataTable.ext.search.filter(f => !f._colFilter);
+        }
+
+        function parseTextToDate(value) {
+            if (!value) return NaN;
+            const raw = value.trim();
+            if (!raw) return NaN;
+
+            let parsed = Date.parse(raw);
+            if (!isNaN(parsed)) return parsed;
+
+            const match = raw.match(/^(\w+)\s+(\d{1,2}),\s*(\d{4})(?:\s+(\d{1,2}):(\d{2})(?::(\d{2}))?\s*(AM|PM)?)?$/i);
+            if (match) {
+                let [, month, day, year, hour, minute, second, ampm] = match;
+                hour = parseInt(hour || "0", 10);
+                minute = parseInt(minute || "0", 10);
+                second = parseInt(second || "0", 10);
+
+                if (ampm) {
+                    if (ampm.toUpperCase() === "PM" && hour < 12) hour += 12;
+                    if (ampm.toUpperCase() === "AM" && hour === 12) hour = 0;
+                }
+
+                const months = {
+                    january: 0, february: 1, march: 2, april: 3, may: 4, june: 5,
+                    july: 6, august: 7, september: 8, october: 9, november: 10, december: 11
+                };
+                const m = months[month.toLowerCase()];
+                if (m === undefined) return NaN;
+
+                return new Date(year, m, parseInt(day, 10), hour, minute, second).getTime();
+            }
+
+            const simple = raw.match(/^(\d{4})-(\d{2})-(\d{2})$/) || raw.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+            if (simple) {
+                let [ , a, b, c ] = simple;
+                if (a.length === 4) {
+                    return new Date(a, parseInt(b, 10) - 1, parseInt(c, 10)).getTime();
+                } else {
+                    return new Date(c, parseInt(a, 10) - 1, parseInt(b, 10)).getTime();
+                }
+            }
+            return NaN;
         }
 
         function applyAllFilters() {
@@ -1804,6 +1949,18 @@ function showCol($name) {
                             if (rule.val2 === null || num < rule.val1 || num > rule.val2) return false;
                             break;
                     }
+                }
+
+                for (const [colIndex, rule] of Object.entries(dateFilters)) {
+                    const idx = parseInt(colIndex);
+                    const node = table.cell(dataIndex, idx).node();
+                    const raw = $(node).attr('data-search') || $(node).text().trim();
+
+                    const cellDate = Date.parse(raw);
+                    if (isNaN(cellDate)) continue;
+
+                    if (rule.from && cellDate < Date.parse(rule.from)) return false;
+                    if (rule.to && cellDate > Date.parse(rule.to)) return false;
                 }
                 return true;
             }, { _colFilter: true }));
