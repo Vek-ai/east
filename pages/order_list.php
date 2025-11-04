@@ -1959,9 +1959,18 @@ function showCol($name) {
                     const cellDate = Date.parse(raw);
                     if (isNaN(cellDate)) continue;
 
-                    if (rule.from && cellDate < Date.parse(rule.from)) return false;
-                    if (rule.to && cellDate > Date.parse(rule.to)) return false;
+                    const fromDate = rule.from ? Date.parse(rule.from) : null;
+                    let toDate = rule.to ? Date.parse(rule.to) : null;
+                    if (toDate && !/\d{1,2}:\d{2}/.test(rule.to)) {
+                        const d = new Date(toDate);
+                        d.setHours(23, 59, 59, 999);
+                        toDate = d.getTime();
+                    }
+
+                    if (fromDate && cellDate < fromDate) return false;
+                    if (toDate && cellDate > toDate) return false;
                 }
+                
                 return true;
             }, { _colFilter: true }));
 
