@@ -1147,7 +1147,7 @@ if (isset($_POST['save_order'])) {
         'admin', '?page=approval_list'
     );
 
-    echo json_encode(['success' => true, 'message' => 'Order submitted for approval']);
+    echo json_encode(['success' => true, 'approval_id' => $approval_id, 'message' => 'Order submitted for approval']);
     $conn->close();
     exit;
 }

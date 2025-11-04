@@ -339,18 +339,11 @@
                 <button class="btn ripple btn-danger previous d-none" type="button" id="prev_page_order">
                     <i class="fe fe-hard-drive"></i> Previous
                 </button>
-                <a href="#" 
-                    class="btn btn-light" 
-                    style="color: #000 !important; background-color: #f8f9fa !important"
+                <a href="javascript:void(0)" 
+                    class="btn btn-warning text-dark" 
                     type="button" 
-                    id="print_order_category" target="_blank">
-                    <i class="fe fe-print"></i> Print Details
-                </a>
-                <a href="#" class="btn btn-warning" style="color: #000 !important;" type="button" id="print_order" target="_blank">
-                    <i class="fe fe-print"></i> Print Total
-                </a>
-                <a href="#" class="btn btn-info " type="button" id="print_deliver" target="_blank">
-                    <i class="fe fe-print"></i> Print Delivery
+                    id="print_order_category">
+                    <i class="fa fa-print"></i> Print
                 </a>
             </div>
         </div>
@@ -813,6 +806,71 @@
             </div>
         </div>
     </div>
+</div>
+
+<div class="modal fade custom-size" id="pdfModal" tabindex="-1" role="dialog" style="background-color: rgba(0, 0, 0, 0.5);">
+  <div class="modal-dialog modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Print/View Outputs</h5>
+        <button type="button" class="close" data-bs-dismiss="modal">
+          <span>&times;</span>
+        </button>
+      </div>
+        <div class="modal-body" style="overflow: auto;">
+            <iframe id="pdfFrame" src="" style="height: 70vh; width: 100%;" class="mb-3 border rounded"></iframe>
+
+            <div class="container-fluid border rounded p-3">
+                <div class="print-tabs">
+                    <ul class="nav nav-tabs justify-content-center mb-3" role="tablist">
+                        <li class="nav-item">
+                            <a class="nav-link active" data-bs-toggle="tab" href="#customerPrint" role="tab">
+                                Customer Print-out
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" data-bs-toggle="tab" href="#retailPrint" role="tab">
+                                Retail Print-out
+                            </a>
+                        </li>
+                    </ul>
+
+                    <div class="tab-content text-center">
+                        <div class="tab-pane fade show active" id="customerPrint" role="tabpanel">
+                            <div class="d-flex flex-wrap justify-content-center gap-2 p-2">
+                                <a id="print_base_customer" class="btn btn-warning btn-sm btn-show-pdf">Base Printout</a>
+                                <a id="print_perft_customer" class="btn btn-primary btn-sm btn-show-pdf">w/ Per Ft $</a>
+                                <a id="print_pereach_customer" class="btn btn-primary btn-sm btn-show-pdf">w/ Per Each $</a>
+                                <a id="print_all_customer" class="btn btn-primary btn-sm btn-show-pdf">w/ All $</a>
+                                <a id="print_summary_customer" class="btn btn-primary btn-sm btn-show-pdf">Summary Cost</a>
+                            </div>
+                        </div>
+
+                        <div class="tab-pane fade" id="retailPrint" role="tabpanel">
+                            <div class="d-flex flex-wrap justify-content-center gap-2 p-2">
+                                <a id="print_base_retail" class="btn btn-warning btn-sm btn-show-pdf">Base Printout</a>
+                                <a id="print_perft_retail" class="btn btn-primary btn-sm btn-show-pdf">w/ Per Ft $</a>
+                                <a id="print_pereach_retail" class="btn btn-primary btn-sm btn-show-pdf">w/ Per Each $</a>
+                                <a id="print_all_retail" class="btn btn-primary btn-sm btn-show-pdf">w/ All $</a>
+                                <a id="print_summary_retail" class="btn btn-primary btn-sm btn-show-pdf">Summary Cost</a>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
+
+                <div class="mt-3 d-flex flex-wrap justify-content-end gap-2">
+                    <button id="printBtn" class="btn btn-success">Print</button>
+                    <button id="downloadBtn" class="btn btn-primary">Download</button>
+                    <button class="btn btn-danger" data-bs-dismiss="modal">Cancel</button>
+                </div>
+            </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
 </div>
 
 <script src="cart/cart_script.php"></script>

@@ -196,7 +196,7 @@ function renderPanelCategory($pdf, $products, $conn) {
                 ['label' => 'In',            'width' => 15, 'align' => 'C'],
                 ['label' => 'Panel Type',    'width' => 15, 'align' => 'C'],
                 ['label' => 'Panel Style',   'width' => 15, 'align' => 'C'],
-                
+                ['label' => 'Linear Ft $',   'width' => 15, 'align' => 'C'],
             ];
 
             renderTableHeader($pdf, $subColumns);
@@ -232,6 +232,7 @@ function renderPanelCategory($pdf, $products, $conn) {
                     $row['inch_text'],
                     $row['panel_type'],
                     $row['panel_style'],
+                    '$ ' . number_format($product_unit_price, 2),
                     
                 ];
                 renderSubRow($pdf, $subColumns, $subRow);
@@ -343,7 +344,7 @@ function renderTrimCategory($pdf, $products, $conn) {
                 ['label' => 'In',            'width' => 15, 'align' => 'C'],
                 ['label' => '',    'width' => 15, 'align' => 'C'],
                 ['label' => '',   'width' => 15, 'align' => 'C'],
-                
+                ['label' => 'Per Ft $',   'width' => 15, 'align' => 'C'],
             ];
 
             renderTableHeader($pdf, $subColumns);
@@ -378,7 +379,9 @@ function renderTrimCategory($pdf, $products, $conn) {
                     $row['ft'] . '\'',
                     $row['inch_text'],
                     '',
-                    ''
+                    '',
+                    '$ ' . number_format($product_unit_price, 2),
+                    
                 ];
                 renderSubRow($pdf, $subColumns, $subRow);
             }
@@ -489,7 +492,7 @@ function renderScrewCategory($pdf, $products, $conn) {
                 ['label' => 'Type',            'width' => 15, 'align' => 'C'],
                 ['label' => 'Pack Size',    'width' => 15, 'align' => 'C'],
                 ['label' => '',   'width' => 15, 'align' => 'C'],
-                
+                ['label' => 'Per Screw $',   'width' => 15, 'align' => 'C'],
             ];
 
             renderTableHeader($pdf, $subColumns);
@@ -525,6 +528,7 @@ function renderScrewCategory($pdf, $products, $conn) {
                     '',
                     $row['ft'],
                     '',
+                    '$ ' . number_format($product_unit_price, 2),
                     
                 ];
                 renderSubRow($pdf, $subColumns, $subRow);
@@ -636,7 +640,7 @@ function renderLumberCategory($pdf, $products, $conn) {
                 ['label' => 'Pack Size',            'width' => 15, 'align' => 'C'],
                 ['label' => '',    'width' => 15, 'align' => 'C'],
                 ['label' => '',   'width' => 15, 'align' => 'C'],
-                
+                ['label' => 'Per Each $',   'width' => 15, 'align' => 'C'],
             ];
 
             renderTableHeader($pdf, $subColumns);
@@ -669,7 +673,10 @@ function renderLumberCategory($pdf, $products, $conn) {
                     $row_text,
                     $row['qty'],
                     $row['ft'],
-                    
+                    '',
+                    '',
+                    '',
+                    '$ ' . number_format($product_unit_price, 2),
                     
                 ];
                 renderSubRow($pdf, $subColumns, $subRow);
@@ -781,7 +788,7 @@ function renderDefaultCategory($pdf, $products, $conn) {
                 ['label' => 'Pack Size',            'width' => 15, 'align' => 'C'],
                 ['label' => '',    'width' => 15, 'align' => 'C'],
                 ['label' => '',   'width' => 15, 'align' => 'C'],
-                
+                ['label' => 'Per Each $',   'width' => 15, 'align' => 'C'],
             ];
 
             renderTableHeader($pdf, $subColumns);
@@ -815,7 +822,9 @@ function renderDefaultCategory($pdf, $products, $conn) {
                     $row['qty'],
                     $row['ft'],
                     '',
-                    
+                    '',
+                    '',
+                    '$ ' . number_format($product_unit_price, 2),
                     
                 ];
                 renderSubRow($pdf, $subColumns, $subRow);
@@ -883,7 +892,7 @@ function renderSubRow($pdf, $columns, $row, $bold = false) {
 }
 
 class PDF extends FPDF {
-    public $orderid;
+    public $approval_id;
     public $order_date;
     public $delivery_method;
     public $scheduled_date;
@@ -896,7 +905,7 @@ class PDF extends FPDF {
         $col2_x = 140;
 
         $this->SetXY($col2_x - 10, 6);
-        $this->MultiCell(95, 5, "Invoice #: " . $this->orderid, 0, 'L');
+        $this->MultiCell(95, 5, "Invoice #: " . $this->approval_id, 0, 'L');
 
         $this->SetXY($col2_x - 10, $this->GetY());
         $this->Cell(95, 5, "Order Date: " . $this->order_date, 0, 1, 'L');
@@ -1027,18 +1036,18 @@ $screw_id = 16;
 $panel_id = 3;
 $trim_id = 4;
 
-$orderid = $_REQUEST['id'];
+$approval_id = $_REQUEST['id'];
 $pricing_id = $_REQUEST['pricing_id'] ?? '';
 $current_user_id = $_SESSION['userid'];
 
-$query = "SELECT * FROM orders WHERE orderid = '$orderid'";
+$query = "SELECT * FROM approval WHERE approval_id = '$approval_id'";
 $result = mysqli_query($conn, $query);
 
 if (mysqli_num_rows($result) > 0) {
     while($row_orders = mysqli_fetch_assoc($result)){
         $delivery_price = floatval($row_orders['delivery_amt']);
         $discount = floatval($row_orders['discount_percent']) / 100;
-        $orderid = $row_orders['orderid'];
+        $approval_id = $row_orders['approval_id'];
         $customer_id = $row_orders['customerid'];
         $customerDetails = getCustomerDetails($customer_id);
         $tax = floatval(getCustomerTax($customer_id)) / 100;
@@ -1056,7 +1065,7 @@ if (mysqli_num_rows($result) > 0) {
             $delivery_method = 'Pickup';
         }
         
-        $pdf->orderid = $orderid;
+        $pdf->approval_id = $approval_id;
         $pdf->order_date = $order_date;
         $pdf->delivery_method = $delivery_method;
         $pdf->scheduled_date = $scheduled_date;
@@ -1135,9 +1144,9 @@ if (mysqli_num_rows($result) > 0) {
 
         $query_product = "
             SELECT p.product_category, op.* 
-            FROM order_product AS op
+            FROM approval_product AS op
             LEFT JOIN product AS p ON p.product_id = op.productid
-            WHERE orderid = '$orderid'
+            WHERE approval_id = '$approval_id'
             ORDER BY p.product_category
         ";
         $result_product = mysqli_query($conn, $query_product);
