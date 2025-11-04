@@ -1001,6 +1001,18 @@ if (isset($_POST['save_order'])) {
     $shipping_company = intval($_POST['shipping_company'] ?? 0);
     $tracking_number = mysqli_real_escape_string($conn, $_POST['tracking_number'] ?? '');
     $pickup_name = mysqli_real_escape_string($conn, $_POST['pickup_name'] ?? '');
+
+    $pay_pickup = floatval($_POST['pay_pickup'] ?? 0);
+    $pay_delivery = floatval($_POST['pay_delivery'] ?? 0);
+    $pay_net30 = floatval($_POST['pay_net30'] ?? 0);
+
+    $pay_types = [];
+    if ($pay_pickup > 0) $pay_types[] = 'pickup';
+    if ($pay_delivery > 0) $pay_types[] = 'delivery';
+    if ($pay_net30 > 0)  $pay_types[] = 'net30';
+
+    $pay_type_label = implode(',', $pay_types);
+
     $station_id = intval($_SESSION['station_id'] ?? 0);
 
     $estimateid = intval($_SESSION['estimateid']);
@@ -1086,7 +1098,7 @@ if (isset($_POST['save_order'])) {
             3, '$customerid', '$customerid', '$job_name', '$job_po',
             '$deliver_address', '$deliver_city', '$deliver_state', '$deliver_zip',
             '$delivery_amt', '$deliver_method', '$deliver_fname', '$deliver_lname',
-            '$pay_type', '$tax_status', '$tax_exempt_number', '$truck', '$contractor_id',
+            '$pay_type_label', '$tax_status', '$tax_exempt_number', '$truck', '$contractor_id',
             '$station_id', 2, '$shipping_company', '$tracking_number', '$pickup_name'
         )
     ";

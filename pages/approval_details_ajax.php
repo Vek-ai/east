@@ -194,6 +194,8 @@ if (isset($_POST['chng_status'])) {
                 $approval_data = $approval_result->fetch_assoc();
 
                 if ($approval_data) {
+                    $pay_type = $conn->real_escape_string($approval_data['pay_type'] ?? '');
+
                     $fields = [
                         'status' => 1,
                         'estimateid' => 0,
@@ -223,7 +225,7 @@ if (isset($_POST['chng_status'])) {
                         'shipping_company' => 0,
                         'tracking_number' => 'NULL',
                         'pickup_name' => 'NULL',
-                        'pay_type' => 'NULL'
+                        'pay_type' => "'$pay_type'"
                     ];
 
                     $columns = implode(', ', array_keys($fields));
@@ -280,20 +282,20 @@ if (isset($_POST['chng_status'])) {
                         $cashierid = intval($_SESSION['userid']);
                         $actorId = $cashierid;
                         $actor_name = get_staff_name($actorId);
-                        $actionType = 'approval_granted';
-                        $targetId = $approval_id;
-                        $targetType = "Request for Approval Granted";
-                        $message = "Approval #$targetId requested by $actor_name";
-                        $url = '?page=approved_list';
-                        $recipientIds = getAdminIDs();
-                        createNotification($actorId, $actionType, $targetId, $targetType, $message, 'cashier', $url);
+                        createNotification(
+                            $actorId,
+                            'approval_granted',
+                            $approval_id,
+                            'Request for Approval Granted',
+                            "Approval #$approval_id requested by $actor_name",
+                            'cashier',
+                            '?page=approved_list'
+                        );
 
                         $job_id = getJobID($approval_data['job_name'], $approval_data['customerid']);
-                        $created_by = 0;
                         $amount = floatval($approval_data['discounted_price']);
                         $job_id_value = $job_id ? "'$job_id'" : '0';
                         $po_number = $conn->real_escape_string($approval_data['job_po']);
-                        $pay_type = $approval_data['pay_type'];
                         $customer_id = intval($approval_data['customerid']);
 
                         $ledger_sql = "
@@ -309,7 +311,7 @@ if (isset($_POST['chng_status'])) {
                                 '',
                                 'Approval converted to order',
                                 NULL,
-                                $created_by,
+                                0,
                                 NOW(),
                                 '$pay_type'
                             )
