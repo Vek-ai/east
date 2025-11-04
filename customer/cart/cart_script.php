@@ -3096,6 +3096,7 @@ $(document).ready(function() {
 
     $(document).on('click', '#save_order', function(event) {
         event.preventDefault();
+
         var discount = $('#order_discount').val();
         var delivery_amt = $('#delivery_amt').val();
         var cash_amt = $('#order_payable_amt').val();
@@ -3121,10 +3122,23 @@ $(document).ready(function() {
         var scheduled_date = $('#scheduled-date').val();
         var scheduled_time = $('#scheduled-time').val();
 
-        var payment_method = $('[name="payMethod"]:checked').val();
         var deliver_method = $('input[name="order_delivery_method"]:checked').val();
 
-        if(payment_method){
+        var pay_cash = $('#payCash').is(':checked') ? parseFloat($('#cashAmount').val()) || 0 : 0;
+        var pay_card = $('#payCard').is(':checked') ? parseFloat($('#cardAmount').val()) || 0 : 0;
+        var pay_check = $('#payCheck').is(':checked') ? parseFloat($('#checkAmount').val()) || 0 : 0;
+        var pay_pickup = $('#payPickup').is(':checked') ? parseFloat($('#pickupAmount').val()) || 0 : 0;
+        var pay_delivery = $('#payDelivery').is(':checked') ? parseFloat($('#deliveryAmount').val()) || 0 : 0;
+        var pay_net30 = $('#payNet30').is(':checked') ? parseFloat($('#net30Amount').val()) || 0 : 0;
+
+        if (
+            pay_pickup <= 0 &&
+            pay_delivery <= 0 &&
+            pay_net30 <= 0
+        ) {
+            alert("Please enter at least one payment amount!");
+            return;
+        }else{
             $.ajax({
                 url: 'pages/cashier_ajax.php',
                 type: 'POST',
@@ -3149,17 +3163,24 @@ $(document).ready(function() {
                     tax_exempt_number: tax_exempt_number,
                     applyStoreCredit: applyStoreCredit,
                     applyJobDeposit: applyJobDeposit,
-                    payment_method: payment_method,
                     truck: truck,
                     contractor_id: contractor_id,
                     scheduled_date: scheduled_date,
                     scheduled_time: scheduled_time,
+
+                    pay_cash: pay_cash,
+                    pay_card: pay_card,
+                    pay_check: pay_check,
+                    pay_pickup: pay_pickup,
+                    pay_delivery: pay_delivery,
+                    pay_net30: pay_net30,
+
                     save_order: 'save_order'
                 },
                 success: function(response) {
                     console.log(response);
                     if (response.success) {
-                        alert("Order submitted for approval");
+                        alert("Order successfully saved.");
 
                         orderIdSaved = response.order_id;
                         customerIdSaved = response.customer_id;
@@ -3177,10 +3198,7 @@ $(document).ready(function() {
                     console.log('Error: ' + textStatus + ' - ' + errorThrown);
                 }
             });
-        }else{
-            alert("Please select payment method!");
         }
-        
     });
 
     $(document).on('click', '#submitApprovalBtn', function(event) {
