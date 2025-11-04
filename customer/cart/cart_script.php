@@ -3124,12 +3124,9 @@ $(document).ready(function() {
 
         var deliver_method = $('input[name="order_delivery_method"]:checked').val();
 
-        var pay_cash = $('#payCash').is(':checked') ? parseFloat($('#cashAmount').val()) || 0 : 0;
-        var pay_card = $('#payCard').is(':checked') ? parseFloat($('#cardAmount').val()) || 0 : 0;
-        var pay_check = $('#payCheck').is(':checked') ? parseFloat($('#checkAmount').val()) || 0 : 0;
-        var pay_pickup = $('#payPickup').is(':checked') ? parseFloat($('#pickupAmount').val()) || 0 : 0;
-        var pay_delivery = $('#payDelivery').is(':checked') ? parseFloat($('#deliveryAmount').val()) || 0 : 0;
-        var pay_net30 = $('#payNet30').is(':checked') ? parseFloat($('#net30Amount').val()) || 0 : 0;
+        var pay_pickup = $('#payPickup').is(':checked') ? 1 : 0;
+        var pay_delivery = $('#payDelivery').is(':checked') ? 1 : 0;
+        var pay_net30 = $('#payNet30').is(':checked') ? 1 : 0;
 
         if (
             pay_pickup <= 0 &&
@@ -3168,9 +3165,6 @@ $(document).ready(function() {
                     scheduled_date: scheduled_date,
                     scheduled_time: scheduled_time,
 
-                    pay_cash: pay_cash,
-                    pay_card: pay_card,
-                    pay_check: pay_check,
                     pay_pickup: pay_pickup,
                     pay_delivery: pay_delivery,
                     pay_net30: pay_net30,
