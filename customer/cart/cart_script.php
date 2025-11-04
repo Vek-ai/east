@@ -3118,9 +3118,9 @@ $(document).ready(function() {
 
         var deliver_method = $('input[name="order_delivery_method"]:checked').val();
 
-        var pay_pickup = $('#payPickup').is(':checked') ? 1 : 0;
-        var pay_delivery = $('#payDelivery').is(':checked') ? 1 : 0;
-        var pay_net30 = $('#payNet30').is(':checked') ? 1 : 0;
+        var pay_pickup = $('#payPickup').is(':checked') ? 'pickup' : '';
+        var pay_delivery = $('#payDelivery').is(':checked') ? 'delivery' : '';
+        var pay_net30 = $('#payNet30').is(':checked') ? 'net30' : '';
 
         if (
             pay_pickup <= 0 &&

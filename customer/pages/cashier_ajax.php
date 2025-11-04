@@ -1002,14 +1002,11 @@ if (isset($_POST['save_order'])) {
     $tracking_number = mysqli_real_escape_string($conn, $_POST['tracking_number'] ?? '');
     $pickup_name = mysqli_real_escape_string($conn, $_POST['pickup_name'] ?? '');
 
-    $pay_pickup = floatval($_POST['pay_pickup'] ?? 0);
-    $pay_delivery = floatval($_POST['pay_delivery'] ?? 0);
-    $pay_net30 = floatval($_POST['pay_net30'] ?? 0);
-
     $pay_types = [];
-    if ($pay_pickup > 0) $pay_types[] = 'pickup';
-    if ($pay_delivery > 0) $pay_types[] = 'delivery';
-    if ($pay_net30 > 0)  $pay_types[] = 'net30';
+    if (!empty($_POST['pay_pickup'])) $pay_types[] = $_POST['pay_pickup'];
+    if (!empty($_POST['pay_delivery'])) $pay_types[] = $_POST['pay_delivery'];
+    if (!empty($_POST['pay_net30'])) $pay_types[] = $_POST['pay_net30'];
+    $pay_type_label = implode(',', $pay_types);
 
     $pay_type_label = implode(',', $pay_types);
 
