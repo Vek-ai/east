@@ -23,6 +23,144 @@ if(isset($_REQUEST['action'])) {
             $row = mysqli_fetch_assoc($result);
         }
         ?>
+
+        <div class="card shadow-sm rounded-3 mb-3">
+            <div class="card-header bg-light border-bottom">
+                <h5 class="mb-0 fw-bold">Product Identifier</h5>
+            </div>
+            <div class="card-body border rounded p-3">
+                <div class="row">
+                    <div class="col-md-4">
+                        <label class="form-label">Product Category</label>
+                        <div class="mb-3">
+                        <select id="product_category" class="form-control" name="product_category">
+                            <option value="" >Select One...</option>
+                            <?php
+                            $query_roles = "SELECT * FROM product_category WHERE hidden = '0' AND status = '1' ORDER BY `product_category` ASC";
+                            $result_roles = mysqli_query($conn, $query_roles);            
+                            while ($row_product_category = mysqli_fetch_array($result_roles)) {
+                            ?>
+                                <option value="<?= $row_product_category['product_category_id'] ?>" 
+                                        data-category="<?= $row_product_category['product_category'] ?>"
+                                        data-filename="<?= $row_product_category['product_filename'] ?>"
+                                >
+                                            <?= $row_product_category['product_category'] ?>
+                                </option>
+                            <?php   
+                            }
+                            ?>
+                        </select>
+                        </div>
+                    </div>
+
+                    <?php $selected_product_type = (array) json_decode($row['product_type'] ?? '[]', true); ?>
+                    <div class="col-md-4">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <label class="form-label">Product Type</label>
+                            <a href="?page=product_type" target="_blank" class="text-decoration-none">Edit</a>
+                        </div>
+                        <div class="mb-3">
+                            <select id="product_type" class="form-control add-category calculate select2" name="product_type[]" multiple>
+                                <option value="" >Select Type...</option>
+                                <?php
+                                $query_roles = "SELECT * FROM product_type WHERE hidden = '0' AND status = '1' ORDER BY `product_type` ASC";
+                                $result_roles = mysqli_query($conn, $query_roles);            
+                                while ($row_product_type = mysqli_fetch_array($result_roles)) {
+                                    $selected = in_array($row_product_type['product_type_id'], $selected_product_type) ? 'selected' : '';
+                                ?>
+                                    <option value="<?= $row_product_type['product_type_id'] ?>" data-category="<?= $row_product_type['product_category'] ?>" <?= $selected ?>><?= $row_product_type['product_type'] ?></option>
+                                <?php   
+                                }
+                                ?>
+                            </select>
+                        </div>
+                    </div>
+
+                    <?php $selected_profile = (array) json_decode($row['profile'] ?? '[]', true); ?>
+                    <div class="col-md-4">
+                        <div class="mb-3">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <label class="form-label">Product Profile</label>
+                                <a href="?page=profile_type" target="_blank" class="text-decoration-none">Edit</a>
+                            </div>
+                            <select id="profile" class="form-control add-category select2" name="profile[]" multiple>
+                                <option value="" >Select Profile...</option>
+                                <?php
+                                $query_profile_type = "SELECT * FROM profile_type WHERE hidden = '0' AND status = '1'";
+                                $result_profile_type = mysqli_query($conn, $query_profile_type);            
+                                while ($row_profile_type = mysqli_fetch_array($result_profile_type)) {
+                                    $selected = in_array($row_profile_type['profile_type_id'], $selected_profile) ? 'selected' : '';
+                                                ?>
+                                    <option value="<?= $row_profile_type['profile_type_id'] ?>" data-category="<?= $row_profile_type['product_category'] ?>"  <?= $selected ?>><?= $row_profile_type['profile_type'] ?></option>
+                                <?php   
+                                }
+                                ?>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <?php $selected_grade = (array) json_decode($row['grade'] ?? '[]', true); ?>
+                    <div class="col-md-4">
+                        <div class="mb-3">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <label class="form-label">Product Grade</label>
+                                <a href="?page=product_grade" target="_blank" class="text-decoration-none">Edit</a>
+                            </div>
+                            <select id="grade" class="form-control calculate add-category select2" name="grade[]" multiple>
+                                <option value="" >Select Grade...</option>
+                                <?php
+                                $query_grade = "SELECT * FROM product_grade WHERE hidden = '0' AND status = '1' ORDER BY `product_grade` ASC";
+                                $result_grade = mysqli_query($conn, $query_grade);            
+                                while ($row_grade = mysqli_fetch_array($result_grade)) {
+                                    $selected = in_array($row_grade['product_grade_id'], $selected_grade) ? 'selected' : '';
+                                ?>
+                                    <option value="<?= $row_grade['product_grade_id'] ?>" data-category="<?= $row_grade['product_category'] ?>" data-multiplier="<?= $row_grade['multiplier'] ?>" <?= $selected ?>><?= $row_grade['product_grade'] ?></option>
+                                <?php   
+                                }
+                                ?>
+                            </select>
+                        </div>
+                    </div>
+
+                    <?php $selected_gauge = (array) json_decode($row['gauge'] ?? '[]', true); ?>
+                    <div class="col-md-4">
+                        <div class="mb-3">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <label class="form-label">Product Gauge</label>
+                                <a href="?page=product_gauge" target="_blank" class="text-decoration-none">Edit</a>
+                            </div>
+                            <select id="gauge" class="form-control calculate select2" name="gauge[]" multiple>
+                                <option value="" >Select Gauge...</option>
+                                <?php
+                                $query_gauge = "SELECT * FROM product_gauge WHERE hidden = '0' AND status = '1' ORDER BY `product_gauge` ASC";
+                                $result_gauge = mysqli_query($conn, $query_gauge);
+
+                                $unique_gauges = [];
+
+                                while ($row_gauge = mysqli_fetch_array($result_gauge)) {
+                                    if (in_array($row_gauge['product_gauge_id'], $unique_gauges)) {
+                                        continue;
+                                    }
+
+                                    $unique_gauges[] = $row_gauge['product_gauge'];
+                                    
+                                    $selected = in_array($row_gauge['product_gauge_id'], $selected_gauge) ? 'selected' : '';
+                                    ?>
+                                    <option value="<?= $row_gauge['product_gauge_id'] ?>" 
+                                            data-multiplier="<?= $row_gauge['multiplier'] ?>" 
+                                            data-abbrev="<?= $row_gauge['gauge_abbreviations'] ?>" 
+                                            <?= $selected ?>>
+                                        <?= $row_gauge['product_gauge'] ?>
+                                    </option>
+                                    <?php
+                                }
+                                ?>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
         
         <div class="card shadow-sm rounded-3 mb-3">
             <div class="card-header bg-light border-bottom">
@@ -114,32 +252,6 @@ if(isset($_REQUEST['action'])) {
                     <div class="col-md-4"></div>
                     <div class="col-md-4">
                         <div class="mb-3">
-                            <div class="d-flex justify-content-between align-items-center">
-                                <label class="form-label">Warranty Type</label>
-                                <a href="?page=product_warranty_type" target="_blank" class="text-decoration-none">Edit</a>
-                            </div>
-                            <?php
-                            $warranty_selected = (array) json_decode($row['warranty_type'] ?? '[]', true);
-                            ?>
-                            <select id="warranty_type" class="form-control select2" name="warranty_type[]" multiple>
-                                <option value="">Select Warranty Type...</option>
-                                <?php
-                                $query_product_warranty_type = "SELECT * FROM product_warranty_type WHERE hidden = '0' AND status = '1'";
-                                $result_product_warranty_type = mysqli_query($conn, $query_product_warranty_type);            
-                                while ($row_product_warranty_type = mysqli_fetch_array($result_product_warranty_type)) {
-                                    $selected = in_array($row_product_warranty_type['product_warranty_type_id'], $warranty_selected) ? 'selected' : '';
-                                ?>
-                                    <option value="<?= $row_product_warranty_type['product_warranty_type_id'] ?>" <?= $selected ?>>
-                                        <?= $row_product_warranty_type['product_warranty_type'] ?>
-                                    </option>
-                                <?php   
-                                }
-                                ?>
-                            </select>
-                        </div>
-                    </div>
-                    <div class="col-md-4">
-                        <div class="mb-3">
                         <label class="form-label">Manufactured or Purchased</label>
                         <select id="product_origin" class="form-control" name="product_origin">
                             <option value="" <?= empty($row['product_origin']) ? 'selected' : '' ?>>Select One...</option>
@@ -159,7 +271,7 @@ if(isset($_REQUEST['action'])) {
                     </div>
                     <div class="col-md-4">
                         <div class="mb-3">
-                            <label class="form-label">Weight</label>
+                            <label class="form-label">Approx Weight per Ft</label>
                             <input type="number" step="0.001" id="weight" name="weight" class="form-control" value="<?= $row['weight']?>" />
                         </div>
                     </div>
@@ -232,11 +344,6 @@ if(isset($_REQUEST['action'])) {
             </div>
             <div class="card-body border rounded p-3">
                 <div class="row">
-                    <div class="col-md-4 text-center mb-3">
-                        <label for="sold_by_feet" class="form-label d-block">Sold by Linear feet</label>
-                        <input type="checkbox" class="form-check-input" id="sold_by_feet" name="sold_by_feet" value="1"
-                            <?= $row['sold_by_feet'] == 1 ? 'checked' : '' ?>>
-                    </div>
                     <?php
                     $panel_type_selected = (array) json_decode($row['panel_type'] ?? '[]', true);
                     ?>
@@ -265,152 +372,20 @@ if(isset($_REQUEST['action'])) {
                             </select>
                         </div>
                     </div>
+                    <div class="col-md-4"></div>
 
-                    <div class="col-md-4 text-center mb-3">
-                        <label for="standing_seam" class="form-label d-block">Standing Seam Panel</label>
-                        <input type="radio" class="form-check-input" id="standing_seam" name="standing_seam" value="standing_seam"
-                            <?= $row['standing_seam'] == 1 ? 'checked' : '' ?>>
-                    </div>
-                    <div class="col-md-4 text-center mb-3">
-                        <label for="board_batten" class="form-label d-block">Board &amp; Batten Panel</label>
-                        <input type="radio" class="form-check-input" id="board_batten" name="board_batten" value="board_batten"
-                            <?= $row['board_batten'] == 1 ? 'checked' : '' ?>>
-                    </div>
-                    <?php 
-                    $unit_price = floatval($row['unit_price']) ?? 0;
-                    ?>
                     <div class="col-md-4">
+                        <?php $unit_price = floatval($row['unit_price']) ?? 0;?>
                         <div class="mb-3">
                             <label class="form-label">Retail Price</label>
                             <input type="text" id="retail" name="unit_price" class="form-control" value="<?=number_format($unit_price ?? 0,3)?>"/>
                         </div>
                     </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="card shadow-sm rounded-3 mb-3">
-            <div class="card-header bg-light border-bottom">
-                <h5 class="mb-0 fw-bold">Inventory Tracking</h5>
-            </div>
-            <div class="card-body border rounded p-3">
-                <div class="row">
                     <div class="col-md-4">
+                        <?php $floor_price = floatval($row['floor_price']) ?? 0; ?>
                         <div class="mb-3">
-                            <label class="form-label">InvID</label>
-                            <input type="text" id="inv_id" name="inv_id" class="form-control" value="<?= $row['inv_id']?>" />
-                        </div>
-                    </div>
-
-                    <div class="col-md-4">
-                        <div class="mb-3">
-                            <label class="form-label">Coil/Part No.</label>
-                            <input type="text" id="coil_part_no" name="coil_part_no" class="form-control" value="<?= $row['coil_part_no']?>" />
-                        </div>
-                    </div>
-
-                    <div class="col-md-4">
-                        <div class="mb-3">
-                            <label class="form-label">Product SKU</label>
-                            <input type="text" id="product_sku" name="product_sku" class="form-control" value="<?= $row['product_sku']?>" />
-                        </div>
-                    </div>
-
-                    <div class="col-md-4">
-                        <div class="mb-3">
-                        <label class="form-label">UPC</label>
-                        <input type="text" id="upc" name="upc" class="form-control" value="<?= !empty($row['upc']) ? $row['upc'] : generateRandomUPC(); ?>" />
-                        </div>
-                    </div>
-
-                    <div class="col-md-4">
-                        <div class="mb-3">
-                        <label class="form-label">Reorder Level</label>
-                            <input type="number" id="reorder_level" name="reorder_level" class="form-control" step="0.01" value="<?= $row['reorder_level']?>" />
-                        </div>
-                    </div>
-
-                    <div class="col-md-4">
-                        <div class="mb-3 d-none">
-                            <label class="form-label">Usage</label>
-                            <select id="product_usage" class="form-control" name="product_usage">
-                                <option value="" >Select Product Usage...</option>
-                                <?php
-                                $query_usage = "SELECT * FROM component_usage";
-                                $result_usage = mysqli_query($conn, $query_usage);            
-                                while ($row_usage = mysqli_fetch_array($result_usage)) {
-                                    $selected = ($row['product_usage'] == $row_usage['usageid']) ? 'selected' : '';
-                                ?>
-                                    <option value="<?= $row_usage['usageid'] ?>" <?= $selected ?>><?= $row_usage['usage_name'] ?></option>
-                                <?php   
-                                }
-                                ?>
-                            </select>
-                        </div>
-                    </div>
-
-                    <div class="col-md-4 screw-fields">
-                        <div class="d-flex justify-content-between align-items-center">
-                            <label class="form-label">Supplier</label>
-                            <a href="?page=product_supplier" target="_blank" class="text-decoration-none">Edit</a>
-                        </div>
-                        <div class="mb-3">
-                            <?php
-                            $supplier_selected = (array) json_decode($row['supplier_id'] ?? '[]', true);
-                            ?>
-                            <select id="supplier_id" class="form-control select2 inventory_supplier" name="supplier_id[]" multiple>
-                                <option value="">Select Supplier...</option>
-                                <optgroup label="Supplier">
-                                    <?php
-                                    $query_supplier = "SELECT * FROM supplier WHERE status = 1 ORDER BY `supplier_name` ASC";
-                                    $result_supplier = mysqli_query($conn, $query_supplier);            
-                                    while ($row_supplier = mysqli_fetch_array($result_supplier)) {
-                                        $selected = in_array($row_supplier['supplier_id'], $supplier_selected) ? 'selected' : '';
-                                    ?>
-                                        <option value="<?= $row_supplier['supplier_id'] ?>" <?= $selected ?>><?= $row_supplier['supplier_name'] ?></option>
-                                    <?php   
-                                    }
-                                    ?>
-                                </optgroup>
-                            </select>
-                        </div>
-                    </div>
-
-                </div>
-            </div>
-        </div>
-
-        <div class="card shadow-sm rounded-3 mb-3">
-            <div class="card-header bg-light border-bottom">
-                <h5 class="mb-0 fw-bold">Correlated Products</h5>
-            </div>
-            <div class="card-body border rounded p-3">
-                <div class="row">
-                    <div class="col-md-12">
-                        <div class="mb-3">
-                            <select id="correlatedProducts" name="correlatedProducts[]" class="select2 form-control" multiple="multiple">
-                                <optgroup label="Select Correlated Products">
-                                    <?php
-                                    $correlated_product_ids = [];
-                                    $product_id = mysqli_real_escape_string($conn, $row['product_id']);
-                                    $query_correlated = "SELECT correlated_id FROM correlated_product WHERE main_correlated_product_id = '$product_id'";
-                                    $result_correlated = mysqli_query($conn, $query_correlated);
-                                    
-                                    while ($row_correlated = mysqli_fetch_assoc($result_correlated)) {
-                                        $correlated_product_ids[] = $row_correlated['correlated_id'];
-                                    }
-                                    
-                                    $query_products = "SELECT * FROM product";
-                                    $result_products = mysqli_query($conn, $query_products);            
-                                    while ($row_products = mysqli_fetch_array($result_products)) {
-                                        $selected = in_array($row_products['product_id'], $correlated_product_ids) ? 'selected' : '';
-                                    ?>
-                                        <option value="<?= $row_products['product_id'] ?>" <?= $selected ?> ><?= $row_products['description'] ?></option>
-                                    <?php   
-                                    }
-                                    ?>
-                                </optgroup>
-                            </select>
+                            <label class="form-label">Floor Price per Ft</label>
+                            <input type="text" id="retail" name="floor_price" class="form-control" value="<?=number_format($floor_price ?? 0,3)?>"/>
                         </div>
                     </div>
                 </div>

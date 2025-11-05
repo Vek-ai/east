@@ -24,10 +24,241 @@ if(isset($_REQUEST['action'])) {
         }
         ?>
         
-        
-        <!--COMMON FIELDS-->
-        <?php include "add_product_common_fields.php"; ?>
-        <!--END COMMON FIELDS-->
+        <div class="card shadow-sm rounded-3 mb-3">
+            <div class="card-header bg-light border-bottom">
+                <h5 class="mb-0 fw-bold">Product Identifier</h5>
+            </div>
+            <div class="card-body border rounded p-3">
+                <div class="row">
+                    <div class="col-md-4">
+                        <label class="form-label">Product Category</label>
+                        <div class="mb-3">
+                        <select id="product_category" class="form-control" name="product_category">
+                            <option value="" >Select One...</option>
+                            <?php
+                            $query_roles = "SELECT * FROM product_category WHERE hidden = '0' AND status = '1' ORDER BY `product_category` ASC";
+                            $result_roles = mysqli_query($conn, $query_roles);            
+                            while ($row_product_category = mysqli_fetch_array($result_roles)) {
+                            ?>
+                                <option value="<?= $row_product_category['product_category_id'] ?>" 
+                                        data-category="<?= $row_product_category['product_category'] ?>"
+                                        data-filename="<?= $row_product_category['product_filename'] ?>"
+                                >
+                                            <?= $row_product_category['product_category'] ?>
+                                </option>
+                            <?php   
+                            }
+                            ?>
+                        </select>
+                        </div>
+                    </div>
+
+                    <?php $selected_product_type = (array) json_decode($row['product_type'] ?? '[]', true); ?>
+                    <div class="col-md-4">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <label class="form-label">Product Type</label>
+                            <a href="?page=product_type" target="_blank" class="text-decoration-none">Edit</a>
+                        </div>
+                        <div class="mb-3">
+                            <select id="product_type" class="form-control add-category calculate select2" name="product_type[]" multiple>
+                                <option value="" >Select Type...</option>
+                                <?php
+                                $query_roles = "SELECT * FROM product_type WHERE hidden = '0' AND status = '1' ORDER BY `product_type` ASC";
+                                $result_roles = mysqli_query($conn, $query_roles);            
+                                while ($row_product_type = mysqli_fetch_array($result_roles)) {
+                                    $selected = in_array($row_product_type['product_type_id'], $selected_product_type) ? 'selected' : '';
+                                ?>
+                                    <option value="<?= $row_product_type['product_type_id'] ?>" data-category="<?= $row_product_type['product_category'] ?>" <?= $selected ?>><?= $row_product_type['product_type'] ?></option>
+                                <?php   
+                                }
+                                ?>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <?php $selected_grade = (array) json_decode($row['grade'] ?? '[]', true); ?>
+                    <div class="col-md-4">
+                        <div class="mb-3">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <label class="form-label">Product Grade</label>
+                                <a href="?page=product_grade" target="_blank" class="text-decoration-none">Edit</a>
+                            </div>
+                            <select id="grade" class="form-control calculate add-category select2" name="grade[]" multiple>
+                                <option value="" >Select Grade...</option>
+                                <?php
+                                $query_grade = "SELECT * FROM product_grade WHERE hidden = '0' AND status = '1' ORDER BY `product_grade` ASC";
+                                $result_grade = mysqli_query($conn, $query_grade);            
+                                while ($row_grade = mysqli_fetch_array($result_grade)) {
+                                    $selected = in_array($row_grade['product_grade_id'], $selected_grade) ? 'selected' : '';
+                                ?>
+                                    <option value="<?= $row_grade['product_grade_id'] ?>" data-category="<?= $row_grade['product_category'] ?>" data-multiplier="<?= $row_grade['multiplier'] ?>" <?= $selected ?>><?= $row_grade['product_grade'] ?></option>
+                                <?php   
+                                }
+                                ?>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card shadow-sm rounded-3 mb-3">
+            <div class="card-header bg-light border-bottom">
+                <h5 class="mb-0 fw-bold">Product Information</h5>
+            </div>
+            <div class="card-body border rounded p-3">
+                <div class="row">
+                    <div class="col-md-8">
+                        <div class="mb-3">
+                            <label class="form-label">Product Description</label>
+                            <input type="text" id="product_item" name="product_item" class="form-control" value="<?= $row['product_item']?>" />
+                        </div>
+                    </div>
+                    <div class="col-md-4"></div>
+                    <div class="col-md-4">
+                        <div class="mb-3">
+                            <label class="form-label">Unit of Measure</label>
+                            <select id="unit_of_measure" class="form-control" name="unit_of_measure">
+                                <option value="ft" <?= $row['unit_of_measure'] == 'ft' ? 'selected' : '' ?>>Ft</option>
+                                <option value="each" <?= empty($row['unit_of_measure']) || $row['unit_of_measure'] == 'each' ? 'selected' : '' ?>>Each</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card shadow-sm rounded-3 mb-3">
+            <div class="card-header bg-light border-bottom">
+                <h5 class="mb-0 fw-bold">Product Pricing</h5>
+            </div>
+            <div class="card-body border rounded p-3">
+                <div class="row">
+                    <div class="col-md-4">
+                        <?php $unit_price = floatval($row['unit_price']) ?? 0; ?>
+                        <div class="mb-3">
+                            <label class="form-label">Retail Price</label>
+                            <input type="text" id="retail" name="unit_price" class="form-control" value="<?=number_format($unit_price ?? 0,3)?>"/>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <?php $floor_price = floatval($row['floor_price']) ?? 0; ?>
+                        <div class="mb-3">
+                            <label class="form-label">Floor Price</label>
+                            <input type="text" id="floor_price" name="floor_price" class="form-control" value="<?=number_format($floor_price ?? 0,3)?>"/>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card shadow-sm rounded-3 mb-3">
+            <div class="card-header bg-light border-bottom">
+                <h5 class="mb-0 fw-bold">Inventory Tracking</h5>
+            </div>
+            <div class="card-body border rounded p-3">
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="mb-3">
+                        <label class="form-label">UPC</label>
+                        <input type="text" id="upc" name="upc" class="form-control" value="<?= !empty($row['upc']) ? $row['upc'] : generateRandomUPC(); ?>" />
+                        </div>
+                    </div>
+
+                    <div class="col-md-4">
+                        <div class="mb-3">
+                        <label class="form-label">Reorder Level</label>
+                            <input type="number" id="reorder_level" name="reorder_level" class="form-control" step="0.01" value="<?= $row['reorder_level']?>" />
+                        </div>
+                    </div>
+
+                    <div class="col-md-4 screw-fields">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <label class="form-label">Supplier</label>
+                            <a href="?page=product_supplier" target="_blank" class="text-decoration-none">Edit</a>
+                        </div>
+                        <div class="mb-3">
+                            <?php
+                            $supplier_selected = (array) json_decode($row['supplier_id'] ?? '[]', true);
+                            ?>
+                            <select id="supplier_id" class="form-control select2 inventory_supplier" name="supplier_id[]" multiple>
+                                <option value="">Select Supplier...</option>
+                                <optgroup label="Supplier">
+                                    <?php
+                                    $query_supplier = "SELECT * FROM supplier WHERE status = 1 ORDER BY `supplier_name` ASC";
+                                    $result_supplier = mysqli_query($conn, $query_supplier);            
+                                    while ($row_supplier = mysqli_fetch_array($result_supplier)) {
+                                        $selected = in_array($row_supplier['supplier_id'], $supplier_selected) ? 'selected' : '';
+                                    ?>
+                                        <option value="<?= $row_supplier['supplier_id'] ?>" <?= $selected ?>><?= $row_supplier['supplier_name'] ?></option>
+                                    <?php   
+                                    }
+                                    ?>
+                                </optgroup>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="col-md-4">
+                        <div class="mb-3">
+                            <label class="form-label">Product SKU</label>
+                            <input type="text" id="product_sku" name="product_sku" class="form-control" value="<?= $row['product_sku']?>" />
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card shadow-sm rounded-3 mb-3">
+            <div class="card-header bg-light border-bottom">
+                <h5 class="mb-0 fw-bold">Product Notes</h5>
+            </div>
+            <div class="card-body border rounded p-3">
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="mb-3">
+                            <textarea class="form-control" id="comment" name="comment" rows="5"><?= $row['comment']?></textarea>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card shadow-sm rounded-3 mb-3">
+            <div class="card-header bg-light border-bottom">
+                <h5 class="mb-0 fw-bold">Product IDs</h5>
+            </div>
+            <div class="card-body border rounded p-3">
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="mb-3">
+                            <h4 id="product_ids_abbrev">
+                                <?php
+                                $productIDsString = fetchProductIDs($product_id);
+                                $items = array_filter(array_map('trim', explode(',', $productIDsString)));
+                                ?>
+
+                                <?php if (!empty($items)): ?>
+                                    <ul style="
+                                        display: grid;
+                                        grid-template-columns: repeat(3, 1fr);
+                                        gap: 5px;
+                                        padding: 0 20px;
+                                        list-style-position: inside;
+                                    ">
+                                        <?php foreach ($items as $id): ?>
+                                            <li><?= htmlspecialchars($id) ?></li>
+                                        <?php endforeach; ?>
+                                    </ul>
+                                <?php else: ?>
+                                    <p>No product IDs found.</p>
+                                <?php endif; ?>
+                            </h4>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
         
         <div class="modal-footer">
             <div class="form-actions">

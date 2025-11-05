@@ -223,139 +223,22 @@ function showCol($name) {
                     <input type="hidden" id="product_id" name="product_id" class="form-control" />
                     <div class="modal-body">
                         <div class="card">
-                            <div class="card shadow-sm rounded-3 mb-3">
-                                <div class="card-header bg-light border-bottom">
-                                    <h5 class="mb-0 fw-bold">Product Identifier</h5>
-                                </div>
-                                <div class="card-body border rounded p-3">
-                                    <div class="row">
-                                        <div class="col-md-4">
-                                            <label class="form-label">Product Category</label>
-                                            <div class="mb-3">
-                                            <select id="product_category" class="form-control" name="product_category">
-                                                <option value="" >Select One...</option>
-                                                <?php
-                                                $query_roles = "SELECT * FROM product_category WHERE hidden = '0' AND status = '1' ORDER BY `product_category` ASC";
-                                                $result_roles = mysqli_query($conn, $query_roles);            
-                                                while ($row_product_category = mysqli_fetch_array($result_roles)) {
-                                                ?>
-                                                    <option value="<?= $row_product_category['product_category_id'] ?>" 
-                                                            data-category="<?= $row_product_category['product_category'] ?>"
-                                                            data-filename="<?= $row_product_category['product_filename'] ?>"
-                                                    >
-                                                                <?= $row_product_category['product_category'] ?>
-                                                    </option>
-                                                <?php   
-                                                }
-                                                ?>
-                                            </select>
-                                            </div>
-                                        </div>
-
-                                        <div class="col-md-4 hidden-field d-none">
-                                            <div class="d-flex justify-content-between align-items-center">
-                                                <label class="form-label">Product Type</label>
-                                                <a href="?page=product_type" target="_blank" class="text-decoration-none">Edit</a>
-                                            </div>
-                                            <div class="mb-3">
-                                            <select id="product_type" class="form-control add-category calculate select2" name="product_type[]" multiple>
-                                                <option value="" >Select Type...</option>
-                                                <?php
-                                                $query_roles = "SELECT * FROM product_type WHERE hidden = '0' AND status = '1' ORDER BY `product_type` ASC";
-                                                $result_roles = mysqli_query($conn, $query_roles);            
-                                                while ($row_product_type = mysqli_fetch_array($result_roles)) {
-                                                    $selected = (($row['product_type'] ?? '') == $row_product_type['product_type_id']) ? 'selected' : '';
-                                                ?>
-                                                    <option value="<?= $row_product_type['product_type_id'] ?>" data-category="<?= $row_product_type['product_category'] ?>" <?= $selected ?>><?= $row_product_type['product_type'] ?></option>
-                                                <?php   
-                                                }
-                                                ?>
-                                            </select>
-                                            </div>
-                                        </div>
-                                        <div class="col-md-4 hidden-field d-none">
-                                            <div class="mb-3">
-                                                <div class="d-flex justify-content-between align-items-center">
-                                                    <label class="form-label">Product Profile</label>
-                                                    <a href="?page=profile_type" target="_blank" class="text-decoration-none">Edit</a>
-                                                </div>
-                                                <select id="profile" class="form-control add-category select2" name="profile[]" multiple>
-                                                    <option value="" >Select Profile...</option>
-                                                    <?php
-                                                    $query_profile_type = "SELECT * FROM profile_type WHERE hidden = '0' AND status = '1'";
-                                                    $result_profile_type = mysqli_query($conn, $query_profile_type);            
-                                                    while ($row_profile_type = mysqli_fetch_array($result_profile_type)) {
-                                                        $selected = ($row['profile'] == $row_profile_type['profile_type_id']) ? 'selected' : '';
-                                                                    ?>
-                                                        <option value="<?= $row_profile_type['profile_type_id'] ?>" data-category="<?= $row_profile_type['product_category'] ?>"  <?= $selected ?>><?= $row_profile_type['profile_type'] ?></option>
-                                                    <?php   
-                                                    }
-                                                    ?>
-                                                </select>
-                                            </div>
-                                        </div>
-                                        
-                                        <div class="col-md-4 hidden-field d-none">
-                                            <div class="mb-3">
-                                                <div class="d-flex justify-content-between align-items-center">
-                                                    <label class="form-label">Product Grade</label>
-                                                    <a href="?page=product_grade" target="_blank" class="text-decoration-none">Edit</a>
-                                                </div>
-                                                <select id="grade" class="form-control calculate add-category select2" name="grade[]" multiple>
-                                                    <option value="" >Select Grade...</option>
-                                                    <?php
-                                                    $query_grade = "SELECT * FROM product_grade WHERE hidden = '0' AND status = '1' ORDER BY `product_grade` ASC";
-                                                    $result_grade = mysqli_query($conn, $query_grade);            
-                                                    while ($row_grade = mysqli_fetch_array($result_grade)) {
-                                                        $selected = (($row['grade'] ?? '') == $row_grade['product_grade_id']) ? 'selected' : '';
-                                                    ?>
-                                                        <option value="<?= $row_grade['product_grade_id'] ?>" data-category="<?= $row_grade['product_category'] ?>" data-multiplier="<?= $row_grade['multiplier'] ?>" <?= $selected ?>><?= $row_grade['product_grade'] ?></option>
-                                                    <?php   
-                                                    }
-                                                    ?>
-                                                </select>
-                                            </div>
-                                        </div>
-                                        <div class="col-md-4 hidden-field d-none">
-                                            <div class="mb-3">
-                                                <div class="d-flex justify-content-between align-items-center">
-                                                    <label class="form-label">Product Gauge</label>
-                                                    <a href="?page=product_gauge" target="_blank" class="text-decoration-none">Edit</a>
-                                                </div>
-                                                <select id="gauge" class="form-control calculate select2" name="gauge[]" multiple>
-                                                    <option value="" >Select Gauge...</option>
-                                                    <?php
-                                                    $query_gauge = "SELECT * FROM product_gauge WHERE hidden = '0' AND status = '1' ORDER BY `product_gauge` ASC";
-                                                    $result_gauge = mysqli_query($conn, $query_gauge);
-
-                                                    $unique_gauges = [];
-
-                                                    while ($row_gauge = mysqli_fetch_array($result_gauge)) {
-                                                        if (in_array($row_gauge['product_gauge_id'], $unique_gauges)) {
-                                                            continue;
-                                                        }
-
-                                                        $unique_gauges[] = $row_gauge['product_gauge'];
-                                                        
-                                                        $selected = (($row['gauge'] ?? '') == $row_gauge['product_gauge_id']) ? 'selected' : '';
-                                                        ?>
-                                                        <option value="<?= $row_gauge['product_gauge_id'] ?>" 
-                                                                data-multiplier="<?= $row_gauge['multiplier'] ?>" 
-                                                                data-abbrev="<?= $row_gauge['gauge_abbreviations'] ?>" 
-                                                                <?= $selected ?>>
-                                                            <?= $row_gauge['product_gauge'] ?>
-                                                        </option>
-                                                        <?php
-                                                    }
-                                                    ?>
-                                                </select>
-                                            </div>
-                                        </div>
-                                        
-                                        
-                                    </div>
-                                </div>
-                            </div>
+                            <select id="product_category_filter" class="form-control">
+                                <option value="">Select Category...</option>
+                                <?php
+                                $query_roles = "SELECT * FROM product_category WHERE hidden = '0' AND status = '1' ORDER BY `product_category` ASC";
+                                $result_roles = mysqli_query($conn, $query_roles);            
+                                while ($row_product_category = mysqli_fetch_array($result_roles)) {
+                                ?>
+                                    <option value="<?= $row_product_category['product_category_id'] ?>" 
+                                            data-category="<?= $row_product_category['product_category'] ?>"
+                                            data-filename="<?= $row_product_category['product_filename'] ?>">
+                                                <?= $row_product_category['product_category'] ?>
+                                    </option>
+                                <?php   
+                                }
+                                ?>
+                            </select>
                             <div id="add-fields" class=""></div>
                         </div>
                     </div>
@@ -807,16 +690,22 @@ function showCol($name) {
             });
         });
 
-        $(document).on('change', '#product_category', function() {
+        $(document).on('change', '#product_category_filter', function() {
             updateSearchCategory();
+        });
+
+        $('#addProductModal').on('hidden.bs.modal', function () {
+            $('#product_category_filter').slideDown(200);
         });
        
         function updateSearchCategory() {
-            var product_category = $('#product_category').val() || '';
+            var product_category = $('#product_category_filter').val() || '';
             var product_id = $('#product_id').val() || '';
-            var filename = $('#product_category option:selected').data('filename') || '';
+            var filename = $('#product_category_filter option:selected').data('filename') || '';
 
             if (filename != '') {
+                $('#product_category_filter').slideUp(200);
+
                 $.ajax({
                     url: 'pages/' + filename,
                     type: 'POST',
@@ -827,17 +716,9 @@ function showCol($name) {
                     success: function(response) {
                         $('#add-fields').html(response);
 
-                        if (product_category == 4) {
-                            
-                            $('#product_type').removeAttr('multiple');
-                            $('#product_type').val('');
-                        } else {
-                            $('#product_type').attr('multiple', 'multiple');
-                        }
+                        let selectedCategory = $('#product_category_filter').val() || '';
 
-                        $('.hidden-field').removeClass('d-none');
-
-                        let selectedCategory = $('#product_category').val() || '';
+                        $('#product_category').val(selectedCategory).trigger('change');
 
                         $('.add-category option').each(function () {
                             let categories = $(this).data('category') || '';
@@ -876,22 +757,14 @@ function showCol($name) {
             $('.hidden-field').addClass('d-none');
 
             $('#product_id').val($(this).data('id') || '');
-            $('#product_category').val($(this).data('category') || '');
-
-            $('#profile').val($(this).data('profile') || '');
-            $('#product_type').val($(this).data('type') || '');
-            $('#grade').val($(this).data('grade') || '');
-            $('#gauge').val($(this).data('gauge') || '');
-            $('#color').val($(this).data('color') || '');
-            $('#product_line').val($(this).data('line') || '');
-            $('#product_system').val($(this).data('system') || '');
+            $('#product_category_filter').val($(this).data('category') || '');
 
             updateSearchCategory();
 
             const pid = parseInt($('#profile').val(), 10) || null;
             filterPanelOptions(pid);
 
-            const category = parseInt($('#product_category').val(), 10) || 0;
+            const category = parseInt($('#product_category_filter').val(), 10) || 0;
             if (category === 4) {
                 $('#product_type').removeAttr('multiple');
             } else {
@@ -909,26 +782,12 @@ function showCol($name) {
             $('.hidden-field').removeClass('d-none');
 
             $('#product_id').val($(this).data('id') || '');
-            $('#product_category').val($(this).data('category') || '');
-            $('#product_line').val($(this).data('line') || '');
-            $('#product_type').val($(this).data('type') || '');
-            $('#product_system').val($(this).data('system') || '');
-            $('#grade').val($(this).data('grade') || '');
-            $('#gauge').val($(this).data('gauge') || '');
-            $('#profile').val($(this).data('profile') || '');
-            $('#color').val($(this).data('color') || '');
-
+            $('#product_category_filter').val($(this).data('category') || '');
+            
             updateSearchCategory();
 
             const pid = parseInt($('#profile').val(), 10) || null;
             filterPanelOptions(pid);
-
-            const category = parseInt($('#product_category').val(), 10) || 0;
-            if (category === 4) {
-                $('#product_type').removeAttr('multiple');
-            } else {
-                $('#product_type').attr('multiple', 'multiple');
-            }
 
             $('#addProductModal').modal('show');
         });
@@ -1718,6 +1577,16 @@ function showCol($name) {
 
 
         $(document).on('change', '#product_category, #product_type, #profile, #grade, #gauge, #color_paint, #available_lengths', fetchProductABR);
+
+        $(document).on('change', '#enable_bulk_pricing', function() {
+            if ($(this).is(':checked')) {
+                $('#bulk_pricing_fields').removeClass('d-none');
+            } else {
+                $('#bulk_pricing_fields').addClass('d-none');
+                $('#bulk_price, #bulk_starts_at').val('');
+            }
+        });
+
 
     });
 </script>
