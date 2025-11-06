@@ -237,7 +237,7 @@ if(isset($_REQUEST['action'])) {
                                 while ($row_pack = mysqli_fetch_array($result_pack)) {
                                     $selected = in_array($row_pack['id'], $selected_pack) ? 'selected' : '';
                                 ?>
-                                    <option value="<?= $row_pack['id'] ?>" data-supplier="<?= $row_pack['supplierid'] ?>" <?= $selected ?>><?= $row_grade['pack	'] ?></option>
+                                    <option value="<?= $row_pack['id'] ?>" data-supplier="<?= $row_pack['supplierid'] ?>" <?= $selected ?>><?= $row_pack['pack'] ?></option>
                                 <?php   
                                 }
                                 ?>
