@@ -111,7 +111,8 @@ if(isset($_POST['fetch_modal'])){
                         }
                         ?>
                     </select>
-                    <input type="hidden" name="price[]" class="screw_price">
+                    <input type="hidden" name="price[]" class="screw_price" value="<?= $unit_price ?>">
+                    <input type="hidden" class="screw_price" value="<?= $unit_price ?>">
                     <input type="hidden" name="length_feet[]" class="custom_pack">
                     <input type="hidden" name="length_inch[]" class="custom_length_inch">
                 </div>
@@ -141,21 +142,34 @@ if(isset($_POST['fetch_modal'])){
         <script>
         $(document).ready(function() {
             function updateAllPrices() {
-                let grandTotal = 0;
+                const formData = new FormData();
+                formData.append('fetch_price', 1);
+                formData.append('product_id', $('#product_id').val());
+                formData.append('color', $('select[name="color_id[]"]').first().val() || '');
 
                 $('.screw-row').each(function () {
                     const $row = $(this);
-                    const quantity = parseFloat($row.find('.screw_quantity').val()) || 1;
-                    const pack = parseFloat($row.find('.custom_pack').val()) || 1;
-                    const basePrice = parseFloat($row.find('.screw_price').val()) || 0;
-                    const rowPrice = basePrice * quantity * pack;
-                    grandTotal += rowPrice;
+                    formData.append('quantity[]', $row.find('.screw_quantity').val() || 0);
                 });
 
-                console.log(grandTotal)
-
-                $('#price_display').text(grandTotal.toFixed(2));
+                $.ajax({
+                    url: 'pages/cashier_screw_modal.php',
+                    type: 'POST',
+                    data: formData,
+                    contentType: false,
+                    processData: false,
+                    success: function (response) {
+                        $('#price_display').text(response);
+                    },
+                    error: function (xhr, status, error) {
+                        console.error('Price fetch error:', error);
+                    }
+                });
             }
+
+            $(document).on('change input', '.screw_quantity, .screw_select, .color_select, #dimension_select', updateAllPrices);
+
+            updateAllPrices();
 
             $(document).on('change', '.screw_select', updateAllPrices);
             $(document).on('input', '.screw_quantity', updateAllPrices);
@@ -226,5 +240,56 @@ if(isset($_POST['fetch_modal'])){
     } else {
         echo '<h5 class="text-center">Product Not Found!</h5>';
     }
+}
+
+if (isset($_POST['fetch_price'])) {
+    $product_id = intval($_POST['product_id'] ?? 0);
+    $color_id   = intval($_POST['color'] ?? 0);
+    $quantities = $_POST['quantity'] ?? [];
+
+    $totalPrice = 0;
+
+    if ($product_id > 0) {
+        $product = getProductDetails($product_id);
+        $basePrice  = floatval($product['unit_price'] ?? 0);
+        $soldByFeet = intval($product['sold_by_feet'] ?? 0);
+
+        $bulkData = getBulkData($product_id);
+        $bulk_price     = floatval($bulkData['bulk_price'] ?? 0);
+        $bulk_starts_at = intval($bulkData['bulk_starts_at'] ?? 0);
+
+        foreach ($quantities as $qty) {
+            $qty = floatval($qty ?? 0);
+            if ($qty <= 0) continue;
+
+            $unit_price = ($bulk_price > 0 && $qty >= $bulk_starts_at)
+                ? $bulk_price
+                : $basePrice;
+
+            $estimate_length = '';
+            $estimate_length_inch = '';
+            $panel_type = '';
+            $bends = 0;
+            $hems = 0;
+            $grade = '';
+            $gauge = '';
+
+            $totalPrice += $qty * calculateUnitPrice(
+                $unit_price,
+                $estimate_length,
+                $estimate_length_inch,
+                $panel_type,
+                $soldByFeet,
+                $bends,
+                $hems,
+                $color_id,
+                $grade,
+                $gauge
+            );
+        }
+    }
+
+    echo number_format($totalPrice, 2);
+    exit;
 }
 ?>

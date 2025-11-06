@@ -198,24 +198,37 @@ if(isset($_POST['fetch_modal'])){
         <script>
         $(document).ready(function() {
             function updateAllPrices() {
-                
-                let grandTotal = 0;
+                const formData = new FormData();
+                formData.append('fetch_price', 1);
+                formData.append('product_id', $('#product_id').val());
+                formData.append('color', $('select[name="color_id[]"]').first().val() || '');
+                formData.append('grade', $('#grade').val() || '');
+                formData.append('gauge', $('#gauge').val() || '');
 
                 $('.custom-length-row').each(function () {
                     const $row = $(this);
-                    const feet = parseFloat($row.find('.custom_length_feet').val()) || 0;
-                    const inches = parseFloat($row.find('.custom_length_inch').val()) || 0;
-                    const quantity = parseFloat($row.find('.lumber_quantity').val()) || 1;
-                    const basePrice = parseFloat($row.find('.lumber_price').val()) || 0;
+                    const qty = $row.find('.lumber_quantity').val() || '';
+                    const feet = $row.find('.custom_length_feet').val() || '';
+                    const inch = $row.find('.custom_length_inch').val() || '';
 
-                    const totalLength = feet + (inches / 12);
-                    const multiplier = totalLength > 0 ? totalLength : 1;
-                    const rowPrice = basePrice * multiplier * quantity;
-
-                    grandTotal += rowPrice;
+                    formData.append('quantity[]', qty);
+                    formData.append('lengthFeet[]', feet);
+                    formData.append('lengthInch[]', inch);
                 });
 
-                $('#price_display').text(grandTotal.toFixed(2));
+                $.ajax({
+                    url: 'pages/cashier_lumber_modal.php',
+                    type: 'POST',
+                    data: formData,
+                    contentType: false,
+                    processData: false,
+                    success: function (response) {
+                        $('#price_display').text(response);
+                    },
+                    error: function (xhr, status, error) {
+                        console.error('Price fetch error:', error);
+                    }
+                });
             }
 
             $(document).on('change', '.custom-length-row #dimension_select', function() {
@@ -307,5 +320,62 @@ if(isset($_POST['fetch_modal'])){
     } else {
         echo '<h5 class="text-center">Product Not Found!</h5>';
     }
+}
+
+if (isset($_POST['fetch_price'])) {
+    global $conn;
+
+    $product_id = isset($_POST['product_id']) ? intval($_POST['product_id']) : 0;
+    $quantities = $_POST['quantity'] ?? [];
+    $lengthFeet = $_POST['lengthFeet'] ?? [];
+    $lengthInch = $_POST['lengthInch'] ?? [];
+    $color_id   = isset($_POST['color']) ? intval($_POST['color']) : 0;
+    $grade      = isset($_POST['grade']) ? intval($_POST['grade']) : 0;
+    $gauge      = isset($_POST['gauge']) ? intval($_POST['gauge']) : 0;
+
+    $totalPrice = 0;
+
+    if ($product_id > 0) {
+        $product     = getProductDetails($product_id);
+        $basePrice   = floatval($product['unit_price']);
+        $soldByFeet  = intval($product['sold_by_feet'] ?? 1);
+
+        $bulk = getBulkData($product_id);
+        $bulk_price     = floatval($bulk['bulk_price']);
+        $bulk_starts_at = floatval($bulk['bulk_starts_at']);
+
+        $totalQty = 0;
+        foreach ($quantities as $qty) {
+            $totalQty += floatval($qty);
+        }
+
+        if ($bulk_price > 0 && $bulk_starts_at > 0 && $totalQty >= $bulk_starts_at) {
+            $basePrice = $bulk_price;
+        }
+
+        foreach ($quantities as $index => $qty) {
+            $qty = floatval($qty);
+            if ($qty <= 0) continue;
+
+            $feet = isset($lengthFeet[$index]) && $lengthFeet[$index] !== '' ? floatval($lengthFeet[$index]) : 0;
+            $inch = isset($lengthInch[$index]) && $lengthInch[$index] !== '' ? floatval($lengthInch[$index]) : 0;
+
+            $unitPrice = calculateUnitPrice(
+                $basePrice,
+                $feet,
+                $inch,
+                '',
+                $soldByFeet,
+                '', '',
+                $color_id,
+                $grade,
+                $gauge
+            );
+
+            $totalPrice += $unitPrice * $qty;
+        }
+    }
+
+    echo number_format($totalPrice, 2);
 }
 ?>

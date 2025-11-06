@@ -224,25 +224,30 @@ if(isset($_REQUEST['action'])) {
                         </div>
                     </div>
                     <div class="col-md-4"></div>
+                    <?php 
+                    $bulk_price = floatval($row['bulk_price'] ?? 0);
+                    $bulk_starts_at = floatval($row['bulk_starts_at'] ?? 0);
+                    ?>
                     <div class="col-12 mb-3">
                         <div class="form-check">
-                            <input class="form-check-input" type="checkbox" id="enable_bulk_pricing">
+                            <input class="form-check-input" type="checkbox" id="enable_bulk_pricing" <?= ($bulk_price > 0 || $bulk_starts_at > 0) ? 'checked' : '' ?>>
                             <label class="form-check-label fw-bold" for="enable_bulk_pricing">
                                 Bulk Pricing
                             </label>
                         </div>
                     </div>
 
-                    <div id="bulk_pricing_fields" class="row d-none align-items-end">
+                    <div id="bulk_pricing_fields" class="row align-items-end <?= ($bulk_price > 0) ? '' : 'd-none' ?>">
                         <div class="col-md-4 mb-3">
                             <label class="form-label fw-semibold mb-1">Bulk Price</label>
-                            <input type="number" class="form-control" id="bulk_price" name="bulk_price" placeholder="Enter bulk price">
+                            <input type="number" class="form-control" id="bulk_price" name="bulk_price" step="0.0001" placeholder="Enter bulk price" value="<?= $bulk_price ?>">
                         </div>
                         <div class="col-md-4 mb-3">
                             <label class="form-label fw-semibold mb-1">Bulk Pricing Starts At</label>
-                            <input type="number" class="form-control" id="bulk_starts_at" name="bulk_starts_at" placeholder="Enter quantity threshold">
+                            <input type="number" class="form-control" id="bulk_starts_at" name="bulk_starts_at" placeholder="Enter quantity threshold" value="<?= $bulk_starts_at ?>">
                         </div>
                     </div>
+
                 </div>
             </div>
         </div>

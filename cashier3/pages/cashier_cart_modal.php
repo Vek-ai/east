@@ -1053,37 +1053,9 @@ if(isset($_POST['fetch_cart'])){
 
                                 </td>
 
-                                <td class="text-center">
-                                    <select id="grade<?= $items[0]['line'] ?>" class="form-control grade-cart" 
-                                            name="grade" onchange="updateGrade(this)" 
-                                            data-line="<?= $items[0]['line'] ?>" data-id="<?= $product_id ?>">
-                                        <option value="">Select Grade...</option>
-                                        <?php
-                                        $query_grade = "SELECT * FROM product_grade WHERE status = 1";
-                                        $result_grade = mysqli_query($conn, $query_grade);
-                                        while ($row_grade = mysqli_fetch_array($result_grade)) {
-                                            $selected = ($first_calc['grade'] == $row_grade['product_grade_id']) ? 'selected' : '';
-                                            echo "<option value='{$row_grade['product_grade_id']}' {$selected}>{$row_grade['product_grade']}</option>";
-                                        }
-                                        ?>
-                                    </select>
-                                </td>
+                                <td class="text-center"></td>
 
-                                <td class="text-center">
-                                    <select id="gauge<?= $items[0]['line'] ?>" class="form-control gauge-cart" 
-                                            name="gauge" onchange="updateGauge(this)" 
-                                            data-line="<?= $items[0]['line'] ?>" data-id="<?= $product_id ?>">
-                                        <option value="">Select Gauge...</option>
-                                        <?php
-                                        $query_gauge = "SELECT * FROM product_gauge WHERE status = 1";
-                                        $result_gauge = mysqli_query($conn, $query_gauge);
-                                        while ($row_gauge = mysqli_fetch_array($result_gauge)) {
-                                            $selected = ($first_calc['gauge'] == $row_gauge['product_gauge_id']) ? 'selected' : '';
-                                            echo "<option value='{$row_gauge['product_gauge_id']}' {$selected}>{$row_gauge['product_gauge']}</option>";
-                                        }
-                                        ?>
-                                    </select>
-                                </td>
+                                <td class="text-center"></td>
 
                                 <td class="text-center"><?= getProfileTypeName($first_calc['profile']) ?></td>
 
@@ -1378,37 +1350,9 @@ if(isset($_POST['fetch_cart'])){
 
                                 </td>
 
-                                <td class="text-center">
-                                    <select id="grade<?= $items[0]['line'] ?>" class="form-control grade-cart" 
-                                            name="grade" onchange="updateGrade(this)" 
-                                            data-line="<?= $items[0]['line'] ?>" data-id="<?= $product_id ?>">
-                                        <option value="">Select Grade...</option>
-                                        <?php
-                                        $query_grade = "SELECT * FROM product_grade WHERE status = 1";
-                                        $result_grade = mysqli_query($conn, $query_grade);
-                                        while ($row_grade = mysqli_fetch_array($result_grade)) {
-                                            $selected = ($first_calc['grade'] == $row_grade['product_grade_id']) ? 'selected' : '';
-                                            echo "<option value='{$row_grade['product_grade_id']}' {$selected}>{$row_grade['product_grade']}</option>";
-                                        }
-                                        ?>
-                                    </select>
-                                </td>
+                                <td class="text-center"></td>
 
-                                <td class="text-center">
-                                    <select id="gauge<?= $items[0]['line'] ?>" class="form-control gauge-cart" 
-                                            name="gauge" onchange="updateGauge(this)" 
-                                            data-line="<?= $items[0]['line'] ?>" data-id="<?= $product_id ?>">
-                                        <option value="">Select Gauge...</option>
-                                        <?php
-                                        $query_gauge = "SELECT * FROM product_gauge WHERE status = 1";
-                                        $result_gauge = mysqli_query($conn, $query_gauge);
-                                        while ($row_gauge = mysqli_fetch_array($result_gauge)) {
-                                            $selected = ($first_calc['gauge'] == $row_gauge['product_gauge_id']) ? 'selected' : '';
-                                            echo "<option value='{$row_gauge['product_gauge_id']}' {$selected}>{$row_gauge['product_gauge']}</option>";
-                                        }
-                                        ?>
-                                    </select>
-                                </td>
+                                <td class="text-center"></td>
 
                                 <td class="text-center"><?= getProfileTypeName($first_calc['profile']) ?></td>
 
@@ -1655,37 +1599,9 @@ if(isset($_POST['fetch_cart'])){
 
                                 </td>
 
-                                <td class="text-center">
-                                    <select id="grade<?= $items[0]['line'] ?>" class="form-control grade-cart" 
-                                            name="grade" onchange="updateGrade(this)" 
-                                            data-line="<?= $items[0]['line'] ?>" data-id="<?= $product_id ?>">
-                                        <option value="">Select Grade...</option>
-                                        <?php
-                                        $query_grade = "SELECT * FROM product_grade WHERE status = 1";
-                                        $result_grade = mysqli_query($conn, $query_grade);
-                                        while ($row_grade = mysqli_fetch_array($result_grade)) {
-                                            $selected = ($first_calc['grade'] == $row_grade['product_grade_id']) ? 'selected' : '';
-                                            echo "<option value='{$row_grade['product_grade_id']}' {$selected}>{$row_grade['product_grade']}</option>";
-                                        }
-                                        ?>
-                                    </select>
-                                </td>
+                                <td class="text-center"></td>
 
-                                <td class="text-center">
-                                    <select id="gauge<?= $items[0]['line'] ?>" class="form-control gauge-cart" 
-                                            name="gauge" onchange="updateGauge(this)" 
-                                            data-line="<?= $items[0]['line'] ?>" data-id="<?= $product_id ?>">
-                                        <option value="">Select Gauge...</option>
-                                        <?php
-                                        $query_gauge = "SELECT * FROM product_gauge WHERE status = 1";
-                                        $result_gauge = mysqli_query($conn, $query_gauge);
-                                        while ($row_gauge = mysqli_fetch_array($result_gauge)) {
-                                            $selected = ($first_calc['gauge'] == $row_gauge['product_gauge_id']) ? 'selected' : '';
-                                            echo "<option value='{$row_gauge['product_gauge_id']}' {$selected}>{$row_gauge['product_gauge']}</option>";
-                                        }
-                                        ?>
-                                    </select>
-                                </td>
+                                <td class="text-center"></td>
 
                                 <td class="text-center"><?= getProfileTypeName($first_calc['profile']) ?></td>
 

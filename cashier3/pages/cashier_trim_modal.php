@@ -357,45 +357,54 @@ if (isset($_POST['fetch_price'])) {
 
     $product_id = isset($_POST['product_id']) ? intval($_POST['product_id']) : 0;
     $quantities = $_POST['quantity'] ?? [];
-    $lengthFeet = $_POST['lengthFeet'] ?? []; // match JS key
+    $lengthFeet = $_POST['lengthFeet'] ?? [];
 
-    $color_id = isset($_POST['color']) ? intval($_POST['color']) : 0;
-    $grade    = isset($_POST['grade']) ? intval($_POST['grade']) : 0;
-    $gauge    = isset($_POST['gauge']) ? intval($_POST['gauge']) : 0;
+    $color_id = intval($_POST['color'] ?? 0);
+    $grade    = intval($_POST['grade'] ?? 0);
+    $gauge    = intval($_POST['gauge'] ?? 0);
 
     $totalPrice = 0;
 
     if ($product_id > 0) {
         $product = getProductDetails($product_id);
-        $basePrice = floatval($product['unit_price']);
+        $basePrice = floatval($product['unit_price'] ?? 0);
         $soldByFeet = intval($product['sold_by_feet'] ?? 1);
 
+        $bulkData = getBulkData($product_id);
+        $bulk_price = floatval($bulkData['bulk_price'] ?? 0);
+        $bulk_starts_at = intval($bulkData['bulk_starts_at'] ?? 0);
+
         foreach ($quantities as $index => $qty) {
+            $qty = floatval($qty ?? 0);
             if ($qty <= 0) continue;
 
-            $feet = isset($lengthFeet[$index]) && $lengthFeet[$index] !== '' ? floatval($lengthFeet[$index]) : 0;
+            $feet = isset($lengthFeet[$index]) && $lengthFeet[$index] !== '' 
+                ? floatval($lengthFeet[$index]) 
+                : 0;
 
             if ($feet <= 0) continue;
 
+            $unitPrice = ($bulk_price > 0 && $qty >= $bulk_starts_at)
+                ? $bulk_price
+                : $basePrice;
+
             $totalPrice += $qty * calculateUnitPrice(
-                $basePrice,
+                $unitPrice,
                 $feet,
                 '',
                 '',
-                '',
-                '',
-                '',
+                $soldByFeet,
+                0,
+                0,
                 $color_id,
                 $grade,
                 $gauge
             );
-
-            $totalPrice += $qty * $unitPrice;
         }
     }
 
     echo number_format($totalPrice, 2);
-    
+    exit;
 }
 
 if (isset($_POST['fetch_stock_coil'])) {
@@ -405,31 +414,6 @@ if (isset($_POST['fetch_stock_coil'])) {
     $color = mysqli_real_escape_string($conn, $_POST['color']);
     $grade = mysqli_real_escape_string($conn, $_POST['grade']);
     $gauge = mysqli_real_escape_string($conn, $_POST['gauge']);
-
-    $query_product = "
-        SELECT 
-            p.product_id,
-            COALESCE(SUM(i.quantity_ttl), 0) AS total_quantity
-        FROM 
-            product AS p
-        LEFT JOIN 
-            inventory AS i ON p.product_id = i.product_id
-        WHERE 
-            p.product_category = '3' AND 
-            i.color_id = '$color' AND
-            p.grade = '$grade' AND
-            p.gauge = '$gauge'
-        GROUP BY p.product_id
-        HAVING total_quantity > 0
-        LIMIT 1
-    ";
-
-    $result_product = mysqli_query($conn, $query_product);
-
-    if (mysqli_num_rows($result_product) > 0) {
-        echo json_encode(['success' => true]);
-        exit;
-    }
 
     $query_coil = "
         SELECT 1 FROM coil_product 

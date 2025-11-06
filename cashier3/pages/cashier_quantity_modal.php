@@ -497,18 +497,29 @@ if (isset($_POST['fetch_price'])) {
 
     $product = getProductDetails($product_id);
 
-    $color_id      = intval($_POST['color']);
-    $grade         = intval($_POST["grade"]);
-    $gauge         = intval($_POST["gauge"]);
+    $color_id = intval($_POST['color']);
+    $grade    = intval($_POST["grade"]);
+    $gauge    = intval($_POST["gauge"]);
 
     $totalPrice = 0;
+
     if ($product_id > 0) {
-        $product      = getProductDetails($product_id);
-        $basePrice    = floatval($product['unit_price']);
-        $soldByFeet   = intval($product['sold_by_feet']);
+        $product    = getProductDetails($product_id);
+        $soldByFeet = intval($product['sold_by_feet']);
+
+        // get bulk data
+        $bulkData = getBulkData($product_id);
+        $bulk_price = floatval($bulkData['bulk_price']);
+        $bulk_starts_at = floatval($bulkData['bulk_starts_at']);
 
         foreach ($quantities as $index => $qty) {
             if ($qty <= 0) continue;
+
+            // determine base price depending on bulk threshold
+            $basePrice = floatval($product['unit_price']);
+            if ($bulk_price > 0 && $bulk_starts_at > 0 && $qty >= $bulk_starts_at) {
+                $basePrice = $bulk_price;
+            }
 
             $feet = isset($lengthFeet[$index]) ? parseNumber($lengthFeet[$index]) : 0;
             $inch = isset($lengthInch[$index]) ? parseNumber($lengthInch[$index]) : 0;
@@ -532,7 +543,6 @@ if (isset($_POST['fetch_price'])) {
     }
 
     echo number_format($totalPrice, 2);
-    //echo print_r($panelTypes);
 }
 
 if (isset($_POST['fetch_stock_coil'])) {

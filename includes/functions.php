@@ -3134,8 +3134,16 @@ function calculateCartItem($values) {
     $bends      = intval($values["bends"] ?? 0);
     $hems       = intval($values["hems"] ?? 0);
 
+    $bulk_price     = isset($product["bulk_price"]) ? floatval($product["bulk_price"]) : 0;
+    $bulk_starts_at = isset($product["bulk_starts_at"]) ? floatval($product["bulk_starts_at"]) : 0;
+    $base_price     = $product["unit_price"] ?? 0;
+
+    if ($bulk_price > 0 && $bulk_starts_at > 0 && $quantity >= $bulk_starts_at) {
+        $base_price = $bulk_price;
+    }
+
     $unit_price = calculateUnitPrice(
-        $product["unit_price"] ?? 0,
+        $base_price,
         $estimate_length,
         $estimate_length_inch,
         $panel_type,
@@ -3199,7 +3207,7 @@ function calculateCartItem($values) {
         );
     }
 
-    $linear_price = $product["unit_price"];
+    $linear_price = $base_price;
     $panel_price  = $unit_price;
 
     $product_price = ($quantity * $unit_price) - $amount_discount;
@@ -4349,6 +4357,37 @@ function getProductAttributes($product_id) {
         'gauge' => null,
         'type' => null,
         'color' => null
+    ];
+}
+
+function getBulkData($product_id) {
+    global $conn;
+
+    $product_id = mysqli_real_escape_string($conn, $product_id);
+
+    $query = "
+        SELECT 
+            bulk_price, 
+            bulk_starts_at 
+        FROM product 
+        WHERE product_id = '$product_id'
+        LIMIT 1
+    ";
+
+    $result = mysqli_query($conn, $query);
+
+    if (!$result || mysqli_num_rows($result) === 0) {
+        return [
+            'bulk_price' => 0,
+            'bulk_starts_at' => 0
+        ];
+    }
+
+    $row = mysqli_fetch_assoc($result);
+
+    return [
+        'bulk_price' => floatval($row['bulk_price'] ?? 0),
+        'bulk_starts_at' => floatval($row['bulk_starts_at'] ?? 0)
     ];
 }
 
