@@ -455,7 +455,7 @@ if(isset($_POST['fetch_cart'])){
                                     </td>
                                 </tr>
 
-                                <tr class="thick-border create_bundle_row">
+                                <tr class="thick-border create_bundle_row <?= $rows_class ?>">
                                     <th class="text-center" colspan="2">
                                         <?php if (!empty($bundle_name)) : ?>
                                             (<?= $bundle_name ?>)
@@ -842,7 +842,7 @@ if(isset($_POST['fetch_cart'])){
                                 </td>
                             </tr>
 
-                            <tr class="thick-border create_bundle_row">
+                            <tr class="thick-border create_bundle_row <?= $rows_class ?>">
                                 <th class="text-center" colspan="2"></th>
                                 <th class="text-center">Qty</th>
                                 <th class="text-center">Length</th>
@@ -1114,7 +1114,7 @@ if(isset($_POST['fetch_cart'])){
                                 </td>
                             </tr>
 
-                            <tr class="thick-border create_bundle_row">
+                            <tr class="thick-border create_bundle_row <?= $rows_class ?>">
                                 <th class="text-center" colspan="2"></th>
                                 <th class="text-center">Qty</th>
                                 <th class="text-center">Length</th>
@@ -1424,7 +1424,7 @@ if(isset($_POST['fetch_cart'])){
                                 </td>
                             </tr>
 
-                            <tr class="thick-border create_bundle_row">
+                            <tr class="thick-border create_bundle_row <?= $rows_class ?>">
                                 <th class="text-center" colspan="2"></th>
                                 <th class="text-center">Qty</th>
                                 <th class="text-center">Qty in Pack</th>
@@ -1685,7 +1685,7 @@ if(isset($_POST['fetch_cart'])){
                                 </td>
                             </tr>
 
-                            <tr class="thick-border create_bundle_row">
+                            <tr class="thick-border create_bundle_row <?= $rows_class ?>">
                                 <th class="text-center" colspan="2"></th>
                                 <th class="text-center">Qty</th>
                                 <th class="text-center">Qty in Pack</th>
