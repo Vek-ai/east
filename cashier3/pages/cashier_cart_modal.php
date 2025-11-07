@@ -45,6 +45,7 @@ if ($staff_id) {
 
     $show_retail_price  = 0;
     $show_total_price = 1;
+    $show_drag_handle = 0;
 
     if ($result && $result->num_rows > 0) {
         while ($row = $result->fetch_assoc()) {
@@ -171,7 +172,7 @@ if(isset($_POST['fetch_cart'])){
                 $customer_name = get_customer_name($_SESSION["customer_id"]);
         ?>
             <div class="form-group row align-items-center">
-                <div class="d-flex flex-column gap-2">
+                <div class="d-flex flex-column gap-1">
                     <div>
                         <label class="fw-bold fs-5">Customer Name: <?= $customer_name ?></label>
                         <button class="btn btn-primary btn-sm me-3" type="button" id="customer_change_cart">
@@ -278,11 +279,17 @@ if(isset($_POST['fetch_cart'])){
 
                         foreach ($panel_cart as $group_key => $items) {
                             [$product_id, $color_id, $grade_id, $gauge_id] = explode('_', $group_key);
-                            $group_id = uniqid('group_');
+                            $group_id = 'group_' . $group_key;
                             $total_qty = 0;
                             $total_length_cart = 0;
                             $total_price_actual = 0;
                             $total_customer_price = 0;
+
+                            $group_state = $_SESSION['cart_group_state'][$group_id] ?? 'closed';
+
+                            $is_open = ($group_state === 'open');
+                            $rows_class = $is_open ? '' : 'd-none';
+                            $icon_class = $is_open ? 'fa-eye-slash' : 'fa-eye';
 
                             foreach ($items as $values) {
                                 $calc = calculateCartItem($values);
@@ -311,7 +318,7 @@ if(isset($_POST['fetch_cart'])){
                             $panel_style_3 = $profile_details['panel_style_3'];
                             ?>
 
-                            <tr class="thick-border" data-mult="<?= $multiplier ?>">
+                            <tr class="thick-border" data-group="<?= $group_id ?>" data-mult="<?= $multiplier ?>"> 
                                 <td>
                                     <a href="javascript:void(0);" data-id="<?= $product_id ?>" class="d-flex align-items-center view_product_details">
                                         <h6 class="fw-semibold mb-0 fs-4"><?= htmlspecialchars($items[0]['product_item']) ?></h6>
@@ -401,6 +408,7 @@ if(isset($_POST['fetch_cart'])){
                                 </td>
                                 <td class="text-center">
                                     <a href="javascript:void(0)" data-id="<?= $product_id ?>" onClick="delete_product(this)"><i class="fa fs-6 fa-trash"></i></a>
+                                    <a href="javascript:void(0)" class="ms-2 toggle-details" data-group="<?= $group_id ?>"><i class="fa <?= $icon_class ?>"></i></a>
                                 </td>
                             </tr>
 
@@ -497,10 +505,15 @@ if(isset($_POST['fetch_cart'])){
                                     $bundle_customer_price += $customer_price;
                                     ?>
 
-                                    <tr data-abbrev="<?= $item['unique_prod_id'] ?>" data-id="<?= $product_id ?>" data-line="<?= $line ?>" data-line="<?= $line ?>" data-bundle="<?= $values['bundle_name'] ?? '' ?>">
+                                    <tr class="group-details-row <?= $rows_class ?>" 
+                                        data-group="<?= $group_id ?>" 
+                                        data-abbrev="<?= $item['unique_prod_id'] ?>" 
+                                        data-id="<?= $product_id ?>" 
+                                        data-line="<?= $line ?>" 
+                                        data-bundle="<?= $values['bundle_name'] ?? '' ?>">
                                         <td class="text-start align-middle">
-                                            <div class="d-flex align-items-center gap-2 justify-content-start flex-nowrap text-truncate" style="overflow: hidden;">
-                                                <i class="fa fa-bars fa-lg drag-handle" style="cursor: move; flex-shrink: 0;"></i>
+                                            <div class="d-flex align-items-center gap-1 justify-content-start flex-nowrap text-truncate" style="overflow: hidden;">
+                                                <i class="fa fa-bars fa-lg drag-handle <?= $show_drag_handle ? '' : 'd-none' ?>" style="cursor: move; flex-shrink: 0;"></i>
 
                                                 <div class="bundle-checkbox-cart d-none flex-shrink-0">
                                                     <div class="form-check m-0">
@@ -554,7 +567,7 @@ if(isset($_POST['fetch_cart'])){
                                             <div class="d-flex flex-row align-items-center flex-nowrap w-100 justify-content-center">
                                                 <fieldset class="border p-1 d-flex align-items-center flex-nowrap w-100 justify-content-center mb-0">
                                                     <div class="input-group d-flex align-items-center flex-nowrap w-100">
-                                                        <input class="form-control form-control-sm text-center px-1 flex-fill me-1" 
+                                                        <input class="form-control form-control-sm text-center px-0 flex-fill me-1" 
                                                             type="text" 
                                                             value="<?= round(floatval($values['estimate_length']), 2) ?>" 
                                                             placeholder="FT" 
@@ -562,7 +575,7 @@ if(isset($_POST['fetch_cart'])){
                                                             data-id="<?= $product_id; ?>" 
                                                             onchange="updateEstimateLength(this)">
 
-                                                        <input class="form-control form-control-sm text-center px-1 flex-fill" 
+                                                        <input class="form-control form-control-sm text-center px-0 flex-fill" 
                                                             type="text" 
                                                             value="<?= round(floatval($values['estimate_length_inch']), 2) ?>" 
                                                             placeholder="IN" 
@@ -705,10 +718,17 @@ if(isset($_POST['fetch_cart'])){
 
                         foreach ($trim_cart as $group_key => $items) {
                             [$product_id, $color_id, $grade_id, $gauge_id] = explode('_', $group_key);
+                            $group_id = 'group_' . $group_key;
                             $total_qty = 0;
                             $total_length_cart = 0;
                             $total_price_actual = 0;
                             $total_customer_price = 0;
+
+                            $group_state = $_SESSION['cart_group_state'][$group_id] ?? 'closed';
+
+                            $is_open = ($group_state === 'open');
+                            $rows_class = $is_open ? '' : 'd-none';
+                            $icon_class = $is_open ? 'fa-eye-slash' : 'fa-eye';
 
                             foreach ($items as $values) {
                                 $calc = calculateCartItem($values);
@@ -727,7 +747,7 @@ if(isset($_POST['fetch_cart'])){
                             $parent_prod_id = $first_calc['parent_prod_id'];
                             ?>
 
-                            <tr class="thick-border" data-mult="<?= $multiplier ?>">
+                            <tr class="thick-border" data-group="<?= $group_id ?>" data-mult="<?= $multiplier ?>"> 
                                 <td>
                                     <a href="javascript:void(0);" data-id="<?= $product_id ?>" class="d-flex align-items-center view_product_details">
                                         <h6 class="fw-semibold mb-0 fs-4"><?= htmlspecialchars($items[0]['product_item']) ?></h6>
@@ -818,6 +838,7 @@ if(isset($_POST['fetch_cart'])){
 
                                 <td class="text-center">
                                     <a href="javascript:void(0)" data-id="<?= $product_id ?>" onClick="delete_product(this)"><i class="fa fs-6 fa-trash"></i></a>
+                                    <a href="javascript:void(0)" class="ms-2 toggle-details" data-group="<?= $group_id ?>"><i class="fa <?= $icon_class ?>"></i></a>
                                 </td>
                             </tr>
 
@@ -860,10 +881,14 @@ if(isset($_POST['fetch_cart'])){
                                 $unique_prod_id = $item['unique_prod_id'];
                                 ?>
 
-                                <tr data-id="<?= $product_id ?>" data-line="<?= $line ?>" data-line="<?= $line ?>" data-bundle="<?= $values['bundle_name'] ?? '' ?>">
+                                <tr class="group-details-row <?= $rows_class ?>" 
+                                    data-group="<?= $group_id ?>"
+                                    data-id="<?= $product_id ?>" 
+                                    data-line="<?= $line ?>" 
+                                    data-bundle="<?= $values['bundle_name'] ?? '' ?>">
                                     <td class="text-start align-middle">
-                                        <div class="d-flex align-items-center gap-2">
-                                            <i class="fa fa-bars fa-lg drag-handle" style="cursor: move; flex-shrink: 0;"></i>
+                                        <div class="d-flex align-items-center gap-1">
+                                            <i class="fa fa-bars fa-lg drag-handle <?= $show_drag_handle ? '' : 'd-none' ?>" style="cursor: move; flex-shrink: 0;"></i>
                                             
                                             <div class="bundle-checkbox-cart d-none">
                                                 <div class="form-check m-0">
@@ -910,7 +935,7 @@ if(isset($_POST['fetch_cart'])){
                                         <div class="d-flex flex-row align-items-center flex-nowrap w-100 justify-content-center">
                                             <fieldset class="border p-1 d-flex align-items-center flex-nowrap w-100 justify-content-center mb-0">
                                                 <div class="input-group d-flex align-items-center flex-nowrap w-100">
-                                                    <input class="form-control form-control-sm text-center px-1 flex-fill me-1" 
+                                                    <input class="form-control form-control-sm text-center px-0 flex-fill me-1" 
                                                         type="text" 
                                                         value="<?= round(floatval($values['estimate_length']), 2) ?>" 
                                                         placeholder="FT" 
@@ -918,7 +943,7 @@ if(isset($_POST['fetch_cart'])){
                                                         data-id="<?= $product_id; ?>" 
                                                         onchange="updateEstimateLength(this)">
 
-                                                    <input class="form-control form-control-sm text-center px-1 flex-fill" 
+                                                    <input class="form-control form-control-sm text-center px-0 flex-fill" 
                                                         type="text" 
                                                         value="<?= round(floatval($values['estimate_length_inch']), 2) ?>" 
                                                         placeholder="IN" 
@@ -993,10 +1018,17 @@ if(isset($_POST['fetch_cart'])){
 
                         foreach ($screw_cart as $group_key => $items) {
                             [$product_id, $color_id, $grade_id, $gauge_id] = explode('_', $group_key);
+                            $group_id = 'group_' . $group_key;
                             $total_qty = 0;
                             $total_length_cart = 0;
                             $total_price_actual = 0;
                             $total_customer_price = 0;
+
+                            $group_state = $_SESSION['cart_group_state'][$group_id] ?? 'closed';
+
+                            $is_open = ($group_state === 'open');
+                            $rows_class = $is_open ? '' : 'd-none';
+                            $icon_class = $is_open ? 'fa-eye-slash' : 'fa-eye';
 
                             foreach ($items as $values) {
                                 $calc = calculateCartItem($values);
@@ -1015,7 +1047,7 @@ if(isset($_POST['fetch_cart'])){
                             $product_id_abbrev = $first_calc['parent_prod_id'];
                             ?>
 
-                            <tr class="thick-border" data-mult="<?= $multiplier ?>">
+                            <tr class="thick-border" data-group="<?= $group_id ?>" data-mult="<?= $multiplier ?>"> 
                                 <td>
                                     <a href="javascript:void(0);" data-id="<?= $product_id ?>" class="d-flex align-items-center view_product_details">
                                         <h6 class="fw-semibold mb-0 fs-4"><?= htmlspecialchars($items[0]['product_item']) ?></h6>
@@ -1078,6 +1110,7 @@ if(isset($_POST['fetch_cart'])){
 
                                 <td class="text-center">
                                     <a href="javascript:void(0)" data-id="<?= $product_id ?>" onClick="delete_product(this)"><i class="fa fs-6 fa-trash"></i></a>
+                                    <a href="javascript:void(0)" class="ms-2 toggle-details" data-group="<?= $group_id ?>"><i class="fa <?= $icon_class ?>"></i></a>
                                 </td>
                             </tr>
 
@@ -1119,10 +1152,15 @@ if(isset($_POST['fetch_cart'])){
                                 $product_id_abbrev = $item['unique_prod_id'];
                                 ?>
 
-                                <tr data-id="<?= $product_id ?>" data-line="<?= $line ?>" data-line="<?= $line ?>" data-bundle="<?= $values['bundle_name'] ?? '' ?>">
+                                <tr class="group-details-row <?= $rows_class ?>" 
+                                    data-group="<?= $group_id ?>" 
+                                    data-id="<?= $product_id ?>" 
+                                    data-line="<?= $line ?>" 
+                                    data-line="<?= $line ?>" 
+                                    data-bundle="<?= $values['bundle_name'] ?? '' ?>">
                                     <td class="text-start align-middle">
-                                        <div class="d-flex align-items-center gap-2">
-                                            <i class="fa fa-bars fa-lg drag-handle" style="cursor: move; flex-shrink: 0;"></i>
+                                        <div class="d-flex align-items-center gap-1">
+                                            <i class="fa fa-bars fa-lg drag-handle <?= $show_drag_handle ? '' : 'd-none' ?>" style="cursor: move; flex-shrink: 0;"></i>
 
                                             <div class="bundle-checkbox-cart d-none">
                                                 <div class="form-check m-0">
@@ -1220,7 +1258,7 @@ if(isset($_POST['fetch_cart'])){
                                         <div class="d-flex flex-row align-items-center flex-nowrap w-auto">
                                             <fieldset class="border p-1 d-inline-flex align-items-center flex-nowrap">
                                                 <div class="input-group d-flex align-items-center flex-nowrap w-100">
-                                                    <input class="form-control form-control-sm text-center px-1" 
+                                                    <input class="form-control form-control-sm text-center px-0" 
                                                         type="text" 
                                                         value="<?= round(floatval($values['estimate_length']),2) ?>" 
                                                         placeholder="PCS" 
@@ -1290,10 +1328,17 @@ if(isset($_POST['fetch_cart'])){
 
                         foreach ($lumber_cart as $group_key => $items) {
                             [$product_id, $color_id, $grade_id, $gauge_id] = explode('_', $group_key);
+                            $group_id = 'group_' . $group_key;
                             $total_qty = 0;
                             $total_length_cart = 0;
                             $total_price_actual = 0;
                             $total_customer_price = 0;
+
+                            $group_state = $_SESSION['cart_group_state'][$group_id] ?? 'closed';
+
+                            $is_open = ($group_state === 'open');
+                            $rows_class = $is_open ? '' : 'd-none';
+                            $icon_class = $is_open ? 'fa-eye-slash' : 'fa-eye';
 
                             foreach ($items as $values) {
                                 $calc = calculateCartItem($values);
@@ -1312,7 +1357,7 @@ if(isset($_POST['fetch_cart'])){
                             $product_id_abbrev = $first_calc['parent_prod_id'];
                             ?>
 
-                            <tr class="thick-border" data-mult="<?= $multiplier ?>">
+                            <tr class="thick-border" data-group="<?= $group_id ?>" data-mult="<?= $multiplier ?>"> 
                                 <td>
                                     <a href="javascript:void(0);" data-id="<?= $product_id ?>" class="d-flex align-items-center view_product_details">
                                         <h6 class="fw-semibold mb-0 fs-4"><?= htmlspecialchars($items[0]['product_item']) ?></h6>
@@ -1375,6 +1420,7 @@ if(isset($_POST['fetch_cart'])){
 
                                 <td class="text-center">
                                     <a href="javascript:void(0)" data-id="<?= $product_id ?>" onClick="delete_product(this)"><i class="fa fs-6 fa-trash"></i></a>
+                                    <a href="javascript:void(0)" class="ms-2 toggle-details" data-group="<?= $group_id ?>"><i class="fa <?= $icon_class ?>"></i></a>
                                 </td>
                             </tr>
 
@@ -1416,11 +1462,15 @@ if(isset($_POST['fetch_cart'])){
                                 $product_id_abbrev = $item['unique_prod_id'];
                                 ?>
 
-                                <tr data-id="<?= $product_id ?>" data-line="<?= $line ?>" data-line="<?= $line ?>" data-bundle="<?= $values['bundle_name'] ?? '' ?>">
+                                <tr class="group-details-row <?= $rows_class ?>" 
+                                    data-group="<?= $group_id ?>"
+                                    data-id="<?= $product_id ?>" 
+                                    data-line="<?= $line ?>" 
+                                    data-bundle="<?= $values['bundle_name'] ?? '' ?>">
                                     
                                     <td class="text-start align-middle">
-                                        <div class="d-flex align-items-center gap-2">
-                                            <i class="fa fa-bars fa-lg drag-handle" style="cursor: move; flex-shrink: 0;"></i>
+                                        <div class="d-flex align-items-center gap-1">
+                                            <i class="fa fa-bars fa-lg drag-handle <?= $show_drag_handle ? '' : 'd-none' ?>" style="cursor: move; flex-shrink: 0;"></i>
                                             
                                             <div class="bundle-checkbox-cart d-none">
                                                 <div class="form-check m-0">
@@ -1467,7 +1517,7 @@ if(isset($_POST['fetch_cart'])){
                                         <div class="d-flex flex-row align-items-center flex-nowrap w-auto">
                                             <fieldset class="border p-1 d-inline-flex align-items-center flex-nowrap">
                                                 <div class="input-group d-flex align-items-center flex-nowrap w-100">
-                                                    <input class="form-control form-control-sm text-center px-1" 
+                                                    <input class="form-control form-control-sm text-center px-0" 
                                                         type="text" 
                                                         value="<?= round(floatval($values['estimate_length']),2) ?>" 
                                                         placeholder="PCS" 
@@ -1539,10 +1589,17 @@ if(isset($_POST['fetch_cart'])){
 
                         foreach ($others_cart as $group_key => $items) {
                             [$product_id, $color_id, $grade_id, $gauge_id] = explode('_', $group_key);
+                            $group_id = 'group_' . $group_key;
                             $total_qty = 0;
                             $total_length_cart = 0;
                             $total_price_actual = 0;
                             $total_customer_price = 0;
+
+                            $group_state = $_SESSION['cart_group_state'][$group_id] ?? 'closed';
+
+                            $is_open = ($group_state === 'open');
+                            $rows_class = $is_open ? '' : 'd-none';
+                            $icon_class = $is_open ? 'fa-eye-slash' : 'fa-eye';
 
                             foreach ($items as $values) {
                                 $calc = calculateCartItem($values);
@@ -1561,7 +1618,7 @@ if(isset($_POST['fetch_cart'])){
                             $product_id_abbrev = $first_calc['parent_prod_id'];
                             ?>
 
-                            <tr class="thick-border" data-mult="<?= $multiplier ?>">
+                            <tr class="thick-border" data-group="<?= $group_id ?>" data-mult="<?= $multiplier ?>"> 
                                 <td>
                                     <a href="javascript:void(0);" data-id="<?= $product_id ?>" class="d-flex align-items-center view_product_details">
                                         <h6 class="fw-semibold mb-0 fs-4"><?= htmlspecialchars($items[0]['product_item']) ?></h6>
@@ -1624,6 +1681,7 @@ if(isset($_POST['fetch_cart'])){
 
                                 <td class="text-center">
                                     <a href="javascript:void(0)" data-id="<?= $product_id ?>" onClick="delete_product(this)"><i class="fa fs-6 fa-trash"></i></a>
+                                    <a href="javascript:void(0)" class="ms-2 toggle-details" data-group="<?= $group_id ?>"><i class="fa <?= $icon_class ?>"></i></a>
                                 </td>
                             </tr>
 
@@ -1665,11 +1723,15 @@ if(isset($_POST['fetch_cart'])){
                                 $product_id_abbrev = $item['unique_prod_id'];
                                 ?>
 
-                                <tr data-id="<?= $product_id ?>" data-line="<?= $line ?>" data-line="<?= $line ?>" data-bundle="<?= $values['bundle_name'] ?? '' ?>">
+                                <tr class="group-details-row <?= $rows_class ?>" 
+                                    data-group="<?= $group_id ?>" 
+                                    data-id="<?= $product_id ?>" 
+                                    data-line="<?= $line ?>"
+                                    data-bundle="<?= $values['bundle_name'] ?? '' ?>">
                                     
                                     <td class="text-start align-middle">
-                                        <div class="d-flex align-items-center gap-2">
-                                            <i class="fa fa-bars fa-lg drag-handle" style="cursor: move; flex-shrink: 0;"></i>
+                                        <div class="d-flex align-items-center gap-1">
+                                            <i class="fa fa-bars fa-lg drag-handle <?= $show_drag_handle ? '' : 'd-none' ?>" style="cursor: move; flex-shrink: 0;"></i>
                                             
                                             <div class="bundle-checkbox-cart d-none">
                                                 <div class="form-check m-0">
@@ -1716,7 +1778,7 @@ if(isset($_POST['fetch_cart'])){
                                         <div class="d-flex flex-row align-items-center flex-nowrap w-auto">
                                             <fieldset class="border p-1 d-inline-flex align-items-center flex-nowrap">
                                                 <div class="input-group d-flex align-items-center flex-nowrap w-100">
-                                                    <input class="form-control form-control-sm text-center px-1" 
+                                                    <input class="form-control form-control-sm text-center px-0" 
                                                         type="text" 
                                                         value="<?= round(floatval($values['estimate_length']),2) ?>" 
                                                         placeholder="PCS" 
@@ -1851,6 +1913,22 @@ if(isset($_POST['fetch_cart'])){
                     </div>
 
                     <div class="modal-body">
+
+                        <div class="card shadow-sm rounded-3 mb-3">
+                            <div class="card-header bg-light border-bottom">
+                                <h5 class="mb-0 fw-bold">Drag Handle</h5>
+                            </div>
+                            <div class="card-body border rounded p-3">
+                                <div class="row">
+                                    <div class="col-md-6 mb-2">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" id="show_drag_handle" name="show_drag_handle" value="1" <?php if ($show_prod_id_abbrev) echo 'checked'; ?>>
+                                            <label class="form-check-label" for="show_drag_handle">Drag/Drop Handle</label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
 
                         <div class="card shadow-sm rounded-3 mb-3">
                             <div class="card-header bg-light border-bottom">
@@ -2120,14 +2198,13 @@ if(isset($_POST['fetch_cart'])){
                 }
             });
 
-
             const savedData = sessionStorage.getItem('new_customer');
             if (savedData && <?= empty($_SESSION["customer_id"]) ? 'true' : 'false' ?>) {
                 const data = JSON.parse(savedData);
 
                 $('#customer_cart_section').html(`
                     <div class="form-group row align-items-center">
-                        <div class="d-flex flex-column gap-2">
+                        <div class="d-flex flex-column gap-1">
                             <div>
                                 <label class="fw-bold fs-5">Customer Name: ${data.first_name} ${data.last_name}</label>
                                 <button class="btn btn-primary btn-sm me-3" type="button" id="customer_change_cart">

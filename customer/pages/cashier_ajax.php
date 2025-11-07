@@ -590,6 +590,15 @@ if (isset($_POST['set_grade'])) {
     mysqli_query($conn, "UPDATE customer_cart SET custom_grade = '$grade' WHERE id= '$line'");
 }
 
+if (isset($_POST['set_gauge'])) {
+    $product_id = mysqli_real_escape_string($conn, $_POST['id']);
+    $line = (int)$_POST['line'];
+    $gauge = mysqli_real_escape_string($conn, $_POST['gauge']);
+    $customer_id = (int)$_SESSION['customer_id'];
+
+    mysqli_query($conn, "UPDATE customer_cart SET custom_gauge = '$gauge' WHERE id= '$line'");
+}
+
 if (isset($_POST['set_screw_length'])) {
     $product_id = mysqli_real_escape_string($conn, $_POST['id']);
     $line = (int)$_POST['line'];

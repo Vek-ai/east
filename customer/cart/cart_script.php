@@ -342,6 +342,29 @@ function updateGrade(element){
     });
 }
 
+function updateGauge(element){
+    var gauge = $(element).val();
+    var id = $(element).data('id');
+    var line = $(element).data('line');
+
+    $.ajax({
+        url: 'pages/cashier_ajax.php',
+        type: 'POST',
+        data: {
+            gauge: gauge,
+            id: id,
+            line: line,
+            set_gauge: "set_gauge"
+        },
+        success: function(response) {
+            loadCart();
+        },
+        error: function(jqXHR, textStatus, errorThrown) {
+            alert('Error: ' + textStatus + ' - ' + errorThrown);
+        }
+    });
+}
+
 function updateEstimateLength(element){
     var length = $(element).val();
     var id = $(element).data('id');

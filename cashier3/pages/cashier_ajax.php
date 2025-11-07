@@ -627,6 +627,18 @@ if (isset($_POST['set_grade'])) {
     echo "grade id: $grade, Prod id: $product_id, Line: $line, Key: $key";
 }
 
+if (isset($_POST['set_gauge'])) {
+    $product_id = mysqli_real_escape_string($conn, $_POST['id']);
+    $line = mysqli_real_escape_string($conn, $_POST['line']);
+    $gauge = mysqli_real_escape_string($conn, $_POST['gauge']);
+
+    $key = findCartKey($_SESSION["cart"], $product_id, $line);
+    if ($key !== false && isset($_SESSION["cart"][$key])) {
+        $_SESSION["cart"][$key]['custom_gauge'] = !empty($gauge) ? $gauge : "";
+    }
+    echo "gauge id: $grade, Prod id: $product_id, Line: $line, Key: $key";
+}
+
 if (isset($_POST['set_screw_length'])) {
     $product_id = mysqli_real_escape_string($conn, $_POST['product_id']);
     $line = mysqli_real_escape_string($conn, $_POST['line']);
@@ -3076,7 +3088,8 @@ if (isset($_POST['change_cart_columns'])) {
         'show_each_per_each',
         'show_each_per_pack',
         'show_each_price',
-        'show_retail_price'
+        'show_retail_price',
+        'show_drag_handle'
     ];
 
     foreach ($all_settings as $key) {
@@ -3147,6 +3160,21 @@ if (isset($_POST['send_order'])) {
 
     echo json_encode($response);
 }
+
+if (isset($_POST['toggle_group'])) {
+    $group_id = mysqli_real_escape_string($conn, $_POST['group_id']);
+    $state = mysqli_real_escape_string($conn, $_POST['state']);
+
+    if (!isset($_SESSION['cart_group_state'])) {
+        $_SESSION['cart_group_state'] = [];
+    }
+
+    $_SESSION['cart_group_state'][$group_id] = $state;
+
+    echo "Group $group_id set to $state";
+    exit;
+}
+
 
 ?>
 

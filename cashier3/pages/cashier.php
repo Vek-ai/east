@@ -1728,6 +1728,29 @@ $editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) :
         });
     }
 
+    function updateGauge(element){
+        var gauge = $(element).val();
+        var id = $(element).data('id');
+        var line = $(element).data('line');
+
+        $.ajax({
+            url: 'pages/cashier_ajax.php',
+            type: 'POST',
+            data: {
+                gauge: gauge,
+                id: id,
+                line: line,
+                set_gauge: "set_gauge"
+            },
+            success: function(response) {
+                loadCart();
+            },
+            error: function(jqXHR, textStatus, errorThrown) {
+                alert('Error: ' + textStatus + ' - ' + errorThrown);
+            }
+        });
+    }
+
     function updateEstimateLength(element){
         var length = $(element).val();
         var id = $(element).data('id');
@@ -5776,6 +5799,29 @@ $editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) :
             }
 
             $('#contractorModal').modal('hide');
+        });
+
+        $(document).on('click', '.toggle-details', function () {
+            const groupId = $(this).data('group');
+            const rows = $(`.group-details-row[data-group="${groupId}"]`);
+            const isVisible = rows.first().is(':visible');
+
+            $.ajax({
+                url: 'pages/cashier_ajax.php',
+                type: 'POST',
+                data: {
+                    toggle_group: 'toggle_group',
+                    group_id: groupId,
+                    state: isVisible ? 'closed' : 'open'
+                },
+                success: function(response) {
+                    console.log('Toggle result:', response);
+                    loadCart();
+                },
+                error: function(jqXHR, textStatus, errorThrown) {
+                    console.error('Toggle group error:', textStatus, errorThrown);
+                }
+            });
         });
 
     });
