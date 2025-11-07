@@ -257,6 +257,7 @@ if(isset($_POST['fetch_prompt_quantity'])){
                         $('#coil-stock').text('PREORDER');
                         $('#is_pre_order').val('1');
                     }
+                    console.log(response);
                 },
                 error: function(xhr, status, error) {
                     console.error("AJAX Error:", {
@@ -555,8 +556,6 @@ if (isset($_POST['fetch_stock_coil'])) {
 
     $query_coil = "SELECT 1 FROM coil_product 
                    WHERE 
-                       hidden = '0' AND
-                       status = '1' AND
                        color_sold_as = '$color' AND
                        grade = '$grade' AND
                        gauge = '$gauge'
@@ -565,8 +564,14 @@ if (isset($_POST['fetch_stock_coil'])) {
     $result = mysqli_query($conn, $query_coil);
 
     if (mysqli_num_rows($result) > 0) {
-        echo json_encode(['success' => true]);
+        echo json_encode([
+            'success' => true,
+            'query' => $query_coil
+        ]);
     } else {
-        echo json_encode(['success' => false]);
+        echo json_encode([
+            'success' => false,
+            'query' => $query_coil
+        ]);
     }
 }

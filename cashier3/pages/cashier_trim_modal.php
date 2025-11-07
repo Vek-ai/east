@@ -418,8 +418,6 @@ if (isset($_POST['fetch_stock_coil'])) {
     $query_coil = "
         SELECT 1 FROM coil_product 
         WHERE 
-            hidden = '0' AND
-            status = '1' AND
             color_sold_as = '$color' AND
             grade = '$grade' AND
             gauge = '$gauge'
