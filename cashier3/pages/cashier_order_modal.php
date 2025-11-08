@@ -1197,9 +1197,13 @@ if(isset($_POST['fetch_order'])){
             });
 
             function distributePaymentAmounts() {
-                const payableAmt = parseFloat($('#order_payable_amt').val().replace(/,/g, '')) || 0;
-                const activeMethods = $('.pay-method:checked');
+                const baseAmt = parseFloat($('#order_payable_amt').val().replace(/,/g, '')) || 0;
+                const taxRate = parseFloat($('#customer_tax_hidden').val()) || 0;
+                const totalWithTax = roundTo2(baseAmt * (1 + taxRate));
 
+                console.log(totalWithTax);
+
+                const activeMethods = $('.pay-method:checked');
                 if (activeMethods.length === 0) {
                     $('.amount-div input').val('');
                     manuallyEdited = {};
@@ -1215,20 +1219,18 @@ if(isset($_POST['fetch_order'])){
                     }
                 });
 
-                if (totalManual > payableAmt) {
-                    let excess = totalManual - payableAmt;
-
+                if (totalManual > totalWithTax) {
+                    const excess = totalManual - totalWithTax;
                     const lastInput = $('#' + lastCheckedMethod + 'AmountDiv input');
                     if (lastInput.length) {
                         let currentVal = parseFloat(lastInput.val()) || 0;
                         const adjusted = Math.max(0, currentVal - excess);
                         lastInput.val(adjusted.toFixed(2));
                     }
-
-                    totalManual = payableAmt;
+                    totalManual = totalWithTax;
                 }
 
-                let remaining = payableAmt - totalManual;
+                let remaining = roundTo2(totalWithTax - totalManual);
                 if (remaining < 0) remaining = 0;
 
                 const autoFillMethods = activeMethods.filter(function () {
@@ -1238,13 +1240,25 @@ if(isset($_POST['fetch_order'])){
 
                 const numAuto = autoFillMethods.length;
                 if (numAuto > 0) {
-                    const split = (remaining / numAuto).toFixed(2);
+                    const splitRaw = remaining / numAuto;
+                    const split = roundTo2(splitRaw);
 
-                    autoFillMethods.each(function () {
+                    let distributed = 0;
+                    autoFillMethods.each(function (index) {
                         const method = $(this).val();
-                        $('#' + method + 'AmountDiv input').val(split);
+                        let val = split;
+                        if (index === numAuto - 1) {
+                            val = roundTo2(remaining - distributed);
+                        } else {
+                            distributed += val;
+                        }
+                        $('#' + method + 'AmountDiv input').val(val.toFixed(2));
                     });
                 }
+            }
+
+            function roundTo2(num) {
+                return Math.round((num + Number.EPSILON) * 100) / 100;
             }
         });
     </script>
