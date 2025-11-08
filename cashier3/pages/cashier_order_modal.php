@@ -1170,18 +1170,82 @@ if(isset($_POST['fetch_order'])){
                 }
             });
 
-            $('.pay-method').on('change', function() {
+            let lastCheckedMethod = null;
+            let manuallyEdited = {};
+
+            $('.pay-method').on('change', function () {
                 const method = $(this).val();
                 const div = $('#' + method + 'AmountDiv');
 
                 if ($(this).is(':checked')) {
                     div.removeClass('d-none');
                     div.find('input').focus();
+                    lastCheckedMethod = method;
                 } else {
                     div.addClass('d-none');
                     div.find('input').val('');
+                    delete manuallyEdited[method];
                 }
+
+                distributePaymentAmounts();
             });
+
+            $('.amount-div input').on('input', function () {
+                const method = $(this).attr('id').replace('Amount', '');
+                manuallyEdited[method] = true;
+                distributePaymentAmounts();
+            });
+
+            function distributePaymentAmounts() {
+                const payableAmt = parseFloat($('#order_payable_amt').val().replace(/,/g, '')) || 0;
+                const activeMethods = $('.pay-method:checked');
+
+                if (activeMethods.length === 0) {
+                    $('.amount-div input').val('');
+                    manuallyEdited = {};
+                    return;
+                }
+
+                let totalManual = 0;
+                activeMethods.each(function () {
+                    const method = $(this).val();
+                    if (manuallyEdited[method]) {
+                        const val = parseFloat($('#' + method + 'AmountDiv input').val()) || 0;
+                        totalManual += val;
+                    }
+                });
+
+                if (totalManual > payableAmt) {
+                    let excess = totalManual - payableAmt;
+
+                    const lastInput = $('#' + lastCheckedMethod + 'AmountDiv input');
+                    if (lastInput.length) {
+                        let currentVal = parseFloat(lastInput.val()) || 0;
+                        const adjusted = Math.max(0, currentVal - excess);
+                        lastInput.val(adjusted.toFixed(2));
+                    }
+
+                    totalManual = payableAmt;
+                }
+
+                let remaining = payableAmt - totalManual;
+                if (remaining < 0) remaining = 0;
+
+                const autoFillMethods = activeMethods.filter(function () {
+                    const method = $(this).val();
+                    return !manuallyEdited[method];
+                });
+
+                const numAuto = autoFillMethods.length;
+                if (numAuto > 0) {
+                    const split = (remaining / numAuto).toFixed(2);
+
+                    autoFillMethods.each(function () {
+                        const method = $(this).val();
+                        $('#' + method + 'AmountDiv input').val(split);
+                    });
+                }
+            }
         });
     </script>
 
