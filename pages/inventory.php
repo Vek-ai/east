@@ -475,18 +475,13 @@ function showCol($name) {
     }
 
     function filterLengthsByProduct($select) {
-        const productCategory = $('#product_id').find(':selected').data('category');
+        const selectedCategory = String($('#product_id').find(':selected').data('category'));
 
         $select.find('option').each(function() {
-            const optionCategory = $(this).data('category');
+            const categories = ($(this).attr('data-category') || '').replace(/[\[\]\s]/g, '').split(',').filter(Boolean);
+            const match = categories.includes(selectedCategory);
 
-            console.log(optionCategory);
-
-            if (optionCategory && productCategory && optionCategory != productCategory) {
-                $(this).hide();
-            } else {
-                $(this).show();
-            }
+            $(this).toggle(match);
         });
     }
 

@@ -173,15 +173,22 @@ if(isset($_REQUEST['action'])) {
             <div class="col-md-3">
                 <label class="form-label">Color</label>
                 <div class="mb-3">
-                    <select id="color" class="form-control color-cart select2-inventory" name="color_id">
+                    <select id="color" class="form-control color_id select2-inventory" name="color_id">
                         <option value="">Select Color...</option>
                         <?php
-                        $query_colors = "SELECT * FROM paint_colors WHERE hidden = '0' AND color_status = '1' ORDER BY color_name ASC";
+                        $query_colors = "
+                            SELECT * 
+                            FROM paint_colors 
+                            WHERE hidden = '0' AND color_status = '1' 
+                            GROUP BY BINARY color_name
+                            ORDER BY color_name ASC
+                        ";
                         $result_colors = mysqli_query($conn, $query_colors);
                         while ($c = mysqli_fetch_assoc($result_colors)) {
                             $selected = ($row['color_id'] == $c['color_id']) ? 'selected' : '';
                             $hex = getColorHexFromColorID($c['color_id']);
-                            echo "<option value='{$c['color_id']}' data-color='{$hex}' $selected>{$c['color_name']}</option>";
+                            $hex = $c['color_id'];
+                            echo "<option value='{$c['color_id']}' data-color='{$hex}' data-category='{$hex}' $selected>{$c['color_name']}</option>";
                         }
                         ?>
                     </select>
