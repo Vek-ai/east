@@ -28,21 +28,56 @@ if(isset($_REQUEST['action'])) {
         $gauge        = mysqli_real_escape_string($conn, $_POST['gauge']);
         $addedby      = $_SESSION['userid'];
 
-        $dimension_ids   = $_POST['dimension_id'] ?? [];
-        $quantity_ttls   = $_POST['quantity_ttl'] ?? [];
-        $reorder_levels  = $_POST['reorder_level'] ?? [];
+        $dimension_ids  = $_POST['dimension_id'] ?? [];
+        $quantity_ttls  = $_POST['quantity_ttl'] ?? [];
+        $reorder_levels = $_POST['reorder_level'] ?? [];
+
+        $total_quantity = array_sum($quantity_ttls);
+
+        $result = mysqli_query($conn, "
+            SELECT inventory_id, quantity_ttl
+            FROM inventory
+            WHERE Product_id='$Product_id'
+            AND color_id='$color_id'
+            AND grade='$grade'
+            AND gauge='$gauge'
+            AND lumber_type='$lumber_type'
+        ");
+        if (!$result) die("Error fetching inventory: " . mysqli_error($conn));
+
+        while ($row = mysqli_fetch_assoc($result)) {
+            $inventory_id = $row['inventory_id'];
+            $new_total_qty = (int)$row['quantity_ttl'] + $total_quantity;
+            $updateQuery = "
+                UPDATE inventory SET
+                    Warehouse_id='$Warehouse_id',
+                    Shelves_id='$Shelves_id',
+                    Bin_id='$Bin_id',
+                    Row_id='$Row_id',
+                    Date='$Date',
+                    quantity_ttl='$new_total_qty',
+                    pack='$pack',
+                    cost='$cost',
+                    price='$price',
+                    addedby='$addedby',
+                    last_edit=NOW(),
+                    edited_by='$addedby'
+                WHERE inventory_id='$inventory_id'
+            ";
+            if (!mysqli_query($conn, $updateQuery)) die("Error updating inventory: " . mysqli_error($conn));
+        }
 
         foreach ($dimension_ids as $i => $dimension_id) {
-            $dimension_id   = mysqli_real_escape_string($conn, $dimension_id);
-            $quantity_ttl   = (int)($quantity_ttls[$i] ?? 0);
-            $reorder_level  = (int)($reorder_levels[$i] ?? 0);
+            $dimension_id  = mysqli_real_escape_string($conn, $dimension_id);
+            $quantity_ttl  = (int)($quantity_ttls[$i] ?? 0);
+            $reorder_level = (int)($reorder_levels[$i] ?? 0);
 
-            if (!$dimension_id) continue;
+            if ($quantity_ttl <= 0) continue;
 
             $checkQuery = "
-                SELECT inventory_id, quantity_ttl 
-                FROM inventory 
-                WHERE Product_id='$Product_id' 
+                SELECT inventory_id
+                FROM inventory
+                WHERE Product_id='$Product_id'
                 AND color_id='$color_id'
                 AND grade='$grade'
                 AND gauge='$gauge'
@@ -50,42 +85,38 @@ if(isset($_REQUEST['action'])) {
                 AND dimension_id='$dimension_id'
                 LIMIT 1
             ";
+            $resCheck = mysqli_query($conn, $checkQuery);
+            if (!$resCheck) die("Error checking dimension inventory: " . mysqli_error($conn));
 
-            $result = mysqli_query($conn, $checkQuery);
-            if (!$result) die("Error: " . mysqli_error($conn));
-
-            if (mysqli_num_rows($result) > 0) {
-                $row = mysqli_fetch_assoc($result);
-                $inventory_id  = $row['inventory_id'];
-                $new_total_qty = $row['quantity_ttl'] + $quantity_ttl;
-
-                $updateQuery = "
+            if (mysqli_num_rows($resCheck) > 0) {
+                $rowDim = mysqli_fetch_assoc($resCheck);
+                $inventory_id = $rowDim['inventory_id'];
+                $updateDim = "
                     UPDATE inventory SET
                         Warehouse_id='$Warehouse_id',
                         Shelves_id='$Shelves_id',
                         Bin_id='$Bin_id',
                         Row_id='$Row_id',
                         Date='$Date',
-                        quantity_ttl='$new_total_qty',
+                        quantity_ttl='$quantity_ttl',
                         reorder_level='$reorder_level',
                         pack='$pack',
                         cost='$cost',
                         price='$price',
-                        addedby='$addedby'
+                        addedby='$addedby',
+                        last_edit=NOW(),
+                        edited_by='$addedby'
                     WHERE inventory_id='$inventory_id'
                 ";
-
-                if (!mysqli_query($conn, $updateQuery)) die("Error updating: " . mysqli_error($conn));
+                if (!mysqli_query($conn, $updateDim)) die("Error updating dimension inventory: " . mysqli_error($conn));
             } else {
-                $insertQuery = "
-                    INSERT INTO inventory 
+                $insertDim = "
+                    INSERT INTO inventory
                         (Product_id, color_id, grade, gauge, lumber_type, dimension_id, Warehouse_id, Shelves_id, Bin_id, Row_id, Date, quantity_ttl, reorder_level, pack, cost, price, addedby)
                     VALUES
                         ('$Product_id', '$color_id', '$grade', '$gauge', '$lumber_type', '$dimension_id', '$Warehouse_id', '$Shelves_id', '$Bin_id', '$Row_id', '$Date', '$quantity_ttl', '$reorder_level', '$pack', '$cost', '$price', '$addedby')
                 ";
-
-                if (!mysqli_query($conn, $insertQuery)) die("Error inserting: " . mysqli_error($conn));
-
+                if (!mysqli_query($conn, $insertDim)) die("Error inserting dimension inventory: " . mysqli_error($conn));
                 $inventory_id = mysqli_insert_id($conn);
             }
 
@@ -96,9 +127,8 @@ if(isset($_REQUEST['action'])) {
                 INSERT INTO product_inventory
                     (productid, inventoryid, supplierid, cost, price, delivery_date, batchno, entered_by, quantity, pack_id, total_quantity)
                 VALUES
-                    ('$Product_id', '$inventory_id', '$supplier_id', '$cost', '$price', NOW(), '$batchno', '$addedby', '$quantity_ttl', '$pack', '$new_total_qty')
+                    ('$Product_id', '$inventory_id', '$supplier_id', '$cost', '$price', NOW(), '$batchno', '$addedby', '$quantity_ttl', '$pack', '$total_quantity')
             ";
-
             if (!mysqli_query($conn, $insertProductInventory)) die("Error inserting product_inventory: " . mysqli_error($conn));
         }
 
@@ -143,7 +173,7 @@ if(isset($_REQUEST['action'])) {
             <div class="col-md-3">
                 <label class="form-label">Color</label>
                 <div class="mb-3">
-                    <select id="color" class="form-control color-cart select2-inventory" name="color_id" required>
+                    <select id="color" class="form-control color-cart select2-inventory" name="color_id">
                         <option value="">Select Color...</option>
                         <?php
                         $query_colors = "SELECT * FROM paint_colors WHERE hidden = '0' AND color_status = '1' ORDER BY color_name ASC";
@@ -161,7 +191,7 @@ if(isset($_REQUEST['action'])) {
             <div class="col-md-3">
                 <label class="form-label">Grade</label>
                 <div class="mb-3">
-                    <select id="grade" class="form-control grade-cart select2-inventory" name="grade" required>
+                    <select id="grade" class="form-control grade-cart select2-inventory" name="grade">
                         <option value="">Select Grade...</option>
                         <?php
                         $query_grade = "SELECT * FROM product_grade WHERE hidden = '0' AND status = '1' ORDER BY product_grade ASC";
@@ -178,7 +208,7 @@ if(isset($_REQUEST['action'])) {
             <div class="col-md-3">
                 <label class="form-label">Gauge</label>
                 <div class="mb-3">
-                    <select id="gauge" class="form-control gauge-cart select2-inventory" name="gauge" required>
+                    <select id="gauge" class="form-control gauge-cart select2-inventory" name="gauge">
                         <option value="">Select Gauge...</option>
                         <?php
                         $query_gauge = "SELECT * FROM product_gauge WHERE hidden = '0' AND status = '1' ORDER BY product_gauge ASC";

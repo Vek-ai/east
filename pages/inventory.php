@@ -275,7 +275,23 @@ function showCol($name) {
                         <tbody>
                         <?php
                             $no = 1;
-                            $query_inventory = "SELECT * FROM inventory";
+                            $query_inventory = "
+                                SELECT 
+                                    Inventory_id,
+                                    Product_id,
+                                    color_id,
+                                    grade,
+                                    gauge,
+                                    SUM(quantity_ttl) AS total_quantity,
+                                    MAX(last_edit) AS last_edit,
+                                    MAX(addedby) AS added_by,
+                                    MAX(edited_by) AS edited_by,
+                                    MAX(Warehouse_id) AS Warehouse_id,
+                                    MAX(status) AS status
+                                FROM inventory
+                                GROUP BY Product_id, color_id, grade, gauge
+                                ORDER BY Product_id, color_id, grade, gauge;
+                            ";
                             $result_inventory = mysqli_query($conn, $query_inventory);            
                             while ($row_inventory = mysqli_fetch_array($result_inventory)) {
                                 $Inventory_id = $row_inventory['Inventory_id'];
@@ -287,7 +303,7 @@ function showCol($name) {
                                 $Row_id = $row_inventory['Row_id'];
                                 $Date = $row_inventory['Date'];
                                 $quantity = $row_inventory['quantity'];
-                                $quantity_ttl = $row_inventory['quantity_ttl'];
+                                $quantity_ttl = $row_inventory['total_quantity'];
                                 $addedby = $row_inventory['addedby'];
                                 $db_status = $row_inventory['status'];
 
@@ -299,11 +315,34 @@ function showCol($name) {
                                     $status = "";
                                 }
 
+                                $last_edit = $row_inventory['last_edit'];
+                                if (!empty($row['last_edit']) && strtotime($row['last_edit']) !== false) {
+                                    $last_edit = date('m/d/Y', strtotime($row['last_edit']));
+                                }
+
+                                $added_by = $row_inventory['added_by'];
+                                $edited_by = $row_inventory['edited_by'];
+                        
+                                if ($edited_by != "0") {
+                                    $last_user_name = get_staff_name($edited_by);
+                                } elseif ($added_by != "0") {
+                                    $last_user_name = get_staff_name($added_by);
+                                } else {
+                                    $last_user_name = "";
+                                }
+
                                 $product = getProductDetails($Product_id);
                                 $product_category = $product['product_category'] ?? 0;
                                 $lumber_type = ucwords($row_inventory['lumber_type']);
-                            ?>
-                                <!-- start row -->
+
+                                $color_id = $row_inventory['color_id'];
+                                $grade = $row_inventory['grade'];
+                                $gauge = $row_inventory['gauge'];
+
+                                $product_type_json = $product['product_type'] ?? '[]';
+                                $product_type_arr = json_decode($product_type_json, true);
+                                $product_type = !empty($product_type_arr) ? end($product_type_arr) : 0;
+                                ?>
                                 <tr class="search-items"
                                     data-color="<?= $row_inventory['color_id'] ?? 0 ?>"
                                     data-supplier="<?= $row_inventory['supplier_id'] ?? 0 ?>"
@@ -313,61 +352,44 @@ function showCol($name) {
                                     data-row="<?= $row_inventory['Row_id'] ?? 0 ?>"
                                     data-new="<?= $row_inventory['status'] == 0 ? 1 : 0 ?>"
                                 >
-                                    <?php if (showCol('product')): ?>
+                                    <td>
                                         <?php 
-                                            $parts = [
-                                                getProductName($Product_id),
-                                                getColorName($color_id),
-                                                getInventoryDimensions($Inventory_id),
-                                                $product_category == '1' ? $lumber_type : ''
-                                            ];
-                                            $parts = array_filter($parts);
+                                            $product_id_abbrev = fetchSingleProductABR(
+                                                $product_category,
+                                                '',
+                                                $grade,
+                                                $gauge,
+                                                $product_type,
+                                                $color_id,
+                                                ''
+                                            );
 
-                                            $display = implode(' - ', $parts);
+                                            echo $product_id_abbrev;
                                         ?>
-                                        <td><?= $display ?></td>
-                                    <?php endif; ?>
+                                    </td>
+                                    <td><?= getProductName($Product_id) ?></td>
+                                    <td><?= getColorName($color_id) ?></td>
+                                    <td><?= getGradeName($grade) ?></td>
+                                    <td><?= getGaugeName($gauge) ?></td>
+                                    <td><?= getWarehouseName($Warehouse_id) ?></td>
+                                    <td><?= $quantity_ttl ?></td>
+                                    <td><?= $last_edit ?></td>
+                                    <td><?= $last_user_name ?></td>
+                                    <td><?= $status ?></td>
+                                    <td>
+                                        <div class="action-btn text-center">
+                                            <?php                                                    
+                                            if ($permission === 'edit') {
+                                            ?>
+                                            <a href="#" id="view_inventory_btn" title="Edit" class="text-primary edit" data-id="<?= $Inventory_id ?>">
+                                                <i class="ti ti-pencil fs-5"></i>
+                                            </a>
+                                            <?php
+                                            }
+                                            ?>
 
-                                    <?php if (showCol('warehouse')): ?>
-                                        <td><?= getWarehouseName($Warehouse_id) ?></td>
-                                    <?php endif; ?>
-
-                                    <?php if (showCol('date')): ?>
-                                        <td><?= $Date ?></td>
-                                    <?php endif; ?>
-
-                                    <?php if (showCol('quantity')): ?>
-                                        <td><?= $quantity_ttl ?></td>
-                                    <?php endif; ?>
-
-                                    <?php if (showCol('total_quantity')): ?>
-                                        <td><?= $quantity_ttl ?></td>
-                                    <?php endif; ?>
-
-                                    <?php if (showCol('added_by')): ?>
-                                        <td><?= get_name($addedby) ?></td>
-                                    <?php endif; ?>
-
-                                    <?php if (showCol('status')): ?>
-                                        <td><?= $status ?></td>
-                                    <?php endif; ?>
-
-                                    <?php if (showCol('action')): ?>
-                                        <td>
-                                            <div class="action-btn text-center">
-                                                <?php                                                    
-                                                if ($permission === 'edit') {
-                                                ?>
-                                                <a href="#" id="view_inventory_btn" title="Edit" class="text-primary edit" data-id="<?= $Inventory_id ?>">
-                                                    <i class="ti ti-pencil fs-5"></i>
-                                                </a>
-                                                <?php
-                                                }
-                                                ?>
-
-                                            </div>
-                                        </td>
-                                    <?php endif; ?>
+                                        </div>
+                                    </td>
                                 </tr>
                             <?php 
                             $no++;
