@@ -699,11 +699,11 @@ function showCol($name) {
         });
        
         function updateSearchCategory() {
-            var product_category = $('#product_category_filter').val() || '';
-            var product_id = $('#product_id').val() || '';
-            var filename = $('#product_category_filter option:selected').data('filename') || '';
+            const product_category = $('#product_category_filter').val() || '';
+            const product_id = $('#product_id').val() || '';
+            const filename = $('#product_category_filter option:selected').data('filename') || '';
 
-            if (filename != '') {
+            if (filename !== '') {
                 $('#product_category_filter').slideUp(200);
 
                 $.ajax({
@@ -713,31 +713,23 @@ function showCol($name) {
                         id: product_id,
                         action: "fetch_product_modal"
                     },
-                    success: function(response) {
+                    success: function (response) {
                         $('#add-fields').html(response);
 
-                        let selectedCategory = $('#product_category_filter').val() || '';
-
+                        const selectedCategory = $('#product_category_filter').val() || '';
                         $('#product_category').val(selectedCategory).trigger('change');
 
                         $('.add-category option').each(function () {
-                            let categories = $(this).data('category') || '';
-                            let selectedCategory = $('#product_category_filter').val() || '';
-
-                            if (typeof categories === 'string') {
-                                categories = categories.replace(/[\[\]\s]/g, '');
-                                categories = categories.split(',').filter(Boolean);
-                            } else if (!Array.isArray(categories)) {
-                                categories = [categories.toString()];
-                            }
-
-                            let match = categories.includes(selectedCategory);
+                            let categories = $(this).attr('data-category') || '';
+                            categories = categories.replace(/[\[\]\s]/g, '');
+                            const arr = categories.split(',').filter(Boolean);
+                            const match = arr.includes(selectedCategory);
 
                             $(this).prop('disabled', !match);
                         });
 
-                        $(".select2").each(function() {
-                            let $this = $(this);
+                        $(".select2").each(function () {
+                            const $this = $(this);
 
                             if ($this.hasClass("select2-hidden-accessible")) {
                                 $this.select2('destroy');
@@ -759,6 +751,7 @@ function showCol($name) {
                 $('.hidden-field').addClass('d-none');
             }
         }
+
 
         $(document).on('click', '#addProductModalBtn', function(event) {
             event.preventDefault();
