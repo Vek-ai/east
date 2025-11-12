@@ -722,7 +722,17 @@ function showCol($name) {
 
                         $('.add-category option').each(function () {
                             let categories = $(this).data('category') || '';
-                            let match = categories.toString().includes(selectedCategory);
+                            let selectedCategory = $('#product_category_filter').val() || '';
+
+                            if (typeof categories === 'string') {
+                                categories = categories.replace(/[\[\]\s]/g, '');
+                                categories = categories.split(',').filter(Boolean);
+                            } else if (!Array.isArray(categories)) {
+                                categories = [categories.toString()];
+                            }
+
+                            let match = categories.includes(selectedCategory);
+
                             $(this).prop('disabled', !match);
                         });
 

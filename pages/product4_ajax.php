@@ -612,9 +612,7 @@ if(isset($_REQUEST['action'])) {
     }
 
     if ($action == "fetch_uploaded_modal") {
-        $table = $product_excel;
-
-        $sql = "SELECT * FROM `$table`";
+        $sql = "SELECT * FROM `$product_excel`";
         $result = $conn->query($sql);
 
         if ($result && $result->num_rows > 0) {
