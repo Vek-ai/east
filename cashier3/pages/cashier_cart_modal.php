@@ -44,6 +44,7 @@ if ($staff_id) {
     $show_each_price    = 0;
 
     $show_retail_price  = 0;
+    $show_profile  = 0;
     $show_total_price = 1;
     $show_drag_handle = 0;
 
@@ -104,7 +105,7 @@ if(isset($_POST['fetch_cart'])){
 
         .table-fixed th:nth-child(1),
         .table-fixed td:nth-child(1) { width: 15%; }
-        .table-fixed th:nth-child(2),
+        /* .table-fixed th:nth-child(2),
         .table-fixed td:nth-child(2) { width: 8%; }
         .table-fixed th:nth-child(3),
         .table-fixed td:nth-child(3) { width: 8%; }
@@ -125,7 +126,7 @@ if(isset($_POST['fetch_cart'])){
         .table-fixed th:nth-child(11),
         .table-fixed td:nth-child(11) { width: 7%; }
         .table-fixed th:nth-child(12),
-        .table-fixed td:nth-child(12) { width: 7%; }
+        .table-fixed td:nth-child(12) { width: 7%; } */
 
         input[readonly] {
             border: none;               
@@ -220,9 +221,15 @@ if(isset($_POST['fetch_cart'])){
                         <th class="text-center">Color</th>
                         <th class="text-center">Grade</th>
                         <th class="text-center">Gauge</th>
-                        <th class="text-center">Profile</th>
+                        <th class="text-center">
+                            <span class="<?= $show_profile ? '' : 'd-none' ?>">
+                                Profile
+                            </span>
+                        </th>
                         <th class="text-center pl-3">Quantity</th>
                         <th class="text-center">Length</th>
+                        <th class="text-center">Panel Type</th>
+                        <th class="text-center">Panel Style</th>
                         <th class="text-center">Stock</th>
                         <th class="text-center">
                             <span class="<?= $show_retail_price ? '' : 'd-none' ?>">
@@ -261,6 +268,8 @@ if(isset($_POST['fetch_cart'])){
                                 'color_id'   => (int) ($values['custom_color'] ?? 0),
                                 'grade_id'   => (int) ($values['custom_grade'] ?? 0),
                                 'gauge_id'   => (int) ($values['custom_gauge'] ?? 0),
+                                'panel_type' => ($values['panel_type'] ?? 0),
+                                'panel_style'=> ($values['panel_style'] ?? 0),
                             ];
                             $group_key = implode('_', $group_fields);
 
@@ -388,12 +397,72 @@ if(isset($_POST['fetch_cart'])){
                                     </select>
                                 </td>
 
-                                <td class="text-center"><?= getProfileTypeName($first_calc['profile']) ?></td>
+                                <td class="text-center">
+                                    <span class="<?= $show_profile ? '' : 'd-none' ?>">
+                                        <?= getProfileTypeName($first_calc['profile']) ?>
+                                    </span>
+                                </td>
 
                                 <td class="text-center"><?= $total_qty ?></td>
 
                                 <td class="text-center">
                                     <div class="mt-1"><?= number_format($total_length_cart,2) ?> ft</div>
+                                </td>
+
+                                <td class="text-center">
+                                    <select class="form-control panel_type_cart" name="panel_type" onchange="updatePanelTypeParent(this)" data-line="<?= $line; ?>" data-id="<?= $product_id; ?>">
+                                        <option value="">Select...</option>
+                                        <?php
+                                        $panel_types = array_filter([$panel_type_1 ?? '', $panel_type_2 ?? '', $panel_type_3 ?? '']);
+                                        $selected_type = $values['panel_type'] ?? '';
+
+                                        if (!empty($panel_types)) {
+                                            foreach ($panel_types as $type) {
+                                                $selected = ($selected_type === $type) ? 'selected' : '';
+                                                echo "<option value=\"{$type}\" {$selected}>" . ucwords(str_replace('_', ' ', $type)) . "</option>";
+                                            }
+                                        } else {
+                                            $static_options = [
+                                                'Solid' => 'Solid',
+                                                'Vented' => 'Vented',
+                                                'Drip Stop' => 'Drip Stop'
+                                            ];
+                                            foreach ($static_options as $val => $label) {
+                                                $selected = ($selected_type === $val) ? 'selected' : '';
+                                                echo "<option value=\"{$val}\" {$selected}>{$label}</option>";
+                                            }
+                                        }
+                                        ?>
+                                    </select>
+                                </td>
+                                <td class="text-center">
+                                    <?php
+                                    $standing_seam = $product["standing_seam"];
+                                    $board_batten  = $product["board_batten"];
+                                    ?>
+
+                                    <select class="form-control panel_style_cart" name="panel_style" onchange="updatePanelStyleParent(this)" data-line="<?= $line; ?>" data-id="<?= $product_id; ?>">
+                                        <?php if (!empty($standing_seam)): ?>
+                                            <option value="striated" <?= $values['panel_style'] == 'striated' ? 'selected' : '' ?>>Striated</option>
+                                            <option value="flat" <?= $values['panel_style'] == 'flat' ? 'selected' : '' ?>>Flat</option>
+                                            <option value="minor_rib" <?= $values['panel_style'] == 'minor_rib' ? 'selected' : '' ?>>Minor Rib</option>
+                                        <?php elseif (!empty($board_batten)): ?>
+                                            <option value="flat" <?= $values['panel_style'] == 'flat' ? 'selected' : '' ?>>Flat</option>
+                                            <option value="minor_rib" <?= $values['panel_style'] == 'minor_rib' ? 'selected' : '' ?>>Minor Rib</option>
+                                        <?php else: ?>
+                                            <?php
+                                            $panel_styles = array_filter([$panel_style_1 ?? '', $panel_style_2 ?? '', $panel_style_3 ?? '']);
+                                            $selected_style = $values['panel_style'] ?? '';
+
+                                            if (!empty($panel_styles)) {
+                                                foreach ($panel_styles as $style) {
+                                                    $selected = ($selected_style === $style) ? 'selected' : '';
+                                                    echo "<option value=\"{$style}\" {$selected}>" . ucwords(str_replace('_', ' ', $style)) . "</option>";
+                                                }
+                                            } 
+                                            ?>
+                                        <?php endif; ?>
+                                    </select>
                                 </td>
 
                                 <td class="text-center"><?= $stock_text ?></td>
@@ -465,16 +534,19 @@ if(isset($_POST['fetch_cart'])){
                                             </button>
                                         <?php endif; ?>
                                     </th>
+                                    <th class="text-center"></th>
+                                    <th class="text-center"></th>
+                                    <th class="text-center"></th>
                                     <th class="text-center">Qty</th>
                                     <th class="text-center">Length</th>
-                                    <th class="text-center">Panel Type</th>
-                                    <th class="text-center">Panel Style</th>
+                                    <th class="text-center"></th>
                                     <th class="text-center">
                                         <span class="<?= $show_linear_ft ? '' : 'd-none' ?>">Linear Ft $</span>
                                     </th>
                                     <th class="text-center">
                                         <span class="<?= $show_per_panel ? '' : 'd-none' ?>">Per Panel $</span>
                                     </th>
+                                    
                                     <th class="text-center">
                                         <span class="<?= $show_retail_price ? '' : 'd-none' ?>">
                                             Price
@@ -537,6 +609,9 @@ if(isset($_POST['fetch_cart'])){
                                             </div>
                                         </td>
                                         <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
                                         <td class="text-center">
                                             <div class="input-group d-inline-flex align-items-center flex-nowrap w-auto">
                                                 <button class="btn btn-primary btn-sm p-1" type="button"
@@ -586,61 +661,7 @@ if(isset($_POST['fetch_cart'])){
                                                 </fieldset>
                                             </div>
                                         </td>
-                                        <td class="text-center">
-                                            <select class="form-control panel_type_cart" name="panel_type" onchange="updatePanelType(this)" data-line="<?= $line; ?>" data-id="<?= $product_id; ?>">
-                                                <option value="">Select...</option>
-                                                <?php
-                                                $panel_types = array_filter([$panel_type_1 ?? '', $panel_type_2 ?? '', $panel_type_3 ?? '']);
-                                                $selected_type = $values['panel_type'] ?? '';
-
-                                                if (!empty($panel_types)) {
-                                                    foreach ($panel_types as $type) {
-                                                        $selected = ($selected_type === $type) ? 'selected' : '';
-                                                        echo "<option value=\"{$type}\" {$selected}>" . ucwords(str_replace('_', ' ', $type)) . "</option>";
-                                                    }
-                                                } else {
-                                                    $static_options = [
-                                                        'Solid' => 'Solid',
-                                                        'Vented' => 'Vented',
-                                                        'Drip Stop' => 'Drip Stop'
-                                                    ];
-                                                    foreach ($static_options as $val => $label) {
-                                                        $selected = ($selected_type === $val) ? 'selected' : '';
-                                                        echo "<option value=\"{$val}\" {$selected}>{$label}</option>";
-                                                    }
-                                                }
-                                                ?>
-                                            </select>
-                                        </td>
-                                        <td class="text-center">
-                                            <?php
-                                            $standing_seam = $product["standing_seam"];
-                                            $board_batten  = $product["board_batten"];
-                                            ?>
-
-                                            <select class="form-control panel_style_cart" name="panel_style" onchange="updatePanelStyle(this)" data-line="<?= $line; ?>" data-id="<?= $product_id; ?>">
-                                                <?php if (!empty($standing_seam)): ?>
-                                                    <option value="striated" <?= $values['panel_style'] == 'striated' ? 'selected' : '' ?>>Striated</option>
-                                                    <option value="flat" <?= $values['panel_style'] == 'flat' ? 'selected' : '' ?>>Flat</option>
-                                                    <option value="minor_rib" <?= $values['panel_style'] == 'minor_rib' ? 'selected' : '' ?>>Minor Rib</option>
-                                                <?php elseif (!empty($board_batten)): ?>
-                                                    <option value="flat" <?= $values['panel_style'] == 'flat' ? 'selected' : '' ?>>Flat</option>
-                                                    <option value="minor_rib" <?= $values['panel_style'] == 'minor_rib' ? 'selected' : '' ?>>Minor Rib</option>
-                                                <?php else: ?>
-                                                    <?php
-                                                    $panel_styles = array_filter([$panel_style_1 ?? '', $panel_style_2 ?? '', $panel_style_3 ?? '']);
-                                                    $selected_style = $values['panel_style'] ?? '';
-
-                                                    if (!empty($panel_styles)) {
-                                                        foreach ($panel_styles as $style) {
-                                                            $selected = ($selected_style === $style) ? 'selected' : '';
-                                                            echo "<option value=\"{$style}\" {$selected}>" . ucwords(str_replace('_', ' ', $style)) . "</option>";
-                                                        }
-                                                    } 
-                                                    ?>
-                                                <?php endif; ?>
-                                            </select>
-                                        </td>
+                                        <th class="text-center"></th>
                                         <td class="text-center">
                                             <span class="<?= $show_linear_ft ? '' : 'd-none' ?>">
                                                 <?php
@@ -817,13 +838,20 @@ if(isset($_POST['fetch_cart'])){
                                     </select>
                                 </td>
 
-                                <td class="text-center"><?= getProfileTypeName($first_calc['profile']) ?></td>
+                                <td class="text-center">
+                                    <span class="<?= $show_profile ? '' : 'd-none' ?>">
+                                        <?= getProfileTypeName($first_calc['profile']) ?>
+                                    </span>
+                                </td>
 
                                 <td class="text-center"><?= $total_qty ?></td>
 
                                 <td class="text-center">
                                     <div class="mt-1"><?= number_format($total_length_cart,2) ?> ft</div>
                                 </td>
+
+                                <td class="text-center"></td>
+                                <td class="text-center"></td>
 
                                 <td class="text-center"><?= $stock_text ?></td>
 
@@ -843,10 +871,9 @@ if(isset($_POST['fetch_cart'])){
                             </tr>
 
                             <tr class="thick-border create_bundle_row <?= $rows_class ?>">
-                                <th class="text-center" colspan="2"></th>
+                                <th class="text-center" colspan="5"></th>
                                 <th class="text-center">Qty</th>
                                 <th class="text-center">Length</th>
-                                <th class="text-center"></th>
                                 <th class="text-center"></th>
                                 <th class="text-center">
                                     <span class="<?= $show_trim_per_ft ? '' : 'd-none' ?>">Per Ft $</span>
@@ -859,7 +886,7 @@ if(isset($_POST['fetch_cart'])){
                                         Price
                                     </span>
                                 </th>
-                                <th class="text-center <?= $show_trim_price ? '' : 'd-none' ?>">Price</th>
+                                <th class="text-center <?= $show_trim_price ? '' : 'd-none' ?>">Customer Price</th>
                                 <th class="text-center"></th>
                             </tr>
 
@@ -912,6 +939,9 @@ if(isset($_POST['fetch_cart'])){
                                         </div>
                                     </td>
                                     <td></td>
+                                    <td></td>
+                                    <td></td>
+                                    <td></td>
                                     <td class="text-center">
                                         <div class="input-group d-inline-flex align-items-center flex-nowrap w-auto">
                                             <button class="btn btn-primary btn-sm p-1" type="button" data-line="<?= $line; ?>" data-id="<?= $product_id; ?>" onClick="deductquantity(this)">
@@ -954,8 +984,7 @@ if(isset($_POST['fetch_cart'])){
                                             </fieldset>
                                         </div>
                                     </td>
-                                    <td class="text-center"></td>
-                                    <td class="text-center"></td>
+                                    <td></td>
                                     <td class="text-center">
                                         <span class="<?= $show_trim_price ? '' : 'd-none' ?>">
                                             <?php
@@ -970,6 +999,7 @@ if(isset($_POST['fetch_cart'])){
                                             ?>
                                         </span>
                                     </td>
+                                    
                                     <td class="text-center pl-3">
                                         <span class=" <?= $show_retail_price ? '' : 'd-none' ?>">
                                             $
@@ -1089,13 +1119,20 @@ if(isset($_POST['fetch_cart'])){
 
                                 <td class="text-center"></td>
 
-                                <td class="text-center"><?= getProfileTypeName($first_calc['profile']) ?></td>
+                                <td class="text-center">
+                                    <span class="<?= $show_profile ? '' : 'd-none' ?>">
+                                        <?= getProfileTypeName($first_calc['profile']) ?>
+                                    </span>
+                                </td>
 
                                 <td class="text-center"><?= $total_qty ?></td>
 
                                 <td class="text-center">
                                     <div class="mt-1"><?= number_format($total_length_cart,2) ?> ft</div>
                                 </td>
+
+                                <td class="text-center"></td>
+                                <td class="text-center"></td>
 
                                 <td class="text-center"><?= $stock_text ?></td>
 
@@ -1115,10 +1152,10 @@ if(isset($_POST['fetch_cart'])){
                             </tr>
 
                             <tr class="thick-border create_bundle_row <?= $rows_class ?>">
-                                <th class="text-center" colspan="2"></th>
+                                <th class="text-center" colspan="4"></th>
+                                <th class="text-center">Type</th>
                                 <th class="text-center">Qty</th>
                                 <th class="text-center">Length</th>
-                                <th class="text-center">Type</th>
                                 <th class="text-center">Pack Size</th>
                                 <th class="text-center">
                                     <span class="<?= $show_screw_per_each ? '' : 'd-none' ?>">Per Screw $</span>
@@ -1184,6 +1221,31 @@ if(isset($_POST['fetch_cart'])){
                                         </div>
                                     </td>
                                     <td></td>
+                                    <td></td>
+                                    <td></td>
+                                    <td class="text-center">
+                                        <select class="form-control screw_type_cart" 
+                                                name="screw_type" 
+                                                onchange="updateScrewType(this)" 
+                                                data-line="<?= $line; ?>" 
+                                                data-id="<?= $product_id; ?>">
+                                            <?php 
+                                            $screwTypes = [
+                                                'SD'  => 'Self-Driller',
+                                                'PT'  => 'Pointed-Tip',
+                                                'ZXL' => 'ProZ ZXL Long Life',
+                                                'STL' => 'Stainless Steel'
+                                            ];
+                                            $selectedType = $values['screw_type'] ?? '';
+                                            ?>
+                                            <option value="" hidden>Select Type</option>
+                                            <?php foreach ($screwTypes as $key => $label): ?>
+                                                <option value="<?= $key ?>" <?= ($selectedType === $key) ? 'selected' : '' ?>>
+                                                    <?= $label ?>
+                                                </option>
+                                            <?php endforeach; ?>
+                                        </select>
+                                    </td>
                                     <td class="text-center">
                                         <div class="input-group d-inline-flex align-items-center flex-nowrap w-auto">
                                             <button class="btn btn-primary btn-sm p-1" type="button" data-line="<?= $line; ?>" data-id="<?= $product_id; ?>" onClick="deductquantity(this)">
@@ -1231,29 +1293,7 @@ if(isset($_POST['fetch_cart'])){
                                         </select>
                                     </td>
 
-                                    <td class="text-center">
-                                        <select class="form-control screw_type_cart" 
-                                                name="screw_type" 
-                                                onchange="updateScrewType(this)" 
-                                                data-line="<?= $line; ?>" 
-                                                data-id="<?= $product_id; ?>">
-                                            <?php 
-                                            $screwTypes = [
-                                                'SD'  => 'Self-Driller',
-                                                'PT'  => 'Pointed-Tip',
-                                                'ZXL' => 'ProZ ZXL Long Life',
-                                                'STL' => 'Stainless Steel'
-                                            ];
-                                            $selectedType = $values['screw_type'] ?? '';
-                                            ?>
-                                            <option value="" hidden>Select Type</option>
-                                            <?php foreach ($screwTypes as $key => $label): ?>
-                                                <option value="<?= $key ?>" <?= ($selectedType === $key) ? 'selected' : '' ?>>
-                                                    <?= $label ?>
-                                                </option>
-                                            <?php endforeach; ?>
-                                        </select>
-                                    </td>
+                                    
                                     <td class="text-center">
                                         <div class="d-flex flex-row align-items-center flex-nowrap w-auto">
                                             <fieldset class="border p-1 d-inline-flex align-items-center flex-nowrap">
@@ -1399,9 +1439,16 @@ if(isset($_POST['fetch_cart'])){
 
                                 <td class="text-center"></td>
 
-                                <td class="text-center"><?= getProfileTypeName($first_calc['profile']) ?></td>
+                                <td class="text-center">
+                                    <span class="<?= $show_profile ? '' : 'd-none' ?>">
+                                        <?= getProfileTypeName($first_calc['profile']) ?>
+                                    </span>
+                                </td>
 
                                 <td class="text-center"><?= $total_qty ?></td>
+
+                                <td class="text-center"></td>
+                                <td class="text-center"></td>
 
                                 <td class="text-center">
                                     <div class="mt-1"><?= number_format($total_length_cart,2) ?> ft</div>
@@ -1425,11 +1472,10 @@ if(isset($_POST['fetch_cart'])){
                             </tr>
 
                             <tr class="thick-border create_bundle_row <?= $rows_class ?>">
-                                <th class="text-center" colspan="2"></th>
+                                <th class="text-center" colspan="5"></th>
                                 <th class="text-center">Qty</th>
                                 <th class="text-center">Qty in Pack</th>
                                 <th class="text-center"></th>
-                                <th class="text-center">Pack Size</th>
                                 <th class="text-center">
                                     <span class="<?= $show_each_per_each ? '' : 'd-none' ?>">Per Each $</span>
                                 </th>
@@ -1494,6 +1540,9 @@ if(isset($_POST['fetch_cart'])){
                                         </div>
                                     </td>
                                     <td></td>
+                                    <td></td>
+                                    <td class="text-center"></td>
+                                    <td class="text-center"></td>
                                     <td class="text-center">
                                         <div class="input-group d-inline-flex align-items-center flex-nowrap w-auto">
                                             <button class="btn btn-primary btn-sm p-1" type="button" data-line="<?= $line; ?>" data-id="<?= $product_id; ?>" onClick="deductquantity(this)">
@@ -1529,8 +1578,6 @@ if(isset($_POST['fetch_cart'])){
                                             </fieldset>
                                         </div>
                                     </td>
-                                    <td class="text-center"></td>
-                                    <td class="text-center"></td>
                                     <td class="text-center">
                                         <span class="<?= $show_unit_price ? '' : 'd-none' ?>">
                                             <?php
@@ -1545,15 +1592,22 @@ if(isset($_POST['fetch_cart'])){
                                             ?>
                                         </span>
                                     </td>
-                                    <td class="text-center pl-3 <?= $show_each_per_pack ? '' : 'd-none' ?>">
-                                        <span class="">
+                                    <td class="text-center">
+                                        <span class="<?= $show_each_per_pack ? '' : 'd-none' ?>">
+                                            <?php
+                                            echo number_format($panel_price, 2);
+                                            ?>
+                                        </span>
+                                    </td>
+                                    <td class="text-center pl-3">
+                                        <span class="<?= $show_retail_price ? '' : 'd-none' ?>">
                                             $
                                             <?php
                                             echo number_format($product_price, 2);
                                             ?>
                                         </span>
                                     </td>
-                                    <td class="text-end pl-3 <?= $show_each_price ? '' : 'd-none' ?>">
+                                    <td class="text-end pl-3 <?= $show_each_price  ? '' : 'd-none' ?>">
                                         <span class="">
                                             $
                                             <?php
@@ -1660,9 +1714,16 @@ if(isset($_POST['fetch_cart'])){
 
                                 <td class="text-center"></td>
 
-                                <td class="text-center"><?= getProfileTypeName($first_calc['profile']) ?></td>
+                                <td class="text-center">
+                                    <span class="<?= $show_profile ? '' : 'd-none' ?>">
+                                        <?= getProfileTypeName($first_calc['profile']) ?>
+                                    </span>
+                                </td>
 
                                 <td class="text-center"><?= $total_qty ?></td>
+
+                                <td class="text-center"></td>
+                                <td class="text-center"></td>
 
                                 <td class="text-center">
                                     <div class="mt-1"><?= number_format($total_length_cart,2) ?> ft</div>
@@ -1686,11 +1747,9 @@ if(isset($_POST['fetch_cart'])){
                             </tr>
 
                             <tr class="thick-border create_bundle_row <?= $rows_class ?>">
-                                <th class="text-center" colspan="2"></th>
+                                <th class="text-center" colspan="5"></th>
                                 <th class="text-center">Qty</th>
-                                <th class="text-center">Qty in Pack</th>
-                                <th class="text-center"></th>
-                                <th class="text-center">Pack Size</th>
+                                <th class="text-center" colspan="2">Qty in Pack</th>
                                 <th class="text-center">
                                     <span class="<?= $show_each_per_each ? '' : 'd-none' ?>">Per Each $</span>
                                 </th>
@@ -1755,6 +1814,9 @@ if(isset($_POST['fetch_cart'])){
                                         </div>
                                     </td>
                                     <td></td>
+                                    <td></td>
+                                    <td></td>
+                                    <td></td>
                                     <td class="text-center">
                                         <div class="input-group d-inline-flex align-items-center flex-nowrap w-auto">
                                             <button class="btn btn-primary btn-sm p-1" type="button" data-line="<?= $line; ?>" data-id="<?= $product_id; ?>" onClick="deductquantity(this)">
@@ -1774,7 +1836,7 @@ if(isset($_POST['fetch_cart'])){
                                             </button>
                                         </div>
                                     </td>
-                                    <td class="text-center">
+                                    <td class="text-center" colspan="2">
                                         <div class="d-flex flex-row align-items-center flex-nowrap w-auto">
                                             <fieldset class="border p-1 d-inline-flex align-items-center flex-nowrap">
                                                 <div class="input-group d-flex align-items-center flex-nowrap w-100">
@@ -1790,8 +1852,6 @@ if(isset($_POST['fetch_cart'])){
                                             </fieldset>
                                         </div>
                                     </td>
-                                    <td class="text-center"></td>
-                                    <td class="text-center"></td>
                                     <td class="text-center">
                                         <span class="<?= $show_each_per_each ? '' : 'd-none' ?>">
                                             <?php
@@ -2070,10 +2130,16 @@ if(isset($_POST['fetch_cart'])){
                             </div>
                             <div class="card-body border rounded p-3">
                                 <div class="row">
-                                    <div class="col-md-12 mb-2">
+                                    <div class="col-md-6 mb-2">
                                         <div class="form-check">
                                             <input class="form-check-input" type="checkbox" id="show_retail_price" name="show_retail_price" value="1" <?php if ($show_retail_price) echo 'checked'; ?>>
                                             <label class="form-check-label" for="show_retail_price">Always Show Retail Price Column</label>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6 mb-2">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" id="show_profile" name="show_profile" value="1" <?php if ($show_profile) echo 'checked'; ?>>
+                                            <label class="form-check-label" for="show_profile">Always Show Profile</label>
                                         </div>
                                     </div>
                                 </div>
@@ -2318,6 +2384,32 @@ if(isset($_POST['fetch_cart'])){
             });
 
             $(".gauge-cart").each(function() {
+                if ($(this).data('select2')) {
+                    $(this).select2('destroy');
+                }
+
+                $(this).select2({
+                    width: '300px',
+                    placeholder: "Select...",
+                    dropdownAutoWidth: true,
+                    dropdownParent: $('.modal.show')
+                });
+            });
+
+            $(".panel_type_cart").each(function() {
+                if ($(this).data('select2')) {
+                    $(this).select2('destroy');
+                }
+
+                $(this).select2({
+                    width: '300px',
+                    placeholder: "Select...",
+                    dropdownAutoWidth: true,
+                    dropdownParent: $('.modal.show')
+                });
+            });
+
+            $(".panel_style_cart").each(function() {
                 if ($(this).data('select2')) {
                     $(this).select2('destroy');
                 }

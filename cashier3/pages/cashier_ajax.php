@@ -3089,6 +3089,7 @@ if (isset($_POST['change_cart_columns'])) {
         'show_each_per_pack',
         'show_each_price',
         'show_retail_price',
+        'show_profile',
         'show_drag_handle'
     ];
 
