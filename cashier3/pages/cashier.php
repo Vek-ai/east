@@ -5590,23 +5590,24 @@ $editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) :
         });
 
         let bundleVisible = false;
+
         $(document).on('click', '.createBundleCartBtn', function () {
-            let $btn = $(this);
+            bundleVisible = !bundleVisible;
 
-            let $section = $btn.closest('tr').prev('.bundleCartSection');
-            let $table = $btn.closest('table');
-            let $checkboxWrappers = $table.find('.bundle-checkbox-cart');
-            let $checkboxes = $table.find('.bundle-checkbox');
-            let isVisible = !$section.hasClass('d-none');
+            const $sections = $('.bundleCartSection');
+            const $checkboxWrappers = $('.bundle-checkbox-cart');
+            const $checkboxes = $('.bundle-checkbox');
+            const $dragHandles = $('.drag-handle');
 
-            if (isVisible) {
-                $section.addClass('d-none');
-                $section.find('.bundleNameCart').val('');
+            if (bundleVisible) {
+                $sections.removeClass('d-none');
+                $checkboxWrappers.removeClass('d-none');
+                $dragHandles.addClass('d-none');
+            } else {
+                $sections.addClass('d-none').find('.bundleNameCart').val('');
                 $checkboxWrappers.addClass('d-none');
                 $checkboxes.prop('checked', false);
-            } else {
-                $section.removeClass('d-none');
-                $checkboxWrappers.removeClass('d-none');
+                $dragHandles.removeClass('d-none');
             }
         });
 
@@ -5651,16 +5652,15 @@ $editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) :
 
 
         $(document).on('click', '.addToBundleCartBtn', function () {
-            let $section = $(this).closest('.bundleCartSection');
-            let bundleName = $section.find('.bundleNameCart').val().trim();
+            const bundleName = $('.bundleNameCart').val().trim();
 
             if (bundleName === "") {
                 alert("Please enter a bundle name.");
                 return;
             }
 
-            let selectedLines = [];
-            $(".bundle-checkbox-cart:checked").each(function () {
+            const selectedLines = [];
+            $(".bundle-checkbox-cart input[type='checkbox']:checked").each(function () {
                 selectedLines.push($(this).data("line"));
             });
 
@@ -5677,7 +5677,7 @@ $editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) :
                     lines: selectedLines,
                     bundle_name: bundleName
                 },
-                success: function (res) {
+                success: function () {
                     loadCart();
                 }
             });

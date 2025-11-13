@@ -1206,6 +1206,7 @@ if(isset($_POST['fetch_cart'])){
                                     <?php 
                                     $inventoryItems = getAvailableInventory($product_id);
                                     ?>
+
                                     <td class="text-center">
                                         <select class="form-control screw_length_cart" 
                                                 name="screw_length" 

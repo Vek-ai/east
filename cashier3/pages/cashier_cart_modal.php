@@ -104,12 +104,12 @@ if(isset($_POST['fetch_cart'])){
         }
 
         .table-fixed th:nth-child(1),
-        .table-fixed td:nth-child(1) { width: 8%; }
+        .table-fixed td:nth-child(1) { width: 5%; }
         .table-fixed th:nth-child(2),
-        .table-fixed td:nth-child(2) { width: 10%; }
-        /* .table-fixed th:nth-child(3),
-        .table-fixed td:nth-child(3) { width: 8%; }
-        .table-fixed th:nth-child(4),
+        .table-fixed td:nth-child(2) { width: 8%; }
+        .table-fixed th:nth-child(3),
+        .table-fixed td:nth-child(3) { width: 10%; }
+        /*.table-fixed th:nth-child(4),
         .table-fixed td:nth-child(4) { width: 8%; }
         .table-fixed th:nth-child(5),
         .table-fixed td:nth-child(5) { width: 8%; }
@@ -218,6 +218,10 @@ if(isset($_POST['fetch_cart'])){
                 <thead>
                     <tr>
                         <th></th>
+                        <th>
+                            <span class="<?= $show_unique_product_id ? '' : 'd-none' ?>">
+                                Product ID</th>
+                            </span>
                         <th>Description</th>
                         <th class="text-center">Color</th>
                         <th class="text-center">Grade</th>
@@ -239,10 +243,29 @@ if(isset($_POST['fetch_cart'])){
                             </span>
                         </th>
                         <th class="text-center ">Total<br>Price</th>
-                        <th class="text-center"> </th>
+                        <th class="text-center">
+                            <button type="button" class="btn btn-sm btn-primary createBundleCartBtn">
+                                + Bundle
+                            </button>
+                        </th>
                     </tr>
                 </thead>
                 <tbody>
+                    <tr class="thick-border d-none bundleCartSection">
+                        <td class="text-center" colspan="14">
+                            <div class="text-end">
+                                <div class="card p-3 mb-0 d-inline-block text-center">
+                                    <h6 class="fw-bold">Add Bundle Info</h6>
+                                    <div class="mb-2">
+                                        <input type="text" class="form-control form-control-sm bundleNameCart" placeholder="Enter bundle name">
+                                    </div>
+                                    <button type="button" class="btn btn-success btn-sm w-100 addToBundleCartBtn">
+                                        Add to Bundles
+                                    </button>
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
                     <?php 
                     $total = 0;
                     $totalquantity = 0;
@@ -268,7 +291,7 @@ if(isset($_POST['fetch_cart'])){
                             $product = $item['product'];
                             $line = $item['line'];
                             $quantity = $item['quantity'];
-                            $unit_price = $item['unit_price'];
+                            $unit_price = $product_details['unit_price'];
                             $total_length = $item['total_length'];
                             $product_price = $item['product_price'];
                             $customer_price = $item['customer_price'];
@@ -299,24 +322,31 @@ if(isset($_POST['fetch_cart'])){
                                 ?>
                                 <tr class="thick-border" data-line="<?= $line ?>" data-bundle="<?= $bundle_name ?>" data-mult="<?= $multiplier ?>"> 
                                     <td class="text-center align-middle">
-                                        <i class="fa fa-bars fa-lg drag-handle <?= $show_drag_handle ? '' : 'd-none' ?>" style="cursor: move; flex-shrink: 0;"></i>
-                                        <div class="d-flex align-items-center gap-1 justify-content-start flex-wrap" style="overflow: hidden;">
-                                            
-                                            <div class="bundle-checkbox-cart d-none flex-shrink-0">
-                                                <div class="form-check m-0">
-                                                    <input class="form-check-input bundle-checkbox-cart" 
-                                                        type="checkbox" 
-                                                        data-line="<?= $line; ?>" 
-                                                        data-id="<?= $product_id; ?>" 
-                                                        value="<?= $line; ?>">
-                                                </div>
-                                            </div>
+                                        <i class="fa fa-bars fa-lg drag-handle <?= $show_drag_handle ? '' : 'd-none' ?>" 
+                                        style="cursor: move; flex-shrink: 0;"></i><br>
 
+                                        <div class="bundle-checkbox-cart d-none d-flex justify-content-center align-items-center flex-shrink-0">
+                                            <div class="form-check m-0 d-flex justify-content-center align-items-center">
+                                                <input class="form-check-input" 
+                                                    type="checkbox" 
+                                                    data-line="<?= $line; ?>" 
+                                                    data-id="<?= $product_id; ?>" 
+                                                    value="<?= $line; ?>">
+                                            </div>
+                                        </div>
+
+                                        <?php if (!empty($bundle_name)) { ?>
+                                            (<?= $bundle_name ?>)
+                                        <?php }?>
+                                    </td>
+                                    <td class="text-center align-middle">
+                                        <div class="d-flex align-items-center justify-content-center gap-1 flex-wrap" style="overflow: hidden;">
                                             <span class="<?= $show_unique_product_id ? '' : 'd-none' ?>" style="flex-grow: 1; overflow: hidden;">
                                                 <?= htmlspecialchars($unique_prod_id) ?>
                                             </span>
                                         </div>
                                     </td>
+
                                     <td>
                                         <a href="javascript:void(0);" data-id="<?= $product_id ?>" class="d-flex align-items-center view_product_details">
                                             <h6 class="fw-semibold mb-0 fs-4"><?= $product['product_item'] ?></h6>
@@ -469,6 +499,10 @@ if(isset($_POST['fetch_cart'])){
                                             }
                                             ?>
                                         </select>
+                                        <br>
+                                        <span class="<?= $show_per_panel ? '' : 'd-none text-nowrap' ?>">
+                                            Per Panel $ <br>$ <?= number_format($panel_price, 2) ?>
+                                        </span>
                                     </td>
                                     <td class="text-center align-middle">
                                         <?php
@@ -498,16 +532,22 @@ if(isset($_POST['fetch_cart'])){
                                                 ?>
                                             <?php endif; ?>
                                         </select>
+
+                                        <br>
+                                        <span class="<?= $show_linear_ft ? '' : 'd-none text-nowrap' ?>">
+                                            Retail per Ft <br>$ <?= number_format($linear_price, 2) ?>
+                                        </span>
                                     </td>
 
-                                    <td class="text-center align-middle"><?= $stock_text ?></td>
+                                    <td class="text-center align-middle">
+                                        <?= $stock_text ?>
+                                        
+                                    </td>
 
                                     <td class="text-center align-middle">
-                                        <span class="<?= $show_linear_ft ? '' : 'd-none' ?>">
-                                            <?php
-                                            echo number_format($linear_price, 2);
-                                            ?>
-                                        </span>
+                                        <?php
+                                        echo '$ ' .number_format($unit_price, 2);
+                                        ?>
                                     </td>
 
                                     <td class="text-center align-middle">
@@ -531,19 +571,25 @@ if(isset($_POST['fetch_cart'])){
                                 ?>
                                 <tr class="thick-border" data-line="<?= $line ?>" data-bundle="<?= $bundle_name ?>" data-mult="<?= $multiplier ?>"> 
                                     <td class="text-center align-middle">
-                                        <i class="fa fa-bars fa-lg drag-handle <?= $show_drag_handle ? '' : 'd-none' ?>" style="cursor: move; flex-shrink: 0;"></i>
-                                        <div class="d-flex align-items-center gap-1 justify-content-start flex-wrap" style="overflow: hidden;">
-                                            
-                                            <div class="bundle-checkbox-cart d-none flex-shrink-0">
-                                                <div class="form-check m-0">
-                                                    <input class="form-check-input bundle-checkbox-cart" 
-                                                        type="checkbox" 
-                                                        data-line="<?= $line; ?>" 
-                                                        data-id="<?= $product_id; ?>" 
-                                                        value="<?= $line; ?>">
-                                                </div>
-                                            </div>
+                                        <i class="fa fa-bars fa-lg drag-handle <?= $show_drag_handle ? '' : 'd-none' ?>" 
+                                        style="cursor: move; flex-shrink: 0;"></i><br>
 
+                                        <div class="bundle-checkbox-cart d-none d-flex justify-content-center align-items-center flex-shrink-0">
+                                            <div class="form-check m-0 d-flex justify-content-center align-items-center">
+                                                <input class="form-check-input" 
+                                                    type="checkbox" 
+                                                    data-line="<?= $line; ?>" 
+                                                    data-id="<?= $product_id; ?>" 
+                                                    value="<?= $line; ?>">
+                                            </div>
+                                        </div>
+
+                                        <?php if (!empty($bundle_name)) { ?>
+                                            (<?= $bundle_name ?>)
+                                        <?php }?>
+                                    </td>
+                                    <td class="text-center align-middle">
+                                        <div class="d-flex align-items-center justify-content-center gap-1 flex-wrap" style="overflow: hidden;">
                                             <span class="<?= $show_unique_product_id ? '' : 'd-none' ?>" style="flex-grow: 1; overflow: hidden;">
                                                 <?= htmlspecialchars($unique_prod_id) ?>
                                             </span>
@@ -676,17 +722,25 @@ if(isset($_POST['fetch_cart'])){
                                         </div>
                                     </td>
 
-                                    <td class="text-center align-middle"></td>
-                                    <td class="text-center align-middle"></td>
+                                    <td class="text-center align-middle">
+                                        <br>
+                                        <span class="<?= $show_trim_per_each ? '' : 'd-none text-nowrap' ?>">
+                                            Per Panel $ <br>$ <?= number_format($panel_price, 2) ?>
+                                        </span>
+                                    </td>
+                                    <td class="text-center align-middle">
+                                        <br>
+                                        <span class="<?= $show_trim_per_ft ? '' : 'd-none text-nowrap' ?>">
+                                            Retail per Ft <br>$ <?= number_format($linear_price, 2) ?>
+                                        </span>
+                                    </td>
 
                                     <td class="text-center align-middle"><?= $stock_text ?></td>
 
                                     <td class="text-center align-middle">
-                                        <span class="<?= $show_linear_ft ? '' : 'd-none' ?>">
-                                            <?php
-                                            echo number_format($linear_price, 2);
-                                            ?>
-                                        </span>
+                                        <?php
+                                        echo '$ ' .number_format($unit_price, 2);
+                                        ?>
                                     </td>
 
                                     <td class="text-center align-middle">
@@ -710,19 +764,25 @@ if(isset($_POST['fetch_cart'])){
                                 ?>
                                 <tr class="thick-border" data-line="<?= $line ?>" data-bundle="<?= $bundle_name ?>" data-mult="<?= $multiplier ?>"> 
                                     <td class="text-center align-middle">
-                                        <i class="fa fa-bars fa-lg drag-handle <?= $show_drag_handle ? '' : 'd-none' ?>" style="cursor: move; flex-shrink: 0;"></i>
-                                        <div class="d-flex align-items-center gap-1 justify-content-start flex-wrap" style="overflow: hidden;">
-                                            
-                                            <div class="bundle-checkbox-cart d-none flex-shrink-0">
-                                                <div class="form-check m-0">
-                                                    <input class="form-check-input bundle-checkbox-cart" 
-                                                        type="checkbox" 
-                                                        data-line="<?= $line; ?>" 
-                                                        data-id="<?= $product_id; ?>" 
-                                                        value="<?= $line; ?>">
-                                                </div>
-                                            </div>
+                                        <i class="fa fa-bars fa-lg drag-handle <?= $show_drag_handle ? '' : 'd-none' ?>" 
+                                        style="cursor: move; flex-shrink: 0;"></i><br>
 
+                                        <div class="bundle-checkbox-cart d-none d-flex justify-content-center align-items-center flex-shrink-0">
+                                            <div class="form-check m-0 d-flex justify-content-center align-items-center">
+                                                <input class="form-check-input" 
+                                                    type="checkbox" 
+                                                    data-line="<?= $line; ?>" 
+                                                    data-id="<?= $product_id; ?>" 
+                                                    value="<?= $line; ?>">
+                                            </div>
+                                        </div>
+
+                                        <?php if (!empty($bundle_name)) { ?>
+                                            (<?= $bundle_name ?>)
+                                        <?php }?>
+                                    </td>
+                                    <td class="text-center align-middle">
+                                        <div class="d-flex align-items-center justify-content-center gap-1 flex-wrap" style="overflow: hidden;">
                                             <span class="<?= $show_unique_product_id ? '' : 'd-none' ?>" style="flex-grow: 1; overflow: hidden;">
                                                 <?= htmlspecialchars($unique_prod_id) ?>
                                             </span>
@@ -880,18 +940,25 @@ if(isset($_POST['fetch_cart'])){
                                                 </option>
                                             <?php endforeach; ?>
                                         </select>
+                                        <br>
+                                        <span class="<?= $show_screw_per_pack ? '' : 'd-none text-nowrap' ?>">
+                                            Per Each <br>$ <?= number_format($panel_price, 2) ?>
+                                        </span>
                                     </td>
 
-                                    <td class="text-center align-middle"></td>
+                                    <td class="text-center align-middle">
+                                        <br>
+                                        <span class="<?= $show_screw_per_each ? '' : 'd-none text-nowrap' ?>">
+                                            Retail per Screw <br>$ <?= number_format($linear_price, 2) ?>
+                                        </span>
+                                    </td>
 
                                     <td class="text-center align-middle"><?= $stock_text ?></td>
 
                                     <td class="text-center align-middle">
-                                        <span class="<?= $show_linear_ft ? '' : 'd-none' ?>">
-                                            <?php
-                                            echo number_format($linear_price, 2);
-                                            ?>
-                                        </span>
+                                        <?php
+                                        echo '$ ' .number_format($unit_price, 2);
+                                        ?>
                                     </td>
 
                                     <td class="text-center align-middle">
@@ -915,24 +982,31 @@ if(isset($_POST['fetch_cart'])){
                                 ?>
                                 <tr class="thick-border" data-line="<?= $line ?>" data-bundle="<?= $bundle_name ?>" data-mult="<?= $multiplier ?>"> 
                                     <td class="text-center align-middle">
-                                        <i class="fa fa-bars fa-lg drag-handle <?= $show_drag_handle ? '' : 'd-none' ?>" style="cursor: move; flex-shrink: 0;"></i>
-                                        <div class="d-flex align-items-center gap-1 justify-content-start flex-wrap" style="overflow: hidden;">
-                                            
-                                            <div class="bundle-checkbox-cart d-none flex-shrink-0">
-                                                <div class="form-check m-0">
-                                                    <input class="form-check-input bundle-checkbox-cart" 
-                                                        type="checkbox" 
-                                                        data-line="<?= $line; ?>" 
-                                                        data-id="<?= $product_id; ?>" 
-                                                        value="<?= $line; ?>">
-                                                </div>
-                                            </div>
+                                        <i class="fa fa-bars fa-lg drag-handle <?= $show_drag_handle ? '' : 'd-none' ?>" 
+                                        style="cursor: move; flex-shrink: 0;"></i><br>
 
+                                        <div class="bundle-checkbox-cart d-none d-flex justify-content-center align-items-center flex-shrink-0">
+                                            <div class="form-check m-0 d-flex justify-content-center align-items-center">
+                                                <input class="form-check-input" 
+                                                    type="checkbox" 
+                                                    data-line="<?= $line; ?>" 
+                                                    data-id="<?= $product_id; ?>" 
+                                                    value="<?= $line; ?>">
+                                            </div>
+                                        </div>
+
+                                        <?php if (!empty($bundle_name)) { ?>
+                                            (<?= $bundle_name ?>)
+                                        <?php }?>
+                                    </td>
+                                    <td class="text-center align-middle">
+                                        <div class="d-flex align-items-center justify-content-center gap-1 flex-wrap" style="overflow: hidden;">
                                             <span class="<?= $show_unique_product_id ? '' : 'd-none' ?>" style="flex-grow: 1; overflow: hidden;">
                                                 <?= htmlspecialchars($unique_prod_id) ?>
                                             </span>
                                         </div>
                                     </td>
+
                                     <td>
                                         <a href="javascript:void(0);" data-id="<?= $product_id ?>" class="d-flex align-items-center view_product_details">
                                             <h6 class="fw-semibold mb-0 fs-4"><?= $product['product_item'] ?></h6>
@@ -1048,11 +1122,9 @@ if(isset($_POST['fetch_cart'])){
                                     <td class="text-center align-middle"><?= $stock_text ?></td>
 
                                     <td class="text-center align-middle">
-                                        <span class="<?= $show_linear_ft ? '' : 'd-none' ?>">
-                                            <?php
-                                            echo number_format($linear_price, 2);
-                                            ?>
-                                        </span>
+                                        <?php
+                                        echo '$ ' .number_format($unit_price, 2);
+                                        ?>
                                     </td>
 
                                     <td class="text-center align-middle">
@@ -1106,7 +1178,7 @@ if(isset($_POST['fetch_cart'])){
                     }
                     ?>
                     <tr>
-                        <td colspan="4" class="text-start align-middle">Total Weight <?= number_format(floatval($total_weight), 2) ?> LBS</td>
+                        <td colspan="5" class="text-start align-middle">Total Weight <?= number_format(floatval($total_weight), 2) ?> LBS</td>
                         <td></td>
                         <td colspan="2" class="text-center">Total Quantity: <span id="qty_ttl"><?= $totalquantity ?></span></td>
                         <td colspan="1"></td>
@@ -1115,21 +1187,21 @@ if(isset($_POST['fetch_cart'])){
                         <td colspan="1"></td>
                     </tr>
                     <tr>
-                        <th colspan="11" style="border-bottom: none; border-top: none;"></th>
+                        <th colspan="12" style="border-bottom: none; border-top: none;"></th>
                         <th colspan="2" class="text-end" style="border-bottom: 1px solid #dee2e6;">Materials Price:</th>
                         <td class="text-end" style="border-bottom: 1px solid #dee2e6;">
                             $<span id="total_amt"><?= number_format(floatval($grand_customer_price), 2) ?></span>
                         </td>
                     </tr>
                     <tr>
-                        <th colspan="11" style="border-bottom: none; border-top: none;"></th>
+                        <th colspan="12" style="border-bottom: none; border-top: none;"></th>
                         <th colspan="2" class="text-end" style="border-bottom: 1px solid #dee2e6;">Sales Tax:</th>
                         <td class="text-end" style="border-bottom: 1px solid #dee2e6;">
                             $<span id="sales_tax"><?= number_format($total_tax = floatval($grand_customer_price) * $tax, 2) ?></span>
                         </td>
                     </tr>
                     <tr>
-                        <th colspan="11" style="border-bottom: none; border-top: none;"></th>
+                        <th colspan="12" style="border-bottom: none; border-top: none;"></th>
                         <th colspan="2" class="text-end fw-bold" style="border-bottom: 1px solid #dee2e6;">Total Due:</th>
                         <td class="text-end fw-bold" style="border-bottom: 1px solid #dee2e6;">
                             $<span id="total_payable_est"><?= number_format((floatval($grand_customer_price) + $total_tax), 2) ?></span>
@@ -1169,22 +1241,30 @@ if(isset($_POST['fetch_cart'])){
 
                         <div class="card shadow-sm rounded-3 mb-3">
                             <div class="card-header bg-light border-bottom">
-                                <h5 class="mb-0 fw-bold">Product ID</h5>
+                                <h5 class="mb-0 fw-bold">Product Details</h5>
                             </div>
                             <div class="card-body border rounded p-3">
                                 <div class="row">
-                                    <div class="col-md-6 mb-2">
-                                        <div class="form-check">
-                                            <input class="form-check-input" type="checkbox" id="show_prod_id_abbrev" name="show_prod_id_abbrev" value="1" <?php if ($show_prod_id_abbrev) echo 'checked'; ?>>
-                                            <label class="form-check-label" for="show_prod_id_abbrev">Parent ID #</label>
-                                        </div>
-                                    </div>
-                                    <div class="col-md-6 mb-2">
+                                    
+                                    <div class="col-md-4 mb-2">
                                         <div class="form-check">
                                             <input class="form-check-input" type="checkbox" id="show_unique_product_id" name="show_unique_product_id" value="1" <?php if ($show_unique_product_id) echo 'checked'; ?>>
-                                            <label class="form-check-label" for="show_unique_product_id">Unique Product ID #</label>
+                                            <label class="form-check-label" for="show_unique_product_id">Product ID #</label>
                                         </div>
                                     </div>
+                                    <div class="col-md-4 mb-2">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" id="show_profile" name="show_profile" value="1" <?php if ($show_profile) echo 'checked'; ?>>
+                                            <label class="form-check-label" for="show_profile">Profile</label>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4 mb-2">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" id="show_retail_price" name="show_retail_price" value="1" <?php if ($show_retail_price) echo 'checked'; ?>>
+                                            <label class="form-check-label" for="show_retail_price">Retail Price</label>
+                                        </div>
+                                    </div>
+                                    
                                 </div>
                             </div>
                         </div>
@@ -1197,20 +1277,14 @@ if(isset($_POST['fetch_cart'])){
                                 <div class="row">
                                     <div class="col-md-4 mb-2">
                                         <div class="form-check">
-                                            <input class="form-check-input" type="checkbox" id="show_linear_ft" name="show_linear_ft" value="1" <?php if ($show_linear_ft) echo 'checked'; ?>>
-                                            <label class="form-check-label" for="show_linear_ft">Linear Ft $</label>
-                                        </div>
-                                    </div>
-                                    <div class="col-md-4 mb-2">
-                                        <div class="form-check">
                                             <input class="form-check-input" type="checkbox" id="show_per_panel" name="show_per_panel" value="1" <?php if ($show_per_panel) echo 'checked'; ?>>
-                                            <label class="form-check-label" for="show_per_panel">Per Panel $</label>
+                                            <label class="form-check-label" for="show_per_panel">Per Panel</label>
                                         </div>
                                     </div>
                                     <div class="col-md-4 mb-2">
                                         <div class="form-check">
-                                            <input class="form-check-input" type="checkbox" id="show_panel_price" name="show_panel_price" value="1" <?php if ($show_panel_price) echo 'checked'; ?>>
-                                            <label class="form-check-label" for="show_panel_price">Price</label>
+                                            <input class="form-check-input" type="checkbox" id="show_linear_ft" name="show_linear_ft" value="1" <?php if ($show_linear_ft) echo 'checked'; ?>>
+                                            <label class="form-check-label" for="show_linear_ft">Retail Per Ft</label>
                                         </div>
                                     </div>
                                 </div>
@@ -1225,20 +1299,14 @@ if(isset($_POST['fetch_cart'])){
                                 <div class="row">
                                     <div class="col-md-4 mb-2">
                                         <div class="form-check">
-                                            <input class="form-check-input" type="checkbox" id="show_trim_per_ft" name="show_trim_per_ft" value="1" <?php if ($show_trim_per_ft) echo 'checked'; ?>>
-                                            <label class="form-check-label" for="show_trim_per_ft">Per Ft $</label>
-                                        </div>
-                                    </div>
-                                    <div class="col-md-4 mb-2">
-                                        <div class="form-check">
                                             <input class="form-check-input" type="checkbox" id="show_trim_per_each" name="show_trim_per_each" value="1" <?php if ($show_trim_per_each) echo 'checked'; ?>>
-                                            <label class="form-check-label" for="show_trim_per_each">Per Each $</label>
+                                            <label class="form-check-label" for="show_trim_per_each">Per Panel</label>
                                         </div>
                                     </div>
                                     <div class="col-md-4 mb-2">
                                         <div class="form-check">
-                                            <input class="form-check-input" type="checkbox" id="show_trim_price" name="show_trim_price" value="1" <?php if ($show_trim_price) echo 'checked'; ?>>
-                                            <label class="form-check-label" for="show_trim_price">Price</label>
+                                            <input class="form-check-input" type="checkbox" id="show_trim_per_ft" name="show_trim_per_ft" value="1" <?php if ($show_trim_per_ft) echo 'checked'; ?>>
+                                            <label class="form-check-label" for="show_trim_per_ft">Retail Per Ft</label>
                                         </div>
                                     </div>
                                 </div>
@@ -1253,72 +1321,18 @@ if(isset($_POST['fetch_cart'])){
                                 <div class="row">
                                     <div class="col-md-4 mb-2">
                                         <div class="form-check">
-                                            <input class="form-check-input" type="checkbox" id="show_screw_per_each" name="show_screw_per_each" value="1" <?php if ($show_screw_per_each) echo 'checked'; ?>>
-                                            <label class="form-check-label" for="show_screw_per_each">Per Screw $</label>
-                                        </div>
-                                    </div>
-                                    <div class="col-md-4 mb-2">
-                                        <div class="form-check">
                                             <input class="form-check-input" type="checkbox" id="show_screw_per_pack" name="show_screw_per_pack" value="1" <?php if ($show_screw_per_pack) echo 'checked'; ?>>
-                                            <label class="form-check-label" for="show_screw_per_pack">Per Pack $</label>
+                                            <label class="form-check-label" for="show_screw_per_pack">Per Each</label>
                                         </div>
                                     </div>
                                     <div class="col-md-4 mb-2">
                                         <div class="form-check">
-                                            <input class="form-check-input" type="checkbox" id="show_screw_price" name="show_screw_price" value="1" <?php if ($show_screw_price) echo 'checked'; ?>>
-                                            <label class="form-check-label" for="show_screw_price">Price</label>
+                                            <input class="form-check-input" type="checkbox" id="show_screw_per_each" name="show_screw_per_each" value="1" <?php if ($show_screw_per_each) echo 'checked'; ?>>
+                                            <label class="form-check-label" for="show_screw_per_each">Retail Per Screw</label>
                                         </div>
                                     </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="card shadow-sm rounded-3 mb-3">
-                            <div class="card-header bg-light border-bottom">
-                                <h5 class="mb-0 fw-bold">Each Items</h5>
-                            </div>
-                            <div class="card-body border rounded p-3">
-                                <div class="row">
-                                    <div class="col-md-4 mb-2">
-                                        <div class="form-check">
-                                            <input class="form-check-input" type="checkbox" id="show_each_per_each" name="show_each_per_each" value="1" <?php if ($show_each_per_each) echo 'checked'; ?>>
-                                            <label class="form-check-label" for="show_each_per_each">Per Each $</label>
-                                        </div>
-                                    </div>
-                                    <div class="col-md-4 mb-2">
-                                        <div class="form-check">
-                                            <input class="form-check-input" type="checkbox" id="show_each_per_pack" name="show_each_per_pack" value="1" <?php if ($show_each_per_pack) echo 'checked'; ?>>
-                                            <label class="form-check-label" for="show_each_per_pack">Per Pack $</label>
-                                        </div>
-                                    </div>
-                                    <div class="col-md-4 mb-2">
-                                        <div class="form-check">
-                                            <input class="form-check-input" type="checkbox" id="show_each_price" name="show_each_price" value="1" <?php if ($show_each_price) echo 'checked'; ?>>
-                                            <label class="form-check-label" for="show_each_price">Price</label>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="card shadow-sm rounded-3 mb-3">
-                            <div class="card-header bg-light border-bottom">
-                                <h5 class="mb-0 fw-bold">Customer Settings</h5>
-                            </div>
-                            <div class="card-body border rounded p-3">
-                                <div class="row">
-                                    <div class="col-md-6 mb-2">
-                                        <div class="form-check">
-                                            <input class="form-check-input" type="checkbox" id="show_retail_price" name="show_retail_price" value="1" <?php if ($show_retail_price) echo 'checked'; ?>>
-                                            <label class="form-check-label" for="show_retail_price">Always Show Retail Price Column</label>
-                                        </div>
-                                    </div>
-                                    <div class="col-md-6 mb-2">
-                                        <div class="form-check">
-                                            <input class="form-check-input" type="checkbox" id="show_profile" name="show_profile" value="1" <?php if ($show_profile) echo 'checked'; ?>>
-                                            <label class="form-check-label" for="show_profile">Always Show Profile</label>
-                                        </div>
-                                    </div>
+                                    
+                                    
                                 </div>
                             </div>
                         </div>
