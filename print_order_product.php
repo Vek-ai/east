@@ -14,17 +14,17 @@ require 'includes/dbconn.php';
 require 'includes/functions.php';
 
 $columns = [
-    ['label' => 'PRODUCT ID #', 'width' => 18, 'align' => 'C'],
-    ['label' => 'DESCRIPTION',  'width' => 28, 'align' => 'C'],
+    ['label' => 'PRODUCT ID #', 'width' => 25, 'align' => 'C'],
+    ['label' => 'DESCRIPTION',  'width' => 26, 'align' => 'C'],
     ['label' => 'COLOR',        'width' => 15, 'align' => 'C'],
     ['label' => 'GRADE',        'width' => 17, 'align' => 'C'],
     ['label' => 'GAUGE',        'width' => 17, 'align' => 'C'],
-    ['label' => 'QTY',          'width' => 7, 'align' => 'C'],
+    ['label' => 'QTY',          'width' => 13, 'align' => 'C'],
     ['label' => 'LENGTH',       'width' => 15, 'align' => 'C'],
-    ['label' => 'TYPE',         'width' => 17, 'align' => 'C'],
-    ['label' => 'STYLE',        'width' => 17, 'align' => 'C'],
+    ['label' => 'TYPE',         'width' => 14, 'align' => 'C'],
+    ['label' => 'STYLE',        'width' => 14, 'align' => 'C'],
     ['label' => 'PRICE',        'width' => 17, 'align' => 'R'],
-    ['label' => 'TOTAL',        'width' => 22, 'align' => 'R'],
+    ['label' => 'TOTAL',        'width' => 17, 'align' => 'R'],
 ];
 
 function NbLines($pdf, $w, $txt) {
@@ -156,27 +156,26 @@ function renderPanelCategory($pdf, $product, $conn) {
 
 function renderRow($pdf, $columns, $row, $bold = false) {
     $pdf->SetFont('Arial', $bold ? 'B' : '', 8);
-    $lineHeight = 4.2;
-
-    $cellHeights = [];
-    foreach ($row as $i => $cell) {
-        $cellHeights[$i] = NbLines($pdf, $columns[$i]['width'], $cell) * $lineHeight;
-    }
-    $maxHeight = max($cellHeights);
+    $lineHeight = 5;
 
     $xStart = $pdf->GetX();
     $yStart = $pdf->GetY();
-    $totalWidth = array_sum(array_column($columns, 'width'));
+    $x = $xStart;
+    $maxY = $yStart;
 
-    $pdf->Rect($xStart, $yStart, $totalWidth, $maxHeight);
     foreach ($columns as $i => $col) {
         $w = $col['width'];
-        $xBefore = $pdf->GetX();
+        $pdf->SetXY($x, $yStart);
         $pdf->MultiCell($w, $lineHeight, $row[$i], 0, $col['align']);
-        $pdf->SetXY($xBefore + $w, $yStart);
+        $maxY = max($maxY, $pdf->GetY());
+        $x += $w;
     }
 
-    $pdf->Ln($maxHeight);
+    $totalWidth = array_sum(array_column($columns, 'width'));
+    $totalHeight = $maxY - $yStart;
+    $pdf->Rect($xStart, $yStart, $totalWidth, $totalHeight);
+
+    $pdf->SetXY($xStart, $maxY);
 }
 
 
@@ -371,61 +370,63 @@ if (mysqli_num_rows($result) > 0) {
         $usableWidth = $pageWidth - $marginLeft - $marginRight;
         $mailToWidth = $usableWidth / 2;
 
-        
-
         $currentY = $pdf->GetY();
-
         $pdf->SetFillColor(211, 211, 211);
         $pdf->SetTextColor(0, 0, 0);
         $pdf->SetFont('Arial', 'B', 10);
         $pdf->SetXY($col1_x, $currentY);
-        $pdf->Cell($mailToWidth+10, 7, 'Bill to:', 0, 0, 'L', true);
+        $pdf->Cell($mailToWidth + 10, 7, 'Bill to:', 1, 0, 'L', true);
 
         $pdf->SetXY($col2_x, $currentY);
-        $pdf->Cell($mailToWidth-10, 7, 'Ship to:', 0, 0, 'L', true);
+        $pdf->Cell($mailToWidth - 5, 7, 'Ship to:', 1, 0, 'L', true);
 
         $pdf->Ln(7);
         $def_y = $pdf->GetY();
 
-        $leftX = $col1_x;
-        $leftY = $def_y;
-        $pdf->SetXY($leftX, $leftY);
+        $pdf->SetFont('Arial', '', 10);
+        $startY = $pdf->GetY();
 
-        $leftText = get_customer_name($row_orders['customerid'])."\n";
+        $leftText = get_customer_name($row_orders['customerid']) . "\n";
         $addressParts = [];
         if (!empty($customerDetails['address'])) $addressParts[] = $customerDetails['address'];
         if (!empty($customerDetails['city'])) $addressParts[] = $customerDetails['city'];
         if (!empty($customerDetails['state'])) $addressParts[] = $customerDetails['state'];
         if (!empty($customerDetails['zip'])) $addressParts[] = $customerDetails['zip'];
-        if (!empty($addressParts)) $leftText .= implode(', ', $addressParts)."\n";
-        if (!empty($customerDetails['tax_exempt_number'])) $leftText .= 'Tax Exempt #: '.$customerDetails['tax_exempt_number']."\n";
-        if (!empty($customerDetails['contact_phone'])) $leftText .= $customerDetails['contact_phone']."\n";
-        $leftText .= 'Customer PO #: '.$row_orders['job_po'];
+        if (!empty($addressParts)) $leftText .= implode(', ', $addressParts) . "\n";
+        if (!empty($customerDetails['tax_exempt_number'])) $leftText .= 'Tax Exempt #: ' . $customerDetails['tax_exempt_number'] . "\n";
+        if (!empty($customerDetails['contact_phone'])) $leftText .= $customerDetails['contact_phone'] . "\n";
+        $leftText .= 'Customer PO #: ' . $row_orders['job_po'];
 
-        $pdf->SetFont('Arial', '', 10);
-        $leftStartY = $pdf->GetY();
-        $pdf->MultiCell($mailToWidth, 5, $leftText, 0, 'L');
-        $leftHeight = $pdf->GetY() - $leftStartY;
+        $leftX = $col1_x;
+        $leftWidth = $mailToWidth + 5;
 
-        $rightX = $col2_x;
-        $rightY = $def_y;
-        $pdf->SetXY($rightX, $rightY);
+        $pdf->SetXY($leftX, $startY);
+        $pdf->MultiCell($leftWidth, 5, $leftText, 0, 'L');
+        $leftBottom = $pdf->GetY();
 
-        $rightText = trim($row_orders['deliver_fname'].' '.$row_orders['deliver_lname'])."\n";
+        $rightText = trim($row_orders['deliver_fname'] . ' ' . $row_orders['deliver_lname']) . "\n";
         $shipAddressParts = [];
         if (!empty($row_orders['deliver_address'])) $shipAddressParts[] = $row_orders['deliver_address'];
         if (!empty($row_orders['deliver_city'])) $shipAddressParts[] = $row_orders['deliver_city'];
         if (!empty($row_orders['deliver_state'])) $shipAddressParts[] = $row_orders['deliver_state'];
         if (!empty($row_orders['deliver_zip'])) $shipAddressParts[] = $row_orders['deliver_zip'];
-        if (!empty($shipAddressParts)) $rightText .= implode(', ', $shipAddressParts)."\n";
-        $rightText .= 'Job Name: '.$row_orders['job_name'];
+        if (!empty($shipAddressParts)) $rightText .= implode(', ', $shipAddressParts) . "\n";
+        $rightText .= 'Job Name: ' . $row_orders['job_name'];
 
-        $rightStartY = $pdf->GetY();
-        $pdf->MultiCell($mailToWidth, 5, $rightText, 0, 'L');
-        $rightHeight = $pdf->GetY() - $rightStartY;
+        $rightX = $col2_x;
+        $rightWidth = $mailToWidth - 5;
 
-        $blockHeight = max($leftHeight, $rightHeight);
-        $pdf->SetY($def_y + $blockHeight + 2);
+        $pdf->SetXY($rightX, $startY);
+        $pdf->MultiCell($rightWidth, 5, $rightText, 0, 'L');
+        $rightBottom = $pdf->GetY();
+
+        $blockHeight = max($leftBottom, $rightBottom) - $startY;
+
+        $pdf->Rect($leftX, $startY, $leftWidth, $blockHeight);
+        $pdf->Rect($rightX, $startY, $rightWidth, $blockHeight);
+
+        $pdf->SetY($startY + $blockHeight + 2);
+
 
         $total_price = 0;
         $total_qty = 0;
@@ -473,12 +474,12 @@ if (mysqli_num_rows($result) > 0) {
         $lineheight = 6;
 
         $pdf->SetX(140);
+
+        $pdf->ln();
         
         $col1_x = 10;
         $col2_x = 140;
         $col_y = $pdf->GetY();
-
-        
 
         $pdf->SetFont('Arial', '', 10);
 
@@ -518,30 +519,27 @@ if (mysqli_num_rows($result) > 0) {
         $sales_tax  = $subtotal * $tax;
         $grand_total = $subtotal + $delivery_price + $sales_tax;
 
-        $pdf->SetXY($col2_x, $col_y);
-        $pdf->Cell(40, $lineheight, 'Customer Savings:', 0, 0);
-        $pdf->Cell(20, $lineheight, '$ ' . number_format(max(0, $total_saved), 2), 0, 1, 'R');
+        $pdf->SetXY($col2_x, $col_y + 5);
+        $pdf->Cell(40, $lineheight, 'CUSTOMER SAVINGS:', 1, 0);
+        $pdf->Cell(20, $lineheight, '$ ' . number_format(max(0, $total_saved), 2), 1, 1, 'R');
 
         $pdf->SetXY($col2_x, $pdf->GetY());
-        $pdf->Cell(40, $lineheight, 'MISC:', 0, 0);
-        $pdf->Cell(20, $lineheight, ($discount < 0 ? '-' : '') . $discount * 100 .'%', 0, 1, 'R');
+        $pdf->Cell(40, $lineheight, 'MATERIALS PRICE:', 1, 0);
+        $pdf->Cell(20, $lineheight, '$ ' . number_format($subtotal, 2), 1, 1 , 'R');
 
         $pdf->SetXY($col2_x, $pdf->GetY());
-        $pdf->Cell(40, $lineheight, 'SUBTOTAL:', 0, 0);
-        $pdf->Cell(20, $lineheight, '$ ' . number_format($subtotal, 2), 0, 1 , 'R');
+        $pdf->Cell(40, $lineheight, 'DELIVERY CHARGE:', 1, 0);
+        $pdf->Cell(20, $lineheight, '$ ' . number_format($delivery_price, 2), 1, 1 , 'R');
 
         $pdf->SetXY($col2_x, $pdf->GetY());
-        $pdf->Cell(40, $lineheight, 'DELIVERY:', 0, 0);
-        $pdf->Cell(20, $lineheight, '$ ' . number_format($delivery_price, 2), 0, 1 , 'R');
-
-        $pdf->SetXY($col2_x, $pdf->GetY());
-        $pdf->Cell(40, $lineheight, 'SALES TAX:', 0, 0);
-        $pdf->Cell(20, $lineheight, '$ ' . number_format($sales_tax, 2), 0, 1, 'R');
+        $pdf->Cell(40, $lineheight, 'SALES TAX:', 1, 0);
+        $pdf->Cell(20, $lineheight, '$ ' . number_format($sales_tax, 2), 1, 1, 'R');
 
         $pdf->SetFont('Arial', 'B', 10);
         $pdf->SetXY($col2_x, $pdf->GetY());
-        $pdf->Cell(40, $lineheight, 'GRAND TOTAL:', 0, 0);
-        $pdf->Cell(20, $lineheight, '$ ' . number_format($grand_total, 2), 0, 1, 'R');
+        $pdf->Cell(40, $lineheight, 'TOTAL PRICE:', 1, 0);
+        $pdf->Cell(20, $lineheight, '$ ' . number_format($grand_total, 2), 1, 1, 'R');
+
 
         $pdf->Ln(5);
 
