@@ -3198,6 +3198,9 @@ function calculateCartItem($values) {
         $screw_length   = $values["screw_length"] ?? '';
         $screw_type     = $values["screw_type"] ?? '';
 
+        $estimate_length = $total_length;
+        $estimate_length_inch = 0;
+
         $parent_prod_id = getScrewProdID(
             $category_id, $product_type, '', $color_id, ''
         );

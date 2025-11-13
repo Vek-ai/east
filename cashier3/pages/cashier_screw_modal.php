@@ -85,7 +85,7 @@ if(isset($_POST['fetch_modal'])){
                     </select>
                 </div>
                 <div class="col">
-                    <select class="form-control mb-1 screw_select select-2">
+                    <select class="form-control mb-1 screw_select select-2" name="pack[]">
                         <option value="">Select Pack</option>
                         <?php
                         $packArray = [];
@@ -111,7 +111,7 @@ if(isset($_POST['fetch_modal'])){
                             }
 
                             echo "<option 
-                                    value='{$inventoryId}' 
+                                    value='{$packPieces}' 
                                     data-pack='{$packPieces}' 
                                     data-dim-id='{$dim_id}' 
                                     data-color='{$colorId}' 
@@ -123,7 +123,6 @@ if(isset($_POST['fetch_modal'])){
                         ?>
                     </select>
                     <input type="hidden" name="price[]" class="screw_price" value="<?= $unit_price ?>">
-                    <input type="hidden" class="screw_price" value="<?= $unit_price ?>">
                     <input type="hidden" name="length_feet[]" class="custom_pack">
                     <input type="hidden" name="length_inch[]" class="custom_length_inch">
                 </div>
@@ -197,23 +196,6 @@ if(isset($_POST['fetch_modal'])){
                         $(this).toggle(dimId === selectedDim || $(this).val() === '');
                     });
                     $colorSelect.val('');
-                }
-            });
-
-            $(document).on('change', '.screw-row .color_select', function() {
-                const $row = $(this).closest('.screw-row');
-                const selectedColor = $(this).val();
-                const selectedDim = $row.find('#dimension_select').val();
-                const $packSelect = $row.find('.screw_select');
-
-                if (selectedColor && selectedDim) {
-                    $packSelect.closest('.col').removeClass('d-none');
-                    $packSelect.find('option').each(function() {
-                        const color = $(this).data('color')?.toString();
-                        const dimId = $(this).data('dim-id')?.toString();
-                        $(this).toggle((color === selectedColor && dimId === selectedDim) || $(this).index() === 0);
-                    });
-                    $packSelect.val('');
                 }
             });
 

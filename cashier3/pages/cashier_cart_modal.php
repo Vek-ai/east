@@ -1076,7 +1076,7 @@ if(isset($_POST['fetch_cart'])){
 
                             $total_qty           += $item["quantity"];
                             $total_length_cart   += $item["quantity"] * $item["total_length"];
-                            $totalquantity       += $item["quantity"];
+                            $total_weight        += ($item["product"]["weight"] ?? 0) * $item["quantity"];
                             $total_price_actual  += $item["subtotal"];
                             $total_customer_price+= $item["customer_price"];
                             $total_weight        += ($product["weight"] ?? 0) * $item["quantity"];
