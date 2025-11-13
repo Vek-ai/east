@@ -88,24 +88,35 @@ if(isset($_POST['fetch_modal'])){
                     <select class="form-control mb-1 screw_select select-2">
                         <option value="">Select Pack</option>
                         <?php
-                        foreach ($inventoryItems as $item) {
-                            $inventoryId = $item['inventory_id'];
-                            $pack = getPackPieces($item['pack']);
-                            $colorId = $item['color_id'] ?? 0;
-                            $price = $item['price'] ?? 0;
-                            $dim_id = $item['dimension_id'];
-
-                            $dimensionParts = [];
-                            if (!empty($item['dimension'])) {
-                                $dimensionParts = array_map('trim', explode('-', $item['dimension']));
+                        $packArray = [];
+                        if (!empty($product_details['pack'])) {
+                            $packArray = json_decode($product_details['pack'], true);
+                            if (!is_array($packArray)) {
+                                $packArray = [];
                             }
-                            $dimensionDisplay = !empty($dimensionParts) ? implode(' - ', $dimensionParts) : '';
-                            $display = $pack . ' pcs';
-                            if ($dimensionDisplay !== '') {
-                                $display .= ' - ' . $dimensionDisplay;
+                        }
+
+                        $dim_id = $item['dimension_id'] ?? '';
+                        $colorId = $item['color_id'] ?? '';
+                        $price   = $item['price'] ?? '';
+                        $inventoryId = $item['inventory_id'] ?? '';
+
+                        foreach ($packArray as $pack) {
+                            $packPieces = getPackPieces($pack);
+                            $packName = getPackName($pack);
+
+                            $display = $packName;
+                            if ($packPieces !== '') {
+                                $display .= ' (' . $packPieces .' PCS)';
                             }
 
-                            echo "<option value='{$inventoryId}' data-pack='{$pack}' data-dim-id='{$dim_id}' data-color='{$colorId}' data-price='{$price}' data-dimension='{$dimensionDisplay}'>
+                            echo "<option 
+                                    value='{$inventoryId}' 
+                                    data-pack='{$packPieces}' 
+                                    data-dim-id='{$dim_id}' 
+                                    data-color='{$colorId}' 
+                                    data-price='{$price}' 
+                                    data-dimension='{$dimensionDisplay}'>
                                     {$display}
                                 </option>";
                         }

@@ -2299,7 +2299,7 @@ function getAvailableInventory($product_id) {
         LEFT JOIN dimensions d ON iv.dimension_id = d.dimension_id
         LEFT JOIN product_variant_length pvl ON iv.Inventory_id = pvl.inventory_id
         WHERE iv.Product_id = '$product_id'
-          AND iv.quantity > 0
+          AND iv.quantity_ttl > 0
         ORDER BY iv.Inventory_id ASC
     ";
 
