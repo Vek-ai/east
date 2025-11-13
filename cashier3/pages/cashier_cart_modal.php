@@ -1073,6 +1073,16 @@ if(isset($_POST['fetch_cart'])){
                                 <?php
 
                             }
+
+                            $total_qty           += $item["quantity"];
+                            $total_length_cart   += $item["quantity"] * $item["total_length"];
+                            $totalquantity       += $item["quantity"];
+                            $total_price_actual  += $item["subtotal"];
+                            $total_customer_price+= $item["customer_price"];
+                            $total_weight        += ($product["weight"] ?? 0) * $item["quantity"];
+                            $customer_savings    += $item["savings"];
+                            $grand_actual_price  += $item["subtotal"];
+                            $grand_customer_price+= $item["customer_price"];
                         }
                     }
                     
@@ -1105,22 +1115,22 @@ if(isset($_POST['fetch_cart'])){
                         <td colspan="1"></td>
                     </tr>
                     <tr>
-                        <th colspan="10" style="border-bottom: none; border-top: none;"></th>
-                        <th class="text-end" style="border-bottom: 1px solid #dee2e6;">Materials Price:</th>
+                        <th colspan="11" style="border-bottom: none; border-top: none;"></th>
+                        <th colspan="2" class="text-end" style="border-bottom: 1px solid #dee2e6;">Materials Price:</th>
                         <td class="text-end" style="border-bottom: 1px solid #dee2e6;">
                             $<span id="total_amt"><?= number_format(floatval($grand_customer_price), 2) ?></span>
                         </td>
                     </tr>
                     <tr>
-                        <th colspan="10" style="border-bottom: none; border-top: none;"></th>
-                        <th class="text-end" style="border-bottom: 1px solid #dee2e6;">Sales Tax:</th>
+                        <th colspan="11" style="border-bottom: none; border-top: none;"></th>
+                        <th colspan="2" class="text-end" style="border-bottom: 1px solid #dee2e6;">Sales Tax:</th>
                         <td class="text-end" style="border-bottom: 1px solid #dee2e6;">
                             $<span id="sales_tax"><?= number_format($total_tax = floatval($grand_customer_price) * $tax, 2) ?></span>
                         </td>
                     </tr>
                     <tr>
-                        <th colspan="10" style="border-bottom: none; border-top: none;"></th>
-                        <th class="text-end fw-bold" style="border-bottom: 1px solid #dee2e6;">Total Due:</th>
+                        <th colspan="11" style="border-bottom: none; border-top: none;"></th>
+                        <th colspan="2" class="text-end fw-bold" style="border-bottom: 1px solid #dee2e6;">Total Due:</th>
                         <td class="text-end fw-bold" style="border-bottom: 1px solid #dee2e6;">
                             $<span id="total_payable_est"><?= number_format((floatval($grand_customer_price) + $total_tax), 2) ?></span>
                         </td>
