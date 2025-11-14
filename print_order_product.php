@@ -196,26 +196,23 @@ function renderRow($pdf, $columns, $row, $bold = false) {
     $yStart = $pdf->GetY();
     $x = $xStart;
 
-    // Calculate max height for the row (needed for border)
-    $maxHeight = $lineHeight;
+    $row = array_slice($row, 0, count($columns));
 
-    // Precalculate height for the 2nd column (index 1) if multiline
-    if (isset($row[1])) {
-        $pdf->SetFont('Arial', $bold ? 'B' : '', $columns[1]['fontsize'] ?? 8);
-        $nbLines = $pdf->NbLines($columns[1]['width'], $row[1]);
-        $maxHeight = max($maxHeight, $nbLines * $lineHeight);
-    }
+    $columnHeights = [];
 
     foreach ($columns as $i => $col) {
         $w = $col['width'];
-        $pdf->SetFont('Arial', $bold ? 'B' : '', $col['fontsize'] ?? 8);
+        $fontSize = $col['fontsize'] ?? 8;
+        $pdf->SetFont('Arial', $bold ? 'B' : '', $fontSize);
         $pdf->SetXY($x, $yStart);
 
         if ($i === 1) {
-            // 2nd column: allow multiline
+            $startY = $pdf->GetY();
             $pdf->MultiCell($w, $lineHeight, $row[$i], 0, $col['align']);
-        } elseif ($i === 6 && strpos($row[$i], 'ft') !== false && strpos($row[$i], 'in') !== false) {
-            // Special ft/in column
+            $endY = $pdf->GetY();
+            $columnHeights[$i] = $endY - $startY;
+        }
+        elseif ($i === 6 && strpos($row[$i], 'ft') !== false && strpos($row[$i], 'in') !== false) {
             preg_match('/(\d+)ft\s*(\d+)in/', $row[$i], $matches);
             if ($matches) {
                 $ft = $matches[1] . 'ft';
@@ -226,21 +223,21 @@ function renderRow($pdf, $columns, $row, $bold = false) {
             } else {
                 $pdf->Cell($w, $lineHeight, $row[$i], 0, 0, $col['align']);
             }
-        } else {
-            // All other columns: single line with fitTextToWidth
-            $fontSize = $pdf->fitTextToWidth($row[$i], $w, $col['fontsize'] ?? 8, 'Arial', $bold ? 'B' : '');
-            $pdf->SetFont('Arial', $bold ? 'B' : '', $fontSize);
+            $columnHeights[$i] = $lineHeight;
+        }
+        else {
+            $fittedSize = $pdf->fitTextToWidth($row[$i], $w, $fontSize, 'Arial', $bold ? 'B' : '');
+            $pdf->SetFont('Arial', $bold ? 'B' : '', $fittedSize);
             $pdf->Cell($w, $lineHeight, $row[$i], 0, 0, $col['align']);
+            $columnHeights[$i] = $lineHeight;
         }
 
         $x += $w;
     }
 
-    // Draw border covering the full row height
+    $maxHeight = max($columnHeights);
     $totalWidth = array_sum(array_column($columns, 'width'));
     $pdf->Rect($xStart, $yStart, $totalWidth, $maxHeight);
-
-    // Move Y to next row
     $pdf->SetXY($xStart, $yStart + $maxHeight);
 }
 
