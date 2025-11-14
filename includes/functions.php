@@ -4322,7 +4322,7 @@ function getAssignedProductColors($product_id) {
     $product_id = intval($product_id);
     $colorIds = [];
 
-    $query = "SELECT color_id 
+    $query = "SELECT DISTINCT color_id 
               FROM product_color_assign 
               WHERE product_id = $product_id 
               AND status = 1";
@@ -4336,6 +4336,56 @@ function getAssignedProductColors($product_id) {
     }
 
     return $colorIds;
+}
+
+function getAssignedProductGrades($product_id) {
+    global $conn;
+
+    $product_id = intval($product_id);
+    $grades = [];
+
+    $query = "SELECT grade
+              FROM product
+              WHERE product_id = $product_id 
+              AND status = 1";
+
+    $result = mysqli_query($conn, $query);
+
+    if ($result && mysqli_num_rows($result) > 0) {
+        while ($row = mysqli_fetch_assoc($result)) {
+            $grade_str = trim($row['grade'], "[] ");
+            if ($grade_str !== '') {
+                $grades = array_map('intval', explode(',', $grade_str));
+            }
+        }
+    }
+
+    return $grades;
+}
+
+function getAssignedProductGauges($product_id) {
+    global $conn;
+
+    $product_id = intval($product_id);
+    $gauges = [];
+
+    $query = "SELECT gauge
+              FROM product
+              WHERE product_id = $product_id 
+              AND status = 1";
+
+    $result = mysqli_query($conn, $query);
+
+    if ($result && mysqli_num_rows($result) > 0) {
+        while ($row = mysqli_fetch_assoc($result)) {
+            $gauge_str = trim($row['gauge'], "[] ");
+            if ($gauge_str !== '') {
+                $gauges = array_map('intval', explode(',', $gauge_str));
+            }
+        }
+    }
+
+    return $gauges;
 }
 
 function getProductAttributes($product_id) {

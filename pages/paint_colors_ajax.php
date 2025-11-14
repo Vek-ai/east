@@ -361,10 +361,11 @@ if(isset($_REQUEST['action'])) {
     
     if ($action == "change_status") {
         $color_id = mysqli_real_escape_string($conn, $_POST['color_id']);
-        $status = mysqli_real_escape_string($conn, $_POST['status']);
-        $new_status = ($status == '0') ? '1' : '0';
 
-        $statusQuery = "UPDATE paint_colors SET color_status = '$new_status' WHERE color_id = '$color_id'";
+        $statusQuery = "UPDATE paint_colors 
+                        SET color_status = 1 - color_status 
+                        WHERE color_id = '$color_id'";
+
         if (mysqli_query($conn, $statusQuery)) {
             echo "success";
         } else {
@@ -772,40 +773,42 @@ if(isset($_REQUEST['action'])) {
 
     if ($action === 'fetch_table') {
         $permission = $_SESSION['permission'];
-        $query = "SELECT * FROM paint_colors WHERE hidden = 0";
+        $query = "
+            SELECT * 
+            FROM paint_colors 
+            WHERE hidden = 0
+            ORDER BY 
+                REPLACE(color_name, 'Copy - ', ''), 
+                color_id ASC
+        ";
         $result = mysqli_query($conn, $query);
 
         $assignedColors = [];
         $res = mysqli_query($conn, "SELECT DISTINCT color_id FROM product_color_assign");
-        while($r = mysqli_fetch_assoc($res)) {
+        while ($r = mysqli_fetch_assoc($res)) {
             $assignedColors[$r['color_id']] = true;
         }
-    
+
         $data = [];
         while ($row = mysqli_fetch_assoc($result)) {
             $no = $row['color_id'];
-
             $isAssigned = isset($assignedColors[$no]);
 
-            
             $color_abbreviation = $row['color_abbreviation'];
             $color_name = $row['color_name'];
             $color_code = $row['color_code'];
             $color_group = getColorGroupName($row['color_group']);
             $provider = getPaintProviderName($row['provider_id']);
 
-            //$product_category = getProductCategoryName($row['product_category']);
             $category_ids = json_decode($row['product_category'], true);
             $category_ids = is_array($category_ids) ? $category_ids : [];
-
             $product_category = implode(', ', array_unique(array_map('getProductCategoryName', $category_ids)));
 
             $availability_details = getAvailabilityDetails($row['stock_availability']);
             $availability = $availability_details['product_availability'] ?? '';
-    
+
             $added_by = $row['added_by'];
             $edited_by = $row['edited_by'];
-    
             if ($edited_by != "0") {
                 $last_user_name = get_customer_name($edited_by);
             } elseif ($added_by != "0") {
@@ -820,10 +823,10 @@ if(isset($_REQUEST['action'])) {
                 $last_edit = $dt->format('m/d/Y');
             }
 
-            $notes = !empty($row['notes']) 
-            ? (strlen($row['notes']) > 30 ? substr($row['notes'], 0, 30) . '...' : $row['notes']) 
-            : '';
-    
+            $notes = !empty($row['notes'])
+                ? (strlen($row['notes']) > 30 ? substr($row['notes'], 0, 30) . '...' : $row['notes'])
+                : '';
+
             if ($isAssigned) {
                 $status_html = "<div class='alert alert-success border-0 text-center py-1 px-2 my-0' style='border-radius: 5%;'>Assigned</div>";
                 $status_assigned = 1;
@@ -832,20 +835,19 @@ if(isset($_REQUEST['action'])) {
                 $status_assigned = 0;
             }
 
-    
             $action_html = '';
             if ($permission === 'edit') {
                 $action_html .= "
                     <a href='javascript:void(0)' id='addModalBtn' title='View' class='d-flex align-items-center justify-content-center text-decoration-none' data-id='$no' data-type='view'>
-                            <i class='ti ti-eye fs-7'></i>
+                        <i class='ti ti-eye fs-7'></i>
                     </a>
                     <a href='javascript:void(0)' id='addModalBtn' title='Edit' class='d-flex align-items-center justify-content-center text-decoration-none' data-id='$no' data-type='edit'>
-                            <i class='ti ti-pencil fs-7'></i>
+                        <i class='ti ti-pencil fs-7'></i>
                     </a>
                     <a href='javascript:void(0)' title='Copy' class='copy_color_btn ms-2' data-id='$no'>
                         <i class='ti ti-copy fs-7'></i>
                     </a>
-                    <a href='javascript:void(0)' title='Delete' class='delete_color_btn ms-2' data-id='$no'>
+                    <a href='javascript:void(0)' title='Delete' class='changeStatus ms-2' data-id='$no'>
                         <i class='ti ti-trash fs-7'></i>
                     </a>";
             }
@@ -860,7 +862,6 @@ if(isset($_REQUEST['action'])) {
             $product_grade_names    = (strpos($product_grade_names, ',') !== false)    ? 'Multiple Grades'    : $product_grade_names;
             $product_gauge_names    = (strpos($product_gauge_names, ',') !== false)    ? 'Multiple Gauges'    : $product_gauge_names;
 
-    
             $data[] = [
                 'color_id' => $no,
                 'color_abbreviation' => $color_abbreviation,
@@ -888,10 +889,11 @@ if(isset($_REQUEST['action'])) {
                 'status_assigned' => $status_assigned,
             ];
         }
-    
+
         echo json_encode(['data' => $data]);
         exit;
     }
+
 
     if ($action == "assign_color") {
         $assignedBy = $_SESSION['userid']; 
@@ -949,7 +951,44 @@ if(isset($_REQUEST['action'])) {
         }
     }
 
+    if ($action == 'duplicate_color') {
+        $color_id = intval($_POST['color_id']);
 
+        $exclude = [
+            'color_id',
+            'added_date',
+            'last_edit'
+        ];
+
+        $columns = [];
+        $result = mysqli_query($conn, "SHOW COLUMNS FROM paint_colors");
+
+        while ($col = mysqli_fetch_assoc($result)) {
+            if (!in_array($col['Field'], $exclude)) {
+                $columns[] = $col['Field'];
+            }
+        }
+
+        $insert_cols = implode(", ", $columns);
+        $select_cols = array_map(function($col) {
+            if ($col === 'color_name') {
+                return "CONCAT('Copy - ', color_name)";
+            }
+            return $col;
+        }, $columns);
+
+        $select_cols = implode(", ", $select_cols);
+
+        $sql = "
+            INSERT INTO paint_colors ($insert_cols)
+            SELECT $select_cols
+            FROM paint_colors
+            WHERE color_id = $color_id
+        ";
+
+        echo mysqli_query($conn, $sql) ? "success" : "error";
+        exit;
+    }
 
     mysqli_close($conn);
 }

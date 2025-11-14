@@ -43,40 +43,65 @@ $panel_style_3 = $profile_details['panel_style_3'];
         </select>
     </div>
 
-    <!-- Grade -->
     <div class="col-3">
         <select class="form-control qty_select2" id="qty-grade" name="grade">
             <option value="" data-category="">All Grades</option>
             <optgroup label="Product Grades">
                 <?php
-                $query_grade = "SELECT * FROM product_grade WHERE hidden = '0' AND status = '1' ORDER BY product_grade ASC";
-                $result_grade = mysqli_query($conn, $query_grade);
-                while ($row_grade = mysqli_fetch_array($result_grade)) {
+                $assignedGrades = getAssignedProductGrades($id);
+                $assignedGrades = array_map('intval', $assignedGrades);
+
+                if (!empty($assignedGrades)) {
+                    $ids = implode(',', $assignedGrades);
+                    $query_grade = "SELECT * FROM product_grade 
+                                    WHERE hidden = '0' 
+                                    AND status = '1' 
+                                    AND product_grade_id IN ($ids)
+                                    ORDER BY product_grade ASC";
+                    $result_grade = mysqli_query($conn, $query_grade);
+
+                    if ($result_grade) {
+                        while ($row_grade = mysqli_fetch_assoc($result_grade)) {
+                            $gradeId = (int)$row_grade['product_grade_id'];
+                            $category = htmlspecialchars($row_grade['product_category'], ENT_QUOTES);
+                            $gradeName = htmlspecialchars($row_grade['product_grade'], ENT_QUOTES);
+
+                            echo "<option value=\"$gradeId\" data-category=\"$category\">$gradeName</option>";
+                        }
+                    }
+                }
                 ?>
-                    <option value="<?= htmlspecialchars($row_grade['product_grade_id']) ?>" 
-                            data-category="<?= htmlspecialchars($row_grade['product_category']) ?>">
-                        <?= htmlspecialchars($row_grade['product_grade']) ?>
-                    </option>
-                <?php } ?>
             </optgroup>
         </select>
     </div>
 
-    <!-- Gauge -->
     <div class="col-3">
         <select class="form-control qty_select2" id="qty-gauge" name="gauge">
             <option value="" data-category="">All Gauges</option>
             <optgroup label="Product Gauges">
                 <?php
-                $query_gauge = "SELECT * FROM product_gauge WHERE hidden = '0' AND status = '1' ORDER BY product_gauge ASC";
-                $result_gauge = mysqli_query($conn, $query_gauge);
-                while ($row_gauge = mysqli_fetch_array($result_gauge)) {
+                $assignedGauges = getAssignedProductGauges($id);
+                $assignedGauges = array_map('intval', $assignedGauges);
+
+                if (!empty($assignedGauges)) {
+                    $ids = implode(',', $assignedGauges);
+                    $query_gauge = "SELECT * FROM product_gauge 
+                                    WHERE hidden = '0' 
+                                    AND status = '1' 
+                                    AND product_gauge_id IN ($ids) 
+                                    ORDER BY product_gauge ASC";
+                    $result_gauge = mysqli_query($conn, $query_gauge);
+
+                    if ($result_gauge) {
+                        while ($row_gauge = mysqli_fetch_assoc($result_gauge)) {
+                            $gaugeId = (int)$row_gauge['product_gauge_id'];
+                            $gaugeName = htmlspecialchars($row_gauge['product_gauge'], ENT_QUOTES);
+
+                            echo "<option value=\"$gaugeId\" data-category=\"gauge\">$gaugeName</option>";
+                        }
+                    }
+                }
                 ?>
-                    <option value="<?= htmlspecialchars($row_gauge['product_gauge_id']) ?>" 
-                            data-category="gauge">
-                        <?= htmlspecialchars($row_gauge['product_gauge']) ?>
-                    </option>
-                <?php } ?>
             </optgroup>
         </select>
     </div>

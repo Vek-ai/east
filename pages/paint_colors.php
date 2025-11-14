@@ -751,14 +751,16 @@ $(document).ready(function() {
     $(document).on('click', '.changeStatus', function(event) {
         event.preventDefault(); 
         var color_id = $(this).data('id');
-        var status = $(this).data('status');
-        var no = $(this).data('no');
+
+        if (!confirm("Are you sure you want to archive this color?")) {
+            return;
+        }
+        
         $.ajax({
             url: 'pages/paint_colors_ajax.php',
             type: 'POST',
             data: {
                 color_id: color_id,
-                status: status,
                 action: 'change_status'
             },
             success: function(response) {
@@ -797,6 +799,41 @@ $(document).ready(function() {
             }
         });
     });
+
+    $(document).on('click', '.copy_color_btn', function(event) {
+        event.preventDefault(); 
+        var color_id = $(this).data('id');
+
+        if (!confirm("Are you sure you want to duplicate this color?")) {
+            return;
+        }
+
+        $.ajax({
+            url: 'pages/paint_colors_ajax.php',
+            type: 'POST',
+            data: {
+                color_id: color_id,
+                action: 'duplicate_color'
+            },
+            success: function(response) {
+                if (response == 'success') {
+                    table.ajax.reload(null, false);
+
+                    $('#responseHeader').text("Success");
+                    $('#responseMsg').text("Paint color Duplicated successfully.");
+                    $('#responseHeaderContainer').removeClass("bg-danger");
+                    $('#responseHeaderContainer').addClass("bg-success");
+                    $('#response-modal').modal("show");
+                } else {
+                    alert('Failed to duplicate color.');
+                }
+            },
+            error: function(jqXHR, textStatus, errorThrown) {
+                alert('Error: ' + textStatus + ' - ' + errorThrown);
+            }
+        });
+    });
+
 
     $('#color_form').on('submit', function(event) {
         event.preventDefault(); 
