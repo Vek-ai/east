@@ -162,8 +162,12 @@ if(isset($_POST['fetch_cart'])){
         }
 
         tbody {
-            border: 4px solid white !important;
-            margin-bottom: 40px !important;
+            border: 4px solid white;
+            border-radius: 6px;
+        }
+
+        tbody tr {
+            width: 100%;
         }
     </style>
 
@@ -1478,6 +1482,15 @@ if(isset($_POST['fetch_cart'])){
                         }
                     });
                 }
+            });
+
+            $('tbody').each(function() {
+                var r = Math.floor(Math.random() * 256);
+                var g = Math.floor(Math.random() * 256);
+                var b = Math.floor(Math.random() * 256);
+                var randomColor = 'rgb(' + r + ',' + g + ',' + b + ')';
+
+                $(this).css('border-color', randomColor);
             });
 
             const savedData = sessionStorage.getItem('new_customer');
