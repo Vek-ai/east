@@ -1484,7 +1484,7 @@ if(isset($_POST['fetch_cart'])){
                 }
             });
 
-            $('tbody').each(function() {
+            $('#cartTable tbody').each(function() { 
                 var r = Math.floor(Math.random() * 256);
                 var g = Math.floor(Math.random() * 256);
                 var b = Math.floor(Math.random() * 256);
