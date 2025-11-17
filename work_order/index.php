@@ -8,7 +8,7 @@ if (!isset($_SESSION['work_order_user_id'])) {
 include_once '../includes/dbconn.php';
 define('APP_SECURE', true);
 
-$user_id = $_SESSION['userid'];
+$user_id = $_SESSION['work_order_user_id'];
 $page_key = !empty($_REQUEST['page']) ? $_REQUEST['page'] : 'work_order';
 ?>
 <!DOCTYPE html>
@@ -67,6 +67,7 @@ $page_key = !empty($_REQUEST['page']) ? $_REQUEST['page'] : 'work_order';
   </style>
 
   <title>Work Order - East Kentucky Metal</title>
+  <link rel="stylesheet" href="StaffChatter/css/chat-widget.css">
 
 </head>
 
@@ -389,6 +390,15 @@ $page_key = !empty($_REQUEST['page']) ? $_REQUEST['page'] : 'work_order';
     fetchNotifications();
   });
   </script>
+  <?php if (isset($_SESSION['work_order_user_id']) && isset($_SESSION['fullname'])): ?>
+  <script src="StaffChatter/js/chat-widget.js"></script>
+  <script>
+      const chatWidget = new ChatWidget({
+          currentUserId: <?php echo $_SESSION['work_order_user_id']; ?>,
+          currentUserName: '<?php echo htmlspecialchars($_SESSION['fullname']); ?>'
+      });
+  </script>
+  <?php endif; ?>
 </body>
 
 </html>
