@@ -79,7 +79,7 @@ if ($has_file) {
     }
     
     // Detect actual MIME type using server-side detection (not client-supplied)
-    $finfo        = finfo_open(FILEINFO_MIME_TYPE);
+    $finfo         = finfo_open(FILEINFO_MIME_TYPE);
     $detected_mime = finfo_file($finfo, $file_tmp);
     finfo_close($finfo);
     
@@ -126,7 +126,7 @@ try {
     
     $conn->beginTransaction();
     
-    // 🔍 Find or create conversation (FIXED PARAM NAMES)
+    // 🔍 Find or create conversation (fixed params, MySQL-safe)
     $stmt = $conn->prepare("
         SELECT conversation_id 
         FROM conversations 
@@ -147,19 +147,19 @@ try {
         $staff2 = max($current_user_id, $other_staff_id);
         
         $stmt = $conn->prepare("
-            INSERT INTO conversations (staff1_id, staff2_id) 
-            VALUES (:staff1, :staff2) 
-            RETURNING conversation_id
+            INSERT INTO conversations (staff1_id, staff2_id, updated_at) 
+            VALUES (:staff1, :staff2, NOW())
         ");
         $stmt->bindValue(':staff1', $staff1, PDO::PARAM_INT);
         $stmt->bindValue(':staff2', $staff2, PDO::PARAM_INT);
         $stmt->execute();
-        $conversation = $stmt->fetch(PDO::FETCH_ASSOC);
+        
+        $conversation_id = (int)$conn->lastInsertId();
+    } else {
+        $conversation_id = (int)$conversation['conversation_id'];
     }
     
-    $conversation_id = (int)$conversation['conversation_id'];
-    
-    // 💬 Insert message
+    // 💬 Insert message (no RETURNING, use lastInsertId)
     $stmt = $conn->prepare("
         INSERT INTO messages (
             conversation_id, 
@@ -168,7 +168,8 @@ try {
             file_name, 
             file_path, 
             file_type, 
-            file_size
+            file_size,
+            created_at
         ) 
         VALUES (
             :conversation_id, 
@@ -177,25 +178,41 @@ try {
             :file_name, 
             :file_path, 
             :file_type, 
-            :file_size
+            :file_size,
+            NOW()
         )
-        RETURNING message_id, created_at
     ");
     $stmt->bindValue(':conversation_id', $conversation_id, PDO::PARAM_INT);
     $stmt->bindValue(':sender_id',      $current_user_id, PDO::PARAM_INT);
     $stmt->bindValue(':message_text',   $message_text !== '' ? $message_text : null, PDO::PARAM_STR);
-    $stmt->bindValue(':file_name',      $file_name, PDO::PARAM_STR);
-    $stmt->bindValue(':file_path',      $file_path, PDO::PARAM_STR);
-    $stmt->bindValue(':file_type',      $file_type, PDO::PARAM_STR);
-    $stmt->bindValue(':file_size',      $file_size, PDO::PARAM_INT);
+    $stmt->bindValue(':file_name',      $file_name);
+    $stmt->bindValue(':file_path',      $file_path);
+    $stmt->bindValue(':file_type',      $file_type);
+    $stmt->bindValue(':file_size',      $file_size);
     $stmt->execute();
     
-    $message = $stmt->fetch(PDO::FETCH_ASSOC);
+    $message_id = (int)$conn->lastInsertId();
+
+    // Fetch created_at for this message (optional but nice for the frontend)
+    $created_at = null;
+    if ($message_id) {
+        $stmt = $conn->prepare("
+            SELECT created_at 
+            FROM messages 
+            WHERE message_id = :message_id
+        ");
+        $stmt->bindValue(':message_id', $message_id, PDO::PARAM_INT);
+        $stmt->execute();
+        $row = $stmt->fetch(PDO::FETCH_ASSOC);
+        if ($row) {
+            $created_at = $row['created_at'];
+        }
+    }
     
     // 🕒 Update conversation timestamp
     $stmt = $conn->prepare("
         UPDATE conversations 
-        SET updated_at = CURRENT_TIMESTAMP 
+        SET updated_at = NOW() 
         WHERE conversation_id = :conversation_id
     ");
     $stmt->bindValue(':conversation_id', $conversation_id, PDO::PARAM_INT);
@@ -204,9 +221,9 @@ try {
     $conn->commit();
     
     echo json_encode([
-        'success'     => true,
-        'message_id'  => $message['message_id'] ?? null,
-        'created_at'  => $message['created_at'] ?? null,
+        'success'         => true,
+        'message_id'      => $message_id,
+        'created_at'      => $created_at,
         'conversation_id' => $conversation_id
     ]);
     
