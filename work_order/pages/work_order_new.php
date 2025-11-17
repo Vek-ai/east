@@ -122,6 +122,8 @@ $permission = $_SESSION['permission'];
 
                                         $default_image = '../images/product/product.jpg';
                                         while ($row = mysqli_fetch_assoc($result)) {
+                                            $order_prod = getOrderProdDetails($row['work_order_product_id']);
+                                            $bundle_name = $order_prod['bundle_id'];
                                             $color_details = getColorDetails($row['custom_color']);
                                             $product_id = $row['productid'];
                                             $product_details = getProductDetails($product_id);
@@ -163,6 +165,13 @@ $permission = $_SESSION['permission'];
                                                             <img src="<?= $picture_path ?>" style="background-color: #fff; width: 56px; height: 56px;" class="rounded-circle img-thumbnail preview-image" width="56" height="56" style="background-color: #fff;">
                                                         <div class="mt-1 ms-2"><?= getProductName($product_id) ?></div>
                                                     </a>
+                                                    <?php 
+                                                    if(!empty($bundle_name)){
+                                                        ?>
+                                                        <h5><?=$bundle_name?></h5>
+                                                        <?php
+                                                    }
+                                                    ?>
                                                 </td>
                                                 <td>
                                                     <?= get_name($row['user_id']); ?>
