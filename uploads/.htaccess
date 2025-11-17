@@ -1,0 +1,29 @@
+# Prevent execution of PHP and other scripts
+# Only serve files as downloads, not executables
+
+# Disable PHP execution
+php_flag engine off
+
+# Prevent access to .htaccess file
+<Files ".htaccess">
+Order Allow,Deny
+Deny from all
+</Files>
+
+# Force download for all files
+<FilesMatch ".*">
+    ForceType application/octet-stream
+    Header set Content-Disposition attachment
+</FilesMatch>
+
+# Allow viewing images directly (for image previews)
+<FilesMatch "\.(jpg|jpeg|png|gif)$">
+    ForceType none
+    Header unset Content-Disposition
+</FilesMatch>
+
+# Block executable file extensions explicitly
+<FilesMatch "\.(php|phtml|php3|php4|php5|php7|phps|pht|phar|pl|py|jsp|asp|sh|cgi|exe|bat|com)$">
+    Order Allow,Deny
+    Deny from all
+</FilesMatch>
