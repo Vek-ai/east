@@ -9,34 +9,37 @@ require '../../includes/functions.php';
 
 if(isset($_POST['fetch_available'])){
     $color = mysqli_real_escape_string($conn, $_POST['color']);
-    $width = mysqli_real_escape_string($conn, $_POST['width']);
+    $grade = mysqli_real_escape_string($conn, $_POST['grade']);
+    $gauge = mysqli_real_escape_string($conn, $_POST['gauge']);
 
-    $checkQuery = "SELECT * FROM coil WHERE width = '$width' AND color = '$color'";
+    $checkQuery = "SELECT * FROM coil_product 
+                   WHERE 
+                       color_sold_as = '$color' AND
+                       grade = '$grade' AND
+                       gauge = '$gauge'";
     $result = mysqli_query($conn, $checkQuery);
 
     if (mysqli_num_rows($result) > 0) {
         ?>
         <div class="card">
             <div class="card-body">
-                <table id="productTable" class="table align-middle text-nowrap mb-0">
+                <table id="coilProdTable" class="table align-middle text-nowrap mb-0">
                     <thead>
                         <tr>
-                            <th scope="col">Products</th>
-                            <th scope="col">Grade</th>
+                            <th scope="col">Coil #</th>
                             <th scope="col">Color</th>
+                            <th scope="col">Grade</th>
                             <th scope="col">Gauge</th>
-                            <th scope="col">Width</th>
                         </tr>
                     </thead>
                     <tbody>
                         <?php
                             while($row = mysqli_fetch_assoc($result)){
                             ?>
-                            <td><?= $row['coil'] ?></td>
+                            <td><?= $row['entry_no'] ?></td>
+                            <td><?= getColorName($row['color_sold_as']) ?></td>
                             <td><?= getGradeName($row['grade']) ?></td>
-                            <td><?= getColorName($row['color']) ?></td>
                             <td><?= getGaugeName($row['gauge']) ?></td>
-                            <td><?= $row['width'] ?></td>
                             <?php
                             }                    
                         ?>

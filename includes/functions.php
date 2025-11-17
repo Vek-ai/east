@@ -3092,6 +3092,12 @@ function getDimensions($ids) {
 }
 
 function calculateCartItem($values) {
+    global $conn;
+
+    $panel_id = 3;
+    $trim_id  = 4;
+    $screw_id = 16;
+
     $customer_id = $_SESSION['customer_id'];
     $customer_details = getCustomerDetails($customer_id);
     $customer_details_pricing = $customer_details['customer_pricing'];
@@ -3104,16 +3110,6 @@ function calculateCartItem($values) {
     $category_id = $product["product_category"];
     $product_type= $product['product_type'];
 
-    $stock_text = ($stock_qty > 0)
-        ? '<a href="javascript:void(0);" id="view_in_stock" data-id="' . htmlspecialchars($data_id, ENT_QUOTES, 'UTF-8') . '" class="d-flex justify-content-center align-items-center">
-                <span class="text-bg-success p-1 rounded-circle"></span>
-                <span class="ms-2 fs-3">In Stock</span>
-           </a>'
-        : '<a href="javascript:void(0);" id="view_out_of_stock" data-id="' . htmlspecialchars($data_id, ENT_QUOTES, 'UTF-8') . '" class="d-flex justify-content-center align-items-center">
-                <span class="text-bg-danger p-1 rounded-circle"></span>
-                <span class="ms-2 fs-3">Out of Stock</span>
-           </a>';
-
     $customer_pricing_rate = getPricingCategory($category_id, $customer_details_pricing) / 100;
 
     $estimate_length      = isset($values["estimate_length"]) && is_numeric($values["estimate_length"]) ? floatval($values["estimate_length"]) : 1;
@@ -3124,10 +3120,57 @@ function calculateCartItem($values) {
     $amount_discount = isset($values["amount_discount"]) ? floatval($values["amount_discount"]) : 0;
     $quantity   = isset($values["quantity_cart"]) ? floatval($values["quantity_cart"]) : 0;
 
-    $color_id = $values["custom_color"] ?? '';
+    $color_id = intval($values["custom_color"] ?? 0);
     $grade    = intval($values["custom_grade"] ?? 0);
     $gauge    = intval($values["custom_gauge"] ?? 0);
     $profile  = intval($values["custom_profile"] ?? 0);
+
+    if ($category_id == $panel_id || $category_id == $trim_id) {
+
+        $query_coil = "
+            SELECT 1
+            FROM coil_product
+            WHERE
+                color_sold_as = '" . mysqli_real_escape_string($conn, $color_id) . "'
+                AND grade = '" . mysqli_real_escape_string($conn, $grade) . "'
+                AND gauge = '" . mysqli_real_escape_string($conn, $gauge) . "'
+            LIMIT 1
+        ";
+        $result = mysqli_query($conn, $query_coil);
+
+        if (mysqli_num_rows($result) > 0) {
+
+            $stock_text = '
+            <a href="javascript:void(0);" id="view_available"
+            data-color="' . htmlspecialchars($color_id, ENT_QUOTES, 'UTF-8') . '"
+            data-grade="' . htmlspecialchars($grade, ENT_QUOTES, 'UTF-8') . '"
+            data-gauge="' . htmlspecialchars($gauge, ENT_QUOTES, 'UTF-8') . '"
+            class="d-flex justify-content-center align-items-center">
+                <span class="text-bg-warning p-1 rounded-circle"></span>
+                <span class="ms-2 fs-3">Available</span>
+            </a>';
+        } else {
+
+            $stock_text = '
+            <a href="javascript:void(0);" id="view_out_of_stock"
+            class="d-flex justify-content-center align-items-center">
+                <span class="text-bg-danger p-1 rounded-circle"></span>
+                <span class="ms-2 fs-3">Out of Stock</span>
+            </a>';
+        }
+
+    } else {
+
+        $stock_text = ($stock_qty > 0)
+            ? '<a href="javascript:void(0);" id="view_in_stock" data-id="' . htmlspecialchars($data_id, ENT_QUOTES, 'UTF-8') . '" class="d-flex justify-content-center align-items-center">
+                    <span class="text-bg-success p-1 rounded-circle"></span>
+                    <span class="ms-2 fs-3">In Stock</span>
+            </a>'
+            : '<a href="javascript:void(0);" id="view_out_of_stock" class="d-flex justify-content-center align-items-center">
+                    <span class="text-bg-danger p-1 rounded-circle"></span>
+                    <span class="ms-2 fs-3">Out of Stock</span>
+            </a>';
+    }
 
     $panel_type = $values["panel_type"] ?? '';
     $panel_style= $values["panel_style"] ?? '';
@@ -3168,9 +3211,7 @@ function calculateCartItem($values) {
     $parent_prod_id = '';
     $unique_prod_id = '';
 
-    $panel_id = 3;
-    $trim_id  = 4;
-    $screw_id = 16;
+    
 
     if($category_id == $panel_id){
         $parent_prod_id = getPanelProdID(

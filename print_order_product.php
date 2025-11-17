@@ -142,8 +142,8 @@ function renderPanelCategory($pdf, $product, $conn) {
     $disc_price = floatval($product['discounted_price'] ?? 0);
     $note       = trim($product['note'] ?? '');
 
-    $panel_type  = isset($product['panel_type']) ? ucwords(str_replace('_', ' ', $product['panel_type'])) : '';
-    $panel_style = isset($product['panel_style']) ? ucwords(str_replace('_', ' ', $product['panel_style'])) : '';
+    $panel_type  = !empty($product['panel_type']) ? ucwords(str_replace('_', ' ', $product['panel_type'])) : '';
+    $panel_style = !empty($product['panel_style']) ? ucwords(str_replace('_', ' ', $product['panel_style'])) : '';
 
     $ft = floor(floatval($product['custom_length'] ?? 0));
     $in_decimal = floatval($product['custom_length2'] ?? 0);
@@ -171,6 +171,182 @@ function renderPanelCategory($pdf, $product, $conn) {
         $length_display,
         $panel_type,
         $panel_style,
+        '$ ' . number_format($unit_price, 2),
+        '$ ' . number_format($disc_price, 2),
+    ];
+
+    renderRow($pdf, $columns, $summaryRow, false);
+
+    if (!empty($note)) {
+        $pdf->SetFont('Arial', 'I', 7);
+        $pdf->Cell(0, 4, 'Note: ' . $note, 0, 1, 'L');
+        $pdf->SetFont('Arial', '', 7);
+    }
+
+    $totalQty    = $quantity;
+    $totalPrice  = $disc_price;
+    $totalActual = $act_price;
+
+    return [$totalPrice, $totalQty, $totalActual];
+}
+
+function renderTrimCategory($pdf, $product, $conn) {
+    global $columns;
+
+    $productid = $product['productid'];
+    $product_details = getProductDetails($productid);
+    $grade_details   = getGradeDetails($product['custom_grade']);
+    $gauge_details   = getGaugeDetails($product['custom_gauge']);
+
+    $quantity   = floatval($product['quantity'] ?? 0);
+    $act_price  = floatval($product['actual_price'] ?? 0);
+    $disc_price = floatval($product['discounted_price'] ?? 0);
+    $note       = trim($product['note'] ?? '');
+
+    $panel_type  = !empty($product['panel_type']) ? ucwords(str_replace('_', ' ', $product['panel_type'])) : '';
+    $panel_style = !empty($product['panel_style']) ? ucwords(str_replace('_', ' ', $product['panel_style'])) : '';
+
+    $ft = floor(floatval($product['custom_length'] ?? 0));
+    $in_decimal = floatval($product['custom_length2'] ?? 0);
+    $total_length = $ft + ($in_decimal / 12);
+
+    $ft_only = floor($total_length);
+    $inch_only = round(($total_length - $ft_only) * 12);
+
+    $length_display = str_pad($ft_only . 'ft', 6, ' ', STR_PAD_RIGHT)
+                . str_pad($inch_only . 'in', 6, ' ', STR_PAD_LEFT);
+
+
+    $product_abbrev = $product['product_id_abbrev'] ?? '';
+    $color = getColorName($product['custom_color']);
+
+    $unit_price = $quantity > 0 ? $disc_price / $quantity : 0;
+
+    $summaryRow = [
+        $product_abbrev,
+        $product['product_item'],
+        $color,
+        $grade_details['product_grade'] ?? '',
+        $gauge_details['gauge_abbreviations'] ?? '',
+        $quantity,
+        $length_display,
+        '',
+        '',
+        '$ ' . number_format($unit_price, 2),
+        '$ ' . number_format($disc_price, 2),
+    ];
+
+    renderRow($pdf, $columns, $summaryRow, false);
+
+    if (!empty($note)) {
+        $pdf->SetFont('Arial', 'I', 7);
+        $pdf->Cell(0, 4, 'Note: ' . $note, 0, 1, 'L');
+        $pdf->SetFont('Arial', '', 7);
+    }
+
+    $totalQty    = $quantity;
+    $totalPrice  = $disc_price;
+    $totalActual = $act_price;
+
+    return [$totalPrice, $totalQty, $totalActual];
+}
+
+function renderScrewCategory($pdf, $product, $conn) {
+    global $columns;
+
+    $productid = $product['productid'];
+    $product_details = getProductDetails($productid);
+    $grade_details   = getGradeDetails($product['custom_grade']);
+    $gauge_details   = getGaugeDetails($product['custom_gauge']);
+
+    $quantity   = floatval($product['quantity'] ?? 0);
+    $act_price  = floatval($product['actual_price'] ?? 0);
+    $disc_price = floatval($product['discounted_price'] ?? 0);
+    $note       = trim($product['note'] ?? '');
+
+    $panel_type  = !empty($product['panel_type']) ? ucwords(str_replace('_', ' ', $product['panel_type'])) : '';
+    $panel_style = !empty($product['panel_style']) ? ucwords(str_replace('_', ' ', $product['panel_style'])) : '';
+
+    $ft = floor(floatval($product['custom_length'] ?? 0));
+    $in_decimal = floatval($product['custom_length2'] ?? 0);
+    $total_length = $ft + ($in_decimal / 12);
+
+    $ft_only = floor($total_length);
+    $inch_only = round(($total_length - $ft_only) * 12);
+
+
+    $product_abbrev = $product['product_id_abbrev'] ?? '';
+    $color = getColorName($product['custom_color']);
+
+    $unit_price = $quantity > 0 ? $disc_price / $quantity : 0;
+
+    $summaryRow = [
+        $product_abbrev,
+        $product['product_item'],
+        $color,
+        '',
+        '',
+        $quantity,
+        '',
+        '',
+        '',
+        '$ ' . number_format($unit_price, 2),
+        '$ ' . number_format($disc_price, 2),
+    ];
+
+    renderRow($pdf, $columns, $summaryRow, false);
+
+    if (!empty($note)) {
+        $pdf->SetFont('Arial', 'I', 7);
+        $pdf->Cell(0, 4, 'Note: ' . $note, 0, 1, 'L');
+        $pdf->SetFont('Arial', '', 7);
+    }
+
+    $totalQty    = $quantity;
+    $totalPrice  = $disc_price;
+    $totalActual = $act_price;
+
+    return [$totalPrice, $totalQty, $totalActual];
+}
+
+function renderDefaultCategory($pdf, $product, $conn) {
+    global $columns;
+
+    $productid = $product['productid'];
+    $product_details = getProductDetails($productid);
+    $grade_details   = getGradeDetails($product['custom_grade']);
+    $gauge_details   = getGaugeDetails($product['custom_gauge']);
+
+    $quantity   = floatval($product['quantity'] ?? 0);
+    $act_price  = floatval($product['actual_price'] ?? 0);
+    $disc_price = floatval($product['discounted_price'] ?? 0);
+    $note       = trim($product['note'] ?? '');
+
+    $panel_type  = !empty($product['panel_type']) ? ucwords(str_replace('_', ' ', $product['panel_type'])) : '';
+    $panel_style = !empty($product['panel_style']) ? ucwords(str_replace('_', ' ', $product['panel_style'])) : '';
+
+    $ft = floor(floatval($product['custom_length'] ?? 0));
+    $in_decimal = floatval($product['custom_length2'] ?? 0);
+    $total_length = $ft + ($in_decimal / 12);
+
+    $ft_only = floor($total_length);
+    $inch_only = round(($total_length - $ft_only) * 12);
+
+    $product_abbrev = $product['product_id_abbrev'] ?? '';
+    $color = getColorName($product['custom_color']);
+
+    $unit_price = $quantity > 0 ? $disc_price / $quantity : 0;
+
+    $summaryRow = [
+        $product_abbrev,
+        $product['product_item'],
+        $color,
+        '',
+        '',
+        $quantity,
+        '',
+        '',
+        '',
         '$ ' . number_format($unit_price, 2),
         '$ ' . number_format($disc_price, 2),
     ];
@@ -567,6 +743,16 @@ if (mysqli_num_rows($result) > 0) {
             $catTotal = 0;
             $catQty = 0;
             $catActual = 0;
+
+            if ($categoryId == $panel_id) {
+                [$catTotal, $catQty, $catActual] = renderPanelCategory($pdf, $products, $conn);
+            } elseif ($categoryId == $trim_id) {
+                [$catTotal, $catQty, $catActual] = renderTrimCategory($pdf, $products, $conn);
+            } else if ($categoryId == $screw_id) {
+                [$catTotal, $catQty, $catActual] = renderScrewCategory($pdf, $products, $conn);
+            } else {
+                [$catTotal, $catQty, $catActual] = renderDefaultCategory($pdf, $products, $conn);
+            }
 
             [$catTotal, $catQty, $catActual] = renderPanelCategory($pdf, $row_product, $conn);
 
