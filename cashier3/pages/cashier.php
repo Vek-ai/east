@@ -57,14 +57,6 @@ $editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) :
         z-index: 11055;
     }
 
-    #viewInStockmodal {
-        z-index: 11060;
-    }
-
-    #viewInStockmodal ~ .modal-backdrop.show {
-        z-index: 11055;
-    }
-
     input[type="number"]::-webkit-outer-spin-button,
     input[type="number"]::-webkit-inner-spin-button {
         -webkit-appearance: none;
@@ -661,7 +653,7 @@ $editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) :
     </div>
 </div>
 
-<div class="modal" id="viewInStockmodal">
+<div class="modal fade" id="viewInStockmodal" style="background-color: rgba(0, 0, 0, 0.5);">
     <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
         <div class="modal-content modal-content-demo">
             <div class="modal-header">
@@ -707,7 +699,7 @@ $editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) :
     <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
         <div class="modal-content modal-content-demo">
             <div class="modal-header">
-                <h6 class="modal-title">Stock Details</h6>
+                <h6 class="modal-title">Coil Stock Details</h6>
                 <button aria-label="Close" class="close" data-bs-dismiss="modal" type="button">
                     <span aria-hidden="true">&times;</span>
                 </button>
@@ -5219,12 +5211,10 @@ $editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) :
 
         $(document).on('click', '#view_out_of_stock', function(event) {
             event.preventDefault();
-            var id = $(this).data('id');
             $.ajax({
                 url: 'pages/cashier_out_of_stock_modal.php',
                 type: 'POST',
                 data: {
-                    id: id,
                     fetch_out_of_stock_modal: "fetch_out_of_stock_modal"
                 },
                 success: function(response) {
@@ -5240,14 +5230,15 @@ $editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) :
         $(document).on('click', '#view_available', function(event) {
             event.preventDefault();
             var color = $(this).data('color');
-            var width = $(this).data('width');
-            console.log("Color: " +color +" Width: " +width);
+            var grade = $(this).data('grade');
+            var gauge = $(this).data('gauge');
             $.ajax({
                     url: 'pages/cashier_available_modal.php',
                     type: 'POST',
                     data: {
                         color: color,
-                        width: width,
+                        grade: grade,
+                        gauge: gauge,
                         fetch_available: "fetch_available"
                     },
                     success: function(response) {
