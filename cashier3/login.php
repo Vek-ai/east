@@ -1,6 +1,7 @@
 <?php
 session_start();
 include "../includes/dbconn.php";
+include "../includes/functions.php";
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
@@ -25,6 +26,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             if ($db_password === $password) {
                 $_SESSION['userid'] = $staff_id;
                 $_SESSION['station'] = $station;
+                $_SESSION['fullname'] = get_staff_name($staff_id);
 
                 setcookie("userid", $staff_id, time() + (86400 * 30), "/");
 

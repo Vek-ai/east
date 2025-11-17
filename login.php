@@ -1,5 +1,6 @@
 <?php
 include "includes/dbconn.php";
+include "includes/functions.php";
 ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ERROR | E_PARSE | E_CORE_ERROR | E_CORE_WARNING | E_COMPILE_ERROR | E_COMPILE_WARNING);
@@ -30,6 +31,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
           } else {
               $_SESSION['userid'] = $staff_id;
               $_SESSION['userrole'] = $role;
+              $_SESSION['fullname'] = get_staff_name($staff_id);
 
               setcookie("userid", $staff_id, time() + (86400 * 30), "/");
 
