@@ -745,13 +745,13 @@ if (mysqli_num_rows($result) > 0) {
             $catActual = 0;
 
             if ($categoryId == $panel_id) {
-                [$catTotal, $catQty, $catActual] = renderPanelCategory($pdf, $products, $conn);
+                [$catTotal, $catQty, $catActual] = renderPanelCategory($pdf, $row_product, $conn);
             } elseif ($categoryId == $trim_id) {
-                [$catTotal, $catQty, $catActual] = renderTrimCategory($pdf, $products, $conn);
+                [$catTotal, $catQty, $catActual] = renderTrimCategory($pdf, $row_product, $conn);
             } else if ($categoryId == $screw_id) {
-                [$catTotal, $catQty, $catActual] = renderScrewCategory($pdf, $products, $conn);
+                [$catTotal, $catQty, $catActual] = renderScrewCategory($pdf, $row_product, $conn);
             } else {
-                [$catTotal, $catQty, $catActual] = renderDefaultCategory($pdf, $products, $conn);
+                [$catTotal, $catQty, $catActual] = renderDefaultCategory($pdf, $row_product, $conn);
             }
 
             [$catTotal, $catQty, $catActual] = renderPanelCategory($pdf, $row_product, $conn);
