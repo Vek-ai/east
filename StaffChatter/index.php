@@ -1,8 +1,6 @@
 <?php
 session_start();
-ini_set('display_errors', 1);
-ini_set('display_startup_errors', 1);
-error_reporting(E_ALL);
+
 if (!isset($_SESSION['userid'])) {
     header('Location: login.php');
     exit();
@@ -13,7 +11,6 @@ require_once 'config/database.php';
 $db = new Database();
 $conn = $db->connect();
 
-// Get all staff members except current user
 // Get all staff members except current user
 $staff_sql = "
     SELECT 
@@ -27,10 +24,10 @@ $staff_sql = "
 ";
 
 $stmt = $conn->prepare($staff_sql);
-$stmt->bindValue(':current_user', $_SESSION['userid'], PDO::PARAM_INT);
-$stmt->execute();
+$stmt->execute([
+    ':current_user' => $_SESSION['userid']
+]);
 $staff_members = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
 
 // Get conversations with unread message counts
 $conversations_query = "
@@ -75,10 +72,10 @@ $conversations_query = "
 ";
 
 $stmt = $conn->prepare($conversations_query);
-$stmt->bindValue(':current_user', $_SESSION['userid'], PDO::PARAM_INT);
-$stmt->execute();
+$stmt->execute([
+    ':current_user' => $_SESSION['userid']
+]);
 $recent_conversations = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
 ?>
 <!DOCTYPE html>
 <html lang="en">
