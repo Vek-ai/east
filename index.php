@@ -72,7 +72,7 @@ $page_key = !empty($_REQUEST['page']) ? $_REQUEST['page'] : 'home';
   <script src="https://code.jquery.com/ui/1.13.1/jquery-ui.js"></script>
 
   <title>Admin - East Kentucky Metal</title>
-
+  <?php include 'StaffChatter/chat-widget-header.php'; ?>
 </head>
 
 <body>
@@ -1543,6 +1543,7 @@ $page_key = !empty($_REQUEST['page']) ? $_REQUEST['page'] : 'home';
     fetchNotifications();
   });
   </script>
+   <?php include 'StaffChatter/chat-widget-footer.php'; ?>
 </body>
 
 </html>
