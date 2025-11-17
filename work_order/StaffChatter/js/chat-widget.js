@@ -331,12 +331,17 @@ class ChatWidget {
         if (!chat) return;
 
         const container = document.getElementById(`chatMessages${staffId}`);
-        
+
+        if (document.getElementById(`msg-${message.message_id}`)) {
+            return;
+        }
+
         if (container.querySelector('.chat-empty-state')) {
             container.innerHTML = '';
         }
 
         const isSent = message.sender_id == this.currentUserId;
+
         const fileHtml = message.file_name ? `
             <div class="chat-message-file" onclick="window.open('StaffChatter/uploads/${message.file_path}', '_blank')">
                 <span class="chat-file-icon">${this.getFileIcon(message.file_type)}</span>
@@ -348,7 +353,7 @@ class ChatWidget {
         ` : '';
 
         const messageHtml = `
-            <div class="chat-message ${isSent ? 'sent' : 'received'}">
+            <div class="chat-message ${isSent ? 'sent' : 'received'}" id="msg-${message.message_id}">
                 <div class="chat-message-bubble">
                     ${message.message_text ? this.escapeHtml(message.message_text) : ''}
                     ${fileHtml}
@@ -359,11 +364,6 @@ class ChatWidget {
 
         container.insertAdjacentHTML('beforeend', messageHtml);
         container.scrollTop = container.scrollHeight;
-
-        if (!isSent && message.message_id > chat.lastMessageId) {
-            this.showNotification(chat.staffName, message.message_text || 'Sent a file');
-            this.playNotificationSound();
-        }
     }
 
     async startGlobalPolling() {
