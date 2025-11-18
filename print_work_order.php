@@ -22,7 +22,7 @@ $trim_id = 4;
 $orderid = $_REQUEST['id'];
 $pricing_id = $_REQUEST['pricing_id'] ?? '';
 
-$columns = [
+$panel_columns = [
     ['label' => 'PRODUCT ID', 'width' => 25, 'align' => 'C', 'fontsize' => 8],
     ['label' => 'DESCRIPTION',  'width' => 26, 'align' => 'C', 'fontsize' => 8],
     ['label' => 'COLOR',        'width' => 20, 'align' => 'C', 'fontsize' => 8],
@@ -32,6 +32,19 @@ $columns = [
     ['label' => 'LENGTH',       'width' => 15, 'align' => 'C', 'fontsize' => 8],
     ['label' => 'TYPE',         'width' => 17, 'align' => 'C', 'fontsize' => 8],
     ['label' => 'STYLE',        'width' => 17, 'align' => 'C', 'fontsize' => 8],
+    ['label' => 'COIL #',        'width' => 18, 'align' => 'C', 'fontsize' => 8],
+];
+
+$trim_columns = [
+    ['label' => 'PRODUCT ID', 'width' => 25, 'align' => 'C', 'fontsize' => 8],
+    ['label' => 'DESCRIPTION',  'width' => 26, 'align' => 'C', 'fontsize' => 8],
+    ['label' => 'COLOR',        'width' => 20, 'align' => 'C', 'fontsize' => 8],
+    ['label' => 'GRADE',        'width' => 17, 'align' => 'C', 'fontsize' => 8],
+    ['label' => 'GAUGE',        'width' => 17, 'align' => 'C', 'fontsize' => 8],
+    ['label' => 'QTY',          'width' => 18, 'align' => 'C', 'fontsize' => 8],
+    ['label' => 'LENGTH',       'width' => 15, 'align' => 'C', 'fontsize' => 8],
+    ['label' => '',         'width' => 17, 'align' => 'C', 'fontsize' => 8],
+    ['label' => '',        'width' => 17, 'align' => 'C', 'fontsize' => 8],
     ['label' => 'COIL #',        'width' => 18, 'align' => 'C', 'fontsize' => 8],
 ];
 
@@ -321,7 +334,7 @@ function renderInvoiceHeader($pdf, $row_orders, $type) {
     if($type == 'panel'){
         $title = 'METAL COPY';
     }else if($type == 'trim'){
-        $title = 'TRIM COPY';
+        $title = 'TRIM SHOP';
     }
 
     $pdf->SetFont('Arial', 'B', 32);
@@ -504,7 +517,7 @@ if (mysqli_num_rows($result) > 0) {
     if (!empty($panelProducts)) {
         $pdf->AddPage();
         renderInvoiceHeader($pdf, $row_orders, 'panel');
-        renderTableHeader($pdf, $columns);
+        renderTableHeader($pdf, $panel_columns);
 
         foreach ($panelProducts as $row_product) {
             renderPanelCategory($pdf, $row_product, $conn);
@@ -514,7 +527,7 @@ if (mysqli_num_rows($result) > 0) {
     if (!empty($trimProducts)) {
         $pdf->AddPage();
         renderInvoiceHeader($pdf, $row_orders, 'trim');
-        renderTableHeader($pdf, $columns);
+        renderTableHeader($pdf, $trim_columns);
 
         foreach ($trimProducts as $row_product) {
             renderTrimCategory($pdf, $row_product, $conn);
