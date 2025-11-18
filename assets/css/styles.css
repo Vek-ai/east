@@ -9178,6 +9178,12 @@
 [data-bs-theme="dark"] .text-dark {
   color: #fefefe !important;
 }
+[data-bs-theme="dark"] tbody.tbody-border {
+    border: 4px solid white !important;
+}
+[data-bs-theme="light"] tbody.tbody-border {
+    border: 4px solid black !important;
+}
 [data-bs-theme="dark"] .table {
   --bs-table-border-color: $border-color-dark;
   --bs-table-color: #fff;
