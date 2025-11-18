@@ -22,7 +22,7 @@ $trim_id = 4;
 $orderid = $_REQUEST['id'];
 $pricing_id = $_REQUEST['pricing_id'] ?? '';
 
-$panel_columns = [
+$columns = [
     ['label' => 'PRODUCT ID', 'width' => 25, 'align' => 'C', 'fontsize' => 8],
     ['label' => 'DESCRIPTION',  'width' => 26, 'align' => 'C', 'fontsize' => 8],
     ['label' => 'COLOR',        'width' => 20, 'align' => 'C', 'fontsize' => 8],
@@ -517,7 +517,7 @@ if (mysqli_num_rows($result) > 0) {
     if (!empty($panelProducts)) {
         $pdf->AddPage();
         renderInvoiceHeader($pdf, $row_orders, 'panel');
-        renderTableHeader($pdf, $panel_columns);
+        renderTableHeader($pdf, $columns);
 
         foreach ($panelProducts as $row_product) {
             renderPanelCategory($pdf, $row_product, $conn);
