@@ -289,7 +289,7 @@ function renderRow($pdf, $columns, $row, $bold = false) {
     $pdf->SetXY($xStart, $yStart + $maxHeight);
 }
 
-function renderInvoiceHeader($pdf, $row_orders) {
+function renderInvoiceHeader($pdf, $row_orders, $type) {
     $current_user_id = $_SESSION['userid'];
 
     $delivery_price = floatval($row_orders['delivery_amt']);
@@ -317,9 +317,16 @@ function renderInvoiceHeader($pdf, $row_orders) {
 
     $pdf->Image('assets/images/logo-bw.png', 10, 6, 60, 20);
 
+    $title = '';
+    if($type == 'panel'){
+        $title = 'METAL COPY';
+    }else if($type == 'trim'){
+        $title = 'TRIM COPY';
+    }
+
     $pdf->SetFont('Arial', 'B', 32);
     $pdf->SetXY($col3_x, 10);
-    $pdf->Cell(0, 15, 'METAL COPY', 0, 1, 'L');
+    $pdf->Cell(0, 15, $title, 0, 1, 'C');
     $pdf->Ln(5);
 
     $pageWidth   = $pdf->GetPageWidth();
@@ -471,107 +478,55 @@ $query = "SELECT * FROM orders WHERE orderid = '$orderid'";
 $result = mysqli_query($conn, $query);
 
 if (mysqli_num_rows($result) > 0) {
-    while($row_orders = mysqli_fetch_assoc($result)){
-        $pdf->AddPage();
+    $row_orders = mysqli_fetch_assoc($result);
 
-        renderInvoiceHeader($pdf, $row_orders);
+    $query_product = "
+        SELECT p.product_category, op.* 
+        FROM order_product AS op
+        LEFT JOIN product AS p ON p.product_id = op.productid
+        WHERE orderid = '$orderid'
+        AND op.product_category IN ('$panel_id','$trim_id')
+        ORDER BY p.product_category
+    ";
+    $result_product = mysqli_query($conn, $query_product);
 
-        $total_price = 0;
-        $total_qty = 0;
+    $panelProducts = [];
+    $trimProducts  = [];
 
-        $query_product = "
-            SELECT p.product_category, op.* 
-            FROM order_product AS op
-            LEFT JOIN product AS p ON p.product_id = op.productid
-            WHERE orderid = '$orderid'
-            AND op.product_category IN ('$panel_id','$trim_id')
-            ORDER BY p.product_category
-        ";
-        $result_product = mysqli_query($conn, $query_product);
-
-        $total_price  = 0;
-        $total_qty    = 0;
-        $total_actual = 0;
-        $total_saved  = 0;
-
-        $bundledProducts = [];
-        $nonBundledProducts = [];
-
-        while ($row_product = mysqli_fetch_assoc($result_product)) {
-            if (!empty($pricing_id) && $pricing_id == 1) {
-                $tmp = $row_product['discounted_price'];
-                $row_product['discounted_price'] = $row_product['actual_price'];
-                $row_product['actual_price'] = $tmp;
-            }
-
-            $bundleId = $row_product['bundle_id'] ?? null;
-
-            if (!empty($bundleId)) {
-                $bundledProducts[$bundleId][] = $row_product;
-            } else {
-                $nonBundledProducts[] = $row_product;
-            }
+    while ($row_product = mysqli_fetch_assoc($result_product)) {
+        if ($row_product['product_category'] == $panel_id) {
+            $panelProducts[] = $row_product;
+        } elseif ($row_product['product_category'] == $trim_id) {
+            $trimProducts[] = $row_product;
         }
+    }
 
+    if (!empty($panelProducts)) {
+        $pdf->AddPage();
+        renderInvoiceHeader($pdf, $row_orders, 'panel');
         renderTableHeader($pdf, $columns);
 
-        foreach ($bundledProducts as $bundleId => $bundleGroup) {
-            $bundleName = $bundleGroup[0]['bundle_name'] ?? 'Bundle ' . $bundleId;
-            $pdf->SetFont('Arial', 'B', 8);
-            $pdf->Cell(0, 6, $bundleName, 1, 1, 'L');
-            $pdf->SetFont('Arial', '', 7);
-
-            foreach ($bundleGroup as $row_product) {
-                $categoryId = $row_product['product_category'];
-
-                if ($categoryId == $panel_id) {
-                    [$catTotal, $catQty, $catActual] = renderPanelCategory($pdf, $row_product, $conn);
-                } elseif ($categoryId == $trim_id) {
-                    [$catTotal, $catQty, $catActual] = renderTrimCategory($pdf, $row_product, $conn);
-                } elseif ($categoryId == $screw_id) {
-                    [$catTotal, $catQty, $catActual] = renderScrewCategory($pdf, $row_product, $conn);
-                } else {
-                    [$catTotal, $catQty, $catActual] = renderDefaultCategory($pdf, $row_product, $conn);
-                }
-
-                $catSaved = floatval($catActual) - floatval($catTotal);
-                $total_price  += floatval($catTotal);
-                $total_qty    += intval($catQty);
-                $total_actual += floatval($catActual);
-                $total_saved  += $catSaved;
-            }
-
-            $pdf->Ln(5);
+        foreach ($panelProducts as $row_product) {
+            renderPanelCategory($pdf, $row_product, $conn);
         }
-
-        foreach ($nonBundledProducts as $row_product) {
-            $categoryId = $row_product['product_category'];
-
-            if ($categoryId == $panel_id) {
-                [$catTotal, $catQty, $catActual] = renderPanelCategory($pdf, $row_product, $conn);
-            } elseif ($categoryId == $trim_id) {
-                [$catTotal, $catQty, $catActual] = renderTrimCategory($pdf, $row_product, $conn);
-            } elseif ($categoryId == $screw_id) {
-                [$catTotal, $catQty, $catActual] = renderScrewCategory($pdf, $row_product, $conn);
-            } else {
-                [$catTotal, $catQty, $catActual] = renderDefaultCategory($pdf, $row_product, $conn);
-            }
-
-            $catSaved = floatval($catActual) - floatval($catTotal);
-            $total_price  += floatval($catTotal);
-            $total_qty    += intval($catQty);
-            $total_actual += floatval($catActual);
-            $total_saved  += $catSaved;
-        }
-
-        $pdf->SetTitle('Receipt');
-        $pdf->Output('Receipt.pdf', 'I');
-            
-
-        
     }
-}else{
+
+    if (!empty($trimProducts)) {
+        $pdf->AddPage();
+        renderInvoiceHeader($pdf, $row_orders, 'trim');
+        renderTableHeader($pdf, $columns);
+
+        foreach ($trimProducts as $row_product) {
+            renderTrimCategory($pdf, $row_product, $conn);
+        }
+    }
+
+    $pdf->SetTitle('Receipt');
+    $pdf->Output('Receipt.pdf', 'I');
+
+} else {
     echo "ID not Found!";
 }
+
 
 ?>
