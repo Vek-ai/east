@@ -91,42 +91,43 @@ if(isset($_POST['fetch_cart'])){
         }
 
         .table-fixed {
-            table-layout: fixed;
+            table-layout: auto;
             width: 100%;
         }
 
         .table-fixed th,
         .table-fixed td {
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: normal;
-            word-wrap: break-word;
+            white-space: nowrap;
+            width: 1px;
+            word-break: break-word;
         }
 
         .table-fixed th:nth-child(1),
-        .table-fixed td:nth-child(1) { width: 5%; }
+        .table-fixed td:nth-child(1) { max-width: 5%; }
+
         .table-fixed th:nth-child(2),
-        .table-fixed td:nth-child(2) { width: 8%; }
+        .table-fixed td:nth-child(2) { max-width: 8%; }
+
         .table-fixed th:nth-child(3),
-        .table-fixed td:nth-child(3) { width: 10%; }
-        /*.table-fixed th:nth-child(4),
-        .table-fixed td:nth-child(4) { width: 8%; }
+        .table-fixed td:nth-child(3) { max-width: 10%; }
+
+        .table-fixed th:nth-child(4),
+        .table-fixed td:nth-child(4),
         .table-fixed th:nth-child(5),
-        .table-fixed td:nth-child(5) { width: 8%; }
+        .table-fixed td:nth-child(5),
         .table-fixed th:nth-child(6),
-        .table-fixed td:nth-child(6) { width: 8%; }
-        .table-fixed th:nth-child(7),
-        .table-fixed td:nth-child(7) { width: 8%; }
+        .table-fixed td:nth-child(6),
         .table-fixed th:nth-child(8),
-        .table-fixed td:nth-child(8) { width: 7%; }
+        .table-fixed td:nth-child(8),
         .table-fixed th:nth-child(9),
-        .table-fixed td:nth-child(9) { width: 7%; }
+        .table-fixed td:nth-child(9),
         .table-fixed th:nth-child(10),
-        .table-fixed td:nth-child(10) { width: 7%; }
-        .table-fixed th:nth-child(11),
-        .table-fixed td:nth-child(11) { width: 7%; }
+        .table-fixed td:nth-child(10),
         .table-fixed th:nth-child(12),
-        .table-fixed td:nth-child(12) { width: 7%; } */
+        .table-fixed td:nth-child(12) {
+            max-width: 7%;
+        }
+
 
         input[readonly] {
             border: none;               
@@ -239,10 +240,10 @@ if(isset($_POST['fetch_cart'])){
                         <th class="text-center">Price</th>
                         <th class="text-center">
                             <span class="<?= $show_retail_price ? '' : 'd-none' ?>">
-                                Retail<br>Price
+                                Retail Price
                             </span>
                         </th>
-                        <th class="text-center ">Total<br>Price</th>
+                        <th class="text-center ">Total Price</th>
                         <th class="text-center">
                             <button type="button" class="btn btn-sm btn-primary createBundleCartBtn">
                                 + Bundle
@@ -578,18 +579,18 @@ if(isset($_POST['fetch_cart'])){
                                                 
                                             </td>
 
-                                            <td class="text-center align-middle">
+                                            <td class="text-end align-middle">
                                                 <?php
                                                 echo '$ ' .number_format($unit_price, 2);
                                                 ?>
                                             </td>
 
-                                            <td class="text-center align-middle">
+                                            <td class="text-end align-middle">
                                                 <span class="<?= $show_retail_price ? '' : 'd-none' ?>">
                                                     $ <?= number_format($total_price_actual,2) ?>
                                                 </span>
                                             </td>
-                                            <td class="text-center <?= $show_total_price ? '' : 'd-none' ?> align-middle">
+                                            <td class="text-end<?= $show_total_price ? '' : 'd-none' ?> align-middle">
                                                 $ <?= number_format($total_customer_price,2) ?>
                                             </td>
                                             <td class="text-center align-middle">
@@ -766,18 +767,18 @@ if(isset($_POST['fetch_cart'])){
 
                                             <td class="text-center align-middle"><?= $stock_text ?></td>
 
-                                            <td class="text-center align-middle">
+                                            <td class="text-end align-middle">
                                                 <?php
                                                 echo '$ ' .number_format($unit_price, 2);
                                                 ?>
                                             </td>
 
-                                            <td class="text-center align-middle">
+                                            <td class="text-end align-middle">
                                                 <span class="<?= $show_retail_price ? '' : 'd-none' ?>">
                                                     $ <?= number_format($total_price_actual,2) ?>
                                                 </span>
                                             </td>
-                                            <td class="text-center <?= $show_total_price ? '' : 'd-none' ?> align-middle">
+                                            <td class="text-end<?= $show_total_price ? '' : 'd-none' ?> align-middle">
                                                 $ <?= number_format($total_customer_price,2) ?>
                                             </td>
                                             <td class="text-center align-middle">
@@ -951,18 +952,18 @@ if(isset($_POST['fetch_cart'])){
 
                                             <td class="text-center align-middle"><?= $stock_text ?></td>
 
-                                            <td class="text-center align-middle">
+                                            <td class="text-end align-middle">
                                                 <?php
                                                 echo '$ ' .number_format($unit_price, 2);
                                                 ?>
                                             </td>
 
-                                            <td class="text-center align-middle">
+                                            <td class="text-end align-middle">
                                                 <span class="<?= $show_retail_price ? '' : 'd-none' ?>">
                                                     $ <?= number_format($total_price_actual,2) ?>
                                                 </span>
                                             </td>
-                                            <td class="text-center <?= $show_total_price ? '' : 'd-none' ?> align-middle">
+                                            <td class="text-end<?= $show_total_price ? '' : 'd-none' ?> align-middle">
                                                 $ <?= number_format($total_customer_price,2) ?>
                                             </td>
                                             <td class="text-center align-middle">
@@ -1084,18 +1085,18 @@ if(isset($_POST['fetch_cart'])){
 
                                             <td class="text-center align-middle"><?= $stock_text ?></td>
 
-                                            <td class="text-center align-middle">
+                                            <td class="text-end align-middle">
                                                 <?php
                                                 echo '$ ' .number_format($unit_price, 2);
                                                 ?>
                                             </td>
 
-                                            <td class="text-center align-middle">
+                                            <td class="text-end align-middle">
                                                 <span class="<?= $show_retail_price ? '' : 'd-none' ?>">
                                                     $ <?= number_format($total_price_actual,2) ?>
                                                 </span>
                                             </td>
-                                            <td class="text-center <?= $show_total_price ? '' : 'd-none' ?> align-middle">
+                                            <td class="text-end<?= $show_total_price ? '' : 'd-none' ?> align-middle">
                                                 $ <?= number_format($total_customer_price,2) ?>
                                             </td>
                                             <td class="text-center align-middle">
