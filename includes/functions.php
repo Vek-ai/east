@@ -179,6 +179,18 @@ function getWorkOrderDetails($id) {
     return $work_order;
 }
 
+function getWorkOrderProductDetails($work_order_product_id) {
+    global $conn;
+    $work_order_product_id = mysqli_real_escape_string($conn, $work_order_product_id);
+    $query = "SELECT * FROM work_order WHERE work_order_product_id = '$work_order_product_id'";
+    $result = mysqli_query($conn, $query);
+    $work_order = [];
+    if ($row = mysqli_fetch_assoc($result)) {
+        $work_order = $row;
+    }
+    return $work_order;
+}
+
 function getRollFormerDetails($roll_former_id) {
     global $conn;
     $roll_former_id = mysqli_real_escape_string($conn, $roll_former_id);
@@ -2069,6 +2081,22 @@ function getAvailableCoils($color_id = '', $grade = '', $width = '') {
     }
 
     return $result;
+}
+
+function getCoilEntry($id) {
+    global $conn;
+
+    $id = intval($id);
+
+    $sql = "SELECT entry_no FROM coil_product WHERE coil_id = $id LIMIT 1";
+    $result = mysqli_query($conn, $sql);
+
+    if ($result && mysqli_num_rows($result) > 0) {
+        $row = mysqli_fetch_assoc($result);
+        return $row['entry_no'];
+    }
+
+    return null;
 }
 
 function getCoilWidth($id) {

@@ -23,7 +23,7 @@ $columns = [
     ['label' => 'LENGTH',       'width' => 15, 'align' => 'C', 'fontsize' => 8],
     ['label' => 'TYPE',         'width' => 14, 'align' => 'C', 'fontsize' => 8],
     ['label' => 'STYLE',        'width' => 14, 'align' => 'C', 'fontsize' => 8],
-    ['label' => 'PRICE',        'width' => 21, 'align' => 'R', 'fontsize' => 8],
+    ['label' => 'PRICE',        'width' => 20, 'align' => 'R', 'fontsize' => 8],
     ['label' => 'TOTAL',        'width' => 14, 'align' => 'R', 'fontsize' => 8],
 ];
 $subcolumns = [
@@ -731,6 +731,9 @@ if (mysqli_num_rows($result) > 0) {
 
         renderTableHeader($pdf, $columns, $subcolumns);
 
+        $bundledProducts = [];
+        $nonBundledProducts = [];
+
         while ($row_product = mysqli_fetch_assoc($result_product)) {
             if (!empty($pricing_id) && $pricing_id == 1) {
                 $tmp = $row_product['discounted_price'];
@@ -738,26 +741,58 @@ if (mysqli_num_rows($result) > 0) {
                 $row_product['actual_price'] = $tmp;
             }
 
-            $categoryId = $row_product['product_category'];
+            $bundleId = $row_product['bundle_id'] ?? null;
 
-            $catTotal = 0;
-            $catQty = 0;
-            $catActual = 0;
+            if (!empty($bundleId)) {
+                $bundledProducts[$bundleId][] = $row_product;
+            } else {
+                $nonBundledProducts[] = $row_product;
+            }
+        }
+
+        foreach ($bundledProducts as $bundleId => $bundleGroup) {
+            $bundleName = $bundleGroup[0]['bundle_name'] ?? 'Bundle ' . $bundleId;
+            $pdf->SetFont('Arial', 'B', 8);
+            $pdf->Cell(0, 6, $bundleName, 1, 1, 'L');
+            $pdf->SetFont('Arial', '', 7);
+
+            foreach ($bundleGroup as $row_product) {
+                $categoryId = $row_product['product_category'];
+
+                if ($categoryId == $panel_id) {
+                    [$catTotal, $catQty, $catActual] = renderPanelCategory($pdf, $row_product, $conn);
+                } elseif ($categoryId == $trim_id) {
+                    [$catTotal, $catQty, $catActual] = renderTrimCategory($pdf, $row_product, $conn);
+                } elseif ($categoryId == $screw_id) {
+                    [$catTotal, $catQty, $catActual] = renderScrewCategory($pdf, $row_product, $conn);
+                } else {
+                    [$catTotal, $catQty, $catActual] = renderDefaultCategory($pdf, $row_product, $conn);
+                }
+
+                $catSaved = floatval($catActual) - floatval($catTotal);
+                $total_price  += floatval($catTotal);
+                $total_qty    += intval($catQty);
+                $total_actual += floatval($catActual);
+                $total_saved  += $catSaved;
+            }
+
+            $pdf->Ln(5);
+        }
+
+        foreach ($nonBundledProducts as $row_product) {
+            $categoryId = $row_product['product_category'];
 
             if ($categoryId == $panel_id) {
                 [$catTotal, $catQty, $catActual] = renderPanelCategory($pdf, $row_product, $conn);
             } elseif ($categoryId == $trim_id) {
                 [$catTotal, $catQty, $catActual] = renderTrimCategory($pdf, $row_product, $conn);
-            } else if ($categoryId == $screw_id) {
+            } elseif ($categoryId == $screw_id) {
                 [$catTotal, $catQty, $catActual] = renderScrewCategory($pdf, $row_product, $conn);
             } else {
                 [$catTotal, $catQty, $catActual] = renderDefaultCategory($pdf, $row_product, $conn);
             }
 
-            [$catTotal, $catQty, $catActual] = renderPanelCategory($pdf, $row_product, $conn);
-
             $catSaved = floatval($catActual) - floatval($catTotal);
-
             $total_price  += floatval($catTotal);
             $total_qty    += intval($catQty);
             $total_actual += floatval($catActual);
