@@ -360,11 +360,15 @@ function renderInvoiceHeader($pdf, $row_orders) {
     $pdf->SetX($col1_x);
     $pdf->MultiCell($wHalf, 5, $address, 1, 'L');
 
-    $pdf->SetX($col1_x);
-    $pdf->MultiCell($mailToWidth + 5, 5, "Customer PO #: " . $row_orders['job_po'], 1, 'L');
-
+    $pdf->SetFont('Arial', 'B', 9);
     $pdf->SetX($col1_x);
     $pdf->MultiCell($mailToWidth + 5, 5, "Job Name: " . $row_orders['job_name'], 1, 'L');
+
+    $pdf->SetX($col1_x);
+    $pdf->MultiCell($mailToWidth + 5, 5, "PO #: " . $row_orders['job_po'], 1, 'L');
+
+    $pdf->SetFont('Arial', '', 9);
+    
 
     $billEnd = $pdf->GetY();
 
