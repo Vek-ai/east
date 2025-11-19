@@ -150,7 +150,7 @@ function renderPanelCategory($pdf, $product, $conn) {
         $length_display,
         $panel_type,
         $panel_style,
-        $coils_assigned,
+        '',
     ];
 
     renderRow($pdf, $columns, $summaryRow, false);
@@ -220,7 +220,7 @@ function renderTrimCategory($pdf, $product, $conn) {
         $length_display,
         '',
         '',
-        $coils_assigned,
+        '',
     ];
 
     renderRow($pdf, $columns, $summaryRow, false);
@@ -277,8 +277,8 @@ function renderScrewCategory($pdf, $product, $conn) {
         '',
         '',
         '',
-        '$ ' . number_format($unit_price, 2),
-        '$ ' . number_format($disc_price, 2),
+        '',
+        '',
     ];
 
     renderRow($pdf, $columns, $summaryRow, false);
@@ -334,8 +334,8 @@ function renderDefaultCategory($pdf, $product, $conn) {
         '',
         '',
         '',
-        '$ ' . number_format($unit_price, 2),
-        '$ ' . number_format($disc_price, 2),
+        '',
+        '',
     ];
 
     renderRow($pdf, $columns, $summaryRow, false);
