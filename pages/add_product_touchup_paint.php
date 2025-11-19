@@ -53,52 +53,6 @@ if(isset($_REQUEST['action'])) {
                         </div>
                     </div>
 
-                    <?php $selected_product_type = (array) json_decode($row['product_type'] ?? '[]', true); ?>
-                    <div class="col-md-4">
-                        <div class="d-flex justify-content-between align-items-center">
-                            <label class="form-label">Product Type</label>
-                            <a href="?page=product_type" target="_blank" class="text-decoration-none">Edit</a>
-                        </div>
-                        <div class="mb-3">
-                            <select id="product_type" class="form-control add-category calculate select2" name="product_type[]" multiple>
-                                <option value="" >Select Type...</option>
-                                <?php
-                                $query_roles = "SELECT * FROM product_type WHERE hidden = '0' AND status = '1' ORDER BY `product_type` ASC";
-                                $result_roles = mysqli_query($conn, $query_roles);            
-                                while ($row_product_type = mysqli_fetch_array($result_roles)) {
-                                    $selected = in_array($row_product_type['product_type_id'], $selected_product_type) ? 'selected' : '';
-                                ?>
-                                    <option value="<?= $row_product_type['product_type_id'] ?>" data-category="<?= $row_product_type['product_category'] ?>" <?= $selected ?>><?= $row_product_type['product_type'] ?></option>
-                                <?php   
-                                }
-                                ?>
-                            </select>
-                        </div>
-                    </div>
-                    
-                    <?php $selected_grade = (array) json_decode($row['grade'] ?? '[]', true); ?>
-                    <div class="col-md-4">
-                        <div class="mb-3">
-                            <div class="d-flex justify-content-between align-items-center">
-                                <label class="form-label">Product Grade</label>
-                                <a href="?page=product_grade" target="_blank" class="text-decoration-none">Edit</a>
-                            </div>
-                            <select id="grade" class="form-control calculate add-category select2" name="grade[]" multiple>
-                                <option value="" >Select Grade...</option>
-                                <?php
-                                $query_grade = "SELECT * FROM product_grade WHERE hidden = '0' AND status = '1' ORDER BY `product_grade` ASC";
-                                $result_grade = mysqli_query($conn, $query_grade);            
-                                while ($row_grade = mysqli_fetch_array($result_grade)) {
-                                    $selected = in_array($row_grade['product_grade_id'], $selected_grade) ? 'selected' : '';
-                                ?>
-                                    <option value="<?= $row_grade['product_grade_id'] ?>" data-category="<?= $row_grade['product_category'] ?>" data-multiplier="<?= $row_grade['multiplier'] ?>" <?= $selected ?>><?= $row_grade['product_grade'] ?></option>
-                                <?php   
-                                }
-                                ?>
-                            </select>
-                        </div>
-                    </div>
-
                     <?php $selected_line = (array) json_decode($row['product_line'] ?? '[]', true); ?>
                     <div class="col-md-4">
                         <div class="d-flex justify-content-between align-items-center">
@@ -119,6 +73,29 @@ if(isset($_REQUEST['action'])) {
                             }
                             ?>
                         </select>
+                        </div>
+                    </div>
+
+                    <?php $selected_product_type = (array) json_decode($row['product_type'] ?? '[]', true); ?>
+                    <div class="col-md-4">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <label class="form-label">Product Type</label>
+                            <a href="?page=product_type" target="_blank" class="text-decoration-none">Edit</a>
+                        </div>
+                        <div class="mb-3">
+                            <select id="product_type" class="form-control add-category calculate select2" name="product_type[]" multiple>
+                                <option value="" >Select Type...</option>
+                                <?php
+                                $query_roles = "SELECT * FROM product_type WHERE hidden = '0' AND status = '1' ORDER BY `product_type` ASC";
+                                $result_roles = mysqli_query($conn, $query_roles);            
+                                while ($row_product_type = mysqli_fetch_array($result_roles)) {
+                                    $selected = in_array($row_product_type['product_type_id'], $selected_product_type) ? 'selected' : '';
+                                ?>
+                                    <option value="<?= $row_product_type['product_type_id'] ?>" data-category="<?= $row_product_type['product_category'] ?>" <?= $selected ?>><?= $row_product_type['product_type'] ?></option>
+                                <?php   
+                                }
+                                ?>
+                            </select>
                         </div>
                     </div>
                 </div>
