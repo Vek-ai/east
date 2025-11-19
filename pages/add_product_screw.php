@@ -106,7 +106,7 @@ if(isset($_REQUEST['action'])) {
                             <a href="?page=product_screw_type" target="_blank" class="text-decoration-none">Edit</a>
                         </div>
                         <div class="mb-3">
-                            <select id="screw_type" class="form-control calculate select2" name="screw_type[]" multiple>
+                            <select id="screw_type" class="form-control calculate select2" name="screw_type">
                                 <option value="" >Select Screw Type...</option>
                                 <?php
                                 $query_roles = "SELECT * FROM product_screw_type WHERE hidden = '0' AND status = '1' ORDER BY `product_screw_type` ASC";
