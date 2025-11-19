@@ -841,17 +841,19 @@ if (isset($_POST['save_estimate'])) {
         $total_discounted_price += $discounted_price;
     }
 
+    $token = bin2hex(random_bytes(8));
+
     $query = "INSERT INTO estimates (
         status, total_price, discounted_price, discount_percent, cashier, cash_amt, credit_amt, 
         estimated_date, order_date, customerid, originalcustomerid, job_name, job_po, 
         deliver_address, deliver_city, deliver_state, deliver_zip, delivery_amt, deliver_method, 
-        deliver_fname, deliver_lname, pay_type, tax_status, tax_exempt_number, truck, contractor_id
+        deliver_fname, deliver_lname, pay_type, tax_status, tax_exempt_number, truck, contractor_id, token
     ) VALUES (
         1, '$total_price', '$total_discounted_price', '".($discount_default * 100)."', '$cashierid',
         '$cash_amt', '$credit_amt', '$order_date', '$order_date', '$customerid', '$customerid',
         '$job_name', '$job_po', '$deliver_address', '$deliver_city', '$deliver_state', '$deliver_zip',
         '$delivery_amt', '$deliver_method', '$deliver_fname', '$deliver_lname', '$pay_type',
-        '$tax_status', '$tax_exempt_number', '$truck', '$contractor_id'
+        '$tax_status', '$tax_exempt_number', '$truck', '$contractor_id', '$token'
     )";
 
     if ($conn->query($query) === TRUE) {
@@ -1179,6 +1181,8 @@ if (isset($_POST['save_order'])) {
     $check_no = mysqli_real_escape_string($conn, $_POST['check_no'] ?? '');
     $check_number = (!empty($check_no) && $pay_check > 0) ? "'" . mysqli_real_escape_string($conn, $check_no) . "'" : "NULL";
 
+    $token = bin2hex(random_bytes(8));
+
     $discount_percent = ($discount * 100);
     $sql_insert = "
         INSERT INTO orders (
@@ -1188,7 +1192,7 @@ if (isset($_POST['save_order'])) {
             deliver_address, deliver_city, deliver_state, deliver_zip,
             delivery_amt, deliver_method, deliver_fname, deliver_lname,
             pay_type, pay_cash, pay_card, pay_check, pay_pickup, pay_delivery, pay_net30,
-            tax_status, tax_exempt_number, truck, contractor_id
+            tax_status, tax_exempt_number, truck, contractor_id, token
         ) VALUES (
             '$estimateid', '$cashierid', '$station_id', '$total_price', '$total_discounted_price', '$discount_percent',
             '$order_date', '$scheduled_datetime', '$customerid', '$customerid',
@@ -1197,7 +1201,7 @@ if (isset($_POST['save_order'])) {
             '$delivery_amt', '$deliver_method', '$deliver_fname', '$deliver_lname',
             '".mysqli_real_escape_string($conn,$pay_type_label)."',
             '$pay_cash', '$pay_card', '$pay_check', '$pay_pickup', '$pay_delivery', '$pay_net30',
-            '$tax_status', '$tax_exempt_number', '$truck', '$contractor_id'
+            '$tax_status', '$tax_exempt_number', '$truck', '$contractor_id', '$token'
         )
     ";
 
