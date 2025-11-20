@@ -382,7 +382,7 @@ if(isset($_POST['fetch_cart'])){
                                                 </div>
                                             </td>
 
-                                            <td>
+                                            <td class="text-center align-middle">
                                                 <a href="javascript:void(0);" data-id="<?= $product_id ?>" class="d-flex align-items-center view_product_details">
                                                     <h6 class="fw-semibold mb-0 fs-4"><?= $product['product_item'] ?></h6>
                                                 </a>
@@ -510,7 +510,7 @@ if(isset($_POST['fetch_cart'])){
                                             </td>
 
                                             <td class="text-center align-middle">
-                                                <select class="form-control panel_type_cart" name="panel_type" onchange="updatePanelType(this)" data-line="<?= $line; ?>" data-id="<?= $product_id; ?>">
+                                                <select class="form-control panel_type_cart mb-2" name="panel_type" onchange="updatePanelType(this)" data-line="<?= $line; ?>" data-id="<?= $product_id; ?>">
                                                     <option value="">Select...</option>
                                                     <?php
                                                     $panel_types = array_filter([$panel_type_1 ?? '', $panel_type_2 ?? '', $panel_type_3 ?? '']);
@@ -534,7 +534,6 @@ if(isset($_POST['fetch_cart'])){
                                                     }
                                                     ?>
                                                 </select>
-                                                <br>
                                                 <span class="<?= $show_per_panel ? '' : 'd-none text-nowrap' ?>">
                                                     Per Panel $ <br>$ <?= number_format($panel_price, 2) ?>
                                                 </span>
@@ -545,7 +544,7 @@ if(isset($_POST['fetch_cart'])){
                                                 $board_batten  = $product["board_batten"];
                                                 ?>
 
-                                                <select class="form-control panel_style_cart" name="panel_style" onchange="updatePanelStyle(this)" data-line="<?= $line; ?>" data-id="<?= $product_id; ?>">
+                                                <select class="form-control panel_style_cart mb-2" name="panel_style" onchange="updatePanelStyle(this)" data-line="<?= $line; ?>" data-id="<?= $product_id; ?>">
                                                     <?php if (!empty($standing_seam)): ?>
                                                         <option value="striated" <?= $values['panel_style'] == 'striated' ? 'selected' : '' ?>>Striated</option>
                                                         <option value="flat" <?= $values['panel_style'] == 'flat' ? 'selected' : '' ?>>Flat</option>
@@ -567,8 +566,6 @@ if(isset($_POST['fetch_cart'])){
                                                         ?>
                                                     <?php endif; ?>
                                                 </select>
-
-                                                <br>
                                                 <span class="<?= $show_linear_ft ? '' : 'd-none text-nowrap' ?>">
                                                     Retail per Ft <br>$ <?= number_format($linear_price, 2) ?>
                                                 </span>
@@ -625,7 +622,7 @@ if(isset($_POST['fetch_cart'])){
                                                     </span>
                                                 </div>
                                             </td>
-                                            <td>
+                                            <td class="text-center align-middle">
                                                 <a href="javascript:void(0);" data-id="<?= $product_id ?>" class="d-flex align-items-center view_product_details">
                                                     <h6 class="fw-semibold mb-0 fs-4"><?= $product['product_item'] ?></h6>
                                                 </a>
@@ -813,7 +810,7 @@ if(isset($_POST['fetch_cart'])){
                                                     </span>
                                                 </div>
                                             </td>
-                                            <td>
+                                            <td class="text-center align-middle">
                                                 <a href="javascript:void(0);" data-id="<?= $product_id ?>" class="d-flex align-items-center view_product_details">
                                                     <h6 class="fw-semibold mb-0 fs-4"><?= $product['product_item'] ?></h6>
                                                 </a>
@@ -999,7 +996,7 @@ if(isset($_POST['fetch_cart'])){
                                                 </div>
                                             </td>
 
-                                            <td>
+                                            <td class="text-center align-middle">
                                                 <a href="javascript:void(0);" data-id="<?= $product_id ?>" class="d-flex align-items-center view_product_details">
                                                     <h6 class="fw-semibold mb-0 fs-4"><?= $product['product_item'] ?></h6>
                                                 </a>
