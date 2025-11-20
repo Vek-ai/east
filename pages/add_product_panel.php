@@ -272,7 +272,12 @@ if(isset($_REQUEST['action'])) {
                             <input type="text" id="product_item" name="product_item" class="form-control" value="<?= $row['product_item']?>" />
                         </div>
                     </div>
-                    <div class="col-md-4"></div>
+                    <div class="col-md-4">
+                        <div class="mb-3">
+                            <label class="form-label">Abbreviation</label>
+                            <input type="text" id="abbreviation" name="abbreviation" class="form-control" value="<?= $row['abbreviation']?>" />
+                        </div>
+                    </div>
                     <div class="col-md-4">
                         <div class="mb-3">
                         <label class="form-label">Manufactured or Purchased</label>

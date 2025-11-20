@@ -1132,14 +1132,12 @@ if(isset($_REQUEST['action'])) {
 
     if ($action == "duplicate_product") {
         $product_id = mysqli_real_escape_string($conn, $_POST['product_id']);
-    
         $check_sql = "SELECT * FROM product WHERE product_id = '$product_id'";
         $result = $conn->query($check_sql);
-    
+
         if ($result && $result->num_rows > 0) {
             $row = $result->fetch_assoc();
             $new_product_name = "Copy - " . $row['product_item'] . " ";
-    
             $columns = [];
             $columns_sql = $conn->query("SHOW COLUMNS FROM product");
             while ($col = $columns_sql->fetch_assoc()) {
@@ -1147,20 +1145,39 @@ if(isset($_REQUEST['action'])) {
                     $columns[] = $col['Field'];
                 }
             }
-    
+
             $columns_list = implode(", ", $columns);
             $columns_select = implode(", ", array_map(function ($col) use ($row, $conn, $new_product_name) {
-                return $col === 'product_item' ? "'" . mysqli_real_escape_string($conn, $new_product_name) . "'" : "product.$col";
+                return $col === 'product_item'
+                    ? "'" . mysqli_real_escape_string($conn, $new_product_name) . "'"
+                    : "product.$col";
             }, $columns));
-    
+
             $duplicate_sql = "INSERT INTO product ($columns_list) 
-                              SELECT $columns_select FROM product WHERE product_id = '$product_id'";
-    
-            echo $conn->query($duplicate_sql) ? "success" : "Error duplicating product: " . $conn->error;
+                            SELECT $columns_select FROM product WHERE product_id = '$product_id'";
+            if ($conn->query($duplicate_sql)) {
+                $new_product_id = $conn->insert_id;
+                $duplicate_color_sql = "
+                    INSERT INTO product_color_assign (product_id, color_id, date, time, assigned_by, status)
+                    SELECT 
+                        '$new_product_id', 
+                        color_id, 
+                        date, 
+                        time, 
+                        assigned_by, 
+                        status
+                    FROM product_color_assign
+                    WHERE product_id = '$product_id'
+                ";
+                $conn->query($duplicate_color_sql);
+                echo "success";
+            } else {
+                echo "Error duplicating product: " . $conn->error;
+            }
         } else {
             echo "Product not found.";
         }
-    }   
+    }
     
     if ($action == 'fetch_products') {
         $permission = $_SESSION['permission'];
@@ -1238,6 +1255,7 @@ if(isset($_REQUEST['action'])) {
                 'product_category'    => getProductCategoryName($row['product_category']),
                 'product_system'      => getColumnFromTable("product_system", "product_system", $row['product_system']),
                 'product_gauge'       => getColumnFromTable("product_gauge", "product_gauge", $row['gauge']),
+                'product_line'       => getColumnFromTable("product_line", "product_line", $row['product_line']),
                 'product_type'        => getColumnFromTable("product_type", "product_type", $row['product_type']),
                 'profile'             => getColumnFromTable("profile_type", "profile_type", $row['profile']),
                 'color'               => getColorName($row['color']),

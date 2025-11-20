@@ -624,7 +624,7 @@ function showCol($name) {
                 <?php endif; ?>
 
                 <?php if (showCol('product_line')): ?>
-                    { data: 'product_gauge' },
+                    { data: 'product_line' },
                 <?php endif; ?>
 
                 <?php if (showCol('product_type')): ?>
