@@ -563,6 +563,14 @@ if ($permission === 'edit') {
             },
             success: function (response) {
                 $('#add-fields').html(response);
+
+                $(".select2_modal").each(function () {
+                    $(this).select2({
+                        width: '100%',
+                        dropdownParent: $(this).parent()
+                    });
+                });
+
                 $('#addModal').modal('show');
             },
             error: function (jqXHR, textStatus, errorThrown) {

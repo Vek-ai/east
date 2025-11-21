@@ -744,6 +744,8 @@ function showCol($name) {
                         });
 
                         fetchProductABR();
+
+                        fetchPricingSection();
                     }
                 });
             } else {
@@ -1518,6 +1520,39 @@ function showCol($name) {
             filterPanelOptions(pid);
         });
 
+        function fetchPricingSection() {
+            var $screwType = $('#screw_type');
+            var screw_type = $screwType.val();
+            var product_id = $('#product_id').val();
+            var $container = $('#pricing_section');
+
+            $container.html('<div class="text-muted">Loading...</div>');
+
+            if (!screw_type) {
+                $container.html('');
+                return;
+            }
+
+            $.ajax({
+                url: 'pages/product4_ajax.php',
+                type: 'POST',
+                data: {
+                    screw_type: screw_type,
+                    product_id: product_id,
+                    action: 'fetch_pricing_section'
+                },
+                success: function(response) {
+                    $container.html(response);
+                },
+                error: function(xhr, status, error) {
+                    $container.html('<div class="text-danger">Error loading pricing section</div>');
+                    console.error(error);
+                }
+            });
+        }
+
+        $(document).on('change', '#screw_type', fetchPricingSection);
+
         filterTable();
 
         function toIntArray(val) {
@@ -1583,9 +1618,9 @@ function showCol($name) {
 
         $(document).on('change', '#enable_bulk_pricing', function() {
             if ($(this).is(':checked')) {
-                $('#bulk_pricing_fields').removeClass('d-none');
+                $('.bulk_pricing_fields').removeClass('d-none');
             } else {
-                $('#bulk_pricing_fields').addClass('d-none');
+                $('.bulk_pricing_fields').addClass('d-none');
                 $('#bulk_price, #bulk_starts_at').val('');
             }
         });

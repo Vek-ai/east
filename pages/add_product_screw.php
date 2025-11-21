@@ -272,66 +272,30 @@ if(isset($_REQUEST['action'])) {
                 <h5 class="mb-0 fw-bold">Product Pricing</h5>
             </div>
             <div class="card-body border rounded p-3">
+                <div class="row" id="pricing_section">
+                    
+                </div>
+
                 <div class="row">
-                    <div class="col-md-4">
-                        <?php $unit_price = floatval($row['unit_price']) ?? 0; ?>
-                        <div class="mb-3">
-                            <label class="form-label">Retail Price</label>
-                            <input type="text" id="retail" name="unit_price" class="form-control" value="<?=number_format($unit_price ?? 0,3)?>"/>
-                        </div>
-                    </div>
-                    <div class="col-md-4">
-                        <?php $floor_price = floatval($row['floor_price']) ?? 0; ?>
-                        <div class="mb-3">
-                            <label class="form-label">Floor Price</label>
-                            <input type="text" id="floor_price" name="floor_price" class="form-control" value="<?=number_format($floor_price ?? 0,3)?>"/>
-                        </div>
-                    </div>
                     <?php $selected_pack = (array) json_decode($row['pack'] ?? '[]', true); ?>
                     <div class="col-md-4">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <label class="form-label">Pack Size</label>
+                            <a href="?page=supplier_pack" target="_blank" class="text-decoration-none">Edit</a>
+                        </div>
                         <div class="mb-3">
-                            <div class="d-flex justify-content-between align-items-center">
-                                <label class="form-label">Pack Size</label>
-                                <a href="?page=supplier_pack" target="_blank" class="text-decoration-none">Edit</a>
-                            </div>
                             <select id="pack" class="form-control select2" name="pack[]" multiple>
                                 <?php
                                 $query_pack = "SELECT * FROM supplier_pack WHERE hidden = '0' AND status = '1' ORDER BY `pack` ASC";
-                                $result_pack = mysqli_query($conn, $query_pack);            
+                                $result_pack = mysqli_query($conn, $query_pack);
                                 while ($row_pack = mysqli_fetch_array($result_pack)) {
                                     $selected = in_array($row_pack['id'], $selected_pack) ? 'selected' : '';
                                 ?>
                                     <option value="<?= $row_pack['id'] ?>" data-supplier="<?= $row_pack['supplierid'] ?>" <?= $selected ?>><?= $row_pack['pack'] ?></option>
-                                <?php   
-                                }
-                                ?>
+                                <?php } ?>
                             </select>
                         </div>
                     </div>
-                    <?php 
-                    $bulk_price = floatval($row['bulk_price'] ?? 0);
-                    $bulk_starts_at = floatval($row['bulk_starts_at'] ?? 0);
-                    ?>
-                    <div class="col-12 mb-3">
-                        <div class="form-check">
-                            <input class="form-check-input" type="checkbox" id="enable_bulk_pricing" <?= ($bulk_price > 0 || $bulk_starts_at > 0) ? 'checked' : '' ?>>
-                            <label class="form-check-label fw-bold" for="enable_bulk_pricing">
-                                Bulk Pricing
-                            </label>
-                        </div>
-                    </div>
-
-                    <div id="bulk_pricing_fields" class="row align-items-end <?= ($bulk_price > 0) ? '' : 'd-none' ?>">
-                        <div class="col-md-4 mb-3">
-                            <label class="form-label fw-semibold mb-1">Bulk Price</label>
-                            <input type="number" class="form-control" id="bulk_price" name="bulk_price" step="0.0001" placeholder="Enter bulk price" value="<?= $bulk_price ?>">
-                        </div>
-                        <div class="col-md-4 mb-3">
-                            <label class="form-label fw-semibold mb-1">Bulk Pricing Starts At</label>
-                            <input type="number" class="form-control" id="bulk_starts_at" name="bulk_starts_at" placeholder="Enter quantity threshold" value="<?= $bulk_starts_at ?>">
-                        </div>
-                    </div>
-
                 </div>
             </div>
         </div>

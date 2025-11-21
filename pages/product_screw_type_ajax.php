@@ -32,6 +32,15 @@ if(isset($_REQUEST['action'])) {
         $notes = mysqli_real_escape_string($conn, $_POST['notes']);
         $userid = mysqli_real_escape_string($conn, $_POST['userid']);
 
+        $dimensions = isset($_POST['dimensions']) ? $_POST['dimensions'] : [];
+        $dimensions = array_filter($dimensions, function($v) {
+            return $v !== "" && is_numeric($v);
+        });
+
+        $dimensions = array_map('intval', $dimensions);
+        $dimensions_json = json_encode($dimensions, JSON_NUMERIC_CHECK);
+        $dimensions_sql = mysqli_real_escape_string($conn, $dimensions_json);
+
         $checkQuery = "SELECT type_abreviations FROM product_screw_type WHERE product_screw_type_id = '$product_screw_type_id'";
         $result = mysqli_query($conn, $checkQuery);
 
@@ -43,6 +52,7 @@ if(isset($_REQUEST['action'])) {
                             SET product_screw_type = '$product_screw_type',
                                 type_abreviations = '$type_abreviations',
                                 notes = '$notes',
+                                dimensions = '$dimensions_sql',
                                 last_edit = NOW(),
                                 edited_by = '$userid'
                             WHERE product_screw_type_id = '$product_screw_type_id'";
@@ -57,9 +67,10 @@ if(isset($_REQUEST['action'])) {
             }
         } else {
             $insertQuery = "INSERT INTO product_screw_type 
-                            (product_screw_type, type_abreviations, notes, added_date, added_by) 
+                            (product_screw_type, type_abreviations, notes, dimensions, added_date, added_by) 
                             VALUES 
-                            ('$product_screw_type', '$type_abreviations', '$notes', NOW(), '$userid')";
+                            ('$product_screw_type', '$type_abreviations', '$notes', '$dimensions_sql', NOW(), '$userid')";
+
             if (mysqli_query($conn, $insertQuery)) {
                 echo "add-success";
             } else {
@@ -99,6 +110,17 @@ if(isset($_REQUEST['action'])) {
             $row = mysqli_fetch_array($result);
         }
 
+        $lengths = [];
+        $lengthQuery = "SELECT * FROM dimensions WHERE dimension_category = 16 ORDER BY dimension ASC";
+        $lengthRes = mysqli_query($conn, $lengthQuery);
+        if ($lengthRes && mysqli_num_rows($lengthRes) > 0) {
+            while ($l = mysqli_fetch_assoc($lengthRes)) {
+                $lengths[] = $l;
+            }
+        }
+
+        $selected_lengths = isset($row['dimensions']) ? json_decode($row['dimensions'], true) : [];
+        if (!is_array($selected_lengths)) $selected_lengths = [];
         ?>
             <div class="row pt-3">
                 <div class="col-md-6">
@@ -117,7 +139,24 @@ if(isset($_REQUEST['action'])) {
                         <input type="text" id="type_abreviations" name="type_abreviations" class="form-control" value="<?= $row['type_abreviations'] ?? '' ?>" />
                     </div>
                 </div>
-                <div class="col-md-6"></div>
+                <div class="col-md-6">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <label class="form-label">Screw Length(s)</label>
+                        <a href="?page=dimensions" target="_blank" class="text-decoration-none">Edit</a>
+                    </div>
+                    <div class="mb-3">
+                        <select id="dimensions" name="dimensions[]" class="form-control select2_modal" multiple>
+                            <?php foreach ($lengths as $l): ?>
+                                <?php 
+                                    $id = $l['dimension_id']; 
+                                    $text = $l['dimension'] . ' ' . ($l['dimension_unit'] ?? '');
+                                    $sel = in_array($id, $selected_lengths) ? 'selected' : '';
+                                ?>
+                                <option value="<?= $id ?>" <?= $sel ?>><?= $text ?></option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+                </div>
             </div>
 
             <div class="mb-3">

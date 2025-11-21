@@ -163,6 +163,34 @@ if(isset($_REQUEST['action'])) {
         if (!empty($product_type) || !empty($profile) || !empty($grade) || !empty($gauge) || !empty($color_paint) || !empty($available_lengths)) {
             generateProductAbr([$product_category], $profile, $grade, $gauge, $product_type, $color_paint, $available_lengths, $product_id);
         }
+
+        $dimension_ids = $_POST['dimension_ids'] ?? [];
+        $unit_prices   = $_POST['unit_price'] ?? [];
+        $floor_prices  = $_POST['floor_price'] ?? [];
+        $bulk_prices   = $_POST['bulk_price'] ?? [];
+
+        foreach ($dimension_ids as $i => $dim_id) {
+            $dim_id = intval($dim_id);
+            if ($dim_id <= 0) continue;
+
+            $unit_price  = isset($unit_prices[$i]) ? floatval($unit_prices[$i]) : 0;
+            $floor_price = isset($floor_prices[$i]) ? floatval($floor_prices[$i]) : 0;
+            $bulk_price  = isset($bulk_prices[$i]) ? floatval($bulk_prices[$i]) : 0;
+
+            $res = mysqli_query($conn, "SELECT id FROM product_screw_lengths WHERE product_id = '$product_id' AND dimension_id = '$dim_id'");
+            if (mysqli_num_rows($res) > 0) {
+                mysqli_query($conn, "UPDATE product_screw_lengths SET 
+                    unit_price = '$unit_price', 
+                    floor_price = '$floor_price', 
+                    bulk_price = '$bulk_price'
+                    WHERE product_id = '$product_id' AND dimension_id = '$dim_id'");
+            } else {
+                mysqli_query($conn, "INSERT INTO product_screw_lengths 
+                    (product_id, dimension_id, unit_price, floor_price, bulk_price) 
+                    VALUES ('$product_id', '$dim_id', '$unit_price', '$floor_price', '$bulk_price')");
+            }
+        }
+
     }
 
     if ($action == "get_product_abr") {
@@ -517,6 +545,88 @@ if(isset($_REQUEST['action'])) {
             <?php
         }
     } 
+
+    if ($action == "fetch_pricing_section") {
+        $screw_type = mysqli_real_escape_string($conn, $_POST['screw_type']);
+        $product_id = mysqli_real_escape_string($conn, $_POST['product_id']);
+
+        $screw_type_det = getProductScrewType($screw_type);
+
+        $dimension_arr = json_decode($screw_type_det['dimensions'] ?? '[]', true);
+        if (!is_array($dimension_arr)) $dimension_arr = [];
+
+        $lengths = [];
+        $lengthQuery = "SELECT * FROM dimensions WHERE dimension_category = 16 ORDER BY dimension ASC";
+        $lengthRes = mysqli_query($conn, $lengthQuery);
+        while ($l = mysqli_fetch_assoc($lengthRes)) {
+            $lengths[$l['dimension_id']] = $l;
+        }
+
+        $product_lengths = [];
+        $res = mysqli_query($conn, "SELECT * FROM product_screw_lengths WHERE product_id = '$product_id'");
+        while ($r = mysqli_fetch_assoc($res)) {
+            $product_lengths[$r['dimension_id']] = $r;
+        }
+
+        foreach ($dimension_arr as $dim_id):
+            $dim = $lengths[$dim_id] ?? null;
+            if (!$dim) continue;
+
+            $unit_price = $product_lengths[$dim_id]['unit_price'] ?? '';
+            $floor_price = $product_lengths[$dim_id]['floor_price'] ?? '';
+            $bulk_price = $product_lengths[$dim_id]['bulk_price'] ?? '';
+            $bulk_starts_at = $product_lengths[$dim_id]['bulk_starts_at'] ?? '';
+            ?>
+            <div class="row mb-3 align-items-end">
+                <div class="col-md-3">
+                    <label class="form-label">Length</label>
+                    <select name="dimensions[]" class="form-control select2_modal">
+                        <option value="<?= $dim['dimension_id'] ?>" selected>
+                            <?= $dim['dimension'] . ' ' . ($dim['dimension_unit'] ?? '') ?>
+                        </option>
+                    </select>
+                    <input type="hidden" name="dimension_ids[]" value="<?= $dim['dimension_id'] ?>">
+                </div>
+
+                <div class="col-md-3">
+                    <label class="form-label">Retail Price</label>
+                    <input type="number" step="0.001" class="form-control" name="unit_price[]" value="<?= $unit_price ?>">
+                </div>
+
+                <div class="col-md-3">
+                    <label class="form-label">Floor Price</label>
+                    <input type="number" step="0.001" class="form-control" name="floor_price[]" value="<?= $floor_price ?>">
+                </div>
+
+                <div class="col-md-3">
+                    <div id="bulk_pricing_fields" class="row align-items-end <?= ($bulk_price > 0) ? '' : 'd-none' ?> bulk_pricing_fields">
+                        <label class="form-label">Bulk Price</label>
+                        <input type="number" step="0.001" class="form-control" name="bulk_price[]" value="<?= $bulk_price ?>">
+                    </div>
+                </div>
+            </div>
+        <?php endforeach; ?>
+
+        <div class="col-md-4 mb-3">
+            <div id="bulk_pricing_fields" class="row align-items-end <?= ($bulk_price > 0) ? '' : 'd-none' ?> bulk_pricing_fields">
+                <label class="form-label fw-semibold mb-1">Bulk Pricing Starts At</label>
+                <input type="number" class="form-control" id="bulk_starts_at" name="bulk_starts_at" placeholder="Enter quantity threshold" value="<?= $bulk_starts_at ?>">
+            </div>
+        </div>
+
+        <?php 
+        $bulk_starts_at = floatval($row['bulk_starts_at'] ?? 0);
+        ?>
+        <div class="col-12 mb-3">
+            <div class="form-check">
+                <input class="form-check-input" type="checkbox" id="enable_bulk_pricing" <?= ($bulk_price > 0 || $bulk_starts_at > 0) ? 'checked' : '' ?>>
+                <label class="form-check-label fw-bold" for="enable_bulk_pricing">
+                    Bulk Pricing
+                </label>
+            </div>
+        </div>
+    <?php
+    }
 
     if ($action == 'fetch_color_multiplier') {
         $colorGroup    = intval($_POST['color_group'] ?? 0);

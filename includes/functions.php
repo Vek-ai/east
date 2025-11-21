@@ -518,6 +518,18 @@ function getProductSystemDetails($product_system_id) {
     return $product_system;
 }
 
+function getProductScrewType($product_screw_type_id) {
+    global $conn;
+    $product_screw_type_id = mysqli_real_escape_string($conn, $product_screw_type_id);
+    $query = "SELECT * FROM product_screw_type WHERE product_screw_type_id = '$product_screw_type_id'";
+    $result = mysqli_query($conn, $query);
+    $product_screw_type = [];
+    if ($row = mysqli_fetch_assoc($result)) {
+        $product_screw_type = $row;
+    }
+    return $product_screw_type;
+}
+
 function getColorDetails($color_id) {
     global $conn;
     $color_id = mysqli_real_escape_string($conn, $color_id);
