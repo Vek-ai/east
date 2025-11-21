@@ -121,6 +121,41 @@ if(isset($_REQUEST['action'])) {
                             </select>
                         </div>
                     </div>
+
+                    <?php $selected_product_screw_coating = (array) json_decode($row['screw_coating'] ?? '[]', true); ?>
+                    <div class="col-md-4">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <label class="form-label">Screw Coating</label>
+                            <a href="?page=product_screw_coating" target="_blank" class="text-decoration-none">Edit</a>
+                        </div>
+                        <div class="mb-3">
+                            <select id="screw_coating" class="form-control calculate select2" name="screw_coating">
+                                <option value="" >Select Screw Coating...</option>
+                                <?php
+                                $query_roles = "SELECT * FROM product_screw_coating WHERE hidden = '0' AND status = '1' ORDER BY `product_screw_coating` ASC";
+                                $result_roles = mysqli_query($conn, $query_roles);            
+                                while ($row_screw_coating = mysqli_fetch_array($result_roles)) {
+                                    $selected = in_array($row_screw_coating['product_screw_coating_id'], $selected_product_screw_coating) ? 'selected' : '';
+                                ?>
+                                    <option value="<?= $row_screw_coating['product_screw_coating_id'] ?>" <?= $selected ?>><?= $row_screw_coating['product_screw_coating'] ?></option>
+                                <?php   
+                                }
+                                ?>
+                            </select>
+                        </div>
+                    </div>
+
+                    <?php 
+                    $has_color = floatval($row['has_color'] ?? 0);
+                    ?>
+                    <div class="col-12 mb-3">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="has_color" <?= ($has_color > 0) ? 'checked' : '' ?> name="has_color">
+                            <label class="form-check-label fw-bold" for="has_color">
+                                Product has color?
+                            </label>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>

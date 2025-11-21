@@ -394,6 +394,9 @@ if(isset($_POST['fetch_cart'])){
                                             </td>
 
                                             <td class="text-center align-middle">
+                                                <?php
+                                                if($product_details['has_color'] > 0){
+                                                ?>
                                                 <select id="color_cart<?= $line ?>" class="form-control color-cart" 
                                                         name="color" onchange="updateColor(this)" 
                                                         data-line="<?= $line ?>" data-id="<?= $product_id ?>">
@@ -417,7 +420,9 @@ if(isset($_POST['fetch_cart'])){
                                                     }
                                                     ?>
                                                 </select>
-
+                                                <?php
+                                                }
+                                                ?>
                                             </td>
 
                                             <td class="text-center align-middle">
@@ -634,6 +639,9 @@ if(isset($_POST['fetch_cart'])){
                                             </td>
 
                                             <td class="text-center align-middle">
+                                                <?php
+                                                if($product_details['has_color'] > 0){
+                                                ?>
                                                 <select id="color_cart<?= $line ?>" class="form-control color-cart" 
                                                         name="color" onchange="updateColor(this)" 
                                                         data-line="<?= $line ?>" data-id="<?= $product_id ?>">
@@ -657,7 +665,9 @@ if(isset($_POST['fetch_cart'])){
                                                     }
                                                     ?>
                                                 </select>
-
+                                                <?php
+                                                }
+                                                ?>
                                             </td>
 
                                             <td class="text-center align-middle">
@@ -822,6 +832,9 @@ if(isset($_POST['fetch_cart'])){
                                             </td>
 
                                             <td class="text-center align-middle">
+                                                <?php
+                                                if($product_details['has_color'] > 0){
+                                                ?>
                                                 <select id="color_cart<?= $line ?>" class="form-control color-cart" 
                                                         name="color" onchange="updateColor(this)" 
                                                         data-line="<?= $line ?>" data-id="<?= $product_id ?>">
@@ -845,7 +858,9 @@ if(isset($_POST['fetch_cart'])){
                                                     }
                                                     ?>
                                                 </select>
-
+                                                <?php
+                                                }
+                                                ?>
                                             </td>
 
                                             <td class="text-center align-middle"></td>
@@ -1008,6 +1023,9 @@ if(isset($_POST['fetch_cart'])){
                                             </td>
 
                                             <td class="text-center align-middle">
+                                                <?php
+                                                if($product_details['has_color'] > 0){
+                                                ?>
                                                 <select id="color_cart<?= $line ?>" class="form-control color-cart" 
                                                         name="color" onchange="updateColor(this)" 
                                                         data-line="<?= $line ?>" data-id="<?= $product_id ?>">
@@ -1031,7 +1049,9 @@ if(isset($_POST['fetch_cart'])){
                                                     }
                                                     ?>
                                                 </select>
-
+                                                <?php
+                                                }
+                                                ?>
                                             </td>
 
                                             <td class="text-center align-middle"></td>

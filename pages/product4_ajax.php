@@ -74,8 +74,10 @@ if(isset($_REQUEST['action'])) {
             if ($key == 'color_paint') $fields['color'] = $escapedValue;
         }
 
+        $has_color = isset($_POST['has_color']) ? 1 : 0;
         $standing_seam = ($_POST['panel_type'] ?? '') === 'standing_seam' ? 1 : 0;
         $board_batten  = ($_POST['panel_type'] ?? '') === 'board_batten' ? 1 : 0;
+        $fields['has_color'] = $has_color;
         $fields['standing_seam'] = $standing_seam;
         $fields['board_batten']  = $board_batten;
 
