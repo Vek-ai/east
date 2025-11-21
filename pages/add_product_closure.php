@@ -123,11 +123,12 @@ if(isset($_REQUEST['action'])) {
                     </div>
 
                     <?php 
-                    $has_color = floatval($row['has_color'] ?? 0);
+                    $has_color = $row['has_color'] ?? null;
+                    $checked = (!isset($row['has_color']) || $has_color > 0) ? 'checked' : '';
                     ?>
                     <div class="col-12 mb-3">
                         <div class="form-check">
-                            <input class="form-check-input" type="checkbox" id="has_color" <?= ($has_color > 0) ? 'checked' : '' ?> name="has_color">
+                            <input class="form-check-input" type="checkbox" id="has_color" name="has_color" <?= $checked ?>>
                             <label class="form-check-label fw-bold" for="has_color">
                                 Product has color?
                             </label>
