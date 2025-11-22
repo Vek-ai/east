@@ -424,6 +424,7 @@ class PDF extends FPDF {
     public $delivery_method;
     public $scheduled_date;
     public $salesperson;
+    public $token;
 
     public function fitTextToWidth($text, $maxWidth, $initialFontSize = 8, $font = 'Arial', $style = '') {
         $this->SetFont($font, $style, $initialFontSize);
@@ -513,9 +514,11 @@ class PDF extends FPDF {
         $this->MultiCell($colWidthRight, 5,
             "Scan me for a Digital copy of this receipt", 0, 'C');
 
+        $token = $this->token;
+
         $qrX = 20;
         $qrY = $this->GetY();
-        $this->Image('assets/images/qr_rickroll.png', $qrX, $qrY, 25, 25);
+        $this->Image("https://delivery.ilearnsda.com/receiptqr/receiptqr$token.png", $qrX, $qrY, 25, 25);
     }
 
     public function GetMultiCellHeight($w, $h, $txt) {
@@ -624,12 +627,15 @@ if (mysqli_num_rows($result) > 0) {
         if($delivery_price == 0){
             $delivery_method = 'Pickup';
         }
+
+        $token = $row_orders['token'] ?? '';
         
         $pdf->orderid = $orderid;
         $pdf->order_date = $order_date;
         $pdf->delivery_method = $delivery_method;
         $pdf->scheduled_date = $scheduled_date;
         $pdf->salesperson = get_staff_name($current_user_id);
+        $pdf->token = $token;
 
         $pdf->AddPage();
 
