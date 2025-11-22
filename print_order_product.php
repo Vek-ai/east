@@ -854,25 +854,25 @@ if (mysqli_num_rows($result) > 0) {
         $grand_total = $subtotal + $delivery_price + $sales_tax;
 
         $pdf->SetXY($col2_x, $col_y + 5);
-        $pdf->Cell(40, $lineheight, 'CUSTOMER SAVINGS:', 1, 0);
-        $pdf->Cell(20, $lineheight, '$ ' . number_format(max(0, $total_saved), 2), 1, 1, 'R');
+        $pdf->Cell(40, $lineheight, 'CUSTOMER SAVINGS:', 0, 0);
+        $pdf->Cell(20, $lineheight, '$ ' . number_format(max(0, $total_saved), 2), 0, 1, 'R');
 
         $pdf->SetXY($col2_x, $pdf->GetY());
-        $pdf->Cell(40, $lineheight, 'MATERIALS PRICE:', 1, 0);
-        $pdf->Cell(20, $lineheight, '$ ' . number_format($subtotal, 2), 1, 1 , 'R');
+        $pdf->Cell(40, $lineheight, 'MATERIALS PRICE:', 0, 0);
+        $pdf->Cell(20, $lineheight, '$ ' . number_format($subtotal, 2), 0, 1 , 'R');
 
         $pdf->SetXY($col2_x, $pdf->GetY());
-        $pdf->Cell(40, $lineheight, 'DELIVERY CHARGE:', 1, 0);
-        $pdf->Cell(20, $lineheight, '$ ' . number_format($delivery_price, 2), 1, 1 , 'R');
+        $pdf->Cell(40, $lineheight, 'DELIVERY CHARGE:', 0, 0);
+        $pdf->Cell(20, $lineheight, '$ ' . number_format($delivery_price, 2), 0, 1 , 'R');
 
         $pdf->SetXY($col2_x, $pdf->GetY());
-        $pdf->Cell(40, $lineheight, 'SALES TAX:', 1, 0);
-        $pdf->Cell(20, $lineheight, '$ ' . number_format($sales_tax, 2), 1, 1, 'R');
+        $pdf->Cell(40, $lineheight, 'SALES TAX:', 0, 0);
+        $pdf->Cell(20, $lineheight, '$ ' . number_format($sales_tax, 2), 0, 1, 'R');
 
         $pdf->SetFont('Arial', 'B', 10);
         $pdf->SetXY($col2_x, $pdf->GetY());
-        $pdf->Cell(40, $lineheight, 'TOTAL PRICE:', 1, 0);
-        $pdf->Cell(20, $lineheight, '$ ' . number_format($grand_total, 2), 1, 1, 'R');
+        $pdf->Cell(40, $lineheight, 'TOTAL PRICE:', 0, 0);
+        $pdf->Cell(20, $lineheight, '$ ' . number_format($grand_total, 2), 0, 1, 'R');
 
 
         $pdf->Ln(5);

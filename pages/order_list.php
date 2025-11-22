@@ -8,7 +8,7 @@ require 'includes/functions.php';
 
 $picture_path = "images/product/product.jpg";
 
-$page_title = "Order List";
+$page_title = "Work Order List";
 
 $status_labels = [
     1 => ['label' => 'New Order', 'class' => 'badge bg-primary'],
@@ -460,22 +460,22 @@ function showCol($name) {
                                 <thead>
                                     <tr>
                                         <?php if (showCol('orderid')): ?>
-                                            <th style="color: #ffffff !important;">OrderID</th>
+                                            <th style="color: #ffffff !important;">Invoice ID #</th>
                                         <?php endif; ?>
 
                                         <?php if (showCol('customer')): ?>
                                             <th style="color: #ffffff !important;">Customer</th>
                                         <?php endif; ?>
 
-                                        <?php if (showCol('total_price')): ?>
-                                            <th style="color: #ffffff !important;">Total Price</th>
-                                        <?php endif; ?>
-
                                         <?php if (showCol('order_date')): ?>
                                             <th style="color: #ffffff !important;">Order Date</th>
+                                            <th style="color: #ffffff !important;">Scheduled Date</th>
                                         <?php endif; ?>
 
                                         <?php if (showCol('status')): ?>
+                                            <th style="color: #ffffff !important;">Pickup/Delivery</th>
+                                            <th style="color: #ffffff !important;">Metal Panels</th>
+                                            <th style="color: #ffffff !important;">Trim</th>
                                             <th style="color: #ffffff !important;">Status</th>
                                         <?php endif; ?>
 
@@ -494,7 +494,9 @@ function showCol($name) {
 
                                     $query = "SELECT
                                                 o.*,
-                                                COUNT(op.id) AS total_count
+                                                COUNT(op.id) AS total_count,
+                                                CASE WHEN SUM(CASE WHEN op.product_category = $trim_id THEN 1 END) > 0 THEN 1 ELSE 0 END AS has_trim,
+                                                CASE WHEN SUM(CASE WHEN op.product_category = $panel_id THEN 1 END) > 0 THEN 1 ELSE 0 END AS has_panel
                                             FROM
                                                 orders o
                                             LEFT JOIN order_product op ON
@@ -551,21 +553,28 @@ function showCol($name) {
                                                 </td>
                                             <?php endif; ?>
 
-                                            <?php if (showCol('total_price')): ?>
-                                                <td style="color: #ffffff !important;">
-                                                    $ <?php echo number_format($row["discounted_price"],2) ?>
-                                                </td>
-                                            <?php endif; ?>
-
                                             <?php if (showCol('order_date')): ?>
                                                 <td style="color: #ffffff !important;"
-                                                    <?php if (isset($row["order_date"]) && !empty($row["order_date"]) && $row["order_date"] !== '0000-00-00 00:00:00') : ?>
-                                                        data-order="<?= date('Y-m-d', strtotime($row["order_date"])) ?>"
+                                                    <?php if (!empty($row["order_date"]) && $row["order_date"] !== '0000-00-00 00:00:00') : ?>
+                                                        data-order="<?= date('Y-m-d H:i:s', strtotime($row["order_date"])) ?>"
                                                     <?php endif; ?>
                                                 >
                                                     <?php 
-                                                        if (isset($row["order_date"]) && !empty($row["order_date"]) && $row["order_date"] !== '0000-00-00 00:00:00') {
-                                                            echo date("F d, Y", strtotime($row["order_date"]));
+                                                        if (!empty($row["order_date"]) && $row["order_date"] !== '0000-00-00 00:00:00') {
+                                                            echo date("m/d/Y || h:i A", strtotime($row["order_date"]));
+                                                        } else {
+                                                            echo '';
+                                                        }
+                                                    ?>
+                                                </td>
+                                                <td style="color: #ffffff !important;"
+                                                    <?php if (!empty($row["scheduled_date"]) && $row["scheduled_date"] !== '0000-00-00 00:00:00') : ?>
+                                                        data-order="<?= date('Y-m-d H:i:s', strtotime($row["scheduled_date"])) ?>"
+                                                    <?php endif; ?>
+                                                >
+                                                    <?php 
+                                                        if (!empty($row["scheduled_date"]) && $row["scheduled_date"] !== '0000-00-00 00:00:00') {
+                                                            echo date("m/d/Y || h:i A", strtotime($row["scheduled_date"]));
                                                         } else {
                                                             echo '';
                                                         }
@@ -574,10 +583,23 @@ function showCol($name) {
                                             <?php endif; ?>
 
                                             <?php if (showCol('status')): ?>
+                                                <td style="color: #ffffff !important;">
+                                                    <?= ucwords($row["deliver_method"]) ?>
+                                                </td>
+
+                                                <td style="color: #ffffff !important;">
+                                                    <?= !empty($row["has_panel"]) ? '<i class="fa fa-check text-success fs-8"></i>' : '' ?>
+                                                </td>
+
+                                                <td style="color: #ffffff !important;">
+                                                    <?= !empty($row["has_trim"]) ? '<i class="fa fa-check text-success fs-8"></i>' : '' ?>
+                                                </td>
+
                                                 <td class="text-center" style="color: #ffffff !important;">
                                                     <span class="estimate_status <?= $status['class']; ?> fw-bond"><?= $status['label']; ?></span>
                                                 </td>
                                             <?php endif; ?>
+
 
                                             <?php if (showCol('salesperson')): ?>
                                                 <td style="color: #ffffff !important;">

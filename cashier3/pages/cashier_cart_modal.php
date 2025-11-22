@@ -540,7 +540,7 @@ if(isset($_POST['fetch_cart'])){
                                                     ?>
                                                 </select>
                                                 <span class="<?= $show_per_panel ? '' : 'd-none text-nowrap' ?>">
-                                                    Per Panel $ <br>$ <?= number_format($panel_price, 2) ?>
+                                                    Per Panel $ <?= number_format($panel_price, 2) ?>
                                                 </span>
                                             </td>
                                             <td class="text-center align-middle">
@@ -572,7 +572,7 @@ if(isset($_POST['fetch_cart'])){
                                                     <?php endif; ?>
                                                 </select>
                                                 <span class="<?= $show_linear_ft ? '' : 'd-none text-nowrap' ?>">
-                                                    Retail per Ft <br>$ <?= number_format($linear_price, 2) ?>
+                                                    Retail per Ft $ <?= number_format($linear_price, 2) ?>
                                                 </span>
                                             </td>
 
@@ -762,13 +762,13 @@ if(isset($_POST['fetch_cart'])){
                                             <td class="text-center align-middle">
                                                 <br>
                                                 <span class="<?= $show_trim_per_each ? '' : 'd-none text-nowrap' ?>">
-                                                    Per Panel $ <br>$ <?= number_format($panel_price, 2) ?>
+                                                    Per Panel $ <?= number_format($panel_price, 2) ?>
                                                 </span>
                                             </td>
                                             <td class="text-center align-middle">
                                                 <br>
                                                 <span class="<?= $show_trim_per_ft ? '' : 'd-none text-nowrap' ?>">
-                                                    Retail per Ft <br>$ <?= number_format($linear_price, 2) ?>
+                                                    Retail per Ft $ <?= number_format($linear_price, 2) ?>
                                                 </span>
                                             </td>
 
@@ -951,14 +951,14 @@ if(isset($_POST['fetch_cart'])){
                                                 </select>
                                                 <br>
                                                 <span class="<?= $show_screw_per_pack ? '' : 'd-none text-nowrap' ?>">
-                                                    Per Each <br>$ <?= number_format($panel_price, 2) ?>
+                                                    Per Each $ <?= number_format($panel_price, 2) ?>
                                                 </span>
                                             </td>
 
                                             <td class="text-center align-middle">
                                                 <br>
                                                 <span class="<?= $show_screw_per_each ? '' : 'd-none text-nowrap' ?>">
-                                                    Retail per Screw <br>$ <?= number_format($linear_price, 2) ?>
+                                                    Retail per Screw $ <?= number_format($linear_price, 2) ?>
                                                 </span>
                                             </td>
 
