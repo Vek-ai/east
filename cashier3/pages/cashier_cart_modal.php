@@ -330,7 +330,7 @@ if(isset($_POST['fetch_cart'])){
                                     $product = $item['product'];
                                     $line = $item['line'];
                                     $quantity = $item['quantity'];
-                                    $unit_price = $product_details['unit_price'];
+                                    $unit_price = $item['base_price'];
                                     $total_length = $item['total_length'];
                                     $product_price = $item['product_price'];
                                     $customer_price = $item['customer_price'];
@@ -347,6 +347,7 @@ if(isset($_POST['fetch_cart'])){
                                     $parent_prod_id = $item['parent_prod_id'];
                                     $profile_type = $item['profile'];
                                     $stock_text = $item['stock_text'];
+                                    $pack_selected = $item['pack'];
 
                                     $profile_details = getProfileTypeDetails($profile_type);
                                     $panel_type_1 = $profile_details['panel_type_1'];
@@ -863,7 +864,41 @@ if(isset($_POST['fetch_cart'])){
                                                 ?>
                                             </td>
 
-                                            <td class="text-center align-middle"></td>
+                                            <td class="text-center align-middle">
+                                                <select class="form-control pack-cart" 
+                                                        name="pack" 
+                                                        onchange="updatePack(this)"
+                                                        data-line="<?= $line ?>" 
+                                                        data-id="<?= $product_id ?>">
+                                                    <option value="">Select Pack</option>
+                                                    <?php
+                                                    $packArray = [];
+                                                    if (!empty($product_details['pack'])) {
+                                                        $packArray = json_decode($product_details['pack'], true);
+                                                        if (!is_array($packArray)) {
+                                                            $packArray = [];
+                                                        }
+                                                    }
+
+                                                    foreach ($packArray as $pack) {
+                                                        $packPieces = getPackPieces($pack);
+                                                        $packName = getPackName($pack);
+
+                                                        $display = $packName;
+                                                        if ($packPieces !== '') {
+                                                            $display .= ' (' . $packPieces .' PCS)';
+                                                        }
+
+                                                        $selected = ($packPieces == $pack_selected) ? 'selected' : '';
+
+                                                        echo "<option 
+                                                                value='{$packPieces}' $selected>
+                                                                {$display}
+                                                            </option>";
+                                                    }
+                                                    ?>
+                                                </select>
+                                            </td>
 
                                             <td class="text-center align-middle"></td>
 
@@ -900,63 +935,15 @@ if(isset($_POST['fetch_cart'])){
                                                 </div>
                                             </td>
 
-                                            <?php 
-                                            $inventoryItems = getAvailableInventory($product_id);
-                                            ?>
-                                            <td class="text-center">
-                                                <select class="form-control screw_length_cart" 
-                                                        name="screw_length" 
-                                                        onchange="updateScrewLength(this)" 
-                                                        data-line="<?= $line; ?>" 
-                                                        data-id="<?= $product_id; ?>">
-                                                    <option value="" hidden>Select Length</option>
-                                                    <?php foreach ($inventoryItems as $item) { 
-                                                        $dimension = trim($item['dimension'] ?? '');
-                                                        $unit      = trim($item['dimension_unit'] ?? '');
-                                                        
-                                                        if ($dimension !== '') { 
-                                                            $selected = ($values['screw_length'] ?? '') === $dimension ? 'selected' : '';
-                                                    ?>
-                                                            <option 
-                                                                value="<?= $item['dimension'] ?>"
-                                                                <?= $selected ?>
-                                                            >
-                                                                <?= htmlspecialchars($dimension) ?> <?= htmlspecialchars($unit) ?>
-                                                            </option>
-                                                    <?php } } ?>
-                                                </select>
-                                            </td>
+                                            <td class="text-center"></td>
 
-                                            <td class="text-center">
-                                                <select class="form-control screw_type_cart" 
-                                                        name="screw_type" 
-                                                        onchange="updateScrewType(this)" 
-                                                        data-line="<?= $line; ?>" 
-                                                        data-id="<?= $product_id; ?>">
-                                                    <?php 
-                                                    $screwTypes = [
-                                                        'SD'  => 'Self-Driller',
-                                                        'PT'  => 'Pointed-Tip',
-                                                        'ZXL' => 'ProZ ZXL Long Life',
-                                                        'STL' => 'Stainless Steel'
-                                                    ];
-                                                    $selectedType = $values['screw_type'] ?? '';
-                                                    ?>
-                                                    <option value="" hidden>Select Type</option>
-                                                    <?php foreach ($screwTypes as $key => $label): ?>
-                                                        <option value="<?= $key ?>" <?= ($selectedType === $key) ? 'selected' : '' ?>>
-                                                            <?= $label ?>
-                                                        </option>
-                                                    <?php endforeach; ?>
-                                                </select>
-                                                <br>
+                                            <td class="text-center align-middle">
                                                 <span class="<?= $show_screw_per_pack ? '' : 'd-none text-nowrap' ?>">
                                                     Per Each $ <?= number_format($panel_price, 2) ?>
                                                 </span>
                                             </td>
 
                                             <td class="text-center align-middle">
-                                                <br>
                                                 <span class="<?= $show_screw_per_each ? '' : 'd-none text-nowrap' ?>">
                                                     Retail per Screw $ <?= number_format($linear_price, 2) ?>
                                                 </span>
@@ -1539,6 +1526,25 @@ if(isset($_POST['fetch_cart'])){
                     language: {
                         noResults: function() {
                             return "No paint color";
+                        }
+                    }
+                });
+            });
+
+            $(".pack-cart").each(function() {
+                if ($(this).data('select2')) {
+                    $(this).select2('destroy');
+                }
+
+                $(this).select2({
+                    width: '300px',
+                    placeholder: "Select...",
+                    dropdownAutoWidth: true,
+                    dropdownParent: $('.modal.show'),
+                    templateResult: formatOption,
+                    language: {
+                        noResults: function() {
+                            return "No Packs Assigned";
                         }
                     }
                 });

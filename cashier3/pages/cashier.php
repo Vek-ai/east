@@ -1032,7 +1032,6 @@ $editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) :
                 <div id="screw_container"></div>
             </div>
         </form>
-        </div>
     </div>
 </div>
 
@@ -1689,6 +1688,30 @@ $editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) :
                 set_color: "set_color"
             },
             success: function(response) {
+                loadCart();
+            },
+            error: function(jqXHR, textStatus, errorThrown) {
+                alert('Error: ' + textStatus + ' - ' + errorThrown);
+            }
+        });
+    }
+
+    function updatePack(element){
+        var pack = $(element).val();
+        var id = $(element).data('id');
+        var line = $(element).data('line');
+
+        $.ajax({
+            url: 'pages/cashier_ajax.php',
+            type: 'POST',
+            data: {
+                pack: pack,
+                id: id,
+                line: line,
+                set_pack: "set_pack"
+            },
+            success: function(response) {
+                console.log(response);
                 loadCart();
             },
             error: function(jqXHR, textStatus, errorThrown) {
@@ -5342,7 +5365,7 @@ $editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) :
             event.preventDefault();
 
             const formData = new FormData(this);
-            formData.append('save_custom_length', 'save_custom_length');
+            formData.append('save_screw', 'save_screw');
             var preselectedProfile = $('#select-profile').val();
             formData.append('profile', preselectedProfile);
             $.ajax({

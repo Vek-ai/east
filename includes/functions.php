@@ -368,6 +368,19 @@ function getDimensionName($dimension_id){
     return '';
 }
 
+function getDimensionID($dimension){
+    global $conn;
+    $query = "SELECT dimension_id FROM dimensions WHERE dimension = '$dimension'";
+    $result = mysqli_query($conn, $query);
+
+    if ($result && mysqli_num_rows($result) > 0) {
+        $row = mysqli_fetch_assoc($result);
+        return $row['dimension_id'];
+    }
+
+    return '';
+}
+
 function getProductSystemName($id){
     global $conn;
     $query = "SELECT product_system FROM product_system WHERE product_system_id = '$id'";
@@ -3143,6 +3156,7 @@ function calculateCartItem($values) {
 
     $customer_pricing_rate = getPricingCategory($category_id, $customer_details_pricing) / 100;
 
+    $pack = isset($values['pack']) && is_numeric($values['pack']) ? floatval($values['pack']) : 1;
     $estimate_length      = isset($values["estimate_length"]) && is_numeric($values["estimate_length"]) ? floatval($values["estimate_length"]) : 1;
     $estimate_length_inch = isset($values["estimate_length_inch"]) && is_numeric($values["estimate_length_inch"]) ? floatval($values["estimate_length_inch"]) : 0;
     $total_length = $estimate_length + ($estimate_length_inch / 12);
@@ -3280,6 +3294,31 @@ function calculateCartItem($values) {
         $unique_prod_id = getScrewProdID(
             $category_id, $product_type, $screw_type, $color_id, $screw_length
         );
+
+        $dimension_id = getDimensionID($screw_length);
+
+        $res = mysqli_query($conn, "SELECT * FROM product_screw_lengths WHERE product_id = '$data_id' AND dimension_id = '$dimension_id' LIMIT 1");
+        $row = mysqli_fetch_assoc($res);
+
+        $base_price  = floatval($row['unit_price'] ?? 0);
+        $bulk_price  = floatval($row['bulk_price'] ?? 0);
+
+        if ($bulk_price > 0 && $bulk_starts_at > 0 && $quantity >= $bulk_starts_at) {
+            $base_price = $bulk_price;
+        }
+
+        $unit_price = calculateUnitPrice(
+            $base_price,
+            1,
+            '',
+            '',
+            '',
+            '',
+            '',
+            $color_id,
+            '',
+            ''
+        ) * $pack;
     }
 
     $linear_price = $base_price;
@@ -3310,6 +3349,7 @@ function calculateCartItem($values) {
         "picture_path"      => !empty($product['main_image']) ? "../" . $product['main_image'] : "../images/product/product.jpg",
         "images_directory"  => "../images/drawing/",
         "quantity"          => $quantity,
+        "base_price"        => $base_price,
         "unit_price"        => $unit_price,
         "linear_price"      => $linear_price,
         "panel_price"       => $panel_price,
@@ -3335,6 +3375,7 @@ function calculateCartItem($values) {
         "product_id_abbrev" => $product_id_abbrev,
         "parent_prod_id"    => $parent_prod_id,
         "unique_prod_id"    => $unique_prod_id,
+        "pack"    => $pack,
     ];
 }
 

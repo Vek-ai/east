@@ -42,7 +42,7 @@ if(isset($_POST['fetch_modal'])){
                             ";
                             $result_colors = mysqli_query($conn, $query_colors);
                             while ($row = mysqli_fetch_assoc($result_colors)) {
-                        ?>
+                            ?>
                                 <option 
                                     value="<?= htmlspecialchars($row['color_id']) ?>" 
                                     data-category="<?= htmlspecialchars($row['product_category']) ?>">

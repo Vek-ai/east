@@ -32,14 +32,11 @@ if(isset($_REQUEST['action'])) {
         $notes = mysqli_real_escape_string($conn, $_POST['notes']);
         $userid = mysqli_real_escape_string($conn, $_POST['userid']);
 
-        $dimensions = isset($_POST['dimensions']) ? $_POST['dimensions'] : [];
-        $dimensions = array_filter($dimensions, function($v) {
-            return $v !== "" && is_numeric($v);
-        });
+        $dimensions = array_values(array_filter($_POST['dimensions'] ?? [], 'is_numeric'));
+        $dimensions_sql = mysqli_real_escape_string($conn, json_encode($dimensions));
 
-        $dimensions = array_map('intval', $dimensions);
-        $dimensions_json = json_encode($dimensions, JSON_NUMERIC_CHECK);
-        $dimensions_sql = mysqli_real_escape_string($conn, $dimensions_json);
+        $packs = array_values(array_filter($_POST['packs'] ?? [], 'is_numeric'));
+        $packs_sql = mysqli_real_escape_string($conn, json_encode($packs));
 
         $checkQuery = "SELECT type_abreviations FROM product_screw_type WHERE product_screw_type_id = '$product_screw_type_id'";
         $result = mysqli_query($conn, $checkQuery);
@@ -53,6 +50,7 @@ if(isset($_REQUEST['action'])) {
                                 type_abreviations = '$type_abreviations',
                                 notes = '$notes',
                                 dimensions = '$dimensions_sql',
+                                packs = '$packs_sql',
                                 last_edit = NOW(),
                                 edited_by = '$userid'
                             WHERE product_screw_type_id = '$product_screw_type_id'";
@@ -67,9 +65,9 @@ if(isset($_REQUEST['action'])) {
             }
         } else {
             $insertQuery = "INSERT INTO product_screw_type 
-                            (product_screw_type, type_abreviations, notes, dimensions, added_date, added_by) 
+                            (product_screw_type, type_abreviations, notes, dimensions, packs, added_date, added_by) 
                             VALUES 
-                            ('$product_screw_type', '$type_abreviations', '$notes', '$dimensions_sql', NOW(), '$userid')";
+                            ('$product_screw_type', '$type_abreviations', '$notes', '$dimensions_sql', '$packs_sql', NOW(), '$userid')";
 
             if (mysqli_query($conn, $insertQuery)) {
                 echo "add-success";
@@ -119,8 +117,20 @@ if(isset($_REQUEST['action'])) {
             }
         }
 
+        $packs = [];
+        $packQuery = "SELECT * FROM supplier_pack WHERE status = 1 AND hidden = 0 ORDER BY pack ASC";
+        $packRes = mysqli_query($conn, $packQuery);
+        if ($packRes && mysqli_num_rows($packRes) > 0) {
+            while ($p = mysqli_fetch_assoc($packRes)) {
+                $packs[] = $p;
+            }
+        }
+
         $selected_lengths = isset($row['dimensions']) ? json_decode($row['dimensions'], true) : [];
         if (!is_array($selected_lengths)) $selected_lengths = [];
+
+        $selected_packs = isset($row['packs']) ? json_decode($row['packs'], true) : [];
+        if (!is_array($selected_packs)) $selected_packs = [];
         ?>
             <div class="row pt-3">
                 <div class="col-md-6">
@@ -139,6 +149,7 @@ if(isset($_REQUEST['action'])) {
                         <input type="text" id="type_abreviations" name="type_abreviations" class="form-control" value="<?= $row['type_abreviations'] ?? '' ?>" />
                     </div>
                 </div>
+                <div class="col-md-6"></div>
                 <div class="col-md-6">
                     <div class="d-flex justify-content-between align-items-center">
                         <label class="form-label">Screw Length(s)</label>
@@ -149,8 +160,26 @@ if(isset($_REQUEST['action'])) {
                             <?php foreach ($lengths as $l): ?>
                                 <?php 
                                     $id = $l['dimension_id']; 
-                                    $text = $l['dimension'] . ' ' . ($l['dimension_unit'] ?? '');
+                                    $text = $l['dimension'];
                                     $sel = in_array($id, $selected_lengths) ? 'selected' : '';
+                                ?>
+                                <option value="<?= $id ?>" <?= $sel ?>><?= $text ?></option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <label class="form-label">Screw Pack(s)</label>
+                        <a href="?page=supplier_pack" target="_blank" class="text-decoration-none">Edit</a>
+                    </div>
+                    <div class="mb-3">
+                        <select id="packs" name="packs[]" class="form-control select2_modal" multiple>
+                            <?php foreach ($packs as $p): ?>
+                                <?php 
+                                    $id = $p['id']; 
+                                    $text = trim($p['pack'] . ' ' . ($p['pack_count'] ? '(' .$p['pack_count'] . ' pcs)' : ''));
+                                    $sel = in_array($id, $selected_packs) ? 'selected' : '';
                                 ?>
                                 <option value="<?= $id ?>" <?= $sel ?>><?= $text ?></option>
                             <?php endforeach; ?>
