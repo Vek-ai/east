@@ -549,6 +549,9 @@ if(isset($_REQUEST['action'])) {
     if ($action == "fetch_pricing_section") {
         $screw_type = mysqli_real_escape_string($conn, $_POST['screw_type']);
         $product_id = mysqli_real_escape_string($conn, $_POST['product_id']);
+        $product_details = getProductDetails($product_id);
+
+        $bulk_starts_at = $product_details['bulk_starts_at'] ?? 0;
 
         $screw_type_det = getProductScrewType($screw_type);
 
@@ -575,7 +578,6 @@ if(isset($_REQUEST['action'])) {
             $unit_price = $product_lengths[$dim_id]['unit_price'] ?? '';
             $floor_price = $product_lengths[$dim_id]['floor_price'] ?? '';
             $bulk_price = $product_lengths[$dim_id]['bulk_price'] ?? '';
-            $bulk_starts_at = $product_lengths[$dim_id]['bulk_starts_at'] ?? '';
             ?>
             <div class="row mb-3 align-items-end">
                 <div class="col-md-3">

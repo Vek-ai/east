@@ -15,20 +15,8 @@ if(isset($_POST['fetch_modal'])){
         $unit_price = $product_details['unit_price'];
         $inventoryItems = getAvailableInventory($id);
 
-        $availableColors = [];
-        foreach ($inventoryItems as $item) {
-            if (!empty($item['color_id'])) $availableColors[$item['color_id']] = true;
-        }
-
-        $colorOptions = [];
-        if (!empty($availableColors)) {
-            $colorIds = implode(',', array_keys($availableColors));
-            $query_color = "SELECT color_id, color_name FROM paint_colors WHERE color_id IN ($colorIds) AND hidden='0' AND color_status='1'";
-            $result_color = mysqli_query($conn, $query_color);
-            while ($row_color = mysqli_fetch_assoc($result_color)) {
-                $colorOptions[$row_color['color_id']] = htmlspecialchars($row_color['color_name']);
-            }
-        }
+        $screw_type = $product_details['screw_type'];
+        $screw_type_det = getProductScrewType($screw_type);
         ?>
         <input type="hidden" id="product_id" name="id" value="<?= $id ?>" />
         <input type="hidden" id="product_price" name="price" value="<?= $unit_price ?>" />
@@ -36,10 +24,43 @@ if(isset($_POST['fetch_modal'])){
         <h3 class="text-center fw-bold mt-0"><?= $product_details['product_item'] ?></h3>
 
         <div class="row">
+            <div class="col-3 mb-3">
+                <select class="form-control screw_select2" id="screw-color" name="color_id">
+                    <option value="" data-category="">All Colors</option>
+                    <optgroup label="Assigned Colors">
+                        <?php
+                        $assigned_colors = getAssignedProductColors($id);
+                        if (!empty($assigned_colors)) {
+                            $color_ids_str = implode(',', array_map('intval', $assigned_colors));
+                            $query_colors = "
+                                SELECT color_id, color_name, product_category
+                                FROM paint_colors
+                                WHERE color_id IN ($color_ids_str)
+                                AND hidden = 0
+                                AND color_status = 1
+                                ORDER BY color_name ASC
+                            ";
+                            $result_colors = mysqli_query($conn, $query_colors);
+                            while ($row = mysqli_fetch_assoc($result_colors)) {
+                        ?>
+                                <option 
+                                    value="<?= htmlspecialchars($row['color_id']) ?>" 
+                                    data-category="<?= htmlspecialchars($row['product_category']) ?>">
+                                    <?= htmlspecialchars($row['color_name']) ?>
+                                </option>
+                        <?php
+                            }
+                        }
+                        ?>
+                    </optgroup>
+                </select>
+            </div>
+        </div>
+
+        <div class="row">
             <div class="row">
                 <div class="col"><label class="fs-4 fw-semibold">Quantity</label></div>
-                <div class="col"><label class="fs-4 fw-semibold">Size</label></div>
-                <div class="col"><label class="fs-4 fw-semibold">Color</label></div>
+                <div class="col"><label class="fs-4 fw-semibold">Length</label></div>
                 <div class="col"><label class="fs-4 fw-semibold">Pack</label></div>
                 <div class="col notes-col text-center d-none"><label class="fs-4 fw-semibold">Notes</label></div>
             </div>
@@ -50,42 +71,38 @@ if(isset($_POST['fetch_modal'])){
                 </div>
                 <div class="col">
                     <select id="dimension_select" name="dimension_id[]" class="form-control">
-                        <option value="" hidden>Select Size</option>
-                        <?php foreach ($inventoryItems as $item) { 
-                            $colorId   = $item['color_id'] ?? 0;
-                            $dimension = trim($item['dimension'] ?? '');
-                            $unit      = trim($item['dimension_unit'] ?? '');
-                            
-                            if ($dimension !== '') { ?>
-                                <option 
-                                    value="<?= $item['dimension_id'] ?>"
-                                    data-color="<?= $colorId ?>"
-                                >
-                                    <?= htmlspecialchars($dimension) ?> <?= htmlspecialchars($unit) ?>
-                                </option>
-                            <?php }
-                        } ?>
-                    </select>
-                </div>
-                <div class="col">
-                    <select class="form-control mb-1 color_select select-2" name="color_id[]">
-                        <option value="">Select Color...</option>
-                        <?php
-                        $seenColors = [];
-                        foreach ($inventoryItems as $item) {
-                            if (!empty($item['color_id'])) {
-                                $colorId = $item['color_id'];
-                                $dimId   = $item['dimension_id'];
-                                $display = htmlspecialchars(getColorName($colorId));
+                        <option value="" hidden>Select Length</option>
+                        <?php 
+                        $dimension_arr = json_decode($screw_type_det['dimensions'] ?? '[]', true);
+                        if (!is_array($dimension_arr)) $dimension_arr = [];
 
-                                echo "<option value='{$colorId}' data-dim-id='{$dimId}'>{$display}</option>";
-                            }
+                        $lengths = [];
+                        $lengthQuery = "SELECT * FROM dimensions WHERE dimension_category = 16 ORDER BY dimension ASC";
+                        $lengthRes = mysqli_query($conn, $lengthQuery);
+                        while ($l = mysqli_fetch_assoc($lengthRes)) {
+                            $lengths[$l['dimension_id']] = $l;
                         }
+
+                        foreach ($dimension_arr as $dim_id):
+                            $dim = $lengths[$dim_id] ?? null;
+                            if (!$dim) continue;
+
+                            $unit_price  = $product_lengths[$dim_id]['unit_price'] ?? '';
+                            $floor_price = $product_lengths[$dim_id]['floor_price'] ?? '';
+                            $bulk_price  = $product_lengths[$dim_id]['bulk_price'] ?? '';
+                            $bulk_starts_at = $product_lengths[$dim_id]['bulk_starts_at'] ?? '';
+
+                            $dimensionDisplay = trim(($dim['dimension'] ?? 0));
+                        ?>
+                        <option value="<?= $dim_id ?>">
+                            <?= $dimensionDisplay ?>
+                        </option>
+                        <?php endforeach; ?>
                         ?>
                     </select>
                 </div>
                 <div class="col">
-                    <select class="form-control mb-1 screw_select select-2" name="pack[]">
+                    <select class="form-control mb-1 screw_select pack_select select-2" name="pack[]">
                         <option value="">Select Pack</option>
                         <?php
                         $packArray = [];
@@ -160,6 +177,8 @@ if(isset($_POST['fetch_modal'])){
                 $('.screw-row').each(function () {
                     const $row = $(this);
                     formData.append('quantity[]', $row.find('.screw_quantity').val() || 0);
+                    formData.append('dimension_id[]', $row.find('#dimension_select').val() || 0);
+                    formData.append('pack[]', $row.find('.pack_select').val() || 0);
                 });
 
                 $.ajax({
@@ -170,6 +189,7 @@ if(isset($_POST['fetch_modal'])){
                     processData: false,
                     success: function (response) {
                         $('#price_display').text(response);
+                        console.log(response);
                     },
                     error: function (xhr, status, error) {
                         console.error('Price fetch error:', error);
@@ -239,38 +259,47 @@ if (isset($_POST['fetch_price'])) {
     $product_id = intval($_POST['product_id'] ?? 0);
     $color_id   = intval($_POST['color'] ?? 0);
     $quantities = $_POST['quantity'] ?? [];
+    $dimension_ids = $_POST['dimension_id'] ?? [];
+    $pack = $_POST['pack'] ?? [];
 
     $totalPrice = 0;
 
-    if ($product_id > 0) {
+    if ($product_id > 0 && !empty($quantities)) {
         $product = getProductDetails($product_id);
-        $basePrice  = floatval($product['unit_price'] ?? 0);
         $soldByFeet = intval($product['sold_by_feet'] ?? 0);
 
         $bulkData = getBulkData($product_id);
-        $bulk_price     = floatval($bulkData['bulk_price'] ?? 0);
-        $bulk_starts_at = intval($bulkData['bulk_starts_at'] ?? 0);
+        $bulk_starts = $product['bulk_starts_at'] ?? 1;
 
-        foreach ($quantities as $qty) {
-            $qty = floatval($qty ?? 0);
+        $length_count = count($quantities);
+
+        for ($i = 0; $i < $length_count; $i++) {
+            $qty = floatval($quantities[$i] ?? 0);
             if ($qty <= 0) continue;
 
-            $unit_price = ($bulk_price > 0 && $qty >= $bulk_starts_at)
-                ? $bulk_price
-                : $basePrice;
+            $dim_id = intval($dimension_ids[$i] ?? 0);
+            $pack_count = ($pack[$i] < 1) ? 1 : $pack[$i];
 
-            $estimate_length = '';
-            $estimate_length_inch = '';
+            $res = mysqli_query($conn, "SELECT * FROM product_screw_lengths WHERE product_id = '$product_id' AND dimension_id = '$dim_id' LIMIT 1");
+            $row = mysqli_fetch_assoc($res);
+
+            $unit_price  = floatval($row['unit_price'] ?? $product['unit_price'] ?? 0);
+            $bulk_price  = floatval($row['bulk_price'] ?? 0);
+
+            if ($bulk_price > 0 && $qty >= $bulk_starts) {
+                $unit_price = $bulk_price;
+            }
+
             $panel_type = '';
             $bends = 0;
             $hems = 0;
             $grade = '';
             $gauge = '';
 
-            $totalPrice += $qty * calculateUnitPrice(
+            $totalPrice += $pack_count * $qty * calculateUnitPrice(
                 $unit_price,
-                $estimate_length,
-                $estimate_length_inch,
+                1,
+                0,
                 $panel_type,
                 $soldByFeet,
                 $bends,
@@ -285,4 +314,5 @@ if (isset($_POST['fetch_price'])) {
     echo number_format($totalPrice, 2);
     exit;
 }
+
 ?>
