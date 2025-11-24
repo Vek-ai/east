@@ -20,10 +20,20 @@ if(isset($_REQUEST['action'])) {
 
     if ($action == "add_update") {
         $dimension_id = mysqli_real_escape_string($conn, $_POST['dimension_id']);
-        $dimension = mysqli_real_escape_string($conn, $_POST['dimension']);
-        $dimension_unit = mysqli_real_escape_string($conn, $_POST['dimension_unit']);
+        $dimension_feet = trim($_POST['dimension_feet'] ?? '');
+        $dimension_inches = trim($_POST['dimension_inches'] ?? '');
         $dimension_category = mysqli_real_escape_string($conn, $_POST['dimension_category']);
         $dimension_abbreviation = mysqli_real_escape_string($conn, $_POST['dimension_abbreviation']);
+
+        $dimension = "";
+
+        if ($dimension_feet !== "" && is_numeric($dimension_feet) && floatval($dimension_feet) > 0) {
+            $dimension .= floatval($dimension_feet) . " ft";
+        }
+
+        if ($dimension_inches !== "" && is_numeric($dimension_inches) && floatval($dimension_inches) > 0) {
+            $dimension .= ($dimension ? " " : "") . floatval($dimension_inches) . " in";
+        }
 
         $checkQuery = "SELECT dimension_abbreviation FROM dimensions WHERE dimension_id = '$dimension_id'";
         $result = mysqli_query($conn, $checkQuery);
@@ -34,7 +44,8 @@ if(isset($_REQUEST['action'])) {
 
             $updateQuery = "UPDATE dimensions 
                             SET dimension = '$dimension',
-                                dimension_unit = '$dimension_unit',
+                                dimension_feet = '$dimension_feet',
+                                dimension_inches = '$dimension_inches',
                                 dimension_category = '$dimension_category',
                                 dimension_abbreviation = '$dimension_abbreviation'
                             WHERE dimension_id = '$dimension_id'";
@@ -47,9 +58,11 @@ if(isset($_REQUEST['action'])) {
             } else {
                 echo "Error updating dimension: " . mysqli_error($conn);
             }
+
         } else {
-            $insertQuery = "INSERT INTO dimensions (dimension, dimension_unit, dimension_category, dimension_abbreviation) 
-                            VALUES ('$dimension', '$dimension_unit', '$dimension_category', '$dimension_abbreviation')";
+            $insertQuery = "INSERT INTO dimensions (dimension, dimension_feet, dimension_inches, dimension_category, dimension_abbreviation) 
+                            VALUES ('$dimension', '$dimension_feet', '$dimension_inches', '$dimension_category', '$dimension_abbreviation')";
+
             if (mysqli_query($conn, $insertQuery)) {
                 echo "add-success";
             } else {
@@ -57,6 +70,7 @@ if(isset($_REQUEST['action'])) {
             }
         }
     }
+
 
     if ($action == 'fetch_modal_content') {
         $dimension_id = mysqli_real_escape_string($conn, $_POST['id']);
@@ -99,28 +113,22 @@ if(isset($_REQUEST['action'])) {
         <div class="row pt-3">
             <div class="col-md-6">
                 <div class="mb-3">
-                    <label class="form-label">Dimension</label>
-                    <input type="text" id="dimension" name="dimension" class="form-control" value="<?= $row['dimension'] ?? '' ?>" />
+                    <label class="form-label">Feet</label>
+                    <input type="number" step="0.01" min="0" id="dimension_feet" name="dimension_feet"
+                        class="form-control"
+                        value="<?= $row['dimension_feet'] ?? '' ?>">
                 </div>
             </div>
+
             <div class="col-md-6">
                 <div class="mb-3">
-                    <label class="form-label">Unit</label>
-                    <select id="dimension_unit" name="dimension_unit" class="form-control">
-                        <?php
-                        $units = ['feet' => 'Feet', 'inch' => 'Inches', 'meter' => 'Meters'];
-                        $selectedUnit = strtolower($row['dimension_unit'] ?? '');
-                        foreach ($units as $value => $label) {
-                            $selected = ($selectedUnit === $value) ? 'selected' : '';
-                            echo "<option value=\"$value\" $selected>$label</option>";
-                        }
-                        ?>
-                    </select>
+                    <label class="form-label">Inches</label>
+                    <input type="number" step="0.01" min="0" id="dimension_inches" name="dimension_inches"
+                        class="form-control"
+                        value="<?= $row['dimension_inches'] ?? '' ?>">
                 </div>
             </div>
         </div>
-
-        
 
         <input type="hidden" id="dimension_id" name="dimension_id" value="<?= $dimension_id ?>" />
         <?php
@@ -134,11 +142,10 @@ if(isset($_REQUEST['action'])) {
 
         $data = [];
         while ($row = mysqli_fetch_assoc($result)) {
-            $dimension_id       = $row['dimension_id'];
-            $dimension_category = $row['dimension_category'];
-            $dimension          = $row['dimension'];
-            $dimension_unit     = $row['dimension_unit'];
-            $dimension_abbreviation     = $row['dimension_abbreviation'];
+            $dimension_id           = $row['dimension_id'];
+            $dimension_category     = $row['dimension_category'];
+            $dimension              = $row['dimension'];
+            $dimension_abbreviation = $row['dimension_abbreviation'];
 
             $action_html = '';
             if ($permission === 'edit') {
@@ -148,18 +155,17 @@ if(isset($_REQUEST['action'])) {
             }
 
             $data[] = [
-                'dimension'             => $dimension . ' ' . $dimension_unit,
-                'dimension_category_id' => $dimension_category,
+                'dimension'              => $dimension,
+                'dimension_category_id'  => $dimension_category,
                 'dimension_abbreviation' => $dimension_abbreviation,
-                'dimension_category'    => getProductCategoryName($dimension_category),
-                'action'                => $action_html
+                'dimension_category'     => getProductCategoryName($dimension_category),
+                'action'                 => $action_html
             ];
         }
 
         echo json_encode(['data' => $data]);
         exit;
     }
-
 
     mysqli_close($conn);
 }

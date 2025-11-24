@@ -362,7 +362,7 @@ function getDimensionName($dimension_id){
 
     if ($result && mysqli_num_rows($result) > 0) {
         $row = mysqli_fetch_assoc($result);
-        return $row['dimension'] .' ' .$row['dimension_unit'];
+        return $row['dimension'];
     }
 
     return '';
@@ -2166,29 +2166,21 @@ function getOrderProductBarcode($id) {
 }
 
 function convertLengthToFeet($lengthStr) {
-    $parts = explode(' ', trim($lengthStr));
+    $lengthStr = trim(strtolower($lengthStr));
+    if ($lengthStr === '') return 0;
 
-    if (count($parts) !== 2) return 0;
+    $feet = 0;
+    $inches = 0;
 
-    $value = floatval($parts[0]);
-    $unit = strtolower(trim($parts[1]));
-
-    switch ($unit) {
-        case 'feet':
-        case 'foot':
-            return $value;
-
-        case 'inches':
-        case 'inch':
-            return $value / 12;
-
-        case 'meter':
-        case 'meters':
-            return $value * 3.28084;
-
-        default:
-            return 0;
+    if (preg_match('/(\d+(\.\d+)?)\s*ft/', $lengthStr, $match)) {
+        $feet = floatval($match[1]);
     }
+
+    if (preg_match('/(\d+(\.\d+)?)\s*in/', $lengthStr, $match)) {
+        $inches = floatval($match[1]);
+    }
+
+    return $feet + ($inches / 12);
 }
 
 function getInventoryLengths($product_id) {
@@ -2248,7 +2240,7 @@ function getProductAvailableLengths($product_id) {
 
     $ids = implode(',', array_map('intval', $available_ids));
     $dim_query = "
-        SELECT dimension_id, dimension, dimension_unit 
+        SELECT dimension_id, dimension 
         FROM dimensions 
         WHERE dimension_id IN ($ids)
     ";
@@ -2259,7 +2251,7 @@ function getProductAvailableLengths($product_id) {
     }
 
     while ($dim = mysqli_fetch_assoc($dim_result)) {
-        $length_value = trim($dim['dimension'] . ' ' . $dim['dimension_unit']);
+        $length_value = trim($dim['dimension']);
 
         $lengths[] = [
             'inventory_id' => null,
@@ -2298,7 +2290,7 @@ function getLumberLengths($product_id) {
     }
 
     while ($row = mysqli_fetch_assoc($result)) {
-        $dimensionStr = trim($row['dimension'] . ' ' . $row['dimension_unit']);
+        $dimensionStr = trim($row['dimension']);
 
         $dimensions[] = [
             'inventory_id' => $row['inventory_id'],
@@ -2955,7 +2947,7 @@ function getInventoryDimensions($inventory_id) {
         $dimensionUnit = $row['dimension_unit'] ?? '';
 
         if ($dimension && $dimensionUnit) {
-            return $dimension . ' ' . ucwords($dimensionUnit);
+            return $dimension;
         }
     }
 
@@ -3118,14 +3110,13 @@ function getDimensions($ids) {
     if (!$ids) return '';
 
     $idList = implode(',', array_map('intval', $ids));
-    $query = "SELECT dimension, dimension_unit FROM dimensions WHERE dimension_id IN ($idList)";
+    $query = "SELECT dimension FROM dimensions WHERE dimension_id IN ($idList)";
     $result = mysqli_query($conn, $query);
 
     $data = [];
     while ($row = mysqli_fetch_assoc($result)) {
         $dim = trim($row['dimension'] ?? '');
-        $unit = trim($row['dimension_unit'] ?? '');
-        if ($dim !== '') $data[] = "$dim $unit";
+        if ($dim !== '') $data[] = $dim;
     }
 
     return implode(', ', $data);
