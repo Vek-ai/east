@@ -128,12 +128,7 @@ if(isset($_POST['fetch_modal'])){
                             }
 
                             echo "<option 
-                                    value='{$packPieces}' 
-                                    data-pack='{$packPieces}' 
-                                    data-dim-id='{$dim_id}' 
-                                    data-color='{$colorId}' 
-                                    data-price='{$price}' 
-                                    data-dimension='{$dimensionDisplay}'>
+                                    value='{$pack}'>
                                     {$display}
                                 </option>";
                         }
@@ -278,7 +273,8 @@ if (isset($_POST['fetch_price'])) {
             if ($qty <= 0) continue;
 
             $dim_id = intval($dimension_ids[$i] ?? 0);
-            $pack_count = ($pack[$i] < 1) ? 1 : $pack[$i];
+            $packPieces = getPackPieces($pack[$i]);
+            $pack_count = ($packPieces < 1) ? 1 : $packPieces;
 
             $res = mysqli_query($conn, "SELECT * FROM product_screw_lengths WHERE product_id = '$product_id' AND dimension_id = '$dim_id' LIMIT 1");
             $row = mysqli_fetch_assoc($res);

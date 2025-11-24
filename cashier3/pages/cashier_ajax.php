@@ -1967,8 +1967,12 @@ if (isset($_POST['save_screw'])) {
             $estimate_length_in = 0;
             $custom_color       = intval($color_id);
             $dimension          = intval($dimension_id[$idx] ?? 0);
-            $pack               = $pack_arr[$idx] ?? 1;
+            $pack_id            = $pack_arr[$idx] ?? '';
             $note               = $notes[$idx] ?? '';
+
+            $packPieces = getPackPieces($pack_id);
+            $pack = ($packPieces < 1) ? 1 : $packPieces;
+            $packName = getPackName($pack_id);
 
             $res = mysqli_query($conn, "SELECT * FROM product_screw_lengths WHERE product_id = '$id' AND dimension_id = '$dimension' LIMIT 1");
             $row_length = mysqli_fetch_assoc($res);
@@ -2011,7 +2015,7 @@ if (isset($_POST['save_screw'])) {
 
                 $item_array = array(
                     'product_id'          => $row['product_id'],
-                    'product_item'        => $row['product_item'],
+                    'product_item'        => $row['product_item'] . (!empty($packName) ? " ($packName)" : ""),
                     'unit_price'          => $unit_price,
                     'line'                => $line_to_use,
                     'quantity_ttl'        => getProductStockTotal($row['product_id']),
