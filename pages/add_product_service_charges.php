@@ -243,35 +243,16 @@ if(isset($_REQUEST['action'])) {
         </div>
 
         <div class="card shadow-sm rounded-3 mb-3">
-            <div class="card-header bg-light border-bottom">
+            <div class="card-header bg-light border-bottom d-flex justify-content-between align-items-center">
                 <h5 class="mb-0 fw-bold">Product IDs</h5>
+                <button type="button" id="btn_fetch_prod_id" class="btn btn-sm btn-primary">Fetch Product IDs</button>
             </div>
+
             <div class="card-body border rounded p-3">
                 <div class="row">
                     <div class="col-md-12">
                         <div class="mb-3">
-                            <h4 id="product_ids_abbrev">
-                                <?php
-                                $productIDsString = fetchProductIDs($product_id);
-                                $items = array_filter(array_map('trim', explode(',', $productIDsString)));
-                                ?>
-
-                                <?php if (!empty($items)): ?>
-                                    <ul style="
-                                        display: grid;
-                                        grid-template-columns: repeat(3, 1fr);
-                                        gap: 5px;
-                                        padding: 0 20px;
-                                        list-style-position: inside;
-                                    ">
-                                        <?php foreach ($items as $id): ?>
-                                            <li><?= htmlspecialchars($id) ?></li>
-                                        <?php endforeach; ?>
-                                    </ul>
-                                <?php else: ?>
-                                    <p>No product IDs found.</p>
-                                <?php endif; ?>
-                            </h4>
+                            <h4 id="product_ids_abbrev" class="fw-semibold"></h4>
                         </div>
                     </div>
                 </div>

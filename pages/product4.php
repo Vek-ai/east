@@ -742,9 +742,6 @@ function showCol($name) {
                                 dropdownParent: $this.parent()
                             });
                         });
-
-                        fetchProductABR();
-
                         fetchPricingSection();
                     }
                 });
@@ -1614,7 +1611,7 @@ function showCol($name) {
         }
 
 
-        $(document).on('change', '#product_category, #product_type, #profile, #grade, #gauge, #color_paint, #available_lengths', fetchProductABR);
+        $(document).on('click', '#btn_fetch_prod_id', fetchProductABR);
 
         $(document).on('change', '#enable_bulk_pricing', function() {
             if ($(this).is(':checked')) {
