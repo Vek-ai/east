@@ -1034,7 +1034,7 @@ if ($permission === 'edit') {
             });
           } else if (response.trim() === "username_exist") {
             $('#responseHeader').text("Failed to update");
-            $('#responseMsg').text("Username already exist");
+            $('#responseMsg').text("Username already taken. Please use another username.");
             $('#responseHeaderContainer').removeClass("bg-success");
             $('#responseHeaderContainer').addClass("bg-danger");
             $('#response-modal').modal("show");
