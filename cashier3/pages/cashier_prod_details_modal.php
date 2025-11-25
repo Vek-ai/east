@@ -134,13 +134,15 @@ if(isset($_POST['fetch_details_modal'])){
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    <?php foreach ($inventoryList as $inv) { ?>
+                                    <?php foreach ($inventoryList as $inv) { 
+                                        $color_id = $inv['color_id'];
+                                        ?>
                                         <tr>
                                             <td>
                                                 <?php if ($category_id == $lumber_id) { ?>
                                                     <?= htmlspecialchars(ucwords($inv['lumber_type'] ?? 'None')) ?>
                                                 <?php } else { ?>
-                                                    <?php if (!empty($inv['color_id'])) { ?>
+                                                    <?php if (!empty($color_id)) { ?>
                                                         <span class="d-inline-block rounded-circle me-2" 
                                                             style="width:20px; height:20px; background-color:<?= getColorHexFromColorID($inv['color_id']) ?>;">
                                                         </span>
@@ -150,7 +152,7 @@ if(isset($_POST['fetch_details_modal'])){
                                                 <?php } ?>
                                             </td>
                                             <td>
-                                                <?= htmlspecialchars($inv['dimension'] . ' ' . $inv['dimension_unit']) ?>
+                                                <?= htmlspecialchars($inv['dimension']) ?>
                                             </td>
                                             <td>$<?= number_format($inv['price'], 2) ?></td>
                                         </tr>

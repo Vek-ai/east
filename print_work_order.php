@@ -19,9 +19,6 @@ $screw_id = 16;
 $panel_id = 3;
 $trim_id = 4;
 
-$orderid = $_REQUEST['id'];
-$pricing_id = $_REQUEST['pricing_id'] ?? '';
-
 $columns = [
     ['label' => 'PRODUCT ID', 'width' => 25, 'align' => 'C', 'fontsize' => 8],
     ['label' => 'DESCRIPTION',  'width' => 26, 'align' => 'C', 'fontsize' => 8],
@@ -484,6 +481,9 @@ class PDF extends FPDF {
     }
 }
 
+$orderid = $_REQUEST['id'];
+$type = $_REQUEST['type'] ?? '';
+
 $pdf = new PDF();
 $pdf->SetAutoPageBreak(true, 40);
 
@@ -514,28 +514,32 @@ if (mysqli_num_rows($result) > 0) {
         }
     }
 
-    if (!empty($panelProducts)) {
-        $pdf->AddPage();
-        renderInvoiceHeader($pdf, $row_orders, 'panel');
-        renderTableHeader($pdf, $columns);
+    if ($type === 'panel' || $type === '') {
+        if (!empty($panelProducts)) {
+            $pdf->AddPage();
+            renderInvoiceHeader($pdf, $row_orders, 'panel');
+            renderTableHeader($pdf, $columns);
 
-        foreach ($panelProducts as $row_product) {
-            renderPanelCategory($pdf, $row_product, $conn);
+            foreach ($panelProducts as $row_product) {
+                renderPanelCategory($pdf, $row_product, $conn);
+            }
         }
     }
 
-    if (!empty($trimProducts)) {
-        $pdf->AddPage();
-        renderInvoiceHeader($pdf, $row_orders, 'trim');
-        renderTableHeader($pdf, $trim_columns);
+    if ($type === 'trim' || $type === '') {
+        if (!empty($trimProducts)) {
+            $pdf->AddPage();
+            renderInvoiceHeader($pdf, $row_orders, 'trim');
+            renderTableHeader($pdf, $trim_columns);
 
-        foreach ($trimProducts as $row_product) {
-            renderTrimCategory($pdf, $row_product, $conn);
+            foreach ($trimProducts as $row_product) {
+                renderTrimCategory($pdf, $row_product, $conn);
+            }
         }
     }
 
-    $pdf->SetTitle('Receipt');
-    $pdf->Output('Receipt.pdf', 'I');
+    $pdf->SetTitle('Work Order');
+    $pdf->Output('Work Order.pdf', 'I');
 
 } else {
     echo "ID not Found!";

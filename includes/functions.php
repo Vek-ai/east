@@ -2335,14 +2335,16 @@ function getAvailableInventory($product_id) {
             iv.pack,
             iv.lumber_type,
             iv.cost,
-            iv.price,
             iv.dimension_id,
             d.dimension,
             d.dimension_unit,
-            pvl.length AS variant_length
+            pvl.length AS variant_length,
+            p.unit_price as price,
+            p.product_category as product_category
         FROM inventory iv
         LEFT JOIN dimensions d ON iv.dimension_id = d.dimension_id
         LEFT JOIN product_variant_length pvl ON iv.Inventory_id = pvl.inventory_id
+        LEFT JOIN product p ON iv.Product_id = p.product_id
         WHERE iv.Product_id = '$product_id'
           AND iv.quantity_ttl > 0
         ORDER BY iv.Inventory_id ASC
@@ -2367,6 +2369,23 @@ function getAvailableInventory($product_id) {
             }
         }
 
+        $price  = floatval($row['price']);
+
+        $screw_id = 16;
+        $category = $row['product_category'];
+
+        if($category == $screw_id){
+            $res = mysqli_query($conn, "SELECT * FROM product_screw_lengths WHERE product_id = '$product_id' AND dimension_id = '$dim_id' LIMIT 1");
+            $row = mysqli_fetch_assoc($res);
+
+            $price  = floatval($row['unit_price'] ?? 0);
+        }
+
+        $color_id = $row['color_id'];
+        $multiplier = getMultiplierValue($color_id, '', '');
+
+        $price *= $multiplier;
+
         $inventory[] = [
             'inventory_id'   => $row['Inventory_id'],
             'color_id'       => $row['color_id'],
@@ -2375,7 +2394,7 @@ function getAvailableInventory($product_id) {
             'pack'           => (int)$row['pack'],
             'lumber_type'    => $row['lumber_type'],
             'cost'           => (float)$row['cost'],
-            'price'          => (float)$row['price'],
+            'price'          => $price,
             'dimension_id'   => (int)$row['dimension_id'],
             'dimension'      => $row['dimension'],
             'dimension_unit' => $row['dimension_unit'],
@@ -3259,41 +3278,69 @@ function calculateCartItem($values) {
     
 
     if($category_id == $panel_id){
-        $parent_prod_id = getPanelProdID(
-            $category_id, $profile, $grade, $gauge, '', $color_id,
-            '',
-            '',
-            ''
-        );
+        $parent_prod_id = getProdID([
+            'category'   => $category_id,
+            'profile'    => $profile,
+            'grade'      => $grade,
+            'gauge'      => $gauge,
+            'color'      => $color_id,
+            'product_id' => $data_id 
+        ]);
 
-        $unique_prod_id = getPanelProdID(
-            $category_id, $profile, $grade, $gauge, '', $color_id,
-            $total_length,
-            $panel_type,
-            $panel_style
-        );
+        $unique_prod_id = getProdID([
+            'category' => $category_id,
+            'profile'  => $profile,
+            'grade'    => $grade,
+            'gauge'    => $gauge,
+            'color'    => $color_id,
+            'length'       => $total_length,
+            'panel_type'   => $panel_type,
+            'panel_style'  => $panel_style,
+            'product_id' => $data_id
+        ]);
     }else if($category_id == $trim_id){
-        $parent_prod_id = getTrimProdID(
-            $category_id, $product_type, $data_id, $grade, $gauge, $color_id, ''
-        );
+        $parent_prod_id = getProdID([
+            'category' => $category_id,
+            'type'     => $product_type,
+            'line'     => $data_id,
+            'grade'    => $grade,
+            'gauge'    => $gauge,
+            'color'    => $color_id,
+            'product_id' => $data_id
+        ]);
 
-        $unique_prod_id = getTrimProdID(
-            $category_id, $product_type, $data_id, $grade, $gauge, $color_id, $total_length
-        );
+        $unique_prod_id = getProdID([
+            'category' => $category_id,
+            'type'     => $product_type,
+            'line'     => $data_id,
+            'grade'    => $grade,
+            'gauge'    => $gauge,
+            'color'    => $color_id,
+            'length'   => $total_length,
+            'product_id' => $data_id
+        ]);
     }else if($category_id == $screw_id){
-        $screw_length   = $values["screw_length"] ?? '';
-        $screw_type     = $values["screw_type"] ?? '';
+        $screw_length = $values["screw_length"] ?? '';
+        $screw_type   = $values["screw_type"] ?? '';
 
-        $estimate_length = $total_length;
-        $estimate_length_inch = 0;
+        $estimate_length       = $total_length;
+        $estimate_length_inch  = 0;
 
-        $parent_prod_id = getScrewProdID(
-            $category_id, $product_type, '', $color_id, ''
-        );
+        $parent_prod_id = getProdID([
+            'category' => $category_id,
+            'type'     => $product_type,
+            'color'    => $color_id,
+            'product_id' => $data_id
+        ]);
 
-        $unique_prod_id = getScrewProdID(
-            $category_id, $product_type, $screw_type, $color_id, $screw_length
-        );
+        $unique_prod_id = getProdID([
+            'category'      => $category_id,
+            'type'          => $product_type,
+            'screw_type'    => $screw_type,
+            'color'         => $color_id,
+            'screw_length'  => $screw_length,
+            'product_id' => $data_id
+        ]);
 
         $dimension_id = getDimensionID($screw_length);
 
@@ -3919,58 +3966,106 @@ function getAbbrMap($table, $id_col, $abbr_col, $ids = []) {
     return $map;
 }
 
-function getPanelProdID(
-    $category_id,
-    $profile_id,
-    $grade_id,
-    $gauge_id,
-    $type_id,
-    $color_id,
-    $length,
-    $panel_type = null,
-    $panel_style = null
-) {
+function getAbbr($table, $abbr_col, $id) {
     global $conn;
 
-    if (
-        empty($category_id) && empty($profile_id) && empty($grade_id) &&
-        empty($gauge_id) && empty($type_id) && empty($color_id) &&
-        empty($length) && empty($panel_type) && empty($panel_style)
-    ) {
-        return '';
+    if (!$id) return '';
+
+    $pk = getPrimaryKey($table);
+    if (!$pk) return '';
+
+    $id = intval($id);
+
+    $sql = "SELECT `$abbr_col` FROM `$table` WHERE `$pk` = $id LIMIT 1";
+    $res = mysqli_query($conn, $sql);
+
+    if ($row = mysqli_fetch_assoc($res)) {
+        return $row[$abbr_col] ?? '';
     }
 
-    $categoryAbbr = !empty($category_id) ? getAbbrMap('product_category', 'product_category_id', 'category_abreviations', [$category_id])[$category_id] ?? '' : '';
-    $profileAbbr  = !empty($profile_id)  ? getAbbrMap('profile_type', 'profile_type_id', 'profile_abbreviations', [$profile_id])[$profile_id] ?? '' : '';
-    $gradeAbbr    = !empty($grade_id)    ? getAbbrMap('product_grade', 'product_grade_id', 'grade_id_no', [$grade_id])[$grade_id] ?? '' : '';
-    $gaugeAbbr    = !empty($gauge_id)    ? getAbbrMap('product_gauge', 'product_gauge_id', 'gauge_id_no', [$gauge_id])[$gauge_id] ?? '' : '';
-    $typeAbbr     = !empty($type_id)     ? getAbbrMap('product_type', 'product_type_id', 'type_abreviations', [$type_id])[$type_id] ?? '' : '';
-    $colorAbbr    = !empty($color_id)    ? getAbbrMap('paint_colors', 'color_id', 'ekm_color_no', [$color_id])[$color_id] ?? '' : '';
+    return '';
+}
 
-    $lengthAbbr = '';
-    if (!empty($length)) {
-        $lengthAbbr = formatLengthAbbr(floatval($length));
+function getProdID(array $d) {
+    global $conn;
+
+    $panel_id = 3;
+    $trim_id  = 4;
+    $screw_id = 16;
+
+    $v = fn($k) => $d[$k] ?? null;
+
+    $category = $v('category');
+    $profile  = $v('profile');
+    $type     = $v('type');
+    $line     = $v('line');
+    $grade    = $v('grade');
+    $gauge    = $v('gauge');
+    $color    = $v('color');
+    $panel_type  = $v('panel_type');
+    $panel_style = $v('panel_style');
+    $length      = $v('length');
+    $product_id  = $v('product_id');
+    $screw_type  = $v('screw_type');
+    $screw_coating = $v('screw_coating');
+    $screw_length  = $v('screw_length');
+
+    $categoryAbbr = getAbbr('product_category', 'category_abreviations', $category);
+    $profileAbbr  = getAbbr('profile_type', 'profile_abbreviations', $profile);
+    $typeAbbr     = getAbbr('product_type', 'type_abreviations', $type);
+    $lineAbbr     = getAbbr('product_line', 'line_abreviations', $line);
+    $gradeAbbr    = getAbbr('product_grade', 'grade_id_no', $grade);
+    $gaugeAbbr    = getAbbr('product_gauge', 'gauge_id_no', $gauge);
+    $colorAbbr    = getAbbr('paint_colors', 'ekm_color_no', $color);
+    $screwTypeAbbr = getAbbr('product_screw_type', 'type_abreviations', $screw_type);
+    $screwCoatingAbbr = getAbbr('product_screw_coating', 'abbreviation', $screw_coating);
+
+    $prodDescAbbr = '';
+    if ($product_id) {
+        $p = getProductDetails($product_id);
+        $prodDescAbbr = $p['abbreviation'] ?? '';
     }
 
-    $panelTypeAbbr = '';
-    if (!empty($panel_type) && !empty($profile_id)) {
-        $panelTypeAbbr = getProfileTypeAbbrev($profile_id, $panel_type);
-    }
-
-    $panelStyleAbbr = '';
-    if (!empty($panel_style) && !empty($profile_id)) {
-        $panelStyleAbbr = getProfileStyleAbbrev($profile_id, $panel_style);
-    }
+    $panelTypeAbbr  = ($profile && $panel_type) ? getProfileTypeAbbrev($profile, $panel_type) : '';
+    $panelStyleAbbr = ($profile && $panel_style) ? getProfileStyleAbbrev($profile, $panel_style) : '';
+    $lengthAbbr     = $length ? formatLengthAbbr(floatval($length)) : '';
 
     $abbr = '';
-    if ($categoryAbbr !== '') $abbr .= $categoryAbbr;
-    if ($profileAbbr !== '' || $gradeAbbr !== '' || $gaugeAbbr !== '') {
+
+    if ($category == $panel_id) {
+        $abbr .= $categoryAbbr;
         $abbr .= $profileAbbr . $gradeAbbr . $gaugeAbbr;
+        if ($colorAbbr !== '') $abbr .= "-$colorAbbr";
+        $abbr .= $panelStyleAbbr;
+        $abbr .= $lengthAbbr;
+        $abbr .= $panelTypeAbbr;
     }
-    if ($colorAbbr !== '') $abbr .= '-' . $colorAbbr;
-    if ($panelStyleAbbr !== '') $abbr .=  $panelStyleAbbr;
-    if ($panelTypeAbbr !== '') $abbr .=  $panelTypeAbbr;
-    if ($lengthAbbr !== '') $abbr .= $lengthAbbr;
+
+    else if ($category == $trim_id) {
+        $abbr .= $categoryAbbr;
+        $abbr .= $typeAbbr . $gradeAbbr . $gaugeAbbr;
+        if ($colorAbbr !== '') $abbr .= "-$colorAbbr";
+        $abbr .= $prodDescAbbr;
+        $abbr .= $lengthAbbr;
+    }
+
+    else if ($category == $screw_id) {
+        $abbr .= $categoryAbbr;
+        $abbr .= $typeAbbr;
+        $abbr .= $screwCoatingAbbr;
+        $abbr .= $screwTypeAbbr;
+        if ($screw_length) $abbr .= "({$screw_length})";
+        if ($colorAbbr !== '') $abbr .= "-$colorAbbr";
+    }
+
+    else {
+        $abbr .= $categoryAbbr;
+        $abbr .= $lineAbbr;
+        $abbr .= $typeAbbr;
+        $abbr .= $prodDescAbbr;
+        $abbr .= $lengthAbbr;
+        if ($colorAbbr !== '') $abbr .= "-$colorAbbr";
+    }
 
     return $abbr;
 }

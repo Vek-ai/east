@@ -90,8 +90,8 @@ function showCol($name) {
         max-height: 760px !important;
     }
 
-    .modal.custom-size .modal-dialog {
-        width: 80%;
+     .modal.custom-size .modal-dialog {
+        width: 100%;
         max-width: none;
         margin: 0 auto;
         height: 100vh;
@@ -455,8 +455,8 @@ function showCol($name) {
                 <div id="selected-tags" class="mb-2"></div>
                     <div class="datatables">
                         <h4 class="card-title d-flex justify-content-between align-items-center"><?= $page_title ?></h4>
-                        <div class="product-details table-responsive text-nowrap">
-                            <table id="order_list_tbl" class="table table-hover mb-0 text-md-nowrap">
+                        <div class="product-details table-responsive text-wrap">
+                            <table id="order_list_tbl" class="table table-hover mb-0">
                                 <thead>
                                     <tr>
                                         <?php if (showCol('orderid')): ?>
@@ -634,7 +634,14 @@ function showCol($name) {
                                                     }
                                                     ?>
 
-                                                    <a href="print_work_order.php?id=<?= $row["orderid"]; ?>" class="btn-show-pdf btn btn-danger-gradient btn-sm p-0 me-1" type="button" data-id="<?= $row["orderid"]; ?>" data-bs-toggle="tooltip" title="Print/Download">
+                                                    <a href="print_work_order.php?id=<?= $row["orderid"]; ?>" 
+                                                        class="btn-show-pdf btn btn-danger-gradient btn-sm p-0 me-1" 
+                                                        type="button" 
+                                                        data-id="<?= $row["orderid"]; ?>" 
+                                                        data-bs-toggle="tooltip"
+                                                        data-has-panel="<?= $row["has_panel"] ?>" 
+                                                        data-has-trim="<?= $row["has_trim"] ?>" 
+                                                        title="Print/Download">
                                                         <i class="text-success fa fa-print fs-5"></i>
                                                     </a>
 
@@ -718,33 +725,18 @@ function showCol($name) {
         </button>
       </div>
         <div class="modal-body" style="overflow: auto;">
-            <iframe id="pdfFrame" src="" style="height: 70vh; width: 100%;" class="mb-3 border rounded"></iframe>
+            <iframe id="pdfFrame" src="" style="width: 100%;" class="mb-3 border rounded"></iframe>
 
             <div class="container-fluid border rounded p-3">
-                <?php
-                $sql = "SELECT id, pricing_name FROM customer_pricing WHERE status = 1 AND hidden = 0 ORDER BY pricing_name ASC";
-                $result = $conn->query($sql);
-
-                if ($result && $result->num_rows > 0) {
-                    echo '<div class="mt-3 text-center">';
-                    echo '<div class="d-flex flex-wrap justify-content-center">';
-                    while ($row = $result->fetch_assoc()) {
-                        echo '<button type="button" class="btn btn-secondary btn-sm mx-1 my-1 pricing-btn" style="color:#000;" id="view_customer_pricing" data-id="' . $row['id'] . '">'
-                            . htmlspecialchars($row['pricing_name']) .
-                            '</button>';
-                    }
-                    echo '</div></div>';
-                } else {
-                    echo '<p>No active pricing types found.</p>';
-                }
-                ?>
-
-                <div class="mt-3 d-flex justify-content-between flex-wrap">
-                    <div>
-                        <a href="print_order_delivery.php" class="btn-print-delivery btn btn-warning" style="color:#000 !important; " role="button">
-                            Print Delivery
-                        </a>
+                <div class="mt-3 text-center">
+                    <div class="d-flex flex-wrap justify-content-center gap-2">
+                        <button type="button" class="btn btn-secondary btn-sm mx-1 my-1 view_print" id="btn_view_panel" data-type="panel">Metal Panel</button>
+                        <button type="button" class="btn btn-secondary btn-sm mx-1 my-1 view_print" id="btn_view_trim" data-type="trim">Trim</button>
                     </div>
+                </div>
+
+                <div class="mt-3 d-flex justify-content-end flex-wrap">
+                    
                     <div class="d-flex gap-2 flex-wrap">
                         <button id="printBtn" class="btn btn-success">Print</button>
                         <button id="downloadBtn" class="btn btn-primary">Download</button>
@@ -1225,23 +1217,44 @@ function showCol($name) {
 
         $(document).on('click', '.btn-show-pdf', function(e) {
             e.preventDefault();
+
+            const has_panel = $(this).data("has-panel");
+            const has_trim  = $(this).data("has-trim");
+
+            if (has_panel) {
+                $('#btn_view_panel').removeClass('d-none');
+            } else {
+                $('#btn_view_panel').addClass('d-none');
+            }
+
+            if (has_trim) {
+                $('#btn_view_trim').removeClass('d-none');
+            } else {
+                $('#btn_view_trim').addClass('d-none');
+            }
+
             print_order_id = $(this).data('id');
             pdfUrl = $(this).attr('href');
-            document.getElementById('pdfFrame').src = pdfUrl;
-            const modal = new bootstrap.Modal(document.getElementById('pdfModal'));
+            const modalEl = document.getElementById('pdfModal');
+            const iframe   = document.getElementById('pdfFrame');
+
+            const modal = new bootstrap.Modal(modalEl);
             modal.show();
+
+            modalEl.addEventListener('shown.bs.modal', function() {
+                iframe.src = pdfUrl;
+            }, { once: true });
         });
 
-        $(document).on('click', '#view_customer_pricing', function(e) {
+
+        $(document).on('click', '.view_print', function(e) {
             e.preventDefault();
-
-            const pricing_id = $(this).data('id');
+            const type = $(this).data('type');
             const $iframe = $('#pdfFrame');
-
             const baseUrl = 'print_work_order.php';
             const params = new URLSearchParams();
             params.set('id', print_order_id);
-            params.set('pricing_id', pricing_id);
+            params.set('type', type);
 
             const newSrc = baseUrl + '?' + params.toString();
             $iframe.attr('src', newSrc);
