@@ -278,6 +278,8 @@ if(isset($_POST['fetch_cart'])){
                 $grand_actual_price = 0;
                 $grand_customer_price = 0;
                 $is_panel_present = 0;
+
+                $totals_by_custom = [];
                 
                 if (!empty($_SESSION["cart"])) {
                     foreach ($_SESSION["cart"] as $values) {
@@ -323,10 +325,13 @@ if(isset($_POST['fetch_cart'])){
                                     $product_details = getProductDetails($product_id);
                                     $category = (int) $product_details['product_category'];
                                     $bundle_name = $values['bundle_name'] ?? '';
-                                    $custom_color = $values['custom_color'];
-                                    $custom_grade = $values['custom_grade'];
-                                    $custom_gauge = $values['custom_gauge'];
+
                                     $custom_profile = $values['custom_profile'];
+                                    $custom_grade   = $values['custom_grade'];
+                                    $custom_gauge   = $values['custom_gauge'];
+                                    $custom_color   = $values['custom_color'];
+
+                                    $group_key = $custom_profile . '|' . $custom_grade . '|' . $custom_gauge . '|' . $custom_color;
 
                                     $item = calculateCartItem($values);  
                                     $product = $item['product'];
@@ -340,6 +345,33 @@ if(isset($_POST['fetch_cart'])){
                                     $sold_by_feet = $item['sold_by_feet'];
                                     $linear_price =$item['linear_price'];
                                     $panel_price = $item['panel_price'];
+
+                                    if (!isset($totals_by_custom[$group_key])) {
+                                        $nameParts = [];
+
+                                        $profileAbbr = $custom_profile ? getAbbr('profile_type', 'profile_type', $custom_profile) : null;
+                                        $gradeAbbr   = $custom_grade   ? getAbbr('product_grade', 'product_grade', $custom_grade) : null;
+                                        $gaugeAbbr   = $custom_gauge   ? getAbbr('product_gauge', 'product_gauge', $custom_gauge) : null;
+                                        $colorAbbr   = $custom_color   ? getAbbr('paint_colors', 'color_name', $custom_color) : null;
+
+                                        if ($profileAbbr) $nameParts[] = $profileAbbr;
+                                        if ($gradeAbbr)   $nameParts[] = $gradeAbbr;
+                                        if ($gaugeAbbr)   $nameParts[] = $gaugeAbbr;
+                                        if ($colorAbbr)   $nameParts[] = $colorAbbr;
+
+                                        $groupName = implode(' - ', $nameParts);
+
+                                        $totals_by_custom[$group_key] = [
+                                            'profile'      => $custom_profile,
+                                            'grade'        => $custom_grade,
+                                            'gauge'        => $custom_gauge,
+                                            'color'        => $custom_color,
+                                            'total_length' => 0,
+                                            'name'         => $groupName
+                                        ];
+                                    }
+
+                                    $totals_by_custom[$group_key]['total_length'] += $total_length * $quantity;
 
                                     $total_price_actual = $item['product_price'];
                                     $total_customer_price = $item['customer_price'];
@@ -1181,6 +1213,29 @@ if(isset($_POST['fetch_cart'])){
                             $<span id="total_payable_est"><?= number_format((floatval($grand_customer_price) + $total_tax), 2) ?></span>
                         </td>
                     </tr>
+                    <tr>
+                        <th colspan="12" style="border-bottom: none; border-top: none;">Total Linear Ft</th>
+                        <th colspan="2" class="text-end fw-bold" style="border-bottom: 1px solid #dee2e6;">Total Due:</th>
+                        <td class="text-end fw-bold" style="border-bottom: 1px solid #dee2e6;">
+                            $<span id="total_payable_est"><?= number_format((floatval($grand_customer_price) + $total_tax), 2) ?></span>
+                        </td>
+                    </tr>
+
+                    <?php 
+                    foreach ($totals_by_custom as $key => $info){
+                        if(!empty($info['name'])){
+
+                        
+                        ?>
+                        <tr>
+                            <th colspan="16">
+                                <?= $info['name'] . ': ' . number_format((float)$info['total_length'], 2) . ' ft' ?>
+                            </th>
+                        </tr>
+                        <?php 
+                        }
+                    }
+                    ?>
                 </tfoot>
             </table>
         </div>
