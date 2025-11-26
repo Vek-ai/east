@@ -1616,8 +1616,10 @@ function showCol($name) {
         $(document).on('change', '#enable_bulk_pricing', function() {
             if ($(this).is(':checked')) {
                 $('.bulk_pricing_fields').removeClass('d-none');
+                $('#bulk_pricing_fields').removeClass('d-none');
             } else {
                 $('.bulk_pricing_fields').addClass('d-none');
+                $('#bulk_pricing_fields').addClass('d-none');
                 $('#bulk_price, #bulk_starts_at').val('');
             }
         });
