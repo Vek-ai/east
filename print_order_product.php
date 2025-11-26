@@ -350,11 +350,11 @@ function renderRow($pdf, $columns, $row, $bold = false) {
         $pdf->SetFont('Arial', $bold ? 'B' : '', $fontSize);
         $pdf->SetXY($x, $yStart);
 
-        if ($i === 1) {
-            $startY = $pdf->GetY();
-            $pdf->MultiCell($w, $lineHeight, $row[$i], 0, $col['align']);
-            $endY = $pdf->GetY();
-            $columnHeights[$i] = $endY - $startY;
+        if ($i === 0) {
+            $fittedSize = $pdf->fitTextToWidth($row[$i], $w, $fontSize, 'Arial', $bold ? 'B' : '');
+            $pdf->SetFont('Arial', $bold ? 'B' : '', $fittedSize);
+            $pdf->Cell($w, $lineHeight, $row[$i], 0, 0, $col['align']);
+            $columnHeights[$i] = $lineHeight;
         }
         elseif ($i === 6 && strpos($row[$i], 'ft') !== false && strpos($row[$i], 'in') !== false) {
             preg_match('/(\d+)ft\s*(\d+)in/', $row[$i], $matches);
@@ -370,10 +370,10 @@ function renderRow($pdf, $columns, $row, $bold = false) {
             $columnHeights[$i] = $lineHeight;
         }
         else {
-            $fittedSize = $pdf->fitTextToWidth($row[$i], $w, $fontSize, 'Arial', $bold ? 'B' : '');
-            $pdf->SetFont('Arial', $bold ? 'B' : '', $fittedSize);
-            $pdf->Cell($w, $lineHeight, $row[$i], 0, 0, $col['align']);
-            $columnHeights[$i] = $lineHeight;
+            $startY = $pdf->GetY();
+            $pdf->MultiCell($w, $lineHeight, $row[$i], 0, $col['align']);
+            $endY = $pdf->GetY();
+            $columnHeights[$i] = $endY - $startY;
         }
 
         $x += $w;
