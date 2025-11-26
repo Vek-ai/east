@@ -165,10 +165,11 @@ if ($permission === 'edit') {
             <div class="card-body">
                 <h4 class="card-title d-flex justify-content-between align-items-center"><?= $page_title ?> List</h4>
               <div class="table-responsive">
-                <table id="display_supplier_pack" class="table table-striped table-bordered text-nowrap align-middle text-center">
+                <table id="display_supplier_pack" class="table table-striped table-bordered text-wrap align-middle text-center">
                   <thead>
                     <tr>
                       <th>Supplier</th>
+                      <th>Category</th>
                       <th>Pack Name</th>
                       <th>Abbrev.</th>
                       <th>Pieces</th>
@@ -215,10 +216,17 @@ if ($permission === 'edit') {
                         data-supplier="<?=$row_supplier_pack['supplierid']?>"
                     >
                         <td><span class="product<?= $no ?> <?php if ($row_supplier_pack['status'] == '0') { echo 'emphasize-strike'; } ?>"><?= getSupplierName($supplierid) ?></span></td>
+                        <td>
+                            <?= getColumnFromTable(
+                                "product_category",
+                                "product_category",
+                                $row_supplier_pack['product_category']
+                            ) ?>
+                        </td>
                         <td><?= ucwords($pack) ?></td>
                         <td><?= $pack_abbreviation ?></td>
                         <td><?= $pack_count ?></td>
-                        <td class="last-edit" style="width:30%;">Last Edited <?= $last_edit ?> by  <?= $last_user_name ?></td>
+                        <td>Last Edited <?= $last_edit ?> by  <?= $last_user_name ?></td>
                         <td><?= $status ?></td>
                         <td class="text-center" id="action-button-<?= $no ?>">
                         <?php                                                    
@@ -765,6 +773,12 @@ if ($permission === 'edit') {
             },
             success: function (response) {
                 $('#add-fields').html(response);
+                $(".select2_edit").each(function () {
+                    $(this).select2({
+                        width: '100%',
+                        dropdownParent: $(this).parent()
+                    });
+                });
                 $('#addModal').modal('show');
             },
             error: function (jqXHR, textStatus, errorThrown) {

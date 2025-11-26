@@ -26,6 +26,9 @@ if(isset($_REQUEST['action'])) {
         $pack = mysqli_real_escape_string($conn, $_POST['pack'] ?? '');
         $pack_abbreviation = mysqli_real_escape_string($conn, $_POST['pack_abbreviation'] ?? '');
         $pack_count = mysqli_real_escape_string($conn, $_POST['pack_count'] ?? 0);
+
+        $product_category = mysqli_real_escape_string($conn, json_encode(array_map('intval', $_POST['product_category'] ?? [])));
+
         $userid = mysqli_real_escape_string($conn, $_POST['userid'] ?? '');
 
         $checkQuery = "SELECT * FROM supplier_pack WHERE id = '$id'";
@@ -35,7 +38,8 @@ if(isset($_REQUEST['action'])) {
             $updateQuery = "UPDATE supplier_pack 
                             SET supplierid = '$supplierid', 
                                 pack = '$pack', 
-                                pack_abbreviation = '$pack_abbreviation', 
+                                pack_abbreviation = '$pack_abbreviation',
+                                product_category = '$product_category',  
                                 pack_count = '$pack_count', 
                                 last_edit = NOW(), 
                                 edited_by = '$userid' 
@@ -51,12 +55,14 @@ if(isset($_REQUEST['action'])) {
                                 supplierid, 
                                 pack, 
                                 pack_abbreviation, 
+                                product_category,
                                 pack_count, 
                                 added_by) 
                             VALUES (
                                 '$supplierid', 
                                 '$pack', 
                                 '$pack_abbreviation', 
+                                '$product_category', 
                                 '$pack_count', 
                                 '$userid'
                             )";
@@ -111,7 +117,7 @@ if(isset($_REQUEST['action'])) {
                 <div class="col-md-6">
                     <label class="form-label">Supplier</label>
                     <div class="mb-3">
-                        <select id="supplierid" class="form-control" name="supplierid" <?= !empty($_REQUEST['supplier_id']) ? 'disabled' : '' ?>>
+                        <select id="supplierid" class="form-control select2_edit" name="supplierid" <?= !empty($_REQUEST['supplier_id']) ? 'disabled' : '' ?>>
                             <option value="" >Select Supplier...</option>
                             <?php
                             $query_supplier = "SELECT * FROM supplier WHERE status = 1 ORDER BY `supplier_name` ASC";
@@ -130,15 +136,35 @@ if(isset($_REQUEST['action'])) {
                     </div>
                 </div>
                 <div class="col-md-6">
+                    <label class="form-label">Product Category</label>
                     <div class="mb-3">
-                    <label class="form-label">Pack Abbreviation</label>
-                    <input type="text" id="pack_abbreviation" name="pack_abbreviation" class="form-control" placeholder="ex. BX" value="<?= $pack_abbreviation ?>" />
+                        <select id="product_category" class="form-control select2_edit" name="product_category[]" multiple required>
+                            <?php 
+                            $selected_categories = (array) json_decode($row['product_category'] ?? '[]', true);
+                            $query_roles = "SELECT * FROM product_category WHERE hidden = '0' AND status = '1' ORDER BY `product_category` ASC";
+                            $result_roles = mysqli_query($conn, $query_roles);
+                            while ($row_product_category = mysqli_fetch_array($result_roles)) {
+                                $selected = in_array($row_product_category['product_category_id'], $selected_categories) ? 'selected' : '';
+                                ?>
+                                <option value="<?= $row_product_category['product_category_id'] ?>" <?= $selected ?>>
+                                    <?= htmlspecialchars($row_product_category['product_category']) ?>
+                                </option>
+                                <?php
+                            }
+                            ?>
+                        </select>
                     </div>
                 </div>
                 <div class="col-md-6">
                     <div class="mb-3">
                         <label class="form-label">Pack Name</label>
                         <input type="text" id="pack" name="pack" class="form-control" placeholder="ex. Box" value="<?= $pack ?>" />
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="mb-3">
+                    <label class="form-label">Pack Abbreviation</label>
+                    <input type="text" id="pack_abbreviation" name="pack_abbreviation" class="form-control" placeholder="ex. BX" value="<?= $pack_abbreviation ?>" />
                     </div>
                 </div>
                 <div class="col-md-6">
