@@ -1610,7 +1610,6 @@ function showCol($name) {
             });
         }
 
-
         $(document).on('click', '#btn_fetch_prod_id', fetchProductABR);
 
         $(document).on('change', '#enable_bulk_pricing', function() {

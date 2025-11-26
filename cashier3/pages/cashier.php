@@ -5340,7 +5340,7 @@ $editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) :
             event.preventDefault();
 
             const formData = new FormData(this);
-            formData.append('save_custom_length', 'save_custom_length');
+            formData.append('save_lumber', 'save_lumber');
             var preselectedProfile = $('#select-profile').val();
             formData.append('profile', preselectedProfile);
 

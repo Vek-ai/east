@@ -10,6 +10,7 @@ $table = 'test';
 //4 = TRIM
 $trim_id = 4;
 $category_id = 4;
+$lumber_id = 1;
 
 if(isset($_REQUEST['action'])) {
     $action = $_REQUEST['action'];  
@@ -227,6 +228,41 @@ if(isset($_REQUEST['action'])) {
             </div>
             <div class="card-body border rounded p-3">
                 <div class="row">
+                    <div class="col-md-4">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <label class="form-label">Available Lengths</label>
+                            <a href="?page=dimensions" target="_blank" class="text-decoration-none">Edit</a>
+                        </div>
+                        <div class="mb-3">
+                            <?php
+                            $selected_lengths = (array) json_decode($row['available_lengths'] ?? '[]', true);
+                            ?>
+                            <select id="available_lengths" name="available_lengths[]" class="select2 form-control" multiple="multiple">
+                                <optgroup label="Select Available Lengths">
+                                    <?php
+                                    $sql = "SELECT dimension_id, dimension, dimension_unit 
+                                            FROM dimensions 
+                                            WHERE dimension_category = $lumber_id 
+                                            ORDER BY dimension ASC";
+                                    $result = $conn->query($sql);
+
+                                    if ($result && $result->num_rows > 0) {
+                                        while ($row_dim = $result->fetch_assoc()) {
+                                            $dimension_id = $row_dim['dimension_id'];
+                                            $dimension    = $row_dim['dimension'];
+                                            $unit         = $row_dim['dimension_unit'];
+
+                                            $selected = in_array($dimension_id, $selected_lengths) ? 'selected' : '';
+
+                                            echo '<option value="' . $dimension_id . '" ' . $selected . '>'
+                                                . $dimension . ' ' . '</option>';
+                                        }
+                                    }
+                                    ?>
+                                </optgroup>
+                            </select>
+                        </div>
+                    </div>
                     <div class="col-md-4">
                         <?php $unit_price = floatval($row['unit_price']) ?? 0; ?>
                         <div class="mb-3">

@@ -14,19 +14,6 @@ if(isset($_POST['fetch_modal'])){
     if (!empty($product_details)) {
         $category_id = $product_details['product_category'];
         $unit_price  = $product_details['unit_price'];
-        $items = getAvailableInventory($id);
-        $treatedItems = [];
-        $untreatedItems = [];
-
-        foreach ($items as $item) {
-            $type = strtolower(trim($item['lumber_type'] ?? ''));
-
-            if ($type === 'treated') {
-                $treatedItems[] = $item;
-            } else {
-                $untreatedItems[] = $item;
-            }
-        }
         ?>
         <input type="hidden" id="product_id" name="id" value="<?= $id ?>" />
         <input type="hidden" id="product_price" name="price" value="<?= $unit_price ?>" />
@@ -36,147 +23,37 @@ if(isset($_POST['fetch_modal'])){
         <h3 class="text-center fw-bold mt-0"><?= $product_details['product_item'] ?></h3>
 
         <div class="row">
-            
-
-            <h5 class="text-center">Treated Lumber</h5>
-            <div class="row">
-                <div class="col text-center"><label class="fs-4 fw-semibold">Quantity</label></div>
-                <div class="col text-center"><label class="fs-4 fw-semibold">Description</label></div>
-                <div class="col text-center"><label class="fs-4 fw-semibold">Length</label></div>
-                <div class="col notes-col text-center d-none"><label class="fs-4 fw-semibold">Notes</label></div>
+            <div class="row justify-content-center">
+                <div class="col-3 text-center"><label class="fs-4 fw-semibold">Quantity</label></div>
+                <div class="col-3 text-center"><label class="fs-4 fw-semibold">Length</label></div>
+                <div class="col-3 notes-col text-center d-none"><label class="fs-4 fw-semibold">Notes</label></div>
             </div>
 
             <div id="untreated-section">
-                <div class="custom-length-row row mt-1">
-                    <div class="col">
+                <div class="custom-length-row row justify-content-center mt-1">
+                    <div class="col-3">
                         <input type="number" name="quantity[]" class="form-control mb-1 lumber_quantity" value="" placeholder="Enter Quantity">
                     </div>
-                    <div class="col">
-                        <select name="dimension_id[]" class="form-control dimension_select">
-                            <option value="" hidden>Select Description</option>
-                            <?php 
-                                $seen = [];
-                                foreach ($treatedItems as $item){
-                                    $key = $item['dimension'] . ' ' . $item['dimension_unit'];
-                                    if (in_array($key, $seen)) continue;
-                                    $seen[] = $key;
+                    <div class="col-3">
+                        <select class="form-control mb-0 length_select" name="dimension_id[]">
+                            <option value="" selected>Select Length</option>
+                            <?php
+                            $lengths = getProductAvailableLengths($id);
+                            foreach ($lengths as $entry) {
+                                $product_length = htmlspecialchars($entry['length']);
+                                $dimension_id   = htmlspecialchars($entry['dimension_id']);
+                                echo "<option value=\"$dimension_id\">$product_length</option>";
+                            }
                             ?>
-                                <option value="<?= $item['dimension_id'] ?>">
-                                    <?= htmlspecialchars($item['dimension']) ?> <?= htmlspecialchars($item['dimension_unit']) ?>
-                                </option>
-                            <?php } ?>
                         </select>
                     </div>
-                    <div class="col">
-                        <select class="form-control mb-1 length_select">
-                            <option value="" hidden>Select Length</option>
-                            <?php foreach ($treatedItems as $item){
-                                $lengthFeet = $item['length_feet'] ?? 0;
-                                $feet = floor($lengthFeet);
-                                $inch = round(($lengthFeet - $feet) * 12);
-                                if ($inch === 12) { $feet += 1; $inch = 0; }
-                                $display = '';
-                                if ($feet > 0) $display .= "{$feet}ft ";
-                                if ($inch > 0) $display .= "{$inch}in";
-                                if (($item['quantity_ttl'] ?? 0) < 1) {
-                                    $display .= " (Out of Stock)";
-                                }
-                            ?>
-                                <option 
-                                    value="<?= htmlspecialchars($item['length']) ?>" 
-                                    data-feet="<?= $feet ?>" 
-                                    data-inch="<?= $inch ?>" 
-                                    data-price="<?= $item['price'] ?>" 
-                                    data-dim-id="<?= $item['dimension_id'] ?>" 
-                                    data-inventory-id="<?= $item['inventory_id'] ?>"
-                                >
-                                    <?= $display ?>
-                                </option>
-                            <?php } ?>
-                        </select>
-                        <input type="hidden" name="price[]" class="lumber_price">
-                        <input type="hidden" name="length_feet[]" class="custom_length_feet">
-                        <input type="hidden" name="length_inch[]" class="custom_length_inch">
-                    </div>
-                    <div class="col notes-col d-none">
+                    <div class="col-3 notes-col d-none">
                         <input type="text" name="notes[]" class="form-control mb-1" placeholder="Enter Notes">
                     </div>
                 </div>
             </div>
             <div class="col text-end"> 
                 <a href="javascript:void(0)" type="button" id="duplicateUntreated" title="Add Untreated">
-                    <i class="fas fa-plus"></i>
-                </a>
-            </div>
-
-
-            <h5 class="mt-4 text-center">Untreated Lumber</h5>
-            <div class="row">
-                <div class="col text-center"><label class="fs-4 fw-semibold">Quantity</label></div>
-                <div class="col text-center"><label class="fs-4 fw-semibold">Description</label></div>
-                <div class="col text-center"><label class="fs-4 fw-semibold">Length</label></div>
-                <div class="col notes-col text-center d-none"><label class="fs-4 fw-semibold">Notes</label></div>
-            </div>
-
-            <div id="treated-section">
-                <div class="custom-length-row row mt-1">
-                    <div class="col">
-                        <input type="number" name="quantity[]" class="form-control mb-1 lumber_quantity" value="" placeholder="Enter Quantity">
-                    </div>
-                    <div class="col">
-                        <select name="dimension_id[]" class="form-control dimension_select">
-                            <option value="" hidden>Select Description</option>
-                            <?php 
-                                $seen = [];
-                                foreach ($untreatedItems as $item){
-                                    $key = $item['dimension'] . ' ' . $item['dimension_unit'];
-                                    if (in_array($key, $seen)) continue;
-                                    $seen[] = $key;
-                            ?>
-                                <option value="<?= $item['dimension_id'] ?>">
-                                    <?= htmlspecialchars($item['dimension']) ?> <?= htmlspecialchars($item['dimension_unit']) ?>
-                                </option>
-                            <?php } ?>
-                        </select>
-                    </div>
-                    <div class="col">
-                        <select class="form-control mb-1 length_select">
-                            <option value="" hidden>Select Length</option>
-                            <?php foreach ($untreatedItems as $item){
-                                $lengthFeet = $item['length_feet'] ?? 0;
-                                $feet = floor($lengthFeet);
-                                $inch = round(($lengthFeet - $feet) * 12);
-                                if ($inch === 12) { $feet += 1; $inch = 0; }
-                                $display = '';
-                                if ($feet > 0) $display .= "{$feet}ft ";
-                                if ($inch > 0) $display .= "{$inch}in";
-                                if (($item['quantity_ttl'] ?? 0) < 1) {
-                                    $display .= " (Out of Stock)";
-                                }
-                            ?>
-                                <option 
-                                    value="<?= htmlspecialchars($item['length']) ?>" 
-                                    data-feet="<?= $feet ?>" 
-                                    data-inch="<?= $inch ?>" 
-                                    data-price="<?= $item['price'] ?>" 
-                                    data-dim-id="<?= $item['dimension_id'] ?>" 
-                                    data-inventory-id="<?= $item['inventory_id'] ?>"
-                                >
-                                    <?= $display ?>
-                                </option>
-                            <?php } ?>
-                        </select>
-                        <input type="hidden" name="price[]" class="lumber_price">
-                        <input type="hidden" name="length_feet[]" class="custom_length_feet">
-                        <input type="hidden" name="length_inch[]" class="custom_length_inch">
-                    </div>
-                    <div class="col notes-col d-none">
-                        <input type="text" name="notes[]" class="form-control mb-1" placeholder="Enter Notes">
-                    </div>
-                </div>
-            </div>
-            <div class="col text-end"> 
-                <a href="javascript:void(0)" type="button" id="duplicateTreated" title="Add Treated">
                     <i class="fas fa-plus"></i>
                 </a>
             </div>
@@ -202,18 +79,14 @@ if(isset($_POST['fetch_modal'])){
                 formData.append('fetch_price', 1);
                 formData.append('product_id', $('#product_id').val());
                 formData.append('color', $('select[name="color_id[]"]').first().val() || '');
-                formData.append('grade', $('#grade').val() || '');
-                formData.append('gauge', $('#gauge').val() || '');
 
                 $('.custom-length-row').each(function () {
                     const $row = $(this);
                     const qty = $row.find('.lumber_quantity').val() || '';
-                    const feet = $row.find('.custom_length_feet').val() || '';
-                    const inch = $row.find('.custom_length_inch').val() || '';
+                    const dimension_id = $row.find('.length_select').val() || '';
 
                     formData.append('quantity[]', qty);
-                    formData.append('lengthFeet[]', feet);
-                    formData.append('lengthInch[]', inch);
+                    formData.append('dimension_id[]', dimension_id);
                 });
 
                 $.ajax({
@@ -231,86 +104,24 @@ if(isset($_POST['fetch_modal'])){
                 });
             }
 
-            $(document).on('change', '.custom-length-row #dimension_select', function() {
-                const $row = $(this).closest('.custom-length-row');
-                const selectedDim = $(this).val();
-
-                const $lumberCol = $row.find('.lumber_type_select').closest('.col-3');
-                const $lengthCol = $row.find('.length_select').closest('.col-3');
-
-                if (selectedDim) {
-                    $lumberCol.removeClass('d-none');
-                    $lumberCol.find('select option').each(function() {
-                        const dimIds = ($(this).data('dim-ids') || '').toString().split(',');
-                        $(this).toggle(dimIds.includes(selectedDim) || $(this).val() === '');
-                    });
-                    $lumberCol.find('select').val('');
-                } else {
-                    $lumberCol.addClass('d-none').find('select').val('');
-                    $lengthCol.find('select').val('');
-                }
-            });
-
-            $(document).on('change', '.custom-length-row .lumber_type_select', function() {
-                const $row = $(this).closest('.custom-length-row');
-                const selectedDim = $row.find('#dimension_select').val();
-                const selectedLumber = $(this).val();
-                const $lengthCol = $row.find('.length_select').closest('.col-3');
-
-                if (selectedLumber) {
-                    $lengthCol.removeClass('d-none');
-                    $lengthCol.find('select option').each(function() {
-                        const dimId = $(this).data('dim-id')?.toString();
-                        const lumber = $(this).data('lumber-type');
-                        $(this).toggle((dimId === selectedDim) && (lumber === selectedLumber) || $(this).index() === 0);
-                    });
-                    $lengthCol.find('select').val('');
-                } else {
-                    $lengthCol.addClass('d-none').find('select').val('');
-                }
-            });
-
             $(document).on('change', '.length_select', function () {
-                let $row = $(this).closest('.custom-length-row');
-                let feet = $(this).find(':selected').data('feet') || 0;
-                let inch = $(this).find(':selected').data('inch') || 0;
-                let type = $(this).find(':selected').data('lumber-type') || '';
-                let price = $(this).find(':selected').data('price') || '';
-
-                $row.find('.custom_length_feet').val(feet);
-                $row.find('.custom_length_inch').val(inch);
-                $row.find('.lumber_price').val(price);
-
-                if(type) $row.find('.lumber_type_select').val(type);
-
                 updateAllPrices();
             });
 
             $(document).on('input', '.lumber_quantity', updateAllPrices);
 
-            function duplicateUntreatedRow() {
+            function duplicateRow() {
                 let $newRow = $("#untreated-section .custom-length-row").first().clone();
                 $newRow.find('input, select').val('');
                 $("#untreated-section").append($newRow);
             }
 
-            function duplicateTreatedRow() {
-                let $newRow = $("#treated-section .custom-length-row").first().clone();
-                $newRow.find('input, select').val('');
-                $("#treated-section").append($newRow);
-            }
-
             $('#duplicateUntreated').on("click", function() {
-                duplicateUntreatedRow();
-            });
-
-            $('#duplicateTreated').on("click", function() {
-                duplicateTreatedRow();
+                duplicateRow();
             });
 
             for (let i = 0; i < 5; i++) {
-                duplicateUntreatedRow();
-                duplicateTreatedRow();
+                duplicateRow();
             }
 
             updateAllPrices();
@@ -327,11 +138,8 @@ if (isset($_POST['fetch_price'])) {
 
     $product_id = isset($_POST['product_id']) ? intval($_POST['product_id']) : 0;
     $quantities = $_POST['quantity'] ?? [];
-    $lengthFeet = $_POST['lengthFeet'] ?? [];
-    $lengthInch = $_POST['lengthInch'] ?? [];
+    $dimension_ids = $_POST['dimension_id'] ?? [];
     $color_id   = isset($_POST['color']) ? intval($_POST['color']) : 0;
-    $grade      = isset($_POST['grade']) ? intval($_POST['grade']) : 0;
-    $gauge      = isset($_POST['gauge']) ? intval($_POST['gauge']) : 0;
 
     $totalPrice = 0;
 
@@ -357,19 +165,25 @@ if (isset($_POST['fetch_price'])) {
             $qty = floatval($qty);
             if ($qty <= 0) continue;
 
-            $feet = isset($lengthFeet[$index]) && $lengthFeet[$index] !== '' ? floatval($lengthFeet[$index]) : 0;
-            $inch = isset($lengthInch[$index]) && $lengthInch[$index] !== '' ? floatval($lengthInch[$index]) : 0;
+            $dim_id = intval($dimension_ids[$index] ?? 0);
+
+            $res = mysqli_query($conn, "SELECT * FROM dimensions WHERE dimension_id = '$dim_id' LIMIT 1");
+            $row = mysqli_fetch_assoc($res);
+
+            $feet  = floatval($row['dimension_feet'] ?? 0);
+            $inch  = floatval($row['dimension_inches'] ?? 0);
 
             $unitPrice = calculateUnitPrice(
                 $basePrice,
                 $feet,
                 $inch,
                 '',
-                $soldByFeet,
-                '', '',
+                '',
+                '', 
+                '',
                 $color_id,
-                $grade,
-                $gauge
+                '',
+                ''
             );
 
             $totalPrice += $unitPrice * $qty;

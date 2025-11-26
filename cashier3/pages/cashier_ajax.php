@@ -1937,6 +1937,103 @@ if (isset($_POST['save_custom_length'])) {
     echo json_encode(['success' => print_r($_SESSION["cart"])]);
 }
 
+if (isset($_POST['save_lumber'])) {
+    $id   = mysqli_real_escape_string($conn, $_POST['id']);
+    $line = mysqli_real_escape_string($conn, $_POST['line'] ?? 1);
+    $profile = mysqli_real_escape_string($conn, $_POST['profile'] ?? 0);
+
+    $quantities  = $_POST['quantity'] ?? [];
+    $prices      = $_POST['price'] ?? [];
+    $color_id    = $_POST['color_id'] ?? [];
+    $dimension_id    = $_POST['dimension_id'] ?? [];
+    $pack_arr    = $_POST['pack'] ?? [];
+    $notes       = $_POST['notes'] ?? [];
+
+    if (!isset($_SESSION["cart"])) {
+        $_SESSION["cart"] = array();
+    }
+
+    $query = "SELECT * FROM product WHERE product_id = '$id'";
+    $result = mysqli_query($conn, $query);
+
+    if (mysqli_num_rows($result) > 0) {
+        $row = mysqli_fetch_assoc($result);
+
+        foreach ($quantities as $idx => $qty) {
+            $quantity           = floatval($qty);
+            $price              = floatval($prices[$idx] ?? 0);
+            $custom_color       = intval($color_id);
+            $dimension          = intval($dimension_id[$idx] ?? 0);
+            $pack          = $pack_arr[$idx] ?? 0;
+            $note               = $notes[$idx] ?? '';
+
+            $dimension_value = '';
+            if(!empty($dimension)){
+                $dimension_details = getDimensionDetails($dimension);
+                $dimension_value = $dimension_details['dimension'];
+
+                $feet  = floatval($dimension_details['dimension_feet'] ?? 0);
+                $inch  = floatval($dimension_details['dimension_inches'] ?? 0);
+            }
+            
+            if ($quantity <= 0) continue;
+
+            $found = false;
+            foreach ($_SESSION["cart"] as &$item) {
+                if (
+                    $item['product_id'] == $id &&
+                    $item['estimate_length'] == $feet &&
+                    $item['estimate_length_inch'] == $inch &&
+                    $item['custom_profile'] == $profile &&
+                    $item['custom_color'] == $custom_color &&
+                    $item['dimension'] == $dimension_value &&
+                    $item['pack'] == $pack
+                ) {
+                    $item['quantity_cart'] += $quantity;
+                    $found = true;
+                    break;
+                }
+            }
+            unset($item);
+
+            if (!$found) {
+                $line_to_use = (count($_SESSION["cart"]) > 0) ? max(array_column($_SESSION["cart"], 'line')) + 1 : 1;
+
+                $item_array = array(
+                    'product_id'          => $row['product_id'],
+                    'product_item'        => $row['product_item'],
+                    'unit_price'          => $price,
+                    'line'                => $line_to_use,
+                    'quantity_ttl'        => getProductStockTotal($row['product_id']),
+                    'quantity_in_stock'   => 0,
+                    'quantity_cart'       => $quantity,
+                    'estimate_width'      => 0,
+                    'estimate_length'     => $feet,
+                    'estimate_length_inch'=> $inch,
+                    'usage'               => 0,
+                    'custom_color'        => $custom_color,
+                    'screw_length'        => $dimension_value,
+                    'screw_type'          => 'SD',
+                    'weight'              => 0,
+                    'supplier_id'         => '',
+                    'custom_grade'        => '',
+                    'custom_profile'      => !empty($profile) ? $profile : getLastValue($row['profile']),
+                    'custom_gauge'        => '',
+                    'note'                => $note,
+                    'pack'                => $pack
+                );
+
+                $_SESSION["cart"][] = $item_array;
+            }
+        }
+    } else {
+        echo json_encode(['error' => "Trim Product not available"]);
+        exit;
+    }
+
+    echo json_encode(['success' => print_r($_SESSION["cart"])]);
+}
+
 if (isset($_POST['save_screw'])) {
     $id   = mysqli_real_escape_string($conn, $_POST['id']);
     $line = mysqli_real_escape_string($conn, $_POST['line'] ?? 1);
