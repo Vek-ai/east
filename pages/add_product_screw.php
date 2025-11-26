@@ -310,7 +310,7 @@ if(isset($_REQUEST['action'])) {
                             });
                             fileInput.files = dataTransfer.files;
                         }
-                    </script>
+                    </script>f
                 </div>
             </div>
         </div>
@@ -332,15 +332,17 @@ if(isset($_REQUEST['action'])) {
                             <a href="?page=supplier_pack" target="_blank" class="text-decoration-none">Edit</a>
                         </div>
                         <div class="mb-3">
-                            <select id="pack" class="form-control select2" name="pack[]" multiple>
+                            <select id="pack" class="form-control add-category select2" name="pack[]" multiple>
                                 <?php
                                 $query_pack = "SELECT * FROM supplier_pack WHERE hidden = '0' AND status = '1' ORDER BY `pack` ASC";
-                                $result_pack = mysqli_query($conn, $query_pack);
+                                $result_pack = mysqli_query($conn, $query_pack);            
                                 while ($row_pack = mysqli_fetch_array($result_pack)) {
                                     $selected = in_array($row_pack['id'], $selected_pack) ? 'selected' : '';
                                 ?>
-                                    <option value="<?= $row_pack['id'] ?>" data-supplier="<?= $row_pack['supplierid'] ?>" <?= $selected ?>><?= $row_pack['pack'] ?></option>
-                                <?php } ?>
+                                    <option value="<?= $row_pack['id'] ?>" data-supplier="<?= $row_pack['supplierid'] ?>" data-category="<?= $row_pack['product_category'] ?>" <?= $selected ?>><?= $row_pack['pack'] ?></option>
+                                <?php   
+                                }
+                                ?>
                             </select>
                         </div>
                     </div>
