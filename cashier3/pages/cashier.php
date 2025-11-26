@@ -1298,7 +1298,7 @@ $editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) :
 </div>
 
 <div class="modal fade custom-size" id="pdfModal" tabindex="-1" role="dialog" style="background-color: rgba(0, 0, 0, 0.5);">
-  <div class="modal-dialog modal-dialog modal-lg modal-dialog-centered">
+  <div class="modal-dialog modal-fullscreen modal-dialog-centered">
     <div class="modal-content">
       <div class="modal-header">
         <h5 class="modal-title">Print/View Outputs</h5>
