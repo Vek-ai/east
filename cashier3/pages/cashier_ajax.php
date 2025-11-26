@@ -1388,6 +1388,7 @@ if (isset($_POST['save_order'])) {
             $custom_img_src    = $item['custom_trim_src'] ?? '';
             $bundle_id         = $item['bundle_name'] ?? '';
             $note              = $item['note'] ?? '';
+            $screw_length      = $item['screw_length'] ?? '';
 
             $curr_discount    = intval(getCustomerDiscountProfile($customerid));
             $loyalty_discount = intval(getCustomerDiscountLoyalty($customerid));
@@ -1400,14 +1401,14 @@ if (isset($_POST['save_order'])) {
                 custom_length, custom_length2, actual_price, discounted_price, product_category,
                 custom_color, custom_grade, custom_gauge, custom_profile, current_customer_discount, current_loyalty_discount,
                 used_discount, stiff_stand_seam, stiff_board_batten, panel_type, panel_style, custom_img_src, bundle_id, note,
-                product_id_abbrev
+                product_id_abbrev, screw_length
             ) VALUES (
                 '$orderid', '$product_id', '$product_item', '$quantity', '" . ($item['estimate_width'] ?? $calc['product']['width']) . "',
                 '" . ($item['estimate_bend'] ?? '') . "', '" . ($item['estimate_hem'] ?? '') . "', '$total_length', '" . ($item['estimate_length_inch'] ?? 0) . "',
                 '$product_price', '$customer_price', '$category_id',
                 '$color_id', '$grade', '$gauge', '$profile', '$curr_discount', '$loyalty_discount',
                 '$used_discount', '$stiff_stand_seam', '$stiff_board_batten', '$panel_type', '$panel_style', '$custom_img_src', '$bundle_id', '$note',
-                '$product_id_abbrev'
+                '$product_id_abbrev', '$screw_length'
             )";
 
             if ($conn->query($query) !== TRUE) {

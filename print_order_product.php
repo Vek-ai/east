@@ -63,38 +63,26 @@ function gcd($a, $b) {
     return ($b == 0) ? $a : gcd($b, $a % $b);
 }
 
-function renderTableHeader($pdf, $columns, $subcolumns) {
+function renderTableHeader($pdf, $columns) {
     $pdf->SetFillColor(211, 211, 211);
     $pdf->SetTextColor(0, 0, 0);
-
     $lineHeight = 4;
     $xStart = $pdf->GetX();
     $yStart = $pdf->GetY();
-
     $maxMainHeight = 0;
     foreach ($columns as $col) {
         $lines = preg_split("/\r\n|\n|\r/", $col['label']);
         $maxMainHeight = max($maxMainHeight, count($lines) * $lineHeight);
     }
-
-    $maxSubHeight = 0;
-    foreach ($subcolumns as $col) {
-        $lines = preg_split("/\r\n|\n|\r/", $col['label']);
-        $maxSubHeight = max($maxSubHeight, count($lines) * $lineHeight);
-    }
-
-    $totalHeight = $maxMainHeight + $maxSubHeight;
     $totalWidth = array_sum(array_column($columns, 'width'));
-
-    $pdf->Rect($xStart, $yStart, $totalWidth, $totalHeight, 'FD');
-
+    $pdf->Rect($xStart, $yStart, $totalWidth, $maxMainHeight, 'FD');
     $x = $xStart;
     foreach ($columns as $col) {
         $lines = preg_split("/\r\n|\n|\r/", $col['label']);
         $textHeight = count($lines) * $lineHeight;
         $yOffset = ($maxMainHeight - $textHeight) / 2;
-
         $y = $yStart + $yOffset;
+
         foreach ($lines as $line) {
             $fontSize = $pdf->fitTextToWidth($line, $col['width'], $col['fontsize'] ?? 8, 'Arial', 'B');
             $pdf->SetFont('Arial', 'B', $fontSize);
@@ -105,27 +93,7 @@ function renderTableHeader($pdf, $columns, $subcolumns) {
         $x += $col['width'];
     }
 
-    $x = $xStart;
-    $subY = $yStart + $maxMainHeight;
-    foreach ($subcolumns as $col) {
-        if (!empty($col['label'])) {
-            $lines = preg_split("/\r\n|\n|\r/", $col['label']);
-            $textHeight = count($lines) * $lineHeight;
-            $yOffset = ($maxSubHeight - $textHeight) / 2;
-
-            $y = $subY + $yOffset;
-            foreach ($lines as $line) {
-                $fontSize = $pdf->fitTextToWidth($line, $col['width'], $col['fontsize'] ?? 8, 'Arial', 'B');
-                $pdf->SetFont('Arial', 'B', $fontSize);
-                $pdf->SetXY($x, $y);
-                $pdf->Cell($col['width'], $lineHeight, $line, 0, 0, $col['align']);
-                $y += $lineHeight;
-            }
-        }
-        $x += $col['width'];
-    }
-
-    $pdf->SetY($yStart + $totalHeight);
+    $pdf->SetY($yStart + $maxMainHeight);
     $pdf->SetFillColor(255, 255, 255);
 }
 
@@ -258,6 +226,8 @@ function renderScrewCategory($pdf, $product, $conn) {
     $product_details = getProductDetails($productid);
     $grade_details   = getGradeDetails($product['custom_grade']);
     $gauge_details   = getGaugeDetails($product['custom_gauge']);
+    $screw_type_details   = getProductScrewTypeDetails($product_details['screw_type']);
+    $screw_coating_details   = getProductScrewCoatingDetails($product_details['screw_coating']);
 
     $quantity   = floatval($product['quantity'] ?? 0);
     $act_price  = floatval($product['actual_price'] ?? 0);
@@ -267,13 +237,11 @@ function renderScrewCategory($pdf, $product, $conn) {
     $panel_type  = !empty($product['panel_type']) ? ucwords(str_replace('_', ' ', $product['panel_type'])) : '';
     $panel_style = !empty($product['panel_style']) ? ucwords(str_replace('_', ' ', $product['panel_style'])) : '';
 
-    $ft = floor(floatval($product['custom_length'] ?? 0));
-    $in_decimal = floatval($product['custom_length2'] ?? 0);
-    $total_length = $ft + ($in_decimal / 12);
+    $screw_length = $product['screw_length'] ?? '';
+    $screw_type = $screw_type_details['product_screw_type'] ?? '';
+    $screw_coating = $screw_coating_details['product_screw_coating'] ?? '';
 
-    $ft_only = floor($total_length);
-    $inch_only = round(($total_length - $ft_only) * 12);
-
+    $length_display = str_pad($screw_length, 12, ' ', STR_PAD_LEFT);
 
     $product_abbrev = $product['product_id_abbrev'] ?? '';
     $color = getColorName($product['custom_color']);
@@ -284,10 +252,10 @@ function renderScrewCategory($pdf, $product, $conn) {
         $product_abbrev,
         $product['product_item'],
         $color,
-        '',
-        '',
+        $screw_coating,
+        $screw_type,
         $quantity,
-        '',
+        $length_display,
         '',
         '',
         '$ ' . number_format($unit_price, 2),
@@ -441,28 +409,36 @@ class PDF extends FPDF {
     }
 
     function Header() {
-        $this->SetFont('Arial', '', 10);
+        $this->SetFont('Arial', '', 9);
         $this->Image('assets/images/logo-bw.png', 10, 6, 60, 20);
+        $yStart = $this->GetY();
 
-        $col2_x = 140;
+        $col2_x = 120;
+        $w = 60;
+        $lineH = 5;
+
+        $blockText  = "Invoice #: " . $this->orderid . "\n";
+        $blockText .= "Order Date: " . $this->order_date . "\n";
+        $blockText .= "Pick-up or Delivery: " . $this->delivery_method . "\n";
+        $blockText .= "Scheduled Date: " . $this->scheduled_date . "\n";
+        $blockText .= "Salesperson: " . $this->salesperson;
+
+        $maxHeight = $this->NbLines($w, $blockText) * $lineH;
 
         $this->SetXY($col2_x - 10, 6);
-        $this->MultiCell(95, 5, "Invoice #: " . $this->orderid, 0, 'L');
+        $this->MultiCell($w, $lineH, $blockText, 0, 'L');
 
-        $this->SetXY($col2_x - 10, $this->GetY());
-        $this->Cell(95, 5, "Order Date: " . $this->order_date, 0, 1, 'L');
+        $this->SetXY($col2_x + $w, 6);
+        $this->MultiCell(30, $lineH, "Digital receipt", 0, 'L');
 
-        $this->SetXY($col2_x - 10, $this->GetY());
-        $this->Cell(95, 5, "Pick-up or Delivery: " . $this->delivery_method, 0, 1, 'L');
+        $token = $this->token;
+        $qrX = $col2_x + $w;
+        $qrY = max(0, $maxHeight - 15);
+        $this->Image("https://delivery.ilearnsda.com/receiptqr/receiptqr$token.png", $qrX, $qrY, 20, 20);
 
-        $this->SetXY($col2_x - 10, $this->GetY());
-        $this->Cell(95, 5, "Scheduled Date: " . $this->scheduled_date, 0, 1, 'L');
-
-        $this->SetXY($col2_x - 10, $this->GetY());
-        $this->Cell(95, 5, "Salesperson: " . $this->salesperson, 0, 0, 'L');
-
-        $this->Ln(5);
+        $this->SetY(6 + $maxHeight + 5);
     }
+
 
     function Footer() {
         $marginLeft = 10;
@@ -507,18 +483,6 @@ class PDF extends FPDF {
         $this->Image($webIcon, $marginLeft + 2 * $colWidth + 10, $this->GetY(), 5, 5);
         $this->SetXY($marginLeft + 2 * $colWidth + 17, $this->GetY());
         $this->Cell($colWidth, 5, 'EastKentuckyMetal.com', 0, 0, 'L');
-
-        $yStart = $this->GetY() - 35;
-        $this->SetFont('Arial', '', 10);
-        $this->SetXY($marginLeft, $yStart);
-        $this->MultiCell($colWidthRight, 5,
-            "Scan me for a Digital copy of this receipt", 0, 'C');
-
-        $token = $this->token;
-
-        $qrX = 20;
-        $qrY = $this->GetY();
-        $this->Image("https://delivery.ilearnsda.com/receiptqr/receiptqr$token.png", $qrX, $qrY, 25, 25);
     }
 
     public function GetMultiCellHeight($w, $h, $txt) {
@@ -637,6 +601,7 @@ if (mysqli_num_rows($result) > 0) {
         $pdf->salesperson = get_staff_name($current_user_id);
         $pdf->token = $token;
 
+        $pdf->AliasNbPages();
         $pdf->AddPage();
 
         $col1_x = 10;
@@ -847,6 +812,8 @@ if (mysqli_num_rows($result) > 0) {
             $pdf->MultiCell(120, 4, $savings_note, 0, 'L');
         }
 
+        $pdf->Cell(0, 5, 'Page ' . $pdf->PageNo() . ' of {nb}', 0, 0, 'L');
+
         $pdf->SetFont('Arial', '', 9);
 
         $subtotal   = $total_price;
@@ -874,14 +841,11 @@ if (mysqli_num_rows($result) > 0) {
         $pdf->Cell(40, $lineheight, 'TOTAL PRICE:', 0, 0);
         $pdf->Cell(20, $lineheight, '$ ' . number_format($grand_total, 2), 0, 1, 'R');
 
-
         $pdf->Ln(5);
 
         $pdf->SetTitle('Receipt');
         $pdf->Output('Receipt.pdf', 'I');
             
-
-        
     }
 }else{
     echo "ID not Found!";
