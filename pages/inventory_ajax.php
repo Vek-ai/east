@@ -8,425 +8,549 @@ error_reporting(E_ERROR | E_PARSE | E_CORE_ERROR | E_CORE_WARNING | E_COMPILE_ER
 require '../includes/dbconn.php';
 require '../includes/functions.php';
 
+function cachedColorName($id) {
+    static $cache = [];
+    if (!isset($cache[$id])) {
+        $cache[$id] = getColorName($id);
+    }
+    return $cache[$id];
+}
+
+function cachedGradeName($id) {
+    static $cache = [];
+    if (!isset($cache[$id])) {
+        $cache[$id] = getGradeName($id);
+    }
+    return $cache[$id];
+}
+
+function cachedGaugeName($id) {
+    static $cache = [];
+    if (!isset($cache[$id])) {
+        $cache[$id] = getGaugeName($id);
+    }
+    return $cache[$id];
+}
+
+function cachedWarehouseName($id) {
+    static $cache = [];
+    if (!isset($cache[$id])) {
+        $cache[$id] = getWarehouseName($id);
+    }
+    return $cache[$id];
+}
+
 if(isset($_REQUEST['action'])) {
     $action = $_REQUEST['action'];
 
     if ($action == "add_update") {
         $Product_id   = mysqli_real_escape_string($conn, $_POST['Product_id']);
+        $product_type = mysqli_real_escape_string($conn, $_POST['product_type']);
+        $product_line = mysqli_real_escape_string($conn, $_POST['product_line']);
         $color_id     = mysqli_real_escape_string($conn, $_POST['color_id']);
-        $supplier_id  = mysqli_real_escape_string($conn, $_POST['supplier_id']);
         $Warehouse_id = mysqli_real_escape_string($conn, $_POST['Warehouse_id']);
         $Shelves_id   = mysqli_real_escape_string($conn, $_POST['Shelves_id']);
         $Bin_id       = mysqli_real_escape_string($conn, $_POST['Bin_id']);
         $Row_id       = mysqli_real_escape_string($conn, $_POST['Row_id']);
         $Date         = mysqli_real_escape_string($conn, $_POST['Date']);
-        $pack         = mysqli_real_escape_string($conn, $_POST['pack']);
-        $cost         = mysqli_real_escape_string($conn, $_POST['cost'] ?? '0');
-        $price        = mysqli_real_escape_string($conn, $_POST['price'] ?? '0');
-        $lumber_type  = mysqli_real_escape_string($conn, $_POST['lumber_type']);
         $grade        = mysqli_real_escape_string($conn, $_POST['grade']);
         $gauge        = mysqli_real_escape_string($conn, $_POST['gauge']);
+        $dimension_id = mysqli_real_escape_string($conn, $_POST['dimension_id']);
+        $quantity_ttl = (int)($_POST['quantity_ttl'] ?? 0);
+        $reorder_level = (int)($_POST['reorder_level'] ?? 0);
         $addedby      = $_SESSION['userid'];
 
-        $dimension_ids  = $_POST['dimension_id'] ?? [];
-        $quantity_ttls  = $_POST['quantity_ttl'] ?? [];
-        $reorder_levels = $_POST['reorder_level'] ?? [];
+        if ($quantity_ttl <= 0) die("Quantity must be greater than 0");
 
-        $total_quantity = array_sum($quantity_ttls);
-
-        $result = mysqli_query($conn, "
+        $checkQuery = "
             SELECT inventory_id, quantity_ttl
             FROM inventory
             WHERE Product_id='$Product_id'
+            AND product_type='$product_type'
+            AND product_line='$product_line'
             AND color_id='$color_id'
             AND grade='$grade'
             AND gauge='$gauge'
-            AND lumber_type='$lumber_type'
-        ");
-        if (!$result) die("Error fetching inventory: " . mysqli_error($conn));
+            AND dimension_id='$dimension_id'
+            LIMIT 1
+        ";
+        $resCheck = mysqli_query($conn, $checkQuery);
+        if (!$resCheck) die("Error checking inventory: " . mysqli_error($conn));
 
-        while ($row = mysqli_fetch_assoc($result)) {
-            $inventory_id = $row['inventory_id'];
-            $new_total_qty = (int)$row['quantity_ttl'] + $total_quantity;
+        $now = date("Y-m-d H:i:s");
+
+        if (mysqli_num_rows($resCheck) > 0) {
+            $rowInv = mysqli_fetch_assoc($resCheck);
+            $inventory_id = $rowInv['inventory_id'];
+            $new_qty = (int)$rowInv['quantity_ttl'] + $quantity_ttl;
+
             $updateQuery = "
                 UPDATE inventory SET
+                    product_type='$product_type',
+                    product_line='$product_line',
                     Warehouse_id='$Warehouse_id',
                     Shelves_id='$Shelves_id',
                     Bin_id='$Bin_id',
                     Row_id='$Row_id',
                     Date='$Date',
-                    quantity_ttl='$new_total_qty',
-                    pack='$pack',
-                    cost='$cost',
-                    price='$price',
+                    quantity_ttl='$new_qty',
+                    reorder_level='$reorder_level',
                     addedby='$addedby',
-                    last_edit=NOW(),
+                    last_edit='$now',
                     edited_by='$addedby'
                 WHERE inventory_id='$inventory_id'
             ";
             if (!mysqli_query($conn, $updateQuery)) die("Error updating inventory: " . mysqli_error($conn));
-        }
-
-        foreach ($dimension_ids as $i => $dimension_id) {
-            $dimension_id  = mysqli_real_escape_string($conn, $dimension_id);
-            $quantity_ttl  = (int)($quantity_ttls[$i] ?? 0);
-            $reorder_level = (int)($reorder_levels[$i] ?? 0);
-
-            if ($quantity_ttl <= 0) continue;
-
-            $checkQuery = "
-                SELECT inventory_id
-                FROM inventory
-                WHERE Product_id='$Product_id'
-                AND color_id='$color_id'
-                AND grade='$grade'
-                AND gauge='$gauge'
-                AND lumber_type='$lumber_type'
-                AND dimension_id='$dimension_id'
-                LIMIT 1
-            ";
-            $resCheck = mysqli_query($conn, $checkQuery);
-            if (!$resCheck) die("Error checking dimension inventory: " . mysqli_error($conn));
-
-            if (mysqli_num_rows($resCheck) > 0) {
-                $rowDim = mysqli_fetch_assoc($resCheck);
-                $inventory_id = $rowDim['inventory_id'];
-                $updateDim = "
-                    UPDATE inventory SET
-                        Warehouse_id='$Warehouse_id',
-                        Shelves_id='$Shelves_id',
-                        Bin_id='$Bin_id',
-                        Row_id='$Row_id',
-                        Date='$Date',
-                        quantity_ttl='$quantity_ttl',
-                        reorder_level='$reorder_level',
-                        pack='$pack',
-                        cost='$cost',
-                        price='$price',
-                        addedby='$addedby',
-                        last_edit=NOW(),
-                        edited_by='$addedby'
-                    WHERE inventory_id='$inventory_id'
-                ";
-                if (!mysqli_query($conn, $updateDim)) die("Error updating dimension inventory: " . mysqli_error($conn));
-            } else {
-                $insertDim = "
-                    INSERT INTO inventory
-                        (Product_id, color_id, grade, gauge, lumber_type, dimension_id, Warehouse_id, Shelves_id, Bin_id, Row_id, Date, quantity_ttl, reorder_level, pack, cost, price, addedby)
-                    VALUES
-                        ('$Product_id', '$color_id', '$grade', '$gauge', '$lumber_type', '$dimension_id', '$Warehouse_id', '$Shelves_id', '$Bin_id', '$Row_id', '$Date', '$quantity_ttl', '$reorder_level', '$pack', '$cost', '$price', '$addedby')
-                ";
-                if (!mysqli_query($conn, $insertDim)) die("Error inserting dimension inventory: " . mysqli_error($conn));
-                $inventory_id = mysqli_insert_id($conn);
-            }
-
-            $date_part = date("mdY", strtotime($Date));
-            $batchno   = $Product_id . $supplier_id . $inventory_id . $date_part;
-
-            $insertProductInventory = "
-                INSERT INTO product_inventory
-                    (productid, inventoryid, supplierid, cost, price, delivery_date, batchno, entered_by, quantity, pack_id, total_quantity)
+        } else {
+            $insertQuery = "
+                INSERT INTO inventory
+                    (Product_id, product_type, product_line, color_id, grade, gauge, dimension_id, Warehouse_id, Shelves_id, Bin_id, Row_id, Date, quantity_ttl, reorder_level, addedby, last_edit, edited_by)
                 VALUES
-                    ('$Product_id', '$inventory_id', '$supplier_id', '$cost', '$price', NOW(), '$batchno', '$addedby', '$quantity_ttl', '$pack', '$total_quantity')
+                    ('$Product_id', '$product_type', '$product_line', '$color_id', '$grade', '$gauge', '$dimension_id', '$Warehouse_id', '$Shelves_id', '$Bin_id', '$Row_id', '$Date', '$quantity_ttl', '$reorder_level', '$addedby', '$now', '$addedby')
             ";
-            if (!mysqli_query($conn, $insertProductInventory)) die("Error inserting product_inventory: " . mysqli_error($conn));
+            if (!mysqli_query($conn, $insertQuery)) die("Error inserting inventory: " . mysqli_error($conn));
         }
 
         echo "success";
     }
 
     if ($action == "fetch_modal") {
-        $Inventory_id = (int)($_POST['id'] ?? 0);
+        $Product_id   = (int)($_POST['id'] ?? 0);
+        $product_type = (int)($_POST['type'] ?? 0);
+        $product_line = (int)($_POST['line'] ?? 0);
+        $grade        = (int)($_POST['grade'] ?? 0);
+        $gauge        = (int)($_POST['gauge'] ?? 0);
+        $color_id     = (int)($_POST['color'] ?? 0);
+        $dimension_id = (int)($_POST['dim'] ?? 0);
 
-        $row = []; 
+        $where = [];
+        if ($Product_id)   $where[] = "Product_id = '$Product_id'";
+        if ($product_type) $where[] = "product_type = '$product_type'";
+        if ($product_line) $where[] = "product_line = '$product_line'";
+        if ($grade)        $where[] = "grade = '$grade'";
+        if ($gauge)        $where[] = "gauge = '$gauge'";
+        if ($color_id)     $where[] = "color_id = '$color_id'";
+        if ($dimension_id) $where[] = "dimension_id = '$dimension_id'";
 
-        if ($Inventory_id > 0) {
-            $query_inventory = "SELECT * FROM inventory WHERE Inventory_id = '$Inventory_id' LIMIT 1";
-            $result_inventory = mysqli_query($conn, $query_inventory);
-            if ($result_inventory && mysqli_num_rows($result_inventory) > 0) {
-                $row = mysqli_fetch_assoc($result_inventory);
-            }
+        $row = [];
+        if (!empty($where)) {
+            $query_inventory = "SELECT * FROM inventory WHERE " . implode(" AND ", $where) . " LIMIT 1";
+            $res = mysqli_query($conn, $query_inventory);
+            if ($res) $row = mysqli_fetch_assoc($res);
         }
+        $result_inventory = mysqli_query($conn, $query_inventory);
+        if ($result_inventory && mysqli_num_rows($result_inventory) > 0) {
+            $row = mysqli_fetch_assoc($result_inventory);
+        }
+
+        $product_details = getProductDetails($Product_id);
+        $color_details = getColorDetails($color_id);
         ?>
-        <input type="hidden" id="Inventory_id" name="Inventory_id" value="<?= $row['Inventory_id'] ?>" />
+        <input type="hidden" id="Product_id" name="Product_id" value="<?= $Product_id ?>" />
+        <input type="hidden" id="product_type" name="product_type" value="<?= $product_type ?>" />
+        <input type="hidden" id="product_line" name="product_line" value="<?= $product_line ?>" />
+        <input type="hidden" id="grade" name="grade" value="<?= $grade ?>" />
+        <input type="hidden" id="gauge" name="gauge" value="<?= $gauge ?>" />
+        <input type="hidden" id="color_id" name="color_id" value="<?= $color_id ?>" />
+        <input type="hidden" id="dimension_id" name="dimension_id" value="<?= $dimension_id ?>" />
 
-        <div class="row pt-3">
-            <div class="col-md-3">
-                <label class="form-label">Product</label>
-                <div class="mb-3">
-                    <select id="product_id" class="form-control select2-inventory" name="Product_id">
-                        <option value="" hidden>Select Product...</option>
-                        <optgroup label="Product">
-                            <?php
-                            $query_product = "SELECT * FROM product WHERE hidden = '0'";
-                            $result_product = mysqli_query($conn, $query_product);
-                            while ($p = mysqli_fetch_assoc($result_product)) {
-                                $selected = ($row['Product_id'] == $p['product_id']) ? 'selected' : '';
-                                echo "<option value='{$p['product_id']}' data-category='{$p['product_category']}' $selected>{$p['product_item']}</option>";
-                            }
-                            ?>
-                        </optgroup>
-                    </select>
-                </div>
+        <div class="card shadow-sm rounded-3 mb-3">
+            <div class="card-header bg-light border-bottom">
+                <h5 class="mb-0 fw-bold">Product Inventory Identifier</h5>
             </div>
-
-            <div class="col-md-3">
-                <label class="form-label">Color</label>
-                <div class="mb-3">
-                    <select id="color" class="form-control color_id select2-inventory" name="color_id">
-                        <option value="">Select Color...</option>
-                        <?php
-                        $query_colors = "
-                            SELECT * 
-                            FROM paint_colors 
-                            WHERE hidden = '0' AND color_status = '1' 
-                            GROUP BY BINARY color_name
-                            ORDER BY color_name ASC
-                        ";
-                        $result_colors = mysqli_query($conn, $query_colors);
-                        while ($c = mysqli_fetch_assoc($result_colors)) {
-                            $selected = ($row['color_id'] == $c['color_id']) ? 'selected' : '';
-                            $hex = getColorHexFromColorID($c['color_id']);
-                            $hex = $c['color_id'];
-                            echo "<option value='{$c['color_id']}' data-color='{$hex}' data-category='{$hex}' $selected>{$c['color_name']}</option>";
-                        }
-                        ?>
-                    </select>
+            <div class="card-body border rounded p-3">
+                <div class="row">
+                    <div class="col-md-4 mb-3">
+                        <div class="card text-center p-2">
+                            <h5>Product Category</h4>
+                            <p class="mb-0"><?= getProductCategoryName($product_details['product_category']) ?></p>
+                        </div>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <div class="card text-center p-2">
+                            <h5>Product Line</h4>
+                            <p class="mb-0"><?= getProductCategoryName($product_line) ?></p>
+                        </div>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <div class="card text-center p-2">
+                            <h5>Product Type</h4>
+                            <p class="mb-0"><?= getProductTypeName($product_type); ?></p>
+                        </div>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <div class="card text-center p-2">
+                            <h5>Grade</h4>
+                            <p class="mb-0"><?= getGradeName($grade); ?></p>
+                        </div>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <div class="card text-center p-2">
+                            <h5>Gauge</h4>
+                            <p class="mb-0"><?= getGaugeName($gauge); ?></p>
+                        </div>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <div class="card text-center p-2">
+                            <h5>Length</h4>
+                            <p class="mb-0"><?= getDimensionName($dimension_id); ?></p>
+                        </div>
+                    </div>
                 </div>
-            </div>
 
-            <div class="col-md-3">
-                <label class="form-label">Grade</label>
-                <div class="mb-3">
-                    <select id="grade" class="form-control grade-cart select2-inventory" name="grade">
-                        <option value="">Select Grade...</option>
-                        <?php
-                        $query_grade = "SELECT * FROM product_grade WHERE hidden = '0' AND status = '1' ORDER BY product_grade ASC";
-                        $result_grade = mysqli_query($conn, $query_grade);
-                        while ($g = mysqli_fetch_assoc($result_grade)) {
-                            $selected = ($row['grade'] == $g['product_grade_id']) ? 'selected' : '';
-                            echo "<option value='{$g['product_grade_id']}' $selected>{$g['product_grade']}</option>";
-                        }
-                        ?>
-                    </select>
-                </div>
             </div>
+        </div>
 
-            <div class="col-md-3">
-                <label class="form-label">Gauge</label>
-                <div class="mb-3">
-                    <select id="gauge" class="form-control gauge-cart select2-inventory" name="gauge">
-                        <option value="">Select Gauge...</option>
-                        <?php
-                        $query_gauge = "SELECT * FROM product_gauge WHERE hidden = '0' AND status = '1' ORDER BY product_gauge ASC";
-                        $result_gauge = mysqli_query($conn, $query_gauge);
-                        while ($gauge = mysqli_fetch_assoc($result_gauge)) {
-                            $selected = ($row['gauge'] == $gauge['product_gauge_id']) ? 'selected' : '';
-                            echo "<option value='{$gauge['product_gauge_id']}' $selected>{$gauge['product_gauge']}</option>";
-                        }
-                        ?>
-                    </select>
+        <div class="card shadow-sm rounded-3 mb-3">
+            <div class="card-header bg-light border-bottom">
+                <h5 class="mb-0 fw-bold">Product Inventory Color Mapping</h5>
+            </div>
+            <div class="card-body border rounded p-3">
+                <div class="row">
+                    <div class="col-md-4 mb-3">
+                        <div class="card text-center p-2">
+                            <h5>Color Group</h4>
+                            <p class="mb-0"><?= getColorGroupName($color_details['color_group']) ?></p>
+                        </div>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <div class="card text-center p-2">
+                            <h5>Color Name</h4>
+                            <p class="mb-0"><?= getColorName($color_id) ?></p>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
 
-        <div class="row pt-3" id="length_rows_container">
-            <div class="col-3 text-center"><label class="form-label">Length</label></div>
-            <div class="col-3"><label class="form-label">Qty on Hand</label></div>
-            <div class="col-3"><label class="form-label">Reorder Qty</label></div>
-            <div class="col-3 text-end"></div>
+        <div class="card shadow-sm rounded-3 mb-3">
+            <div class="card-header bg-light border-bottom">
+                <h5 class="mb-0 fw-bold">Product Inventory Information</h5>
+            </div>
+            <div class="card-body border rounded p-3">
+                <div class="row">
+                    <div class="col-md-8 mb-3">
+                        <div class="card text-center p-2">
+                            <h5>Product Description</h4>
+                            <p class="mb-0"><?= $product_details['product_item'] ?></p>
+                        </div>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <div class="card text-center p-2">
+                            <h5>Abbreviation</h4>
+                            <p class="mb-0"><?= $product_details['abbreviation'] ?></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
 
-        <div id="length_rows_wrapper" class="position-relative">
-            <?php
-            if (!empty($row['Inventory_id'])) {
-                $Inventory_id = $row['Inventory_id'];
+        <div class="card shadow-sm rounded-3 mb-3">
+            <div class="card-header bg-light border-bottom">
+                <h5 class="mb-0 fw-bold">Product Inventory Management</h5>
+            </div>
+            <div class="card-body border rounded p-3">
+                <div class="row">
+                    <div class="col-md-4 mb-3">
+                        <div class="card text-center p-2">
+                            <label for="quantity_ttl" class="form-label fw-bold">Quantity on Hand</label>
+                            <input 
+                                type="number" 
+                                class="form-control" 
+                                name="quantity_ttl" 
+                                id="quantity_ttl" 
+                                value="<?= $row['quantity_ttl'] ?? 0 ?>"
+                            >
+                        </div>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <div class="card text-center p-2">
+                            <label for="reorder_level" class="form-label fw-bold">Reorder Qty</label>
+                            <input 
+                                type="number" 
+                                class="form-control" 
+                                name="reorder_level" 
+                                id="reorder_level" 
+                                value="<?= $row['reorder_level'] ?? 0 ?>"
+                            >
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
 
-                $query_lengths = "
-                    SELECT i.inventory_id, i.dimension_id, i.quantity_ttl, i.reorder_level
-                    FROM inventory i
-                    WHERE i.Product_id = '{$row['Product_id']}'
-                    AND i.color_id = '{$row['color_id']}'
-                    AND i.grade = '{$row['grade']}'
-                    AND i.gauge = '{$row['gauge']}'
-                    AND i.lumber_type = '{$row['lumber_type']}'
-                ";
-
-                $result_lengths = mysqli_query($conn, $query_lengths);
-
-                if ($result_lengths && mysqli_num_rows($result_lengths) > 0) {
-                    while ($length = mysqli_fetch_assoc($result_lengths)) {
-                        ?>
-                        <div class="row length-row align-items-center mb-2">
-                            <div class="col-3">
-                                <select class="form-control dimension_id select2-inventory" name="dimension_id[]">
-                                    <option value="">Select Length...</option>
+        <div class="card shadow-sm rounded-3 mb-3">
+            <div class="card-header bg-light border-bottom">
+                <h5 class="mb-0 fw-bold">Product Location Management</h5>
+            </div>
+            <div class="card-body border rounded p-3">
+                <div class="row">
+                    <div class="col-md-4 mb-2 text-center">
+                        <label class="form-label">Warehouse</label>
+                        <div class="mb-2">
+                            <select id="Warehouse_id" class="form-control select2-inventory" name="Warehouse_id">
+                                <option value="">Select Warehouse...</option>
+                                <optgroup label="Warehouse">
                                     <?php
-                                    $res_dim = mysqli_query($conn, "SELECT dimension_id, dimension_category FROM dimensions ORDER BY dimension ASC");
-                                    while ($d = mysqli_fetch_assoc($res_dim)) {
-                                        $dimension_name = getDimensionName($d['dimension_id']);
-                                        $selected = ($d['dimension_id'] == $length['dimension_id']) ? 'selected' : '';
-                                        echo "<option value='{$d['dimension_id']}' data-category='{$d['dimension_category']}' $selected>{$dimension_name}</option>";
+                                    $query_warehouse = "SELECT * FROM warehouses";
+                                    $result_warehouse = mysqli_query($conn, $query_warehouse);
+                                    while ($w = mysqli_fetch_assoc($result_warehouse)) {
+                                        $selected = ($row['Warehouse_id'] == $w['WarehouseID']) ? 'selected' : '';
+                                        $location = htmlspecialchars($w['Location'], ENT_QUOTES);
+                                        echo "<option value='{$w['WarehouseID']}' data-location='{$location}' $selected>{$w['WarehouseName']}</option>";
                                     }
                                     ?>
-                                </select>
-                            </div>
-                            <div class="col-3">
-                                <input type="number" class="form-control quantity_ttl" name="quantity_ttl[]" value="<?= $length['quantity_ttl'] ?>" placeholder="Qty" min="0">
-                            </div>
-                            <div class="col-3">
-                                <input type="number" class="form-control reorder_level" name="reorder_level[]" value="<?= $length['reorder_level'] ?>" placeholder="Reorder Level" min="0">
-                            </div>
-                            <div class="col-3 text-start">
-                                <a href="javascript:void(0)" type="button" class="text-decoration-none fs-7 remove_length_row">&times;</a>
-                            </div>
+                                </optgroup>
+                            </select>
                         </div>
-                        <?php
-                    }
-                }
-            }
-            ?>
-        </div>
+                    </div>
+                    <div class="col-md-8 mb-3 text-center">
+                        <div class="card text-center p-2">
+                            <h5>Warehouse Location</h4>
+                            <p class="mb-0 warehouse_location"></p>
+                        </div>
+                    </div>
 
+                    <div class="col-md-4 text-center">
+                        <label class="form-label">Shelf</label>
+                        <div class="mb-2">
+                            <select id="Shelves_id" class="form-control select2-inventory" name="Shelves_id">
+                                <option value="">Select Shelf...</option>
+                                <optgroup label="Shelf">
+                                    <?php
+                                    $query_shelf = "SELECT * FROM shelves";
+                                    $result_shelf = mysqli_query($conn, $query_shelf);
+                                    while ($s = mysqli_fetch_assoc($result_shelf)) {
+                                        $selected = ($row['Shelves_id'] == $s['ShelfID']) ? 'selected' : '';
+                                        echo "<option value='{$s['ShelfID']}' $selected>{$s['ShelfCode']}</option>";
+                                    }
+                                    ?>
+                                </optgroup>
+                            </select>
+                        </div>
+                    </div>
 
-        <div class="text-end mt-2 row" id="add_length_row_container">
-            <div class="col-9 text-end">
-                <a href="javascript:void(0)" id="add_length_row" class="text-decoration-none fs-7">+</a>
-            </div>
-        </div>
+                    <div class="col-md-4 mb-2 text-center">
+                        <label class="form-label">Row</label>
+                        <div class="mb-2">
+                            <select id="Row_id" class="form-control select2-inventory" name="Row_id">
+                                <option value="">Select Row...</option>
+                                <optgroup label="Row">
+                                    <?php
+                                    $query_rows = "SELECT * FROM warehouse_rows";
+                                    $result_rows = mysqli_query($conn, $query_rows);
+                                    while ($r = mysqli_fetch_assoc($result_rows)) {
+                                        $selected = ($row['Row_id'] == $r['WarehouseRowID']) ? 'selected' : '';
+                                        echo "<option value='{$r['WarehouseRowID']}' $selected>{$r['WarehouseRowID']}</option>";
+                                    }
+                                    ?>
+                                </optgroup>
+                            </select>
+                        </div>
+                    </div>
 
-        <div id="length_row_template" class="d-none">
-            <div class="row length-row align-items-center mb-2">
-                <div class="col-3">
-                    <select class="form-control dimension_id select2-inventory" name="dimension_id[]">
-                        <option value="">Select Length...</option>
-                        <?php
-                        $query_dim = "SELECT dimension_id, dimension_category FROM dimensions ORDER BY dimension ASC";
-                        $res_dim = mysqli_query($conn, $query_dim);
-                        while ($d = mysqli_fetch_assoc($res_dim)) {
-                            $dimension_name = getDimensionName($d['dimension_id']);
-                            echo "<option value='{$d['dimension_id']}' data-category='{$d['dimension_category']}'>{$dimension_name}</option>";
-                        }
-                        ?>
-                    </select>
-                </div>
-                <div class="col-3">
-                    <input type="number" class="form-control quantity_ttl" name="quantity_ttl[]" placeholder="Qty" min="0">
-                </div>
-                <div class="col-3">
-                    <input type="number" class="form-control reorder_level" name="reorder_level[]" placeholder="Reorder Level" min="0">
-                </div>
-                <div class="col-3 text-start">
-                    <a href="javascript:void(0)" type="button" class="text-decoration-none fs-7 remove_length_row">&times;</a>
+                    <div class="col-md-4 mb-2 text-center">
+                        <label class="form-label">Bin</label>
+                        <div class="mb-2">
+                            <select id="Bin_id" class="form-control select2-inventory" name="Bin_id">
+                                <option value="">Select Bin...</option>
+                                <optgroup label="Bin">
+                                    <?php
+                                    $query_bin = "SELECT * FROM bins";
+                                    $result_bin = mysqli_query($conn, $query_bin);
+                                    while ($b = mysqli_fetch_assoc($result_bin)) {
+                                        $selected = ($row['Bin_id'] == $b['BinID']) ? 'selected' : '';
+                                        echo "<option value='{$b['BinID']}' $selected>{$b['BinCode']}</option>";
+                                    }
+                                    ?>
+                                </optgroup>
+                            </select>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
 
         <div class="row pt-3">
-            <div class="col-md-3 mb-2">
-                <label class="form-label">Warehouse</label>
-                <div class="mb-2">
-                    <select id="Warehouse_id" class="form-control select2-inventory" name="Warehouse_id">
-                        <option value="">Select Warehouse...</option>
-                        <optgroup label="Warehouse">
-                            <?php
-                            $query_warehouse = "SELECT * FROM warehouses";
-                            $result_warehouse = mysqli_query($conn, $query_warehouse);
-                            while ($w = mysqli_fetch_assoc($result_warehouse)) {
-                                $selected = ($row['Warehouse_id'] == $w['WarehouseID']) ? 'selected' : '';
-                                echo "<option value='{$w['WarehouseID']}' $selected>{$w['WarehouseName']}</option>";
-                            }
-                            ?>
-                        </optgroup>
-                    </select>
-                </div>
-            </div>
-            <div class="col-md-9 mb-2"></div>
+            
 
-            <div class="col-md-3">
-                <label class="form-label">Shelf</label>
-                <div class="mb-2">
-                    <select id="Shelves_id" class="form-control select2-inventory" name="Shelves_id">
-                        <option value="">Select Shelf...</option>
-                        <optgroup label="Shelf">
-                            <?php
-                            $query_shelf = "SELECT * FROM shelves";
-                            $result_shelf = mysqli_query($conn, $query_shelf);
-                            while ($s = mysqli_fetch_assoc($result_shelf)) {
-                                $selected = ($row['Shelves_id'] == $s['ShelfID']) ? 'selected' : '';
-                                echo "<option value='{$s['ShelfID']}' $selected>{$s['ShelfCode']}</option>";
-                            }
-                            ?>
-                        </optgroup>
-                    </select>
-                </div>
-            </div>
-
-            <div class="col-md-3 mb-2">
-                <label class="form-label">Bin</label>
-                <div class="mb-2">
-                    <select id="Bin_id" class="form-control select2-inventory" name="Bin_id">
-                        <option value="">Select Bin...</option>
-                        <optgroup label="Bin">
-                            <?php
-                            $query_bin = "SELECT * FROM bins";
-                            $result_bin = mysqli_query($conn, $query_bin);
-                            while ($b = mysqli_fetch_assoc($result_bin)) {
-                                $selected = ($row['Bin_id'] == $b['BinID']) ? 'selected' : '';
-                                echo "<option value='{$b['BinID']}' $selected>{$b['BinCode']}</option>";
-                            }
-                            ?>
-                        </optgroup>
-                    </select>
-                </div>
-            </div>
-
-            <div class="col-md-3 mb-2">
-                <label class="form-label">Row</label>
-                <div class="mb-2">
-                    <select id="Row_id" class="form-control select2-inventory" name="Row_id">
-                        <option value="">Select Row...</option>
-                        <optgroup label="Row">
-                            <?php
-                            $query_rows = "SELECT * FROM warehouse_rows";
-                            $result_rows = mysqli_query($conn, $query_rows);
-                            while ($r = mysqli_fetch_assoc($result_rows)) {
-                                $selected = ($row['Row_id'] == $r['WarehouseRowID']) ? 'selected' : '';
-                                echo "<option value='{$r['WarehouseRowID']}' $selected>{$r['WarehouseRowID']}</option>";
-                            }
-                            ?>
-                        </optgroup>
-                    </select>
-                </div>
-            </div>
-        </div>
-        
-        <div class="row pt-3 d-none">
-            <div class="col-md-6">
-                <label class="form-label">Supplier</label>
-                <select id="supplier_id" class="form-control select2-inventory inventory_supplier" name="supplier_id">
-                    <option value="">Select Supplier...</option>
-                    <optgroup label="Supplier">
-                        <?php
-                        $query_supplier = "SELECT * FROM supplier WHERE status = 1 ORDER BY supplier_name ASC";
-                        $result_supplier = mysqli_query($conn, $query_supplier);
-                        while ($sup = mysqli_fetch_assoc($result_supplier)) {
-                            $selected = ($row['supplier_id'] == $sup['supplier_id']) ? 'selected' : '';
-                            echo "<option value='{$sup['supplier_id']}' $selected>{$sup['supplier_name']}</option>";
-                        }
-                        ?>
-                    </optgroup>
-                </select>
-            </div>
-
-            <div class="col-md-6">
-                <label class="form-label">Date</label>
-                <input type="date" id="Date" name="Date" class="form-control" value="<?= $row['Date'] ?? date('Y-m-d') ?>">
-            </div>
+            
         </div>
         <?php
         
     }
+
+    if ($_POST['action'] == 'fetch_table') {
+        $draw = intval($_POST['draw'] ?? 1);
+        $start = intval($_POST['start'] ?? 0);
+        $length = intval($_POST['length'] ?? 100);
+        $isStock = $_POST['isStock'] ?? '';
+
+        $productRes = mysqli_query($conn, "
+            SELECT 
+                product_id, 
+                product_item, 
+                product_category, 
+                product_line, 
+                product_type, 
+                grade, 
+                gauge, 
+                available_lengths, 
+                color
+            FROM product
+            WHERE status = 1 AND hidden = 0
+        ");
+
+        $allCombinations = [];
+
+        while ($p = mysqli_fetch_assoc($productRes)) {
+            $lines   = json_decode($p['product_line'], true) ?: [$p['product_line']];
+            $types   = json_decode($p['product_type'], true) ?: [$p['product_type']];
+            $grades  = json_decode($p['grade'], true) ?: [$p['grade']];
+            $gauges  = json_decode($p['gauge'], true) ?: [$p['gauge']];
+            $lengths = json_decode($p['available_lengths'], true) ?: [$p['available_lengths']];
+            $colors  = json_decode($p['color'], true) ?: [$p['color']];
+
+            $combinations = array_combinations([
+                'product_line'     => $lines,
+                'product_type'     => $types,
+                'grade'            => $grades,
+                'gauge'            => $gauges,
+                'available_length' => $lengths,
+                'color'            => $colors
+            ]);
+
+            foreach ($combinations as $combo) {
+                $combo['product_id']   = $p['product_id'];
+                $combo['product_item'] = $p['product_item'];
+                $combo['product_category'] = $p['product_category'];
+
+                $allCombinations[] = $combo;
+            }
+        }
+
+        $data = [];
+        foreach ($allCombinations as $combo) {
+            $totalQty = 0;
+            $warehouse = '';
+            $statusHtml = '';
+
+
+            $where = ["Product_id = '{$combo['product_id']}'"];
+
+            $fields = [
+                'product_line'     => $combo['product_line'],
+                'product_type'     => $combo['product_type'],
+                'grade'            => $combo['grade'],
+                'gauge'            => $combo['gauge'],
+                'dimension_id'     => $combo['available_length'],
+                'color_id'         => $combo['color']
+            ];
+
+            foreach ($fields as $col => $val) {
+                if ($val !== '' && $val !== null) {
+                    $where[] = "$col = '$val'";
+                }
+            }
+
+            $invSql = "
+                SELECT 
+                    SUM(quantity_ttl) AS total_quantity,
+                    MAX(Warehouse_id) AS warehouse_id,
+                    MAX(status) AS status,
+                    latest.last_edit,
+                    latest.edited_by
+                FROM inventory
+                LEFT JOIN (
+                    SELECT Product_id, last_edit, edited_by
+                    FROM inventory
+                    WHERE Product_id = '{$combo['product_id']}'
+                    ORDER BY last_edit DESC
+                    LIMIT 1
+                ) AS latest USING (Product_id)
+                WHERE " . implode(" AND ", $where);
+
+            $invRes = $conn->query($invSql);
+            $invRow = $invRes->fetch_assoc();
+
+            $totalQty = $invRow['total_quantity'] ?? 0;
+
+            if($isStock == '1'){
+                if ($totalQty <= 0) continue;
+            }
+
+            $warehouse = $invRow['warehouse_id'] ?? '';
+            $statusHtml = ($invRow['status'] ?? 0) == 0
+                ? "<span class='alert alert-primary py-1 px-2 my-0'>New</span>"
+                : "<span class='alert alert-success py-1 px-2 my-0'>Transferred</span>";
+
+            $prod_abbrev = getProdID([
+                    'category' => $combo['product_category'],
+                    'type'     => $combo['product_type'],
+                    'line'     => $combo['product_line'],
+                    'grade'    => $combo['grade'],
+                    'gauge'    => $combo['gauge'],
+                    'color'    => $combo['color']
+                ]);
+
+            $lastEdit = $invRow['last_edit'] ? date('m/d/Y', strtotime($invRow['last_edit'])) : '';
+            if($invRow['edited_by'] > 0){
+                $staff = get_staff_name($invRow['edited_by']);
+            }
+
+            $data[] = [
+                $prod_abbrev,
+                $combo['product_item'],
+                cachedColorName($combo['color']),
+                cachedGradeName($combo['grade']),
+                cachedGaugeName($combo['gauge']),
+                cachedWarehouseName($warehouse),
+                $totalQty,
+                $lastEdit,
+                $staff,
+                $statusHtml,
+                '<a href="#" id="view_inventory_btn" 
+                    data-type="'.trim($combo['product_type']).'"
+                    data-line="'.trim($combo['product_line']).'"
+                    data-grade="'.trim($combo['grade']).'"
+                    data-gauge="'.trim($combo['gauge']).'"
+                    data-color="'.trim($combo['color']).'"
+                    data-dim="'.trim($combo['dimension_id']).'"
+                    data-id="'.trim($combo['product_id']).'">
+                        <i class="ti ti-pencil fs-5"></i>
+                </a>'
+            ];
+
+        }
+
+        if (!empty($_POST['order'][0])) {
+            $orderColumn = intval($_POST['order'][0]['column']);
+            $orderDir = $_POST['order'][0]['dir'] === 'desc' ? SORT_DESC : SORT_ASC;
+
+            $columnData = array_column($data, $orderColumn);
+
+            if ($orderColumn == 6) {
+                array_multisort(array_map('floatval', $columnData), $orderDir, $data);
+            } else {
+                array_multisort($columnData, $orderDir, $data);
+            }
+        }
+
+        $recordsTotal = count($data);
+        $pagedData = array_slice($data, $start, $length);
+
+        echo json_encode([
+            "draw" => $draw,
+            "recordsTotal" => $recordsTotal,
+            "recordsFiltered" => $recordsTotal,
+            "data" => $pagedData
+        ]);
+        exit;
+    }
+
+
+
+
 
     if ($action == "change_status") {
         $Inventory_id = mysqli_real_escape_string($conn, $_POST['inventory_id']);

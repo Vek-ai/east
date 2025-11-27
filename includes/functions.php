@@ -3991,9 +3991,15 @@ function getAbbrMap($table, $id_col, $abbr_col, $ids = []) {
 }
 
 function getAbbr($table, $abbr_col, $id) {
+    static $cache = [];
     global $conn;
 
     if (!$id) return '';
+
+    $cacheKey = "$table|$abbr_col|$id";
+    if (isset($cache[$cacheKey])) {
+        return $cache[$cacheKey];
+    }
 
     $pk = getPrimaryKey($table);
     if (!$pk) return '';
@@ -4003,11 +4009,12 @@ function getAbbr($table, $abbr_col, $id) {
     $sql = "SELECT `$abbr_col` FROM `$table` WHERE `$pk` = $id LIMIT 1";
     $res = mysqli_query($conn, $sql);
 
+    $value = '';
     if ($row = mysqli_fetch_assoc($res)) {
-        return $row[$abbr_col] ?? '';
+        $value = $row[$abbr_col] ?? '';
     }
-
-    return '';
+    $cache[$cacheKey] = $value;
+    return $value;
 }
 
 function getProdID(array $d) {

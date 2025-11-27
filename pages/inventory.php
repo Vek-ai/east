@@ -32,73 +32,34 @@ function showCol($name) {
 </style>
 <div class="container-fluid">
     <div class="font-weight-medium shadow-none position-relative overflow-hidden mb-7">
-    <div class="card-body px-0">
-        <div class="d-flex justify-content-between align-items-center">
-        <div><br>
-            <h4 class="font-weight-medium fs-14 mb-0"> Inventory</h4>
-            <nav aria-label="breadcrumb">
-            <ol class="breadcrumb">
-                <li class="breadcrumb-item">
-                <a class="text-muted text-decoration-none" href="">Home
-                </a>
-                </li>
-                <li class="breadcrumb-item text-muted" aria-current="page">Inventory</li>
-            </ol>
-            </nav>
-        </div>
-        <div>
-            <div class="d-sm-flex d-none gap-3 no-block justify-content-end align-items-center">
-            <div class="d-flex gap-2">
-                <div class="">
-                <small>This Month</small>
-                <h4 class="text-primary mb-0 ">$58,256</h4>
+        <div class="card-body px-0">
+            <div class="d-flex justify-content-between align-items-center">
+                <div><br>
+                    <h4 class="font-weight-medium fs-14 mb-0"> Inventory</h4>
+                    <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item">
+                        <a class="text-muted text-decoration-none" href="?page=">Home
+                        </a>
+                        </li>
+                        <li class="breadcrumb-item text-muted" aria-current="page">Inventory</li>
+                    </ol>
+                    </nav>
                 </div>
-                <div class="">
-                <div class="breadbar"></div>
-                </div>
-            </div>
-            <div class="d-flex gap-2">
-                <div class="">
-                <small>Last Month</small>
-                <h4 class="text-secondary mb-0 ">$58,256</h4>
-                </div>
-                <div class="">
-                <div class="breadbar2"></div>
-                </div>
-            </div>
+            
             </div>
         </div>
-        </div>
-    </div>
     </div>
 
     <div class="widget-content searchable-container list">
-    <?php                                                    
-    if ($permission === 'edit') {
-    ?>
-    <div class="card card-body">
-        <div class="row">
-        <div class="col-md-12 text-end d-flex justify-content-md-end justify-content-center mt-3 mt-md-0">
-            <button type="button" id="add_inventory_btn" class="btn btn-primary d-flex align-items-center" data-id="">
-                <i class="ti ti-users text-white me-1 fs-5"></i> Add Inventory
-            </button>
-        </div>
-        </div>
-    </div>
-    <?php
-    }
-    ?>
-
     <div class="modal fade" id="inventoryModal" tabindex="-1" aria-labelledby="inventoryModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-lg">
+        <div class="modal-dialog modal-dialog-centered modal-xl">
             <div class="modal-content">
                 <div class="modal-header d-flex align-items-center">
                     <h4 class="modal-title" id="inventoryModalLabel">Add Inventory</h4>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <form id="inventory_form" class="form-horizontal">
-                    
-
                     <div class="modal-body inventory_from_body">
                         
                     </div>
@@ -241,7 +202,7 @@ function showCol($name) {
                     </div>
                 </div>
                 <div class="px-3"> 
-                    <input type="checkbox" id="toggleActive" checked> Show New Only
+                    <input type="checkbox" id="toggleActive" checked> Show Instock Only
                 </div>
                 <div class="d-flex justify-content-end py-2">
                     <button type="button" class="btn btn-outline-primary reset_filters">
@@ -273,169 +234,8 @@ function showCol($name) {
                             </tr>
                         </thead>
                         <tbody>
-                        <?php
-                            $no = 1;
-                            $query_inventory = "
-                                SELECT 
-                                    Inventory_id,
-                                    Product_id,
-                                    color_id,
-                                    grade,
-                                    gauge,
-                                    SUM(quantity_ttl) AS total_quantity,
-                                    MAX(last_edit) AS last_edit,
-                                    MAX(addedby) AS added_by,
-                                    MAX(edited_by) AS edited_by,
-                                    MAX(Warehouse_id) AS Warehouse_id,
-                                    MAX(status) AS status
-                                FROM inventory
-                                GROUP BY Product_id, color_id, grade, gauge
-                                ORDER BY Product_id, color_id, grade, gauge;
-                            ";
-                            $result_inventory = mysqli_query($conn, $query_inventory);            
-                            while ($row_inventory = mysqli_fetch_array($result_inventory)) {
-                                $Inventory_id = $row_inventory['Inventory_id'];
-                                $Product_id = $row_inventory['Product_id'];
-                                $color_id = $row_inventory['color_id'];
-                                $Warehouse_id = $row_inventory['Warehouse_id'];
-                                $Shelves_id = $row_inventory['Shelves_id'];
-                                $Bin_id = $row_inventory['Bin_id'];
-                                $Row_id = $row_inventory['Row_id'];
-                                $Date = $row_inventory['Date'];
-                                $quantity = $row_inventory['quantity'];
-                                $quantity_ttl = $row_inventory['total_quantity'];
-                                $addedby = $row_inventory['addedby'];
-                                $db_status = $row_inventory['status'];
-
-                                if (trim($db_status) == '0') {
-                                    $status = "<a href='#' class='changeStatus' data-no='$no' data-id='$Inventory_id' data-status='$db_status'><div id='status-alert$no' class='alert alert-primary bg-primary text-white border-0 text-center py-1 px-2 my-0' style='border-radius: 5%;' role='alert'>New</div></a>";
-                                } else if (trim($db_status) == '1'){
-                                    $status = "<a href='#' class='changeStatus' data-no='$no' data-id='$Inventory_id' data-status='$db_status'><div id='status-alert$no' class='alert alert-success bg-success text-white border-0 text-center py-1 px-2 my-0' style='border-radius: 5%;' role='alert'>Transferred</div></a>";
-                                }else{
-                                    $status = "";
-                                }
-
-                                $last_edit = $row_inventory['last_edit'];
-                                if (!empty($row['last_edit']) && strtotime($row['last_edit']) !== false) {
-                                    $last_edit = date('m/d/Y', strtotime($row['last_edit']));
-                                }
-
-                                $added_by = $row_inventory['added_by'];
-                                $edited_by = $row_inventory['edited_by'];
-                        
-                                if ($edited_by != "0") {
-                                    $last_user_name = get_staff_name($edited_by);
-                                } elseif ($added_by != "0") {
-                                    $last_user_name = get_staff_name($added_by);
-                                } else {
-                                    $last_user_name = "";
-                                }
-
-                                $product = getProductDetails($Product_id);
-                                $product_category = $product['product_category'] ?? 0;
-                                $lumber_type = ucwords($row_inventory['lumber_type']);
-
-                                $color_id = $row_inventory['color_id'];
-                                $grade = $row_inventory['grade'];
-                                $gauge = $row_inventory['gauge'];
-
-                                $product_type_json = $product['product_type'] ?? '[]';
-                                $product_type_arr = json_decode($product_type_json, true);
-                                $product_type = !empty($product_type_arr) ? end($product_type_arr) : 0;
-                                ?>
-                                <tr class="search-items"
-                                    data-color="<?= $row_inventory['color_id'] ?? 0 ?>"
-                                    data-supplier="<?= $row_inventory['supplier_id'] ?? 0 ?>"
-                                    data-warehouse="<?= $row_inventory['Warehouse_id'] ?? 0 ?>"
-                                    data-shelf="<?= $row_inventory['Shelves_id'] ?? 0 ?>"
-                                    data-bin="<?= $row_inventory['Bin_id'] ?? 0 ?>"
-                                    data-row="<?= $row_inventory['Row_id'] ?? 0 ?>"
-                                    data-new="<?= $row_inventory['status'] == 0 ? 1 : 0 ?>"
-                                >
-                                    <td>
-                                        <?php 
-                                            $product_id_abbrev = fetchSingleProductABR(
-                                                $product_category,
-                                                '',
-                                                $grade,
-                                                $gauge,
-                                                $product_type,
-                                                $color_id,
-                                                ''
-                                            );
-
-                                            echo $product_id_abbrev;
-                                        ?>
-                                    </td>
-                                    <td><?= getProductName($Product_id) ?></td>
-                                    <td><?= getColorName($color_id) ?></td>
-                                    <td><?= getGradeName($grade) ?></td>
-                                    <td><?= getGaugeName($gauge) ?></td>
-                                    <td><?= getWarehouseName($Warehouse_id) ?></td>
-                                    <td><?= $quantity_ttl ?></td>
-                                    <td><?= $last_edit ?></td>
-                                    <td><?= $last_user_name ?></td>
-                                    <td><?= $status ?></td>
-                                    <td>
-                                        <div class="action-btn text-center">
-                                            <?php                                                    
-                                            if ($permission === 'edit') {
-                                            ?>
-                                            <a href="#" id="view_inventory_btn" title="Edit" class="text-primary edit" data-id="<?= $Inventory_id ?>">
-                                                <i class="ti ti-pencil fs-5"></i>
-                                            </a>
-                                            <?php
-                                            }
-                                            ?>
-
-                                        </div>
-                                    </td>
-                                </tr>
-                            <?php 
-                            $no++;
-                            } ?>
+                            
                         </tbody>
-                        <script>
-                            $(document).ready(function() {
-                                // Use event delegation for dynamically generated elements
-                                $(document).on('click', '.changeStatus', function(event) {
-                                    event.preventDefault(); 
-                                    var inventory_id = $(this).data('id');
-                                    var status = $(this).data('status');
-                                    var no = $(this).data('no');
-                                    $.ajax({
-                                        url: 'pages/inventory_ajax.php',
-                                        type: 'POST',
-                                        data: {
-                                            inventory_id: inventory_id,
-                                            status: status,
-                                            action: 'change_status'
-                                        },
-                                        success: function(response) {
-                                            console.log(response.trim())
-                                            if (response.trim() == 'success') {
-                                                if (status == 0) {
-                                                    $('#status-alert' + no).removeClass().addClass('alert alert-success bg-success text-white border-0 text-center py-1 px-2 my-0').text('Transferred');
-                                                    $(".changeStatus[data-no='" + no + "']").data('status', "1");
-                                                    $('.inventory' + no).addClass('emphasize-strike'); // Add emphasize-strike class
-                                                    $('#toggleActive').trigger('change');
-                                                } else {
-                                                    $('#status-alert' + no).removeClass().addClass('alert alert-primary bg-primary text-white border-0 text-center py-1 px-2 my-0').text('New');
-                                                    $(".changeStatus[data-no='" + no + "']").data('status', "0");
-                                                    $('.inventory' + no).removeClass('emphasize-strike'); // Remove emphasize-strike class
-                                                    $('#toggleActive').trigger('change');
-                                                }
-                                            } else {
-                                                alert('Failed to change status.');
-                                            }
-                                        },
-                                        error: function(jqXHR, textStatus, errorThrown) {
-                                            alert('Error: ' + textStatus + ' - ' + errorThrown);
-                                        }
-                                    });
-                                });
-                            });
-                            </script>
                     </table>
                     </div>
                 </div>
@@ -499,21 +299,34 @@ function showCol($name) {
         $(document).on('click', '#view_inventory_btn, #add_inventory_btn', function(event) {
             event.preventDefault(); 
             var id = $(this).data('id');
+            var type = $(this).data('type');
+            var line = $(this).data('line');
+            var grade = $(this).data('grade');
+            var gauge = $(this).data('gauge');
+            var color = $(this).data('color');
+            var dim = $(this).data('dim');
 
             $.ajax({
                 url: 'pages/inventory_ajax.php',
                 type: 'POST',
                 data: { 
                     id: id, 
+                    type: type, 
+                    line: line, 
+                    grade: grade, 
+                    gauge: gauge, 
+                    color: color, 
+                    dim: dim, 
                     action: "fetch_modal" 
                 },
                 success: function(response) {
                     $(".inventory_from_body").html(response);
-
-                    $('.dimension_id').each(function() {
-                        filterLengthsByProduct($(this));
+                    $(".select2-inventory").each(function() {
+                        $(this).select2({
+                            dropdownParent: $(this).parent()
+                        });
                     });
-
+                    updateWarehouseLocation();
                     $("#inventoryModal").modal("show");
                 },
                 error: function(jqXHR, textStatus, errorThrown) {
@@ -523,34 +336,17 @@ function showCol($name) {
             });
         });
 
-        $(document).on('change', '#product_id', function() {
-            $('.dimension_id').each(function() {
-                filterLengthsByProduct($(this));
-            });
-        });
+        function updateWarehouseLocation() {
+            var location = $('#Warehouse_id option:selected').data('location') || '';
+            $('.warehouse_location').text(location);
+        }
 
-        $(document).on('click', '#add_length_row', function() {
-            const $clone = $('#length_row_template .length-row').clone();
-            $('#length_rows_wrapper').append($clone);
-            filterLengthsByProduct($clone.find('.dimension_id'));
-        });
+        $(document).on('change', '#Warehouse_id', updateWarehouseLocation);
+
+        updateWarehouseLocation();
 
         $('#length_rows_wrapper').on('click', '.remove_length_row', function() {
             $(this).closest('.length-row').remove();
-        });
-
-        $(document).on('change', '#quantity_add, #pack_add', function(event) {
-            var qty = parseFloat($('#quantity_add').val());
-            var selectedOption = $('#pack_add').find('option:selected');
-            var pack = selectedOption.length ? parseFloat(selectedOption.data('count')) : 1;
-
-            pack = isNaN(pack) ? 1 : pack;
-
-            if (!isNaN(qty) && qty > 0) {
-                $('#quantity_ttl_add').val(qty * pack);
-            } else {
-                $('#quantity_ttl_add').val('');
-            }
         });
 
         $(document).on('submit', '#inventory_form', function(event) {
@@ -589,64 +385,47 @@ function showCol($name) {
             });
         });
 
-
         var table = $('#inventoryList').DataTable({
-            "order": [],
-            "dom": 'ltp'
+            processing: true,
+            serverSide: true,
+            pageLength: 50,
+            lengthMenu: [[100, 250, 500], [100, 250, 500]],
+            ajax: {
+                url: "pages/inventory_ajax.php",
+                type: "POST",
+                data: function (d) {
+                    d.action = "fetch_table";
+                    d.color = $('#color_filter').val()?.toString() || '';
+                    d.supplier = $('#supplier_filter').val()?.toString() || '';
+                    d.warehouse = $('#warehouse_filter').val()?.toString() || '';
+                    d.shelf = $('#shelves_filter').val()?.toString() || '';
+                    d.bin = $('#bin_filter').val()?.toString() || '';
+                    d.rowFilter = $('#row_filter').val()?.toString() || '';
+                    d.textSearch = $('#text-srh').val()?.toLowerCase().trim() || '';
+                    d.isStock = $('#toggleActive').prop('checked') ? 1 : 0;
+                }
+            },
+            drawCallback: function(settings) {
+                updateSelectedTags();
+            }
         });
 
-        $('#color_filter, #supplier_filter, #warehouse_filter, #shelves_filter, #bin_filter, #row_filter').on('change', filterTable);
-        $('#text-srh').on('keyup', filterTable);
-        $('#toggleActive').on('change', filterTable);
+        table.on('xhr', function(e, settings, json, xhr) {
+            console.log("DataTables server response:", json);
+        });
 
-        function filterTable() {
-            var color = $('#color_filter').val()?.toString() || '';
-            var supplier = $('#supplier_filter').val()?.toString() || '';
-            var warehouse = $('#warehouse_filter').val()?.toString() || '';
-            var shelf = $('#shelves_filter').val()?.toString() || '';
-            var bin = $('#bin_filter').val()?.toString() || '';
-            var rowFilter = $('#row_filter').val()?.toString() || '';
-            var textSearch = $('#text-srh').val().toLowerCase().trim();
-            var isNew = $('#toggleActive').prop('checked') ? 1 : 0;
+        table.on('error.dt', function(e, settings, techNote, message) {
+            console.error("Server response text:", settings.jqXHR.responseText);
+            alert("There was an error loading the table.");
+        });
 
-            $.fn.dataTable.ext.search = [];
 
-            if (textSearch) {
-                $.fn.dataTable.ext.search.push(function (settings, data, dataIndex) {
-                    var rowText = $(table.row(dataIndex).node()).text().toLowerCase();
-                    return rowText.includes(textSearch);
-                });
-            }
+        $('#color_filter, #supplier_filter, #warehouse_filter, #shelves_filter, #bin_filter, #row_filter')
+            .on('change', function () { table.ajax.reload(); });
 
-            $.fn.dataTable.ext.search.push(function (settings, data, dataIndex) {
-                var row = $(table.row(dataIndex).node());
+        $('#text-srh').on('keyup', function () { table.ajax.reload(); });
 
-                if (color && color !== '/' && row.data('color')?.toString() !== color) {
-                    return false;
-                }
-                if (supplier && supplier !== '/' && row.data('supplier')?.toString() !== supplier) {
-                    return false;
-                }
-                if (warehouse && warehouse !== '/' && row.data('warehouse')?.toString() !== warehouse) {
-                    return false;
-                }
-                if (shelf && shelf !== '/' && row.data('shelf')?.toString() !== shelf) {
-                    return false;
-                }
-                if (bin && bin !== '/' && row.data('bin')?.toString() !== bin) {
-                    return false;
-                }
-                if (rowFilter && rowFilter !== '/' && row.data('row')?.toString() !== rowFilter) {
-                    return false;
-                }
-                if (isNew && row.data('new') != isNew) return false;
-
-                return true;
-            }); 
-
-            table.draw();
-            updateSelectedTags();
-        }
+        $('#toggleActive').on('change', function () { table.ajax.reload(); });
 
         function updateSelectedTags() {
             const sections = [
@@ -688,8 +467,6 @@ function showCol($name) {
             });
         }
 
-        filterTable();
-
         $(document).on('click', '.reset_filters', function () {
             $('.filter-selection').each(function () {
                 $(this).val(null).trigger('change.select2');
@@ -697,7 +474,7 @@ function showCol($name) {
 
             $('#text-srh').val('');
 
-            filterTable();
+            table.ajax.reload();
         });
     });
 </script>
