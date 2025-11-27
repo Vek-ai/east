@@ -386,102 +386,164 @@ if(isset($_REQUEST['action'])) {
         $length = intval($_POST['length'] ?? 100);
         $isStock = $_POST['isStock'] ?? '';
 
-        $sql = "
+        $productRes = mysqli_query($conn, "
             SELECT 
-                p.product_id,
-                p.product_item,
-                p.product_category,
-                jt_lines.product_line,
-                jt_types.product_type,
-                jt_grades.grade,
-                jt_gauges.gauge,
-                jt_lengths.available_length,
-                jt_colors.color_id,
-                COALESCE(SUM(i.quantity_ttl), 0) AS total_quantity,
-                MAX(i.Warehouse_id) AS warehouse_id,
-                MAX(i.status) AS status,
-                MAX(i.last_edit) AS last_edit,
-                MAX(i.edited_by) AS edited_by
-            FROM product p
-            JOIN JSON_TABLE(p.product_line, '$[*]' COLUMNS(product_line INT PATH '$')) AS jt_lines
-            JOIN JSON_TABLE(p.product_type, '$[*]' COLUMNS(product_type INT PATH '$')) AS jt_types
-            JOIN JSON_TABLE(p.grade, '$[*]' COLUMNS(grade INT PATH '$')) AS jt_grades
-            JOIN JSON_TABLE(p.gauge, '$[*]' COLUMNS(gauge INT PATH '$')) AS jt_gauges
-            JOIN JSON_TABLE(p.available_lengths, '$[*]' COLUMNS(available_length INT PATH '$')) AS jt_lengths
-            JOIN JSON_TABLE(p.color, '$[*]' COLUMNS(color_id INT PATH '$')) AS jt_colors
-            LEFT JOIN inventory i ON i.Product_id = p.product_id
-                AND i.product_line = jt_lines.product_line
-                AND i.product_type = jt_types.product_type
-                AND i.grade = jt_grades.grade
-                AND i.gauge = jt_gauges.gauge
-                AND i.dimension_id = jt_lengths.available_length
-                AND i.color_id = jt_colors.color_id
-            WHERE p.status = 1 AND p.hidden = 0
-            GROUP BY 
-                p.product_id, 
-                jt_lines.product_line,
-                jt_types.product_type,
-                jt_grades.grade,
-                jt_gauges.gauge,
-                jt_lengths.available_length,
-                jt_colors.color_id
-            HAVING total_quantity > 0 OR ? = ''
-            ORDER BY p.product_id
-            LIMIT ?, ?
-        ";
+                product_id, 
+                product_item, 
+                product_category, 
+                product_line, 
+                product_type, 
+                grade, 
+                gauge, 
+                available_lengths, 
+                color
+            FROM product
+            WHERE status = 1 AND hidden = 0
+        ");
 
-        $stmt = $conn->prepare($sql);
-        $stmt->bind_param('sii', $isStock, $start, $length);
-        $stmt->execute();
-        $res = $stmt->get_result();
+        $allCombinations = [];
+
+        while ($p = mysqli_fetch_assoc($productRes)) {
+            $lines   = json_decode($p['product_line'], true) ?: [$p['product_line']];
+            $types   = json_decode($p['product_type'], true) ?: [$p['product_type']];
+            $grades  = json_decode($p['grade'], true) ?: [$p['grade']];
+            $gauges  = json_decode($p['gauge'], true) ?: [$p['gauge']];
+            $lengths = json_decode($p['available_lengths'], true) ?: [$p['available_lengths']];
+            $colors  = json_decode($p['color'], true) ?: [$p['color']];
+
+            $combinations = array_combinations([
+                'product_line'     => $lines,
+                'product_type'     => $types,
+                'grade'            => $grades,
+                'gauge'            => $gauges,
+                'available_length' => $lengths,
+                'color'            => $colors
+            ]);
+
+            foreach ($combinations as $combo) {
+                $combo['product_id']   = $p['product_id'];
+                $combo['product_item'] = $p['product_item'];
+                $combo['product_category'] = $p['product_category'];
+
+                $allCombinations[] = $combo;
+            }
+        }
 
         $data = [];
-        while ($row = $res->fetch_assoc()) {
-            $warehouse = cachedWarehouseName($row['warehouse_id']);
-            $statusHtml = ($row['status'] ?? 0) == 0
+        foreach ($allCombinations as $combo) {
+            $totalQty = 0;
+            $warehouse = '';
+            $statusHtml = '';
+
+
+            $where = ["Product_id = '{$combo['product_id']}'"];
+
+            $fields = [
+                'product_line'     => $combo['product_line'],
+                'product_type'     => $combo['product_type'],
+                'grade'            => $combo['grade'],
+                'gauge'            => $combo['gauge'],
+                'dimension_id'     => $combo['available_length'],
+                'color_id'         => $combo['color']
+            ];
+
+            foreach ($fields as $col => $val) {
+                if ($val !== '' && $val !== null) {
+                    $where[] = "$col = '$val'";
+                }
+            }
+
+            $invSql = "
+                SELECT 
+                    SUM(quantity_ttl) AS total_quantity,
+                    MAX(Warehouse_id) AS warehouse_id,
+                    MAX(status) AS status,
+                    latest.last_edit,
+                    latest.edited_by
+                FROM inventory
+                LEFT JOIN (
+                    SELECT Product_id, last_edit, edited_by
+                    FROM inventory
+                    WHERE Product_id = '{$combo['product_id']}'
+                    ORDER BY last_edit DESC
+                    LIMIT 1
+                ) AS latest USING (Product_id)
+                WHERE " . implode(" AND ", $where);
+
+            $invRes = $conn->query($invSql);
+            $invRow = $invRes->fetch_assoc();
+
+            $totalQty = $invRow['total_quantity'] ?? 0;
+
+            if($isStock == '1'){
+                if ($totalQty <= 0) continue;
+            }
+
+            $warehouse = $invRow['warehouse_id'] ?? '';
+            $statusHtml = ($invRow['status'] ?? 0) == 0
                 ? "<span class='alert alert-primary py-1 px-2 my-0'>New</span>"
                 : "<span class='alert alert-success py-1 px-2 my-0'>Transferred</span>";
-            $lastEdit = $row['last_edit'] ? date('m/d/Y', strtotime($row['last_edit'])) : '';
-            $staff = $row['edited_by'] > 0 ? get_staff_name($row['edited_by']) : '';
 
             $prod_abbrev = getProdID([
-                'category' => $row['product_category'],
-                'type'     => $row['product_type'],
-                'line'     => $row['product_line'],
-                'grade'    => $row['grade'],
-                'gauge'    => $row['gauge'],
-                'color'    => $row['color_id']
-            ]);
+                    'category' => $combo['product_category'],
+                    'type'     => $combo['product_type'],
+                    'line'     => $combo['product_line'],
+                    'grade'    => $combo['grade'],
+                    'gauge'    => $combo['gauge'],
+                    'color'    => $combo['color']
+                ]);
+
+            $lastEdit = $invRow['last_edit'] ? date('m/d/Y', strtotime($invRow['last_edit'])) : '';
+            if($invRow['edited_by'] > 0){
+                $staff = get_staff_name($invRow['edited_by']);
+            }
 
             $data[] = [
                 $prod_abbrev,
-                $row['product_item'],
-                cachedColorName($row['color_id']),
-                cachedGradeName($row['grade']),
-                cachedGaugeName($row['gauge']),
-                $warehouse,
-                $row['total_quantity'],
+                $combo['product_item'],
+                cachedColorName($combo['color']),
+                cachedGradeName($combo['grade']),
+                cachedGaugeName($combo['gauge']),
+                cachedWarehouseName($warehouse),
+                $totalQty,
                 $lastEdit,
                 $staff,
                 $statusHtml,
                 '<a href="#" id="view_inventory_btn" 
-                    data-type="'.trim($row['product_type']).'"
-                    data-line="'.trim($row['product_line']).'"
-                    data-grade="'.trim($row['grade']).'"
-                    data-gauge="'.trim($row['gauge']).'"
-                    data-color="'.trim($row['color_id']).'"
-                    data-dim="'.trim($row['available_length']).'"
-                    data-id="'.trim($row['product_id']).'">
+                    data-type="'.trim($combo['product_type']).'"
+                    data-line="'.trim($combo['product_line']).'"
+                    data-grade="'.trim($combo['grade']).'"
+                    data-gauge="'.trim($combo['gauge']).'"
+                    data-color="'.trim($combo['color']).'"
+                    data-dim="'.trim($combo['dimension_id']).'"
+                    data-id="'.trim($combo['product_id']).'">
                         <i class="ti ti-pencil fs-5"></i>
                 </a>'
             ];
+
         }
+
+        if (!empty($_POST['order'][0])) {
+            $orderColumn = intval($_POST['order'][0]['column']);
+            $orderDir = $_POST['order'][0]['dir'] === 'desc' ? SORT_DESC : SORT_ASC;
+
+            $columnData = array_column($data, $orderColumn);
+
+            if ($orderColumn == 6) {
+                array_multisort(array_map('floatval', $columnData), $orderDir, $data);
+            } else {
+                array_multisort($columnData, $orderDir, $data);
+            }
+        }
+
+        $recordsTotal = count($data);
+        $pagedData = array_slice($data, $start, $length);
 
         echo json_encode([
             "draw" => $draw,
-            "recordsTotal" => $res->num_rows,
-            "recordsFiltered" => $res->num_rows,
-            "data" => $data
+            "recordsTotal" => $recordsTotal,
+            "recordsFiltered" => $recordsTotal,
+            "data" => $pagedData
         ]);
         exit;
     }
