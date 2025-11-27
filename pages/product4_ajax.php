@@ -191,6 +191,45 @@ if(isset($_REQUEST['action'])) {
             }
         }
 
+        $lines   = $_POST['profile'] ?? [];
+        $types   = $_POST['product_type'] ?? [];
+        $grades  = $_POST['grade'] ?? [];
+        $gauges  = $_POST['gauge'] ?? [];
+        $lengths = $_POST['available_lengths'] ?? [];
+        $colors  = $_POST['color_paint'] ?? [];
+
+        $combinations = array_combinations([
+            'product_line' => $lines,
+            'product_type' => $types,
+            'grade'        => $grades,
+            'gauge'        => $gauges,
+            'dimension_id' => $lengths,
+            'color_id'     => $colors
+        ]);
+
+        if (!empty($combinations)) {
+            $insertValues = [];
+
+            foreach ($combinations as $combo) {
+                $line   = intval($combo['product_line']);
+                $type   = intval($combo['product_type']);
+                $grade  = intval($combo['grade']);
+                $gauge  = intval($combo['gauge']);
+                $dim    = intval($combo['dimension_id']);
+                $color  = intval($combo['color_id']);
+
+                $insertValues[] = "('$product_id', $line, $type, $grade, $gauge, $dim, $color, 0)";
+            }
+
+            if (!empty($insertValues)) {
+                $insertSql = "
+                    INSERT IGNORE INTO inventory
+                    (Product_id, product_line, product_type, grade, gauge, dimension_id, color_id, quantity_ttl)
+                    VALUES " . implode(',', $insertValues);
+
+                mysqli_query($conn, $insertSql);
+            }
+        }
     }
 
     if ($action == "get_product_abr") {
@@ -1246,48 +1285,63 @@ if(isset($_REQUEST['action'])) {
 
     if ($action == "duplicate_product") {
         $product_id = mysqli_real_escape_string($conn, $_POST['product_id']);
-        $check_sql = "SELECT * FROM product WHERE product_id = '$product_id'";
-        $result = $conn->query($check_sql);
+        $result = $conn->query("SELECT * FROM product WHERE product_id = '$product_id'");
 
         if ($result && $result->num_rows > 0) {
             $row = $result->fetch_assoc();
-            $new_product_name = "Copy - " . $row['product_item'] . " ";
+            $new_product_name = "Copy - " . $row['product_item'];
+
             $columns = [];
             $columns_sql = $conn->query("SHOW COLUMNS FROM product");
             while ($col = $columns_sql->fetch_assoc()) {
-                if ($col['Field'] !== 'product_id') {
-                    $columns[] = $col['Field'];
-                }
+                if ($col['Field'] !== 'product_id') $columns[] = $col['Field'];
             }
-
             $columns_list = implode(", ", $columns);
-            $columns_select = implode(", ", array_map(function ($col) use ($row, $conn, $new_product_name) {
+            $columns_select = implode(", ", array_map(function($col) use ($row, $conn, $new_product_name) {
                 return $col === 'product_item'
                     ? "'" . mysqli_real_escape_string($conn, $new_product_name) . "'"
                     : "product.$col";
             }, $columns));
 
-            $duplicate_sql = "INSERT INTO product ($columns_list) 
-                            SELECT $columns_select FROM product WHERE product_id = '$product_id'";
-            if ($conn->query($duplicate_sql)) {
-                $new_product_id = $conn->insert_id;
-                $duplicate_color_sql = "
-                    INSERT INTO product_color_assign (product_id, color_id, date, time, assigned_by, status)
-                    SELECT 
-                        '$new_product_id', 
-                        color_id, 
-                        date, 
-                        time, 
-                        assigned_by, 
-                        status
-                    FROM product_color_assign
-                    WHERE product_id = '$product_id'
-                ";
-                $conn->query($duplicate_color_sql);
-                echo "success";
-            } else {
-                echo "Error duplicating product: " . $conn->error;
+            $conn->query("INSERT INTO product ($columns_list) SELECT $columns_select FROM product WHERE product_id = '$product_id'");
+            $new_product_id = $conn->insert_id;
+
+            $conn->query("
+                INSERT INTO product_color_assign (product_id, color_id, date, time, assigned_by)
+                SELECT '$new_product_id', color_id, date, time, assigned_by
+                FROM product_color_assign
+                WHERE product_id = '$product_id'
+            ");
+
+            $lines   = json_decode($row['product_line'], true) ?: [$row['product_line']];
+            $types   = json_decode($row['product_type'], true) ?: [$row['product_type']];
+            $grades  = json_decode($row['grade'], true) ?: [$row['grade']];
+            $gauges  = json_decode($row['gauge'], true) ?: [$row['gauge']];
+            $lengths = json_decode($row['available_lengths'], true) ?: [$row['available_lengths']];
+            $colors  = json_decode($row['color'], true) ?: [$row['color']];
+
+            $combinations = array_combinations([
+                'product_line' => $lines,
+                'product_type' => $types,
+                'grade'        => $grades,
+                'gauge'        => $gauges,
+                'dimension_id' => $lengths,
+                'color_id'     => $colors
+            ]);
+
+            if (!empty($combinations)) {
+                $values = [];
+                foreach ($combinations as $c) {
+                    $values[] = "(
+                        '$new_product_id',
+                        '".implode("','", array_map('intval', $c))."',
+                        0
+                    )";
+                }
+                $conn->query("INSERT IGNORE INTO inventory (Product_id, product_line, product_type, grade, gauge, dimension_id, color_id, quantity_ttl) VALUES ".implode(',', $values));
             }
+
+            echo "success";
         } else {
             echo "Product not found.";
         }

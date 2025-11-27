@@ -388,7 +388,7 @@ function showCol($name) {
         var table = $('#inventoryList').DataTable({
             processing: true,
             serverSide: true,
-            pageLength: 50,
+            pageLength: 100,
             lengthMenu: [[100, 250, 500], [100, 250, 500]],
             ajax: {
                 url: "pages/inventory_ajax.php",
