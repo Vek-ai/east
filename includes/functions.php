@@ -4676,4 +4676,17 @@ function getBulkData($product_id) {
     ];
 }
 
+function array_combinations($arrays) {
+    $result = [[]];
+    foreach ($arrays as $key => $values) {
+        $tmp = [];
+        foreach ($result as $res) {
+            foreach ((array)$values as $val) {
+                $tmp[] = array_merge($res, [$key => $val]);
+            }
+        }
+        $result = $tmp;
+    }
+    return $result;
+}
 ?>

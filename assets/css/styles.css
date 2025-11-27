@@ -9035,7 +9035,7 @@
 }
 [data-bs-theme="dark"] {
   --bs-heading-color: #ffffff !important;
-  --bs-body-color: rgb(234 239 244 / 60%) !important;
+  --bs-body-color: rgba(255, 255, 255, 1) !important;
   --bs-card-subtitle-color: rgb(234 239 244 / 60%) !important;
   --bs-secondary-color: rgb(234 239 244 / 60%) !important;
 }
@@ -10016,7 +10016,7 @@
   --bs-body-font-size: 0.9375rem;
   --bs-body-font-weight: 400;
   --bs-body-line-height: 1.5;
-  --bs-body-color: #768b9e;
+  --bs-body-color: #000000;
   --bs-body-color-rgb: 118, 139, 158;
   --bs-body-bg: #fff;
   --bs-body-bg-rgb: 255, 255, 255;

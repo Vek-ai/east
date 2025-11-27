@@ -409,8 +409,8 @@ if(isset($_POST['fetch_cart'])){
                                                     </div>
                                                 </div>
                                             </td>
-                                            <td class="text-center align-middle">
-                                                <div class="d-flex align-items-center justify-content-center gap-1 flex-wrap" style="overflow: hidden;">
+                                            <td class="align-middle">
+                                                <div class="d-flex align-items-center justify-content-start gap-1 flex-wrap" style="overflow: hidden;">
                                                     <span class="<?= $show_unique_product_id ? '' : 'd-none' ?>" style="flex-grow: 1; overflow: hidden;">
                                                         <?= htmlspecialchars($unique_prod_id) ?>
                                                     </span>
@@ -655,8 +655,8 @@ if(isset($_POST['fetch_cart'])){
                                                     </div>
                                                 </div>
                                             </td>
-                                            <td class="text-center align-middle">
-                                                <div class="d-flex align-items-center justify-content-center gap-1 flex-wrap" style="overflow: hidden;">
+                                            <td class="align-middle">
+                                                <div class="d-flex align-items-center justify-content-start gap-1 flex-wrap" style="overflow: hidden;">
                                                     <span class="<?= $show_unique_product_id ? '' : 'd-none' ?>" style="flex-grow: 1; overflow: hidden;">
                                                         <?= htmlspecialchars($unique_prod_id) ?>
                                                     </span>
@@ -848,8 +848,8 @@ if(isset($_POST['fetch_cart'])){
                                                     </div>
                                                 </div>
                                             </td>
-                                            <td class="text-center align-middle">
-                                                <div class="d-flex align-items-center justify-content-center gap-1 flex-wrap" style="overflow: hidden;">
+                                            <td class="align-middle">
+                                                <div class="d-flex align-items-center justify-content-start gap-1 flex-wrap" style="overflow: hidden;">
                                                     <span class="<?= $show_unique_product_id ? '' : 'd-none' ?>" style="flex-grow: 1; overflow: hidden;">
                                                         <?= htmlspecialchars($unique_prod_id) ?>
                                                     </span>
@@ -1026,8 +1026,8 @@ if(isset($_POST['fetch_cart'])){
                                                     </div>
                                                 </div>
                                             </td>
-                                            <td class="text-center align-middle">
-                                                <div class="d-flex align-items-center justify-content-center gap-1 flex-wrap" style="overflow: hidden;">
+                                            <td class="align-middle">
+                                                <div class="d-flex align-items-center justify-content-start gap-1 flex-wrap" style="overflow: hidden;">
                                                     <span class="<?= $show_unique_product_id ? '' : 'd-none' ?>" style="flex-grow: 1; overflow: hidden;">
                                                         <?= htmlspecialchars($unique_prod_id) ?>
                                                     </span>
@@ -1228,7 +1228,7 @@ if(isset($_POST['fetch_cart'])){
                         
                         ?>
                         <tr>
-                            <th colspan="16">
+                            <th colspan="3">
                                 <?= $info['name'] . ': ' . number_format((float)$info['total_length'], 2) . ' ft' ?>
                             </th>
                         </tr>
@@ -1571,19 +1571,24 @@ if(isset($_POST['fetch_cart'])){
                 });
             });
 
-            $(".color-cart").each(function() {
-                if ($(this).data('select2')) {
-                    $(this).select2('destroy');
-                }
+            $(".color-cart").each(function () {
+                var select = $(this);
+                var options = select.find("option").toArray().sort(function (a, b) {
+                    return $(a).text().localeCompare($(b).text());
+                });
 
-                $(this).select2({
+                select.empty().append(options);
+                if (select.data("select2")) {
+                    select.select2("destroy");
+                }
+                select.select2({
                     width: '300px',
                     placeholder: "Select...",
                     dropdownAutoWidth: true,
                     dropdownParent: $('.modal.show'),
                     templateResult: formatOption,
                     language: {
-                        noResults: function() {
+                        noResults: function () {
                             return "No paint color";
                         }
                     }
