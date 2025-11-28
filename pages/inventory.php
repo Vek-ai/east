@@ -105,6 +105,48 @@ function showCol($name) {
                 </div>
                 <div class="align-items-center">
                     <div class="position-relative w-100 px-1 mb-2">
+                        <select id="category_filter" class="form-control color-cart select2-filter filter-selection" name="color_id">
+                            <option value="" >All Categories...</option>
+                            <?php
+                            $query_product_category = "SELECT * FROM product_category WHERE hidden = '0' AND status = '1' ORDER BY `product_category` ASC";
+                            $result_product_category = mysqli_query($conn, $query_product_category);            
+                            while ($row_product_category = mysqli_fetch_array($result_product_category)) {
+                            ?>
+                                <option value="<?= $row_product_category['product_category_id'] ?>"><?= $row_product_category['product_category'] ?></option>
+                            <?php   
+                            }
+                            ?>
+                        </select>
+                    </div>
+                    <div class="position-relative w-100 px-1 mb-2">
+                        <select id="line_filter" class="form-control color-cart select2-filter filter-selection" name="color_id">
+                            <option value="" >All Product Lines...</option>
+                            <?php
+                            $query_product_line = "SELECT * FROM product_line WHERE hidden = '0' AND status = '1' ORDER BY `product_line` ASC";
+                            $result_product_line = mysqli_query($conn, $query_product_line);            
+                            while ($row_product_line = mysqli_fetch_array($result_product_line)) {
+                            ?>
+                                <option value="<?= $row_product_line['product_line_id'] ?>" <?= $selected ?>><?= $row_product_line['product_line'] ?></option>
+                            <?php   
+                            }
+                            ?>
+                        </select>
+                    </div>
+                    <div class="position-relative w-100 px-1 mb-2">
+                        <select id="type_filter" class="form-control color-cart select2-filter filter-selection" name="color_id">
+                            <option value="" >All Product Types...</option>
+                            <?php
+                            $query_product_type = "SELECT * FROM product_type WHERE hidden = '0' AND status = '1' ORDER BY `product_type` ASC";
+                            $result_product_type = mysqli_query($conn, $query_product_type);            
+                            while ($row_product_type = mysqli_fetch_array($result_product_type)) {
+                            ?>
+                                <option value="<?= $row_product_type['product_type_id'] ?>" <?= $selected ?>><?= $row_product_type['product_type'] ?></option>
+                            <?php   
+                            }
+                            ?>
+                        </select>
+                    </div>
+                    <div class="position-relative w-100 px-1 mb-2">
                         <select id="color_filter" class="form-control color-cart select2-filter filter-selection" name="color_id">
                             <option value="" >All Colors...</option>
                             <?php
@@ -113,6 +155,34 @@ function showCol($name) {
                             while ($row_paint_colors = mysqli_fetch_array($result_paint_colors)) {
                             ?>
                                 <option value="<?= $row_paint_colors['color_id'] ?>" <?= $selected ?> data-color="<?= getColorHexFromColorID($row_paint_colors['color_id']) ?>"><?= $row_paint_colors['color_name'] ?></option>
+                            <?php   
+                            }
+                            ?>
+                        </select>
+                    </div>
+                    <div class="position-relative w-100 px-1 mb-2">
+                        <select id="grade_filter" class="form-control color-cart select2-filter filter-selection" name="color_id">
+                            <option value="" >All Grades...</option>
+                            <?php
+                            $query_grades = "SELECT * FROM product_grade WHERE hidden = '0' AND status = '1' ORDER BY `product_grade` ASC";
+                            $result_grades = mysqli_query($conn, $query_grades);            
+                            while ($row_grades = mysqli_fetch_array($result_grades)) {
+                            ?>
+                                <option value="<?= $row_grades['product_grade_id'] ?>" <?= $selected ?>><?= $row_grades['product_grade'] ?></option>
+                            <?php   
+                            }
+                            ?>
+                        </select>
+                    </div>
+                    <div class="position-relative w-100 px-1 mb-2">
+                        <select id="gauge_filter" class="form-control color-cart select2-filter filter-selection" name="color_id">
+                            <option value="" >All Gauges...</option>
+                            <?php
+                            $query_product_gauge = "SELECT * FROM product_gauge WHERE hidden = '0' AND status = '1' ORDER BY `product_gauge` ASC";
+                            $result_product_gauge = mysqli_query($conn, $query_product_gauge);            
+                            while ($row_product_gauge = mysqli_fetch_array($result_product_gauge)) {
+                            ?>
+                                <option value="<?= $row_product_gauge['product_gauge_id'] ?>" <?= $selected ?>><?= $row_product_gauge['product_gauge'] ?></option>
                             <?php   
                             }
                             ?>
@@ -132,7 +202,6 @@ function showCol($name) {
                                 }
                                 ?>
                             </optgroup>
-                            
                         </select>
                     </div>
                     <div class="position-relative w-100 px-1 mb-2">
@@ -149,9 +218,9 @@ function showCol($name) {
                                 }
                                 ?>
                             </optgroup>
-                            
                         </select>
                     </div>
+                    <!-- 
                     <div class="position-relative w-100 px-1 mb-2">
                         <select id="shelves_filter" class="form-control select2-filter filter-selection" name="Shelves_id">
                             <option value="" >All Shelfs...</option>
@@ -199,7 +268,8 @@ function showCol($name) {
                                 ?>
                             </optgroup>
                         </select>
-                    </div>
+                    </div> 
+                    -->
                 </div>
                 <div class="px-3"> 
                     <input type="checkbox" id="toggleActive" checked> Show Instock Only
@@ -305,6 +375,7 @@ function showCol($name) {
             var gauge = $(this).data('gauge');
             var color = $(this).data('color');
             var dim = $(this).data('dim');
+            var inv = $(this).data('inv');
 
             $.ajax({
                 url: 'pages/inventory_ajax.php',
@@ -317,6 +388,7 @@ function showCol($name) {
                     gauge: gauge, 
                     color: color, 
                     dim: dim, 
+                    inv: inv, 
                     action: "fetch_modal" 
                 },
                 success: function(response) {
@@ -395,7 +467,14 @@ function showCol($name) {
                 type: "POST",
                 data: function (d) {
                     d.action = "fetch_table";
+
+                    d.category = $('#category_filter').val()?.toString() || '';
+                    d.line = $('#line_filter').val()?.toString() || '';
+                    d.type = $('#type_filter').val()?.toString() || '';
                     d.color = $('#color_filter').val()?.toString() || '';
+                    d.grade = $('#grade_filter').val()?.toString() || '';
+                    d.gauge = $('#gauge_filter').val()?.toString() || '';
+                    
                     d.supplier = $('#supplier_filter').val()?.toString() || '';
                     d.warehouse = $('#warehouse_filter').val()?.toString() || '';
                     d.shelf = $('#shelves_filter').val()?.toString() || '';
@@ -466,6 +545,10 @@ function showCol($name) {
                 $(this).parent().remove();
             });
         }
+
+        $(document).on('change', '.filter-selection', function () {
+            table.ajax.reload();
+        });
 
         $(document).on('click', '.reset_filters', function () {
             $('.filter-selection').each(function () {

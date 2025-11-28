@@ -171,6 +171,94 @@ if(isset($_REQUEST['action'])) {
         }
     }
 
+    if ($action == "add_update_rack") {
+        $id = mysqli_real_escape_string($conn, $_POST['id']);
+        $WarehouseID = mysqli_real_escape_string($conn, $_POST['WarehouseID']);
+        $rack = mysqli_real_escape_string($conn, $_POST['rack']);
+        $description = mysqli_real_escape_string($conn, $_POST['description']);
+    
+        $checkQuery = "SELECT * FROM warehouse_rack WHERE id = '$id'";
+        $result = mysqli_query($conn, $checkQuery);
+    
+        if (mysqli_num_rows($result) > 0) {
+            $updateQuery = "
+                UPDATE warehouse_rack 
+                SET 
+                    rack = '$rack', 
+                    description = '$description'
+                WHERE id = '$id'
+            ";
+    
+            if (mysqli_query($conn, $updateQuery)) {
+                echo "success_update";
+            } else {
+                echo "Error updating warehouse: " . mysqli_error($conn);
+            }
+        } else {
+            $insertQuery = "
+                INSERT INTO warehouse_rack (
+                    rack,
+                    WarehouseID,
+                    description
+                ) VALUES (
+                    '$rack', 
+                    '$WarehouseID', 
+                    '$description'
+                )
+            ";
+    
+            if (mysqli_query($conn, $insertQuery)) {
+                echo "success_add";
+            } else {
+                echo "Error adding warehouse: " . mysqli_error($conn);
+            }
+        }
+    }
+
+    if ($action == "add_update_slot") {
+        $id = mysqli_real_escape_string($conn, $_POST['id']);
+        $WarehouseID = mysqli_real_escape_string($conn, $_POST['WarehouseID']);
+        $slot = mysqli_real_escape_string($conn, $_POST['slot']);
+        $description = mysqli_real_escape_string($conn, $_POST['description']);
+    
+        $checkQuery = "SELECT * FROM warehouse_slot WHERE id = '$id'";
+        $result = mysqli_query($conn, $checkQuery);
+    
+        if (mysqli_num_rows($result) > 0) {
+            $updateQuery = "
+                UPDATE warehouse_slot 
+                SET 
+                    slot = '$slot', 
+                    description = '$description'
+                WHERE id = '$id'
+            ";
+    
+            if (mysqli_query($conn, $updateQuery)) {
+                echo "success_update";
+            } else {
+                echo "Error updating warehouse: " . mysqli_error($conn);
+            }
+        } else {
+            $insertQuery = "
+                INSERT INTO warehouse_slot (
+                    slot,
+                    WarehouseID,
+                    description
+                ) VALUES (
+                    '$slot', 
+                    '$WarehouseID', 
+                    '$description'
+                )
+            ";
+    
+            if (mysqli_query($conn, $insertQuery)) {
+                echo "success_add";
+            } else {
+                echo "Error adding warehouse: " . mysqli_error($conn);
+            }
+        }
+    }
+
     if ($action == "add_update_row") {
         $WarehouseRowID = mysqli_real_escape_string($conn, $_POST['WarehouseRowID']);
         $WarehouseID = mysqli_real_escape_string($conn, $_POST['WarehouseID']);
@@ -218,6 +306,24 @@ if(isset($_REQUEST['action'])) {
     if ($action == "section_delete") {
         $id = mysqli_real_escape_string($conn, $_POST['id']);
         $updateQuery = "UPDATE warehouse_section SET hidden = '1' WHERE id = '$id'";
+        if (mysqli_query($conn, $updateQuery)) {
+            echo "success";
+        } else {
+            echo "Error updating warehouse: " . mysqli_error($conn);
+        }
+    }
+    if ($action == "rack_delete") {
+        $id = mysqli_real_escape_string($conn, $_POST['id']);
+        $updateQuery = "UPDATE warehouse_rack SET hidden = '1' WHERE id = '$id'";
+        if (mysqli_query($conn, $updateQuery)) {
+            echo "success";
+        } else {
+            echo "Error updating warehouse: " . mysqli_error($conn);
+        }
+    }
+    if ($action == "slot_delete") {
+        $id = mysqli_real_escape_string($conn, $_POST['id']);
+        $updateQuery = "UPDATE warehouse_slot SET hidden = '1' WHERE id = '$id'";
         if (mysqli_query($conn, $updateQuery)) {
             echo "success";
         } else {
@@ -344,6 +450,84 @@ if(isset($_REQUEST['action'])) {
                         <div class="mb-3">
                             <label class="form-label">Description</label>
                             <textarea class="form-control" id="Description" name="Description" rows="5"><?= $row['Description'] ?? '' ?></textarea>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+        <?php
+    }
+
+    if ($action == "add_edit_rack") {
+        $id = mysqli_real_escape_string($conn, $_POST['id']);
+        $warehouse_id = mysqli_real_escape_string($conn, $_POST['warehouse_id']);
+
+        $checkQuery = "SELECT * FROM warehouse_rack WHERE id = '$id'";
+        $result = mysqli_query($conn, $checkQuery);
+    
+        if (mysqli_num_rows($result) > 0) {
+            $row = mysqli_fetch_assoc($result);
+        }
+        ?>
+        <div class="card">
+            <div class="card-body">
+                <input type="hidden" id="id" name="id" class="form-control" value="<?= $row['id'] ?? $id ?>"/>
+                <input type="hidden" id="WarehouseID" name="WarehouseID" class="form-control" value="<?= $row['WarehouseID'] ?? $warehouse_id ?>"/>
+
+                <div class="row pt-3">
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label class="form-label">Rack</label>
+                            <input type="text" id="rack" name="rack" class="form-control" value="<?= $row['rack'] ?? '' ?>"/>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row pt-3">
+                    <div class="col-md-12">
+                        <div class="mb-3">
+                            <label class="form-label">Description</label>
+                            <textarea class="form-control" id="description" name="description" rows="5"><?= $row['description'] ?? '' ?></textarea>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+        <?php
+    }
+
+    if ($action == "add_edit_slot") {
+        $id = mysqli_real_escape_string($conn, $_POST['id']);
+        $warehouse_id = mysqli_real_escape_string($conn, $_POST['warehouse_id']);
+
+        $checkQuery = "SELECT * FROM warehouse_slot WHERE id = '$id'";
+        $result = mysqli_query($conn, $checkQuery);
+    
+        if (mysqli_num_rows($result) > 0) {
+            $row = mysqli_fetch_assoc($result);
+        }
+        ?>
+        <div class="card">
+            <div class="card-body">
+                <input type="hidden" id="id" name="id" class="form-control" value="<?= $row['id'] ?? $id ?>"/>
+                <input type="hidden" id="WarehouseID" name="WarehouseID" class="form-control" value="<?= $row['WarehouseID'] ?? $warehouse_id ?>"/>
+
+                <div class="row pt-3">
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label class="form-label">Slot</label>
+                            <input type="text" id="slot" name="slot" class="form-control" value="<?= $row['slot'] ?? '' ?>"/>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row pt-3">
+                    <div class="col-md-12">
+                        <div class="mb-3">
+                            <label class="form-label">Description</label>
+                            <textarea class="form-control" id="description" name="description" rows="5"><?= $row['description'] ?? '' ?></textarea>
                         </div>
                     </div>
                 </div>

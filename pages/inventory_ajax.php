@@ -49,6 +49,8 @@ if(isset($_REQUEST['action'])) {
         $product_line = mysqli_real_escape_string($conn, $_POST['product_line']);
         $color_id     = mysqli_real_escape_string($conn, $_POST['color_id']);
         $Warehouse_id = mysqli_real_escape_string($conn, $_POST['Warehouse_id']);
+        $rack         = mysqli_real_escape_string($conn, $_POST['rack']);
+        $slot         = mysqli_real_escape_string($conn, $_POST['slot']);
         $Shelves_id   = mysqli_real_escape_string($conn, $_POST['Shelves_id']);
         $Bin_id       = mysqli_real_escape_string($conn, $_POST['Bin_id']);
         $Row_id       = mysqli_real_escape_string($conn, $_POST['Row_id']);
@@ -89,6 +91,8 @@ if(isset($_REQUEST['action'])) {
                     product_type='$product_type',
                     product_line='$product_line',
                     Warehouse_id='$Warehouse_id',
+                    rack='$rack',
+                    slot='$slot',
                     Shelves_id='$Shelves_id',
                     Bin_id='$Bin_id',
                     Row_id='$Row_id',
@@ -104,9 +108,9 @@ if(isset($_REQUEST['action'])) {
         } else {
             $insertQuery = "
                 INSERT INTO inventory
-                    (Product_id, product_type, product_line, color_id, grade, gauge, dimension_id, Warehouse_id, Shelves_id, Bin_id, Row_id, Date, quantity_ttl, reorder_level, addedby, last_edit, edited_by)
+                    (Product_id, product_type, product_line, color_id, grade, gauge, dimension_id, Warehouse_id, rack, slot, Shelves_id, Bin_id, Row_id, Date, quantity_ttl, reorder_level, addedby, last_edit, edited_by)
                 VALUES
-                    ('$Product_id', '$product_type', '$product_line', '$color_id', '$grade', '$gauge', '$dimension_id', '$Warehouse_id', '$Shelves_id', '$Bin_id', '$Row_id', '$Date', '$quantity_ttl', '$reorder_level', '$addedby', '$now', '$addedby')
+                    ('$Product_id', '$product_type', '$product_line', '$color_id', '$grade', '$gauge', '$dimension_id', '$Warehouse_id', '$rack', '$slot', '$Shelves_id', '$Bin_id', '$Row_id', '$Date', '$quantity_ttl', '$reorder_level', '$addedby', '$now', '$addedby')
             ";
             if (!mysqli_query($conn, $insertQuery)) die("Error inserting inventory: " . mysqli_error($conn));
         }
@@ -115,32 +119,22 @@ if(isset($_REQUEST['action'])) {
     }
 
     if ($action == "fetch_modal") {
-        $Product_id   = (int)($_POST['id'] ?? 0);
-        $product_type = (int)($_POST['type'] ?? 0);
-        $product_line = (int)($_POST['line'] ?? 0);
-        $grade        = (int)($_POST['grade'] ?? 0);
-        $gauge        = (int)($_POST['gauge'] ?? 0);
-        $color_id     = (int)($_POST['color'] ?? 0);
-        $dimension_id = (int)($_POST['dim'] ?? 0);
 
-        $where = [];
-        if ($Product_id)   $where[] = "Product_id = '$Product_id'";
-        if ($product_type) $where[] = "product_type = '$product_type'";
-        if ($product_line) $where[] = "product_line = '$product_line'";
-        if ($grade)        $where[] = "grade = '$grade'";
-        if ($gauge)        $where[] = "gauge = '$gauge'";
-        if ($color_id)     $where[] = "color_id = '$color_id'";
-        if ($dimension_id) $where[] = "dimension_id = '$dimension_id'";
+        $Inventory_id = (int)($_POST['inv'] ?? 0);
 
         $row = [];
-        if (!empty($where)) {
-            $query_inventory = "SELECT * FROM inventory WHERE " . implode(" AND ", $where) . " LIMIT 1";
+        $Product_id = 0;
+        $color_id = 0;
+        if (!empty($Inventory_id)) {
+            $query_inventory = "SELECT * FROM inventory WHERE Inventory_id = '$Inventory_id' LIMIT 1";
             $res = mysqli_query($conn, $query_inventory);
             if ($res) $row = mysqli_fetch_assoc($res);
         }
         $result_inventory = mysqli_query($conn, $query_inventory);
         if ($result_inventory && mysqli_num_rows($result_inventory) > 0) {
             $row = mysqli_fetch_assoc($result_inventory);
+            $Product_id = ($row['Product_id']);
+            $color_id = ($row['color_id']);
         }
 
         $product_details = getProductDetails($Product_id);
@@ -158,6 +152,7 @@ if(isset($_REQUEST['action'])) {
             <div class="card-header bg-light border-bottom">
                 <h5 class="mb-0 fw-bold">Product Inventory Identifier</h5>
             </div>
+            <script>console.log(<?= print_r($row) ?>);</script>
             <div class="card-body border rounded p-3">
                 <div class="row">
                     <div class="col-md-4 mb-3">
@@ -169,31 +164,31 @@ if(isset($_REQUEST['action'])) {
                     <div class="col-md-4 mb-3">
                         <div class="card text-center p-2">
                             <h5>Product Line</h4>
-                            <p class="mb-0"><?= getProductCategoryName($product_line) ?></p>
+                            <p class="mb-0"><?= getProductCategoryName($row['product_line'] ?? '') ?></p>
                         </div>
                     </div>
                     <div class="col-md-4 mb-3">
                         <div class="card text-center p-2">
                             <h5>Product Type</h4>
-                            <p class="mb-0"><?= getProductTypeName($product_type); ?></p>
+                            <p class="mb-0"><?= getProductTypeName($row['product_type'] ?? ''); ?></p>
                         </div>
                     </div>
                     <div class="col-md-4 mb-3">
                         <div class="card text-center p-2">
                             <h5>Grade</h4>
-                            <p class="mb-0"><?= getGradeName($grade); ?></p>
+                            <p class="mb-0"><?= getGradeName($row['grade'] ?? ''); ?></p>
                         </div>
                     </div>
                     <div class="col-md-4 mb-3">
                         <div class="card text-center p-2">
                             <h5>Gauge</h4>
-                            <p class="mb-0"><?= getGaugeName($gauge); ?></p>
+                            <p class="mb-0"><?= getGaugeName($row['gauge'] ?? ''); ?></p>
                         </div>
                     </div>
                     <div class="col-md-4 mb-3">
                         <div class="card text-center p-2">
                             <h5>Length</h4>
-                            <p class="mb-0"><?= getDimensionName($dimension_id); ?></p>
+                            <p class="mb-0"><?= getDimensionName($row['dimension_id'] ?? ''); ?></p>
                         </div>
                     </div>
                 </div>
@@ -216,7 +211,7 @@ if(isset($_REQUEST['action'])) {
                     <div class="col-md-4 mb-3">
                         <div class="card text-center p-2">
                             <h5>Color Name</h4>
-                            <p class="mb-0"><?= getColorName($color_id) ?></p>
+                            <p class="mb-0"><?= getColorName($row['color_id'] ?? '') ?></p>
                         </div>
                     </div>
                 </div>
@@ -285,8 +280,11 @@ if(isset($_REQUEST['action'])) {
             </div>
             <div class="card-body border rounded p-3">
                 <div class="row">
-                    <div class="col-md-4 mb-2 text-center">
-                        <label class="form-label">Warehouse</label>
+                    <div class="col-md-4 mb-2">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <label class="form-label">Warehouse</label>
+                            <a href="?page=warehouses" target="_blank" class="text-decoration-none">Edit</a>
+                        </div>
                         <div class="mb-2">
                             <select id="Warehouse_id" class="form-control select2-inventory" name="Warehouse_id">
                                 <option value="">Select Warehouse...</option>
@@ -312,10 +310,50 @@ if(isset($_REQUEST['action'])) {
                     </div>
 
                     <div class="col-md-4 text-center">
+                        <label class="form-label">Rack <?= $row['rack'] ?></label>
+                        <div class="mb-2">
+                            <select id="rack" class="form-control select2-inventory" name="rack">
+                                <option value="">N/A</option>
+                                <optgroup label="Rack">
+                                    <?php
+                                    $query_rack = "SELECT * FROM warehouse_rack WHERE hidden = '0'";
+                                    $result_rack = mysqli_query($conn, $query_rack);
+                                    while ($r = mysqli_fetch_assoc($result_rack)) {
+                                        $selected = ($row['rack'] == $r['id']) ? 'selected' : '';
+                                        echo "<option value='{$r['id']}' $selected>{$r['rack']}</option>";
+                                    }
+                                    ?>
+                                </optgroup>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="col-md-4 text-center">
+                        <label class="form-label">Slot</label>
+                        <div class="mb-2">
+                            <select id="slot" class="form-control select2-inventory" name="slot">
+                                <option value="">N/A</option>
+                                <optgroup label="Slot">
+                                    <?php
+                                    $query_slot = "SELECT * FROM warehouse_slot WHERE hidden = '0'";
+                                    $result_slot = mysqli_query($conn, $query_slot);
+                                    while ($s = mysqli_fetch_assoc($result_slot)) {
+                                        $selected = ($row['slot'] == $s['id']) ? 'selected' : '';
+                                        echo "<option value='{$s['id']}' $selected>{$s['slot']}</option>";
+                                    }
+                                    ?>
+                                </optgroup>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="col-md-4"></div>
+
+                    <div class="col-md-4 text-center">
                         <label class="form-label">Shelf</label>
                         <div class="mb-2">
                             <select id="Shelves_id" class="form-control select2-inventory" name="Shelves_id">
-                                <option value="">Select Shelf...</option>
+                                <option value="">N/A</option>
                                 <optgroup label="Shelf">
                                     <?php
                                     $query_shelf = "SELECT * FROM shelves";
@@ -334,7 +372,7 @@ if(isset($_REQUEST['action'])) {
                         <label class="form-label">Row</label>
                         <div class="mb-2">
                             <select id="Row_id" class="form-control select2-inventory" name="Row_id">
-                                <option value="">Select Row...</option>
+                                <option value="">N/A</option>
                                 <optgroup label="Row">
                                     <?php
                                     $query_rows = "SELECT * FROM warehouse_rows";
@@ -353,7 +391,7 @@ if(isset($_REQUEST['action'])) {
                         <label class="form-label">Bin</label>
                         <div class="mb-2">
                             <select id="Bin_id" class="form-control select2-inventory" name="Bin_id">
-                                <option value="">Select Bin...</option>
+                                <option value="">N/A</option>
                                 <optgroup label="Bin">
                                     <?php
                                     $query_bin = "SELECT * FROM bins";
@@ -387,7 +425,13 @@ if(isset($_REQUEST['action'])) {
         $isStock = $_POST['isStock'] ?? 0;
 
         $filters = ["p.status = 1", "p.hidden = 0"];
+        if (!empty($_POST['category'])) $filters[] = "p.product_category IN (" . implode(',', array_map('intval', explode(',', $_POST['category']))) . ")";
+        if (!empty($_POST['line'])) $filters[] = "i.product_line IN (" . implode(',', array_map('intval', explode(',', $_POST['line']))) . ")";
+        if (!empty($_POST['type'])) $filters[] = "i.product_type IN (" . implode(',', array_map('intval', explode(',', $_POST['type']))) . ")";
         if (!empty($_POST['color'])) $filters[] = "i.color_id IN (" . implode(',', array_map('intval', explode(',', $_POST['color']))) . ")";
+        if (!empty($_POST['grade'])) $filters[] = "i.grade IN (" . implode(',', array_map('intval', explode(',', $_POST['grade']))) . ")";
+        if (!empty($_POST['gauge'])) $filters[] = "i.gauge IN (" . implode(',', array_map('intval', explode(',', $_POST['gauge']))) . ")";
+
         if (!empty($_POST['supplier'])) $filters[] = "i.supplier_id IN (" . implode(',', array_map('intval', explode(',', $_POST['supplier']))) . ")";
         if (!empty($_POST['warehouse'])) $filters[] = "i.Warehouse_id IN (" . implode(',', array_map('intval', explode(',', $_POST['warehouse']))) . ")";
         if (!empty($_POST['shelf'])) $filters[] = "i.Shelves_id IN (" . implode(',', array_map('intval', explode(',', $_POST['shelf']))) . ")";
@@ -471,7 +515,8 @@ if(isset($_REQUEST['action'])) {
                     data-gauge="'.trim($row['gauge']).'"
                     data-color="'.trim($row['color_id']).'"
                     data-dim="'.trim($row['dimension_id']).'"
-                    data-id="'.trim($row['Product_id']).'">
+                    data-id="'.trim($row['Product_id']).'"
+                    data-inv="'.trim($row['Inventory_id']).'">
                         <i class="ti ti-pencil fs-5"></i>
                 </a>'
             ];

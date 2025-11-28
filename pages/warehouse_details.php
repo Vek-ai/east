@@ -116,7 +116,7 @@ $permission = $_SESSION['permission'];
                                     </div>
                                 </div>
 
-                                <div class="datatables col-12">
+                                <div class="datatables col-12 d-none">
                                     <div class="card">
                                         <div class="card-body">
                                             <h4 class="card-title d-flex justify-content-between align-items-center">List of Sections
@@ -207,11 +207,79 @@ $permission = $_SESSION['permission'];
                                 <div class="datatables col-12">
                                     <div class="card">
                                         <div class="card-body">
-                                            <h4 class="card-title d-flex justify-content-between align-items-center">List of Rows  
+                                            <h4 class="card-title d-flex justify-content-between align-items-center">List of Racks  
+                                                <?php                                                    
+                                                if ($permission === 'edit') {
+                                                ?> 
+                                                <a href="#" class="btn btn-primary addEditRackBtn" style="border-radius: 10%;" data-id="" data-warehouse-id="<?=$WarehouseID?>">Add New</a>
+                                                <?php
+                                                }
+                                                ?>
+                                            </h4>
+                                            
+                                            <div class="table-responsive">
+                                                <table id="row_rack" class="table table-striped table-bordered text-nowrap align-middle">
+                                                    <thead>
+                                                    <tr>
+                                                        <th>Rack</th>
+                                                        <th>Description</th>
+                                                        <th>Action</th>
+                                                    </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        <?php
+                                                        $query_rack = "SELECT * FROM warehouse_rack WHERE WarehouseID = '$WarehouseID' AND hidden = '0'";
+                                                        $result_rack = mysqli_query($conn, $query_rack);            
+                                                        while ($row_rack = mysqli_fetch_array($result_rack)) {
+                                                        ?>
+                                                            <tr>
+                                                                <td>
+                                                                    <?= $row_rack['rack'] ?>
+                                                                </td>
+                                                                <td><?= $row_rack['description'] ?></td>
+                                                                <td>
+                                                                    <?php 
+                                                                    $action_html = '';
+                                                                    if ($permission === 'edit') {
+                                                                    ?>
+                                                                    <div class="action-btn text-center">
+                                                                        <a href="#" id="rack-item" data-id="<?= $row_rack['id'] ?>">
+                                                                            <i class="text-primary ti ti-eye fs-7"></i>
+                                                                        </a>
+                                                                        <a href="#" id="bin-edit" 
+                                                                                    class="text-primary addEditRackBtn" 
+                                                                                    data-id="<?= $row_rack['id'] ?>"
+                                                                                    title="Edit"
+                                                                                    data-warehouse-id="<?= $WarehouseID ?>">
+                                                                            <i class="text-warning ti ti-pencil fs-7"></i>
+                                                                        </a>
+                                                                        <a href="#" id="rack-delete" class="text-danger" title="Archive" data-id="<?= $row_rack['id'] ?>">
+                                                                            <i class="text-danger ti ti-trash fs-7"></i>
+                                                                        </a>
+                                                                    </div>
+                                                                    <?php
+                                                                    }
+                                                                    ?>
+                                                                </td>
+                                                            </tr>
+                                                        <?php
+                                                        }
+                                                        ?>
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="datatables col-12">
+                                    <div class="card">
+                                        <div class="card-body">
+                                            <h4 class="card-title d-flex justify-content-between align-items-center">List of Slots  
                                                  <?php                                                    
                                                 if ($permission === 'edit') {
                                                 ?>       
-                                                <a href="#" class="btn btn-primary addEditRowBtn" style="border-radius: 10%;" data-id="" data-warehouse-id="<?=$WarehouseID?>">Add New</a>
+                                                <a href="#" class="btn btn-primary addEditSlotBtn" style="border-radius: 10%;" data-id="" data-warehouse-id="<?=$WarehouseID?>">Add New</a>
                                                 <?php
                                                 }
                                                 ?>
@@ -219,43 +287,41 @@ $permission = $_SESSION['permission'];
                                             
                                             <div class="table-responsive">
                                         
-                                                <table id="row_wh_rows" class="table table-striped table-bordered text-nowrap align-middle">
+                                                <table id="row_slot" class="table table-striped table-bordered text-nowrap align-middle">
                                                     <thead>
-                                                    <!-- start row -->
                                                     <tr>
-                                                        <th>RowCode</th>
+                                                        <th>Slot</th>
                                                         <th>Description</th>
                                                         <th>Action</th>
                                                     </tr>
-                                                    <!-- end row -->
                                                     </thead>
                                                     <tbody>
                                                         <?php
-                                                        $query_wh_rows = "SELECT * FROM warehouse_rows WHERE WarehouseID = '$WarehouseID' AND hidden = '0'";
-                                                        $result_wh_rows = mysqli_query($conn, $query_wh_rows);   
-                                                        while ($row_wh_rows = mysqli_fetch_array($result_wh_rows)) {
+                                                        $query_slot = "SELECT * FROM warehouse_slot WHERE WarehouseID = '$WarehouseID' AND hidden = '0'";
+                                                        $result_slot = mysqli_query($conn, $query_slot);   
+                                                        while ($row_slot = mysqli_fetch_array($result_slot)) {
                                                         ?>
                                                             <tr>
                                                                 <td>
-                                                                    <?= $row_wh_rows['RowCode'] ?></td>
-                                                                <td><?= $row_wh_rows['Description'] ?></td>
+                                                                    <?= $row_slot['slot'] ?></td>
+                                                                <td><?= $row_slot['description'] ?></td>
                                                                 <td>
                                                                     <?php 
                                                                     $action_html = '';
                                                                     if ($permission === 'edit') {
                                                                     ?>
                                                                     <div class="action-btn text-center">
-                                                                        <a href="#" id="row-item" data-id="<?= $row_wh_rows['WarehouseRowID'] ?>">
+                                                                        <a href="#" id="slot-item" data-id="<?= $row_slot['id'] ?>">
                                                                             <i class="text-primary ti ti-eye fs-7"></i>
                                                                         </a>
                                                                         <a href="#" id="row-edit" 
-                                                                                    class="text-primary addEditRowBtn" 
-                                                                                    data-id="<?= $row_wh_rows['WarehouseRowID'] ?>"
+                                                                                    class="text-primary addEditSlotBtn" 
+                                                                                    data-id="<?= $row_slot['id'] ?>"
                                                                                     title="Edit"
                                                                                     data-warehouse-id="<?= $WarehouseID ?>">
                                                                             <i class="text-warning ti ti-pencil fs-7"></i>
                                                                         </a>
-                                                                        <a href="#" id="row-delete" class="text-danger" title="Archive" data-id="<?= $row_wh_rows['WarehouseRowID'] ?>">
+                                                                        <a href="#" id="slot-delete" class="text-danger" title="Archive" data-id="<?= $row_slot['id'] ?>">
                                                                             <i class="text-danger ti ti-trash fs-7"></i>
                                                                         </a>
                                                                     </div>
@@ -427,8 +493,6 @@ $permission = $_SESSION['permission'];
 
                                 <!-- Tables -->
                                 <div class="row">
-                                    
-
                                     <div class="modal fade" id="addSectionModal" tabindex="-1" aria-labelledby="addSectionModalLabel" aria-hidden="true">
                                         <div class="modal-dialog modal-lg">
                                             <div class="modal-content">
@@ -456,7 +520,55 @@ $permission = $_SESSION['permission'];
                                         <!-- /.modal-dialog -->
                                     </div>
 
-                                    <div class="modal fade" id="updateSectionModal" tabindex="-1" aria-labelledby="updateSectionModalLabel" aria-hidden="true"></div>
+                                    <div class="modal fade" id="addRackModal" tabindex="-1" aria-labelledby="addRackModalLabel" aria-hidden="true">
+                                        <div class="modal-dialog modal-lg">
+                                            <div class="modal-content">
+                                                <div class="modal-header d-flex align-items-center">
+                                                    <h4 class="modal-title" id="myLargeModalLabel">Add Rack</h4>
+                                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                </div>
+                                                <form id="add_rack" class="form-horizontal">
+                                                    <div id="rack-section" class="modal-body">
+                                                        
+                                                    </div>
+
+                                                    <div class="modal-footer">
+                                                        <div class="form-actions">
+                                                            <div class="card-body">
+                                                                <button type="submit" class="btn bg-success-subtle waves-effect text-start">Save</button>
+                                                                <button type="button" class="btn bg-danger-subtle text-danger waves-effect text-start" data-bs-dismiss="modal">Close</button>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </form>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="modal fade" id="addSlotModal" tabindex="-1" aria-labelledby="addSlotModalLabel" aria-hidden="true">
+                                        <div class="modal-dialog modal-lg">
+                                            <div class="modal-content">
+                                                <div class="modal-header d-flex align-items-center">
+                                                    <h4 class="modal-title" id="myLargeModalLabel">Add Slot</h4>
+                                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                </div>
+                                                <form id="add_slot" class="form-horizontal">
+                                                    <div id="slot-section" class="modal-body">
+                                                        
+                                                    </div>
+
+                                                    <div class="modal-footer">
+                                                        <div class="form-actions">
+                                                            <div class="card-body">
+                                                                <button type="submit" class="btn bg-success-subtle waves-effect text-start">Save</button>
+                                                                <button type="button" class="btn bg-danger-subtle text-danger waves-effect text-start" data-bs-dismiss="modal">Close</button>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </form>
+                                            </div>
+                                        </div>
+                                    </div>
 
                                     <div class="modal fade" id="addBinModal" tabindex="-1" aria-labelledby="addBinModalLabel" aria-hidden="true">
                                         <div class="modal-dialog modal-lg">
@@ -485,8 +597,6 @@ $permission = $_SESSION['permission'];
                                         <!-- /.modal-dialog -->
                                     </div>
 
-                                    <div class="modal fade" id="updateBinModal" tabindex="-1" aria-labelledby="updateBinModalLabel" aria-hidden="true"></div>
-
                                     <div class="modal fade" id="addRowModal" tabindex="-1" aria-labelledby="addRowModalLabel" aria-hidden="true">
                                         <div class="modal-dialog modal-lg">
                                             <div class="modal-content">
@@ -513,8 +623,6 @@ $permission = $_SESSION['permission'];
                                         </div>
                                         <!-- /.modal-dialog -->
                                     </div>
-
-                                    <div class="modal fade" id="updateRowModal" tabindex="-1" aria-labelledby="updateRowModalLabel" aria-hidden="true"></div>
 
                                     <div class="modal fade" id="addShelfModal" tabindex="-1" aria-labelledby="addShelfModalLabel" aria-hidden="true">
                                         <div class="modal-dialog modal-lg">
@@ -627,6 +735,8 @@ $permission = $_SESSION['permission'];
         });
 
         $('#row_wh_sections').DataTable();
+        $('#row_rack').DataTable();
+        $('#row_slot').DataTable();
         $('#row_wh_bins').DataTable();
         $('#row_wh_rows').DataTable();
         $('#row_wh_shelves').DataTable();
@@ -690,6 +800,54 @@ $permission = $_SESSION['permission'];
                 success: function(response) {
                     $('#section-div').html(response);
                     $('#addSectionModal').modal('show');
+                },
+                error: function(jqXHR, textStatus, errorThrown) {
+                    alert('Error: ' + textStatus + ' - ' + errorThrown);
+                }
+            });
+        });
+
+        $(document).on('click', '.addEditRackBtn', function(event) {
+            event.preventDefault(); 
+
+            var id = $(this).data('id');
+            var warehouse_id = $(this).data('warehouse-id');
+
+            $.ajax({
+                url: 'pages/warehouse_ajax_details.php',
+                type: 'POST',
+                data: {
+                    id: id,
+                    warehouse_id: warehouse_id,
+                    action: 'add_edit_rack'
+                },
+                success: function(response) {
+                    $('#rack-section').html(response);
+                    $('#addRackModal').modal('show');
+                },
+                error: function(jqXHR, textStatus, errorThrown) {
+                    alert('Error: ' + textStatus + ' - ' + errorThrown);
+                }
+            });
+        });
+
+        $(document).on('click', '.addEditSlotBtn', function(event) {
+            event.preventDefault(); 
+
+            var id = $(this).data('id');
+            var warehouse_id = $(this).data('warehouse-id');
+
+            $.ajax({
+                url: 'pages/warehouse_ajax_details.php',
+                type: 'POST',
+                data: {
+                    id: id,
+                    warehouse_id: warehouse_id,
+                    action: 'add_edit_slot'
+                },
+                success: function(response) {
+                    $('#slot-section').html(response);
+                    $('#addSlotModal').modal('show');
                 },
                 error: function(jqXHR, textStatus, errorThrown) {
                     alert('Error: ' + textStatus + ' - ' + errorThrown);
@@ -861,6 +1019,98 @@ $permission = $_SESSION['permission'];
             });
         });
 
+        $(document).on('submit', '#add_rack', function(event) {
+            event.preventDefault(); 
+
+            var formData = new FormData(this);
+            formData.append('action', 'add_update_rack');
+
+            $.ajax({
+                url: 'pages/warehouse_ajax_details.php',
+                type: 'POST',
+                data: formData,
+                processData: false,
+                contentType: false,
+                success: function(response) {
+                    $('.modal').modal('hide');
+                    if (response.trim() === "success_add") {
+                        $('#responseHeader').text("Success");
+                        $('#responseMsg').text("New Rack added successfully.");
+                        $('#responseHeaderContainer').removeClass("bg-danger");
+                        $('#responseHeaderContainer').addClass("bg-success");
+                        $('#response-modal').modal("show");
+                        $('#response-modal').on('hide.bs.modal', function () {
+                            location.reload();
+                        });
+                    }else if (response.trim() === "success_update") {
+                        $('#responseHeader').text("Success");
+                        $('#responseMsg').text("Rack updated successfully.");
+                        $('#responseHeaderContainer').removeClass("bg-danger");
+                        $('#responseHeaderContainer').addClass("bg-success");
+                        $('#response-modal').modal("show");
+                        $('#response-modal').on('hide.bs.modal', function () {
+                            location.reload();
+                        });
+                    } else {
+                        $('#responseHeader').text("Failed");
+                        $('#responseMsg').text(response);
+                        $('#responseHeaderContainer').removeClass("bg-success");
+                        $('#responseHeaderContainer').addClass("bg-danger");
+                        $('#response-modal').modal("show");
+                    }
+                },
+                error: function(jqXHR, textStatus, errorThrown) {
+                    alert('Error: ' + textStatus + ' - ' + errorThrown);
+                }
+            });
+        });
+
+        $(document).on('submit', '#add_slot', function(event) {
+            event.preventDefault(); 
+
+            var formData = new FormData(this);
+            formData.append('action', 'add_update_slot');
+
+            $.ajax({
+                url: 'pages/warehouse_ajax_details.php',
+                type: 'POST',
+                data: formData,
+                processData: false,
+                contentType: false,
+                success: function(response) {
+                    $('.modal').modal('hide');
+                    if (response.trim() === "success_add") {
+                        $('#responseHeader').text("Success");
+                        $('#responseMsg').text("New Slot added successfully.");
+                        $('#responseHeaderContainer').removeClass("bg-danger");
+                        $('#responseHeaderContainer').addClass("bg-success");
+                        $('#response-modal').modal("show");
+                        $('#response-modal').on('hide.bs.modal', function () {
+                            location.reload();
+                        });
+                    }else if (response.trim() === "success_update") {
+                        $('#responseHeader').text("Success");
+                        $('#responseMsg').text("Slot updated successfully.");
+                        $('#responseHeaderContainer').removeClass("bg-danger");
+                        $('#responseHeaderContainer').addClass("bg-success");
+                        $('#response-modal').modal("show");
+                        $('#response-modal').on('hide.bs.modal', function () {
+                            location.reload();
+                        });
+                    } else {
+                        $('#responseHeader').text("Failed");
+                        $('#responseMsg').text(response);
+                        $('#responseHeaderContainer').removeClass("bg-success");
+                        $('#responseHeaderContainer').addClass("bg-danger");
+                        $('#response-modal').modal("show");
+                    }
+                },
+                error: function(jqXHR, textStatus, errorThrown) {
+                    alert('Error: ' + textStatus + ' - ' + errorThrown);
+                }
+            });
+        });
+
         $(document).on('submit', '#add_row', function(event) {
             event.preventDefault(); 
 
@@ -874,7 +1124,7 @@ $permission = $_SESSION['permission'];
                 processData: false,
                 contentType: false,
                 success: function(response) {
-                    $('#addRowModal').modal('hide');
+                    $('.modal').modal('hide');
                     if (response.trim() === "success_add") {
                         $('#responseHeader').text("Success");
                         $('#responseMsg').text("New row added successfully.");
@@ -920,7 +1170,7 @@ $permission = $_SESSION['permission'];
                 processData: false,
                 contentType: false,
                 success: function(response) {
-                    $('#addShelfModal').modal('hide');
+                    $('.modal').modal('hide');
                     if (response.trim() === "success_add") {
                         $('#responseHeader').text("Success");
                         $('#responseMsg').text("New shelf added successfully.");
@@ -970,6 +1220,86 @@ $permission = $_SESSION['permission'];
                         if (response.trim() === "success") {
                             $('#responseHeader').text("Success");
                             $('#responseMsg').text("Successfully Deleted Section.");
+                            $('#responseHeaderContainer').removeClass("bg-danger");
+                            $('#responseHeaderContainer').addClass("bg-success");
+                            $('#response-modal').modal("show");
+
+                            $('#response-modal').on('hide.bs.modal', function () {
+                                location.reload();
+                            });
+                        } else {
+                            $('#responseHeader').text("Failed");
+                            $('#responseMsg').text(response);
+
+                            $('#responseHeaderContainer').removeClass("bg-success");
+                            $('#responseHeaderContainer').addClass("bg-danger");
+                            $('#response-modal').modal("show");
+                        }
+                    },
+                    error: function(jqXHR, textStatus, errorThrown) {
+                        alert('Error: ' + textStatus + ' - ' + errorThrown);
+                    }
+                });
+            }
+        });
+
+        $(document).on('click', '#rack-delete', function(event) {
+            event.preventDefault();
+            var id = $(this).data('id');
+            var confirmDelete = confirm("Are you sure you want to delete this rack?");
+            
+            if (confirmDelete) {
+                $.ajax({
+                    url: 'pages/warehouse_ajax_details.php',
+                    type: 'POST',
+                    data: {
+                        id: id,
+                        action: 'rack_delete'
+                    },
+                    success: function(response) {
+                        if (response.trim() === "success") {
+                            $('#responseHeader').text("Success");
+                            $('#responseMsg').text("Successfully Deleted Rack.");
+                            $('#responseHeaderContainer').removeClass("bg-danger");
+                            $('#responseHeaderContainer').addClass("bg-success");
+                            $('#response-modal').modal("show");
+
+                            $('#response-modal').on('hide.bs.modal', function () {
+                                location.reload();
+                            });
+                        } else {
+                            $('#responseHeader').text("Failed");
+                            $('#responseMsg').text(response);
+
+                            $('#responseHeaderContainer').removeClass("bg-success");
+                            $('#responseHeaderContainer').addClass("bg-danger");
+                            $('#response-modal').modal("show");
+                        }
+                    },
+                    error: function(jqXHR, textStatus, errorThrown) {
+                        alert('Error: ' + textStatus + ' - ' + errorThrown);
+                    }
+                });
+            }
+        });
+
+        $(document).on('click', '#slot-delete', function(event) {
+            event.preventDefault();
+            var id = $(this).data('id');
+            var confirmDelete = confirm("Are you sure you want to delete this slot?");
+            
+            if (confirmDelete) {
+                $.ajax({
+                    url: 'pages/warehouse_ajax_details.php',
+                    type: 'POST',
+                    data: {
+                        id: id,
+                        action: 'slot_delete'
+                    },
+                    success: function(response) {
+                        if (response.trim() === "success") {
+                            $('#responseHeader').text("Success");
+                            $('#responseMsg').text("Successfully Deleted Slot.");
                             $('#responseHeaderContainer').removeClass("bg-danger");
                             $('#responseHeaderContainer').addClass("bg-success");
                             $('#response-modal').modal("show");
