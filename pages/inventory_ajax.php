@@ -141,12 +141,12 @@ if(isset($_REQUEST['action'])) {
         $color_details = getColorDetails($color_id);
         ?>
         <input type="hidden" id="Product_id" name="Product_id" value="<?= $Product_id ?>" />
-        <input type="hidden" id="product_type" name="product_type" value="<?= $product_type ?>" />
-        <input type="hidden" id="product_line" name="product_line" value="<?= $product_line ?>" />
-        <input type="hidden" id="grade" name="grade" value="<?= $grade ?>" />
-        <input type="hidden" id="gauge" name="gauge" value="<?= $gauge ?>" />
-        <input type="hidden" id="color_id" name="color_id" value="<?= $color_id ?>" />
-        <input type="hidden" id="dimension_id" name="dimension_id" value="<?= $dimension_id ?>" />
+        <input type="hidden" id="product_type" name="product_type" value="<?= $row['product_type'] ?>" />
+        <input type="hidden" id="product_line" name="product_line" value="<?= $row['product_line'] ?>" />
+        <input type="hidden" id="grade" name="grade" value="<?= $row['grade'] ?>" />
+        <input type="hidden" id="gauge" name="gauge" value="<?= $row['gauge'] ?>" />
+        <input type="hidden" id="color_id" name="color_id" value="<?= $row['color_id'] ?>" />
+        <input type="hidden" id="dimension_id" name="dimension_id" value="<?= $row['dimension_id'] ?>" />
 
         <div class="card shadow-sm rounded-3 mb-3">
             <div class="card-header bg-light border-bottom">
