@@ -214,6 +214,25 @@ function showCol($name) {
         </div>
     </div>
 
+    <div class="modal fade" id="customerConfirmModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered modal-md">
+            <div class="modal-content">
+                <form id="customerConfirmForm">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="shipFormModalLabel">Customer Confirmation</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body text-center customerConfirmBody mb-0 pb-0">
+                    </div>
+                    <div class="modal-footer d-flex justify-content-between">
+                        <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-success">Save</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
     <div class="modal fade" id="response-modal" tabindex="-1" aria-labelledby="vertical-center-modal" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
@@ -651,6 +670,10 @@ function showCol($name) {
 
                                                     <a href="customer/index.php?page=order&id=<?=$row["orderid"]?>&key=<?=$row["order_key"]?>" target="_blank" class="btn btn-danger-gradient btn-sm p-0 me-1" type="button" data-id="<?php echo $row["orderid"]; ?>" data-bs-toggle="tooltip" title="Open Customer View">
                                                         <i class="text-info fa fa-sign-in-alt fs-5"></i>
+                                                    </a>
+
+                                                    <a href="javascript:void(0)" type="button" id="customerConfirmBtn" class="me-1" data-id="<?= $row["orderid"]; ?>" data-bs-toggle="tooltip" title="Customer Confirmation">
+                                                        <iconify-icon icon="solar:check-read-linear" class="fs-6 text-info"></iconify-icon>
                                                     </a>
 
                                                     <?php                                                    
@@ -1183,6 +1206,60 @@ function showCol($name) {
                     error: function(jqXHR, textStatus, errorThrown) {
                         alert('Error: ' + textStatus + ' - ' + errorThrown);
                     }
+            });
+        });
+
+        $(document).on('click', '#customerConfirmBtn', function(event) {
+            event.preventDefault(); 
+            var id = $(this).data('id');
+            $.ajax({
+                url: 'pages/order_list_ajax.php',
+                type: 'POST',
+                data: {
+                    id: id,
+                    action: "fetch_confirm_modal"
+                },
+                success: function(response) {
+                    $('.customerConfirmBody').html(response);
+                    $('#customerConfirmModal').modal('show');
+                },
+                error: function(jqXHR, textStatus, errorThrown) {
+                    alert('Error: ' + textStatus + ' - ' + errorThrown);
+                }
+            });
+        });
+
+        $(document).on("submit", "#customerConfirmForm", function (e) {
+            e.preventDefault();
+            let formData = new FormData(this);
+            formData.append("action", "save_customer_confirm");
+            $.ajax({
+                url: "pages/order_list_ajax.php",
+                type: "POST",
+                data: formData,
+                processData: false,
+                contentType: false,
+                success: function (response) {
+                    $(".modal").modal("hide");
+                    if (response.trim() === "success") {
+                        $('#responseHeader').text("Success");
+                        $('#responseMsg').text("Inventory saved successfully.");
+                        $('#responseHeaderContainer').removeClass("bg-danger").addClass("bg-success");
+                        $('#response-modal').modal("show");
+                        $('#response-modal').on('hide.bs.modal', function () {
+                            location.reload();
+                        });
+                    } else {
+                        $('#responseHeader').text("Failed");
+                        $('#responseMsg').text("Failed to save!");
+                        $('#responseHeaderContainer').removeClass("bg-success").addClass("bg-danger");
+                        $('#response-modal').modal("show");
+                    }
+                },
+
+                error: function (xhr) {
+                    console.log("Error: " + xhr.responseText);
+                }
             });
         });
 

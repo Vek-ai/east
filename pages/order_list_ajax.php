@@ -660,8 +660,6 @@ if(isset($_REQUEST['action'])) {
 
             $response = array();
             ?>
-            
-
             <div class="card">
                 <div class="card-body datatables">
                     <h4 class="modal-title" id="myLargeModalLabel">
@@ -854,10 +852,82 @@ if(isset($_REQUEST['action'])) {
                     });
                 });
             </script>
-            
-
             <?php
         }
+    }
+
+    if ($action == "fetch_confirm_modal") {
+        $orderid = mysqli_real_escape_string($conn, $_POST['id']);
+        $query = "SELECT * FROM orders WHERE orderid = '$orderid'";
+        $result = mysqli_query($conn, $query);
+
+        if ($result && mysqli_num_rows($result) > 0) {
+            $row = mysqli_fetch_assoc($result);
+            $color_confirm = $row['color_confirm'];
+            $qty_len_confirm = $row['qty_len_confirm'];
+            ?>
+            <input type="hidden" name="orderid" value="<?= $orderid ?>">
+
+            <h5 class="fw-bold mb-4">Customer has confirmed Color Selections</h5>
+
+            <div class="row mb-4">
+                <div class="col">
+                    <label class="fw-bold">No</label>
+                    <input type="radio" class="form-check-input ms-2"
+                        name="color_confirm"
+                        value="0"
+                        <?= ($color_confirm == "0") ? "checked" : "" ?>>
+                </div>
+
+                <div class="col">
+                    <label class="fw-bold">Yes</label>
+                    <input type="radio" class="form-check-input ms-2"
+                        name="color_confirm"
+                        value="1"
+                        <?= ($color_confirm == "1") ? "checked" : "" ?>>
+                </div>
+            </div>
+
+            <h5 class="fw-bold mb-4">Customer has confirmed Qty & Lengths</h5>
+
+            <div class="row mb-4">
+                <div class="col">
+                    <label class="fw-bold">No</label>
+                    <input type="radio" class="form-check-input ms-2"
+                        name="qty_len_confirm"
+                        value="0"
+                        <?= ($qty_len_confirm == "0") ? "checked" : "" ?>>
+                </div>
+
+                <div class="col">
+                    <label class="fw-bold">Yes</label>
+                    <input type="radio" class="form-check-input ms-2"
+                        name="qty_len_confirm"
+                        value="1"
+                        <?= ($qty_len_confirm == "1") ? "checked" : "" ?>>
+                </div>
+            </div>
+            <?php
+        }
+    }
+
+    if ($action == "save_customer_confirm") {
+        $orderid = mysqli_real_escape_string($conn, $_POST['orderid']);
+        $color_confirm = intval($_POST['color_confirm'] ?? 0);
+        $qty_len_confirm = intval($_POST['qty_len_confirm'] ?? 0);
+        $sql = "
+            UPDATE orders 
+            SET 
+                color_confirm = '$color_confirm',
+                qty_len_confirm = '$qty_len_confirm'
+            WHERE orderid = '$orderid'
+        ";
+        if (mysqli_query($conn, $sql)) {
+            echo "success";
+        } else {
+            echo "Database update failed.";
+        }
+        exit;
     }
 
     if ($action == "place_on_hold") {

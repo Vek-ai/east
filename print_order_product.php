@@ -780,7 +780,7 @@ if (mysqli_num_rows($result) > 0) {
         $col2_x = 140;
         $col_y = $pdf->GetY();
 
-        $pdf->SetFont('Arial', '', 10);
+        $pdf->SetFont('Arial', '', 8);
 
         $disclaimer = "Customer is solely responsible for accuracy of order and for verifying accuracy of materials before leaving EKMS or at time of delivery. If an agent orders or takes materials on customer's behalf, EKMS is entitled to rely upon the agent as if s/he has full authority to act on customer's behalf. No returns on metal panels or special trim. All other materials returned undamaged within 60 days of invoice date are subject to a restocking fee equal to 25% of current retail price.";
 
@@ -805,14 +805,33 @@ if (mysqli_num_rows($result) > 0) {
         }
 
         $pdf->SetXY($col1_x, $col_y);
-        $pdf->MultiCell(120, 4, $disclaimer, 0, 'L');
+        $pdf->MultiCell(120, 4, $disclaimer, 1, 'L');
 
         if ($total_saved > 0) {
             $pdf->Ln(3);
             $pdf->MultiCell(120, 4, $savings_note, 0, 'L');
         }
 
+        $pdf->SetFont('Arial', '', 8);
+
+        $pdf->Cell(60, 6, 'Customer confirmed Color Selections', 0, 0, 'C');
+        $pdf->Cell(60, 6, 'Customer confirmed Qty/Length Selections', 0, 0, 'C');
+
+        $pdf->Ln();
+
+        $pdf->SetFont('Arial', '', 8);
+
+        $color_confirm = ($row_orders['color_confirm'] == 1) ? 'Yes' : 'No';
+        $qty_len_confirm = ($row_orders['qty_len_confirm'] == 1) ? 'Yes' : 'No';
+
+        $pdf->Cell(60, 6, $color_confirm, 0, 0, 'C');
+        $pdf->Cell(60, 6, $qty_len_confirm, 0, 0, 'C');
+
+        $pdf->Ln(5);
+        
+
         $pdf->Cell(0, 5, 'Page ' . $pdf->PageNo() . ' of {nb}', 0, 0, 'L');
+        
 
         $pdf->SetFont('Arial', '', 9);
 
@@ -820,9 +839,11 @@ if (mysqli_num_rows($result) > 0) {
         $sales_tax  = $subtotal * $tax;
         $grand_total = $subtotal + $delivery_price + $sales_tax;
 
-        $pdf->SetXY($col2_x, $col_y + 5);
+        $pdf->SetXY($col2_x, $col_y);
         $pdf->Cell(40, $lineheight, 'CUSTOMER SAVINGS:', 0, 0);
         $pdf->Cell(20, $lineheight, '$ ' . number_format(max(0, $total_saved), 2), 0, 1, 'R');
+
+        $pdf->Ln(5);
 
         $pdf->SetXY($col2_x, $pdf->GetY());
         $pdf->Cell(40, $lineheight, 'MATERIALS PRICE:', 0, 0);
@@ -835,6 +856,8 @@ if (mysqli_num_rows($result) > 0) {
         $pdf->SetXY($col2_x, $pdf->GetY());
         $pdf->Cell(40, $lineheight, 'SALES TAX:', 0, 0);
         $pdf->Cell(20, $lineheight, '$ ' . number_format($sales_tax, 2), 0, 1, 'R');
+
+        $pdf->Ln(5);
 
         $pdf->SetFont('Arial', 'B', 10);
         $pdf->SetXY($col2_x, $pdf->GetY());
