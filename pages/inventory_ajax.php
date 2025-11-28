@@ -310,7 +310,7 @@ if(isset($_REQUEST['action'])) {
                     </div>
 
                     <div class="col-md-4 text-center">
-                        <label class="form-label">Rack <?= $row['rack'] ?></label>
+                        <label class="form-label">Rack</label>
                         <div class="mb-2">
                             <select id="rack" class="form-control select2-inventory" name="rack">
                                 <option value="">N/A</option>
