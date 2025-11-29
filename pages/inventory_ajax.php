@@ -4,9 +4,35 @@ ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ERROR | E_PARSE | E_CORE_ERROR | E_CORE_WARNING | E_COMPILE_ERROR | E_COMPILE_WARNING);
 
-
 require '../includes/dbconn.php';
 require '../includes/functions.php';
+require '../includes/vendor/autoload.php';
+
+use PhpOffice\PhpSpreadsheet\IOFactory;
+use PhpOffice\PhpSpreadsheet\Spreadsheet;
+use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
+
+$table = 'inventory';
+$test_table = 'inventory_excel';
+
+$includedColumns = [
+    'Inventory_id'      => 'Inventory ID',
+    'product_line'      => 'Product Line',
+    'product_type'      => 'Product Type',
+    'grade'             => 'Product Grade',
+    'gauge'             => 'Product Gauge',
+    'dimension_id'      => 'Product Length',
+    'color_id'          => 'Product Color',
+    'Product_id'        => 'Product ID',
+    'quantity_ttl'      => 'Quantity',
+    'reorder_level'     => 'Reorder Qty',
+    'Warehouse_id'      => 'Warehouse',
+    'rack'              => 'Rack',
+    'slot'              => 'Slot',
+    'Shelves_id'        => 'Shelf',
+    'Row_id'            => 'Row',
+    'Bin_id'            => 'Bin',
+];
 
 function cachedColorName($id) {
     static $cache = [];
@@ -580,63 +606,370 @@ if(isset($_REQUEST['action'])) {
         echo json_encode($cases);
     }
 
-    if ($_POST['action'] == 'fetch_inventory_rows') {
-        $productId = $_POST['product_id'] ?? '';
-        $colorId = $_POST['color_id'] ?? '';
-        $gradeId = $_POST['grade'] ?? '';
-        $gaugeId = $_POST['gauge'] ?? '';
+    if ($action == "download_excel") {
+        $product_category = mysqli_real_escape_string($conn, $_REQUEST['category'] ?? '');
+        $category_name = strtoupper(getProductCategoryName($product_category));
+        $column_txt = implode(', ', array_map(fn($col) => "i.$col", array_keys($includedColumns)));
 
-        $rows = [];
+        $sql = "
+            SELECT $column_txt
+            FROM $table AS i
+            LEFT JOIN product AS p 
+                ON i.Product_id = p.product_id
+            WHERE 1
+        ";
 
-        if ($productId) {
-            $productRes = mysqli_query($conn, "SELECT available_lengths FROM product WHERE product_id='$productId'");
-            $productRow = mysqli_fetch_assoc($productRes);
-            $available_lengths = [];
+        if (!empty($product_category)) {
+            $sql .= " AND p.product_category = '$product_category'";
+        }
 
-            if (!empty($productRow['available_lengths'])) {
-                $decoded = json_decode($productRow['available_lengths'], true);
-                if (json_last_error() === JSON_ERROR_NONE && is_array($decoded)) {
-                    $available_lengths = $decoded;
-                } else {
-                    $available_lengths = array_filter(explode(',', $productRow['available_lengths']));
+        $result = $conn->query($sql);
+        $spreadsheet = new Spreadsheet();
+        $sheet = $spreadsheet->getActiveSheet();
+
+        $colIndex = 0;
+        foreach ($includedColumns as $dbColumn => $displayName) {
+            $columnLetter = ($colIndex >= 26)
+                ? indexToColumnLetter($colIndex)
+                : chr(65 + $colIndex);
+
+            $sheet->setCellValue($columnLetter . '1', $displayName);
+            $colIndex++;
+        }
+
+        $row = 2;
+        while ($data = $result->fetch_assoc()) {
+            $colIndex = 0;
+            foreach ($includedColumns as $dbColumn => $displayName) {
+                $columnLetter = ($colIndex >= 26)
+                    ? indexToColumnLetter($colIndex)
+                    : chr(65 + $colIndex);
+
+                $sheet->setCellValue($columnLetter . $row, $data[$dbColumn] ?? '');
+                $colIndex++;
+            }
+            $row++;
+        }
+
+        $name = strtoupper(str_replace('_', ' ', $table));
+        $filename = "$category_name $name.xlsx";
+        $filePath = $filename;
+
+        $writer = new Xlsx($spreadsheet);
+        $writer->save($filePath);
+
+        header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+        header('Content-Disposition: attachment; filename="' . $filename . '"');
+        header('Content-Length: ' . filesize($filePath));
+        header('Cache-Control: max-age=0');
+
+        readfile($filePath);
+        unlink($filePath);
+        exit;
+    }
+
+    if ($action == "upload_excel") {
+        if (isset($_FILES['excel_file'])) {
+            $fileTmpPath = $_FILES['excel_file']['tmp_name'];
+            $fileName = $_FILES['excel_file']['name'];
+            $fileExtension = strtolower(pathinfo($fileName, PATHINFO_EXTENSION));
+
+            if (!in_array($fileExtension, ["xlsx", "xls"])) {
+                echo "Please upload a valid Excel file.";
+                exit;
+            }
+
+            $spreadsheet = IOFactory::load($fileTmpPath);
+            $sheet = $spreadsheet->getActiveSheet();
+            $rows = $sheet->toArray();
+
+            $dbColumns = array_keys($includedColumns);
+
+            if (!$conn->query("TRUNCATE TABLE $test_table")) {
+                echo "Error truncating table: " . $conn->error;
+                exit;
+            }
+
+            foreach ($rows as $rowIndex => $row) {
+                if ($rowIndex === 0) {
+                    continue;
+                }
+
+                $data = [];
+                $allEmpty = true;
+                foreach ($dbColumns as $i => $colName) {
+                    $cellValue = isset($row[$i]) ? $row[$i] : '';
+                    $cellValue = (string)$cellValue;
+                    if ($cellValue !== '') $allEmpty = false;
+                    $data[$colName] = mysqli_real_escape_string($conn, $cellValue);
+                }
+
+                if ($allEmpty) continue;
+
+                $columnNames = implode(", ", array_keys($data));
+                $columnValues = implode("', '", array_values($data));
+
+                $sql = "INSERT INTO $test_table ($columnNames) VALUES ('$columnValues')";
+                if (!$conn->query($sql)) {
+                    echo "Error inserting data: " . $conn->error;
+                    exit;
                 }
             }
 
-            foreach ($available_lengths as $dimension_id) {
-                $query = "
-                    SELECT Inventory_id, dimension_id, quantity_ttl, reorder_level 
-                    FROM inventory 
-                    WHERE Product_id='$productId' 
-                    AND dimension_id='$dimension_id'
-                ";
+            echo "success";
+        } else {
+            echo "No file uploaded.";
+            exit;
+        }
+    }
 
-                if ($colorId) $query .= " AND color_id='$colorId'";
-                if ($gradeId) $query .= " AND grade='$gradeId'";
-                if ($gaugeId) $query .= " AND gauge='$gaugeId'";
+    if ($action == "fetch_uploaded_modal") {
+        $test_primary = getPrimaryKey($test_table);
+        $sql = "SELECT * FROM $test_table";
+        $result = $conn->query($sql);
 
-                $result = mysqli_query($conn, $query);
-                $r = mysqli_fetch_assoc($result);
+        if ($result->num_rows > 0) {
+            ?>
+            <div class="card card-body shadow" data-table="<?= $table ?>">
+                <form id="tableForm">
+                    <div style="overflow-x: auto; overflow-y: auto; max-height: 80vh; max-width: 100%;">
+                        <table class="table table-bordered table-striped text-center">
+                            <thead>
+                                <tr>
+                                    <?php
+                                    foreach ($includedColumns as $dbColumn => $displayName) {
+                                        echo "<th class='fs-4'>" . htmlspecialchars($displayName) . "</th>";
+                                    }
+                                    ?>
+                                </tr>
+                            </thead>
+                            <tbody>
+                            <?php
+                            while ($row = $result->fetch_assoc()) {
+                                $primaryValue = $row[$test_primary] ?? '';
+                                echo '<tr>';
+                                foreach ($includedColumns as $dbColumn => $displayName) {
+                                    $value = htmlspecialchars($row[$dbColumn] ?? '', ENT_QUOTES, 'UTF-8');
+                                    echo "<td contenteditable='true' class='table_data' data-header-name='$dbColumn' data-id='$primaryValue'>$value</td>";
+                                }
+                                echo '</tr>';
+                            }
+                            ?>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="text-end mt-3">
+                        <button type="button" id="saveTable" class="btn btn-primary mt-3">Save</button>
+                    </div>
+                </form>
+            </div>
+            <?php
+        } else {
+            echo "<p>No data found in the table.</p>";
+        }
+    }
 
-                if ($r) {
-                    $r['dimension_display'] = getDimensionName($r['dimension_id']);
-                } else {
-                    $r = [
-                        'Inventory_id' => '',
-                        'dimension_id' => $dimension_id,
-                        'dimension_display' => getDimensionName($dimension_id),
-                        'quantity_ttl' => 0,
-                        'reorder_level' => 0
-                    ];
+    if ($action == "update_test_data") {
+        $column_name = $_POST['header_name'] ?? '';
+        $new_value = $_POST['new_value'] ?? '';
+        $id = $_POST['id'] ?? '';
+
+        if (empty($column_name) || empty($id)) exit;
+
+        $test_primary = getPrimaryKey($test_table);
+
+        $column_name = mysqli_real_escape_string($conn, $column_name);
+        $new_value = mysqli_real_escape_string($conn, $new_value);
+        $id = mysqli_real_escape_string($conn, $id);
+
+        $sql = "UPDATE $test_table SET `$column_name` = '$new_value' WHERE $test_primary = '$id'";
+        echo $conn->query($sql) ? 'success' : 'Error updating record: ' . $conn->error;
+    }
+
+    if ($action == "save_table") {
+        $main_primary = getPrimaryKey($table);
+        $test_primary = getPrimaryKey($test_table);
+
+        $result = $conn->query("SELECT * FROM $test_table");
+        if ($result->num_rows > 0) {
+            while ($row = $result->fetch_assoc()) {
+                $main_primary_id = trim($row[$main_primary] ?? '');
+                unset($row[$test_primary]);
+
+                if (!empty($main_primary_id)) {
+                    $checkSql = "SELECT COUNT(*) as count FROM $table WHERE $main_primary = '$main_primary_id'";
+                    $checkResult = $conn->query($checkSql);
+                    $exists = $checkResult->fetch_assoc()['count'] > 0;
+
+                    if ($exists) {
+                        $updateFields = [];
+                        foreach ($row as $column => $value) {
+                            if ($column !== $main_primary) {
+                                $updateFields[] = "$column = '" . mysqli_real_escape_string($conn, $value) . "'";
+                            }
+                        }
+                        if (!empty($updateFields)) {
+                            $updateSql = "UPDATE $table SET " . implode(", ", $updateFields) . " WHERE $main_primary = '$main_primary_id'";
+                            $conn->query($updateSql);
+                        }
+                        continue;
+                    }
                 }
 
-                $rows[] = $r;
+                $columns = [];
+                $values = [];
+                foreach ($row as $column => $value) {
+                    $columns[] = $column;
+                    $values[] = "'" . mysqli_real_escape_string($conn, $value) . "'";
+                }
+                if (!empty($columns)) {
+                    $insertSql = "INSERT INTO $table (" . implode(", ", $columns) . ") VALUES (" . implode(", ", $values) . ")";
+                    $conn->query($insertSql);
+                }
+            }
+
+            echo "Data has been successfully saved";
+
+            $conn->query("TRUNCATE TABLE $test_table");
+        } else {
+            echo "No data found in test color table.";
+        }
+    }
+    
+    if ($action == "download_classifications") {
+        $classification = mysqli_real_escape_string($conn, $_REQUEST['class'] ?? '');
+
+        $classifications = [
+            'line' => [
+                'columns' => ['product_line_id', 'product_line'],
+                'table' => 'product_line',
+                'where' => "status = '1'"
+            ],
+            'type' => [
+                'columns' => ['product_type_id', 'product_type'],
+                'table' => 'product_type',
+                'where' => "status = '1'"
+            ],
+            'grade' => [
+                'columns' => ['product_grade_id', 'product_grade'],
+                'table' => 'product_grade',
+                'where' => "status = '1'"
+            ],
+            'gauge' => [
+                'columns' => ['product_gauge_id', 'product_gauge'],
+                'table' => 'product_gauge',
+                'where' => "status = '1'"
+            ],
+            'dimension' => [
+                'columns' => ['dimension_id', 'dimension'],
+                'table' => 'dimensions'
+            ],
+            'color' => [
+                'columns' => ['color_id', 'color_name'],
+                'table' => 'paint_colors',
+                'where' => "color_status = '1'"
+            ],
+            'product_id' => [
+                'columns' => ['product_id', 'product_item'],
+                'table' => 'product',
+                'where' => "status = '1'"
+            ],
+            'warehouse' => [
+                'columns' => ['WarehouseID', 'WarehouseName'],
+                'table' => 'warehouses',
+                'where' => "status = '1'"
+            ],
+            'rack' => [
+                'columns' => ['id', 'rack'],
+                'table' => 'warehouse_rack',
+                'where' => "hidden = '0'"
+            ],
+            'slot' => [
+                'columns' => ['id', 'slot'],
+                'table' => 'warehouse_slot',
+                'where' => "hidden = '0'"
+            ],
+            'shelf' => [
+                'columns' => ['ShelfID', 'ShelfCode'],
+                'table' => 'shelves',
+                'where' => "hidden = '0'"
+            ],
+            'row' => [
+                'columns' => ['WarehouseRowID', 'RowCode'],
+                'table' => 'warehouse_rows',
+                'where' => "hidden = '0'"
+            ],
+            'bin' => [
+                'columns' => ['BinID', 'BinCode'],
+                'table' => 'bins',
+                'where' => "hidden = '0'"
+            ],
+        ];
+
+        $spreadsheet = new Spreadsheet();
+        $spreadsheet->removeSheetByIndex(0);
+        $selectedClassifications = empty($classification) ? array_keys($classifications) : [$classification];
+
+        foreach ($selectedClassifications as $class) {
+            if (!isset($classifications[$class])) {
+                continue;
+            }
+
+            $includedColumns = $classifications[$class]['columns'];
+            $table = $classifications[$class]['table'];
+            $where = $classifications[$class]['where'] ?? '';
+
+            $column_txt = implode(', ', $includedColumns);
+
+            $sql = "SELECT $column_txt FROM $table";
+            if (!empty($where)) {
+                $sql .= " WHERE $where";
+            }
+
+            $result = $conn->query($sql);
+
+            $sheet = $spreadsheet->createSheet();
+            $sheet->setTitle(ucwords($class));
+
+            $row = 1;
+            foreach ($includedColumns as $index => $column) {
+                $header = ucwords(str_replace('_', ' ', $column));
+                $columnLetter = chr(65 + $index);
+                $sheet->setCellValue($columnLetter . $row, $header);
+            }
+
+            $row = 2;
+            while ($data = $result->fetch_assoc()) {
+                foreach ($includedColumns as $index => $column) {
+                    $columnLetter = chr(65 + $index);
+                    $value = $data[$column] ?? '';
+                    $sheet->setCellValue($columnLetter . $row, $value);
+                }
+                $row++;
             }
         }
 
-        echo json_encode($rows);
+        if (empty($classification)) {
+            $classification = 'Classifications';
+        } else {
+            $classification = ucwords($classification);
+        }
+
+        $filename = "$classification Classifications.xlsx";
+        $filePath = $filename;
+        $writer = new Xlsx($spreadsheet);
+        $writer->save($filePath);
+
+        header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+        header('Content-Disposition: attachment; filename="' . $filename . '"');
+        header('Content-Length: ' . filesize($filePath));
+        header('Cache-Control: max-age=0');
+
+        readfile($filePath);
+        unlink($filePath);
         exit;
     }
-    
+
     mysqli_close($conn);
 }
 ?>

@@ -52,6 +52,30 @@ function showCol($name) {
     </div>
 
     <div class="widget-content searchable-container list">
+
+
+    <?php                                                    
+    if ($permission === 'edit') {
+    ?>
+    <div class="card card-body">
+        <div class="row">
+            <div class="col-12 text-end d-flex justify-content-md-end justify-content-center mt-3 mt-md-0 gap-3">
+                <button type="button" id="downloadModalBtn" class="btn btn-primary d-flex align-items-center">
+                    <i class="ti ti-download text-white me-1 fs-5"></i> Download Inventory
+                </button>
+                <button type="button" id="downloadClassModalBtn" class="btn btn-primary d-flex align-items-center">
+                    <i class="ti ti-download text-white me-1 fs-5"></i> Download Classifications
+                </button>
+                <button type="button" id="uploadModalBtn" class="btn btn-primary d-flex align-items-center">
+                    <i class="ti ti-upload text-white me-1 fs-5"></i> Upload Inventory
+                </button>
+            </div>
+        </div>
+    </div>
+    <?php
+    }
+    ?>
+
     <div class="modal fade" id="inventoryModal" tabindex="-1" aria-labelledby="inventoryModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered modal-xl">
             <div class="modal-content">
@@ -72,27 +96,141 @@ function showCol($name) {
         </div>
     </div>
 
-    <div class="modal fade" id="response-modal" tabindex="-1" aria-labelledby="vertical-center-modal" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered">
+    <div class="modal fade" id="downloadModal" tabindex="-1" aria-labelledby="downloadModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-md">
             <div class="modal-content">
-            <div id="responseHeaderContainer" class="modal-header align-items-center modal-colored-header">
-                <h4 id="responseHeader" class="m-0"></h4>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                
-                <p id="responseMsg"></p>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn bg-danger-subtle text-danger  waves-effect text-start" data-bs-dismiss="modal">
-                Close
-                </button>
-            </div>
+                <div class="modal-header d-flex align-items-center">
+                    <h4 class="modal-title" id="myLargeModalLabel">
+                        Download Inventory Excel
+                    </h4>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="download_form" class="form-horizontal">
+                        <label for="select-category" class="form-label fw-semibold">Select Category</label>
+                        <div class="mb-3">
+                            <select class="form-select select2" id="select-download-category" name="category">
+                                <option value="">All Categories</option>
+                                <optgroup label="Category">
+                                    <?php
+                                    $query_category = "SELECT * FROM product_category WHERE hidden = '0' AND status = '1' ORDER BY `product_category` ASC";
+                                    $result_category = mysqli_query($conn, $query_category);
+                                    while ($row_category = mysqli_fetch_array($result_category)) {
+                                    ?>
+                                        <option value="<?= $row_category['product_category_id'] ?>"><?= $row_category['product_category'] ?></option>
+                                    <?php
+                                    }
+                                    ?>
+                                </optgroup>
+                            </select>
+                        </div>
+
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-primary fw-semibold">
+                                <i class="fas fa-download me-2"></i> Download Excel
+                            </button>
+                        </div>
+                    </form>
+                </div>
             </div>
         </div>
     </div>
 
-    
+    <div class="modal fade" id="downloadClassModal" tabindex="-1" aria-labelledby="downloadClassModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-md">
+            <div class="modal-content">
+                <div class="modal-header d-flex align-items-center">
+                    <h4 class="modal-title" id="myLargeModalLabel">
+                        Download Classification
+                    </h4>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="download_class_form" class="form-horizontal">
+                        <label for="select-category" class="form-label fw-semibold">Select Classification</label>
+                        <div class="mb-3">
+                            <select class="form-select select2" id="select-download-class" name="category">
+                                <option value="">All Classifications</option>
+                                <optgroup label="Classifications">
+                                    <option value="line">Product Line</option> 
+                                    <option value="type">Product Type</option> 
+                                    <option value="grade">Product Grade</option> 
+                                    <option value="gauge">Product Gauge</option> 
+                                    <option value="dimension">Product Length</option>  
+                                    <option value="color">Product Color</option> 
+                                    <option value="product_id">Product ID</option>
+                                    <option value="warehouse">Warehouse</option> 
+                                    <option value="rack">Rack</option> 
+                                    <option value="slot">Slot</option> 
+                                    <option value="shelf">Shelf</option> 
+                                    <option value="row">Row</option> 
+                                    <option value="bin">Bin</option> 
+                                </optgroup>
+                            </select>
+                        </div>
+
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-primary fw-semibold">
+                                <i class="fas fa-download me-2"></i> Download Classification
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="uploadModal" tabindex="-1" aria-labelledby="uploadModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-md">
+            <div class="modal-content">
+                <div class="modal-header d-flex align-items-center">
+                    <h4 class="modal-title" id="myLargeModalLabel">
+                        Upload
+                    </h4>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="card">
+                        <div class="card-body">
+                            <form id="upload_form" action="#" method="post" enctype="multipart/form-data">
+                                <div class="mb-3">
+                                    <label for="excel_file" class="form-label fw-semibold">Select Excel File</label>
+                                    <input type="file" class="form-control" name="excel_file" accept=".xls,.xlsx" required>
+                                </div>
+                                <div class="text-center">
+                                    <button type="submit" class="btn btn-primary">Upload & Read</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                    <div class="card mb-0 mt-2">
+                        <div class="card-body d-flex justify-content-center align-items-center">
+                            <button type="button" id="readUploadProductBtn" class="btn btn-primary fw-semibold">
+                                <i class="fas fa-eye me-2"></i> View Uploaded File
+                            </button>
+                        </div>
+                    </div>    
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="readuploadModal" tabindex="-1" aria-labelledby="readuploadModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-fullscreen">
+            <div class="modal-content">
+                <div class="modal-header d-flex align-items-center">
+                    <h4 class="modal-title" id="myLargeModalLabel">
+                        Uploaded Excel Product
+                    </h4>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div id="uploaded_excel" class="modal-body">
+                
+                </div>
+            </div>
+        </div>
+    </div>
+
     <div class="card card-body">
         <div class="row">
             <div class="col-3">
@@ -312,6 +450,26 @@ function showCol($name) {
             </div>
         </div>
     </div>
+    </div>
+</div>
+
+<div class="modal fade" id="response-modal" tabindex="-1" aria-labelledby="vertical-center-modal" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+        <div id="responseHeaderContainer" class="modal-header align-items-center modal-colored-header">
+            <h4 id="responseHeader" class="m-0"></h4>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+            
+            <p id="responseMsg"></p>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn bg-danger-subtle text-danger  waves-effect text-start" data-bs-dismiss="modal">
+            Close
+            </button>
+        </div>
+        </div>
     </div>
 </div>
 
@@ -559,6 +717,144 @@ function showCol($name) {
 
             table.ajax.reload();
         });
+
+        $(document).on('click', '#downloadModalBtn', function(event) {
+            $('#downloadModal').modal('show');
+        });
+
+        $(document).on('click', '#downloadClassModalBtn', function(event) {
+            $('#downloadClassModal').modal('show');
+        });
+
+        $(document).on('click', '#uploadModalBtn', function(event) {
+            $('#uploadModal').modal('show');
+        });
+
+        $(document).on('click', '#readUploadProductBtn', function(event) {
+            $.ajax({
+                url: 'pages/inventory_ajax.php',
+                type: 'POST',
+                data: {
+                    action: "fetch_uploaded_modal"
+                },
+                success: function(response) {
+                    $('#uploaded_excel').html(response);
+                    $('#readuploadModal').modal('show');
+                },
+                error: function(jqXHR, textStatus, errorThrown) {
+                    alert('Error: ' + textStatus + ' - ' + errorThrown);
+                }
+            });
+        });
+
+        $("#download_form").submit(function (e) {
+            e.preventDefault();
+
+            let formData = new FormData(this);
+            formData.append("action", "download_excel");
+
+            $.ajax({
+                url: "pages/inventory_ajax.php",
+                type: "POST",
+                data: formData,
+                contentType: false,
+                processData: false,
+                success: function (response) {
+                    window.location.href = "pages/inventory_ajax.php?action=download_excel&category=" + encodeURIComponent($("#select-download-category").val());
+                },
+                error: function (xhr, status, error) {
+                    alert("Error downloading file: " + error);
+                }
+            });
+        });
+
+        $("#download_class_form").submit(function (e) {
+            e.preventDefault();
+
+            let formData = new FormData(this);
+            formData.append("action", "download_classifications");
+
+            $.ajax({
+                url: "pages/inventory_ajax.php",
+                type: "POST",
+                data: formData,
+                contentType: false,
+                processData: false,
+                success: function (response) {
+                    window.location.href = "pages/inventory_ajax.php?action=download_classifications&class=" + encodeURIComponent($("#select-download-class").val());
+                },
+                error: function (xhr, status, error) {
+                    alert("Error downloading file: " + error);
+                }
+            });
+        });
+
+        $('#upload_form').on('submit', function (e) {
+            e.preventDefault();
+            
+            var formData = new FormData(this);
+            formData.append('action', 'upload_excel');
+
+            $.ajax({
+                url: 'pages/inventory_ajax.php',
+                type: 'POST',
+                data: formData,
+                contentType: false,
+                processData: false,
+                success: function (response) {
+                    response = response.trim();
+                    if (response.trim() === "success") {
+                        $('#responseHeader').text("Success");
+                        $('#responseMsg').text("Data Uploaded successfully.");
+                        $('#responseHeaderContainer').removeClass("bg-danger");
+                        $('#responseHeaderContainer').addClass("bg-success");
+                        $('#response-modal').modal("show");
+                        $('#response-modal').on('hide.bs.modal', function () {
+                            location.reload();
+                        });
+                    } else {
+                        $('#responseHeader').text("Failed");
+                        $('#responseMsg').text(response);
+                        $('#responseHeaderContainer').removeClass("bg-success");
+                        $('#responseHeaderContainer').addClass("bg-danger");
+                        $('#response-modal').modal("show");
+                    }  
+                },
+                error: function (jqXHR, textStatus, errorThrown) {
+                    console.error('AJAX Error:', textStatus, errorThrown);
+                    console.error('Response:', jqXHR.responseText);
+
+                    $('#responseHeader').text("Error");
+                    $('#responseMsg').text("An error occurred while processing your request.");
+                    $('#responseHeaderContainer').removeClass("bg-success").addClass("bg-danger");
+                    $('#response-modal').modal("show");
+                }
+            });
+        });
+
+        $(document).on('click', '#saveTable', function(event) {
+            if (confirm("Are you sure you want to save this Excel data to the products?")) {
+                var formData = new FormData();
+                formData.append("action", "save_table");
+
+                $.ajax({
+                    url: "pages/inventory_ajax.php",
+                    type: "POST",
+                    data: formData,
+                    processData: false,
+                    contentType: false,
+                    success: function (response) {
+                        response = response.trim();
+                        $('#responseHeader').text("Success");
+                        $('#responseMsg').text(response);
+                        $('#responseHeaderContainer').removeClass("bg-danger").addClass("bg-success");
+                        $('#response-modal').modal("show");
+                    }
+                });
+            }
+        });
+
+        
     });
 </script>
 

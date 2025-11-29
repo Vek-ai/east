@@ -75,9 +75,11 @@ if(isset($_REQUEST['action'])) {
         }
 
         $has_color = isset($_POST['has_color']) ? 1 : 0;
+        $is_special_trim = isset($_POST['is_special_trim']) ? 1 : 0;
         $standing_seam = ($_POST['panel_type'] ?? '') === 'standing_seam' ? 1 : 0;
         $board_batten  = ($_POST['panel_type'] ?? '') === 'board_batten' ? 1 : 0;
         $fields['has_color'] = $has_color;
+        $fields['is_special_trim'] = $is_special_trim;
         $fields['standing_seam'] = $standing_seam;
         $fields['board_batten']  = $board_batten;
 
