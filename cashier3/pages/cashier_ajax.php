@@ -350,10 +350,12 @@ if (isset($_REQUEST['query'])) {
 
             $is_lumber = $row_product['product_category'] == $lumber_id ? true : false;
             $is_panel = $row_product['product_category'] == $panel_id ? true : false;
-            $is_trim = $row_product['product_category'] == $trim_id ? true : false;
+
+            $is_trim = ($row_product['product_category'] == $trim_id);
+            $is_special_trim = ($is_trim && $row_product['is_special_trim'] == 1);
+
             $is_screw = $row_product['product_category'] == $screw_id ? true : false;
             $is_custom_truss = $row_product['product_id'] == $custom_truss_id ? true : false;
-            $is_special_trim = $row_product['product_id'] == $special_trim_id ? true : false;
             $is_custom_length = $row_product['is_custom_length'] == 1 ? true : false;
 
             $qty_input = !$is_panel && !$is_custom_truss && !$is_special_trim && !$is_trim && !$is_custom_length && !$is_screw && !$is_lumber
@@ -367,12 +369,13 @@ if (isset($_REQUEST['query'])) {
 
             if($is_custom_truss){
                 $btn_id = 'add-to-cart-custom-truss-btn';
-            }else if($is_special_trim){
-                $btn_id = 'add-to-cart-special-trim-btn';
             }else if($is_panel){
                 $btn_id = 'add-to-cart-panel-btn';
             }else if($is_trim){
-                $btn_id = 'add-to-cart-trim-btn';
+                $btn_id = 'add-to-cart-trim-btn' .$is_special_trim;
+                if($is_special_trim){
+                    $btn_id = 'add-to-cart-special-trim-btn';
+                }
             }else if($is_screw){
                 $btn_id = 'add-to-cart-screw-btn';
             }else if($is_lumber){
