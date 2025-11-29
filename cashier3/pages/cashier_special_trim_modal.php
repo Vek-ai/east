@@ -162,7 +162,7 @@ if(isset($_POST['fetch_modal'])){
             <div class="row justify-content-center mb-3">
                 <div class="col-3 text-center">
                     <label class="fs-4 fw-semibold">Flat Sheet Width</label>
-                    <select class="form-control trim-width" id="trim-width" name="trim_fs_width">
+                    <select class="form-control trim-width" id="trim-width" name="width">
                         <option value="" data-category="">Select Width...</option>
                         <optgroup label="Flat Sheet Width">
                             <?php
@@ -187,11 +187,11 @@ if(isset($_POST['fetch_modal'])){
                 </div>
                 <div class="col-3 text-center">
                     <label class="fs-4 fw-semibold">Total Hems</label>
-                    <input type="number" step="0.01" name="trim-hem" class="form-control mb-1 trim-hem" placeholder="Enter Hems">
+                    <input type="number" step="0.01" name="hem" class="form-control mb-1 trim-hem" placeholder="Enter Hems">
                 </div>
                 <div class="col-3 text-center">
                     <label class="fs-4 fw-semibold">Total Bends</label>
-                    <input type="number" step="0.01" name="trim-bend" class="form-control mb-1 trim-bend" placeholder="Enter Bends">
+                    <input type="number" step="0.01" name="bend" class="form-control mb-1 trim-bend" placeholder="Enter Bends">
                 </div>
             </div>
 
