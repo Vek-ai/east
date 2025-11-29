@@ -162,7 +162,7 @@ if(isset($_POST['fetch_modal'])){
             <div class="row justify-content-center mb-3">
                 <div class="col-3 text-center">
                     <label class="fs-4 fw-semibold">Flat Sheet Width</label>
-                    <select class="form-control trim_fs_width" id="trim-color" name="trim_fs_width">
+                    <select class="form-control trim-width" id="trim-width" name="trim_fs_width">
                         <option value="" data-category="">Select Width...</option>
                         <optgroup label="Flat Sheet Width">
                             <?php
@@ -187,11 +187,11 @@ if(isset($_POST['fetch_modal'])){
                 </div>
                 <div class="col-3 text-center">
                     <label class="fs-4 fw-semibold">Total Hems</label>
-                    <input type="number" step="0.01" name="hems" class="form-control mb-1" placeholder="Enter Hems">
+                    <input type="number" step="0.01" name="trim-hem" class="form-control mb-1 trim-hem" placeholder="Enter Hems">
                 </div>
                 <div class="col-3 text-center">
                     <label class="fs-4 fw-semibold">Total Bends</label>
-                    <input type="number" step="0.01" name="hems" class="form-control mb-1" placeholder="Enter Bends">
+                    <input type="number" step="0.01" name="trim-bend" class="form-control mb-1 trim-bend" placeholder="Enter Bends">
                 </div>
             </div>
 
@@ -304,12 +304,16 @@ if(isset($_POST['fetch_modal'])){
                     const grade = parseInt($('#trim-grade').val()) || 0;
                     const gauge = parseInt($('#trim-gauge').val()) || 0;
 
-                    console.log(color);
-                    console.log(grade);
-                    console.log(gauge);
+                    const width = parseFloat($('.trim-width').val()) || 0;
+                    const hem = parseFloat($('.trim-hem').val()) || 0;
+                    const bend = parseFloat($('.trim-bend').val()) || 0;
+
+                    console.log("Width: " +width);
+                    console.log("Hem: " +hem);
+                    console.log("Bend: " +bend);
 
                     $.ajax({
-                        url: 'pages/cashier_trim_modal.php',
+                        url: 'pages/cashier_special_trim_modal.php',
                         method: 'POST',
                         data: {
                             product_id: product_id,
@@ -318,6 +322,9 @@ if(isset($_POST['fetch_modal'])){
                             color: color,
                             grade: grade,
                             gauge: gauge,
+                            width: width,
+                            hem: hem,
+                            bend: bend,
                             fetch_price: 'fetch_price'
                         },
                         success: function(response) {
@@ -327,7 +334,7 @@ if(isset($_POST['fetch_modal'])){
                 }
 
 
-                $(document).on('change', '.trim_length, .trim_qty, #trim-color, #trim-grade, #trim-gauge', function() {
+                $(document).on('change', '.trim_length, .trim_qty, #trim-color, #trim-grade, #trim-gauge, .trim-width, .trim-bend, .trim-hem', function() {
                     updatePrice();
                 });
 
@@ -349,7 +356,7 @@ if(isset($_POST['fetch_modal'])){
                     }
 
                     $.ajax({
-                        url: 'pages/cashier_trim_modal.php',
+                        url: 'pages/cashier_special_trim_modal.php',
                         method: 'POST',
                         dataType: 'json',
                         data: {
@@ -414,10 +421,6 @@ if(isset($_POST['fetch_modal'])){
                 $('#duplicateTrimFields').on("click", function() {
                     duplicateTrimRow();
                 });
-
-                for (let i = 0; i < 4; i++) {
-                    duplicateTrimRow();
-                }
             });
         </script>
 <?php
@@ -433,6 +436,9 @@ if (isset($_POST['fetch_price'])) {
     $color_id = intval($_POST['color'] ?? 0);
     $grade    = intval($_POST['grade'] ?? 0);
     $gauge    = intval($_POST['gauge'] ?? 0);
+    $width    = floatval($_POST['width'] ?? 0);
+    $hem      = floatval($_POST['hem'] ?? 0);
+    $bend     = floatval($_POST['bend'] ?? 0);
 
     $totalPrice = 0;
 
@@ -465,11 +471,12 @@ if (isset($_POST['fetch_price'])) {
                 '',
                 '',
                 $soldByFeet,
-                0,
-                0,
+                $bend,
+                $hem,
                 $color_id,
                 $grade,
-                $gauge
+                $gauge,
+                $width
             );
         }
     }
