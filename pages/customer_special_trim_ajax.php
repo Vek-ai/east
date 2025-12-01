@@ -19,14 +19,15 @@ $category_id = 4;
 
 $includedColumns = [
     'special_trim_id'   => 'ID',
-    'customer_id'       => 'Customer',
-    'trim_no'           => 'Special Trim #',
+    'product_category'  => 'Product Category',
     'product_type'      => 'Product Type',
     'profile'           => 'Product Profile',
     'grade'             => 'Grade',
     'gauge'             => 'Gauge',
     'color_group'       => 'Color Group',
     'color_paint'       => 'Color',
+    'customer_id'       => 'Customer',
+    'trim_no'           => 'Special Trim #',
     'description'       => 'Description',
     'warranty_type'     => 'Warranty Type',
     'product_origin'    => 'Manufactured or Purchased',

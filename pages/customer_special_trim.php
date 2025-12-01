@@ -430,6 +430,7 @@ $page_title = "Special Trim";
 <script>
     $(document).ready(function() {
         var selectedCategory = '';
+        document.title = "<?= $page_title ?>";
 
         var table = $('#productList').DataTable({
             order: [[1, "asc"]],
