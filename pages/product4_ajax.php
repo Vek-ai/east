@@ -54,13 +54,13 @@ if(isset($_REQUEST['action'])) {
     if ($action == "add_update") {
         $product_id = mysqli_real_escape_string($conn, $_POST['product_id']);
 
-        $product_category = intval($_POST['product_category'] ?? 0);
-        $product_type      = isset($_POST['product_type']) ? array_filter(array_map('intval', $_POST['product_type'])) : [];
-        $profile           = isset($_POST['profile']) ? array_filter(array_map('intval', $_POST['profile'])) : [];
-        $grade             = isset($_POST['grade']) ? array_filter(array_map('intval', $_POST['grade'])) : [];
-        $gauge             = isset($_POST['gauge']) ? array_filter(array_map('intval', $_POST['gauge'])) : [];
-        $color_paint       = isset($_POST['color_paint']) ? array_filter(array_map('intval', $_POST['color_paint'])) : [];
-        $available_lengths = isset($_POST['available_lengths']) ? array_filter(array_map('intval', $_POST['available_lengths'])) : [];
+        $product_type      = isset($_POST['product_type']) ? array_filter(array_map('intval', (array)$_POST['product_type'])) : [];
+        $profile           = isset($_POST['profile']) ? array_filter(array_map('intval', (array)$_POST['profile'])) : [];
+        $grade             = isset($_POST['grade']) ? array_filter(array_map('intval', (array)$_POST['grade'])) : [];
+        $gauge             = isset($_POST['gauge']) ? array_filter(array_map('intval', (array)$_POST['gauge'])) : [];
+        $color_paint       = isset($_POST['color_paint']) ? array_filter(array_map('intval', (array)$_POST['color_paint'])) : [];
+        $available_lengths = isset($_POST['available_lengths']) ? array_filter(array_map('intval', (array)$_POST['available_lengths'])) : [];
+
 
         $fields = [];
         foreach ($_POST as $key => $value) {
