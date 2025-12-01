@@ -1759,6 +1759,10 @@ if (isset($_POST['save_trim'])) {
     $gauge   = trim($_POST['gauge'] ?? '');
     $profile = trim($_POST['profile'] ?? '');
 
+    $width = floatval($_POST['width'] ?? '');
+    $hem = floatval($_POST['hem'] ?? '');
+    $bend = floatval($_POST['bend'] ?? '');
+
     $quantities = $_POST['quantity'] ?? [];
     $lengths    = $_POST['length'] ?? [];
     $length_ids = $_POST['dimension_ids'] ?? [];
@@ -1799,6 +1803,9 @@ if (isset($_POST['save_trim'])) {
                 trim($item['custom_color'] ?? '') === $color &&
                 trim($item['custom_grade'] ?? '') === $grade &&
                 trim($item['custom_gauge'] ?? '') === $gauge &&
+                trim($item['width'] ?? '') === $width &&
+                trim($item['hem'] ?? '') === $hem &&
+                trim($item['bend'] ?? '') === $bend &&
                 trim($item['note'] ?? '') === $note &&
                 intval($item['estimate_length']) === $feet &&
                 intval($item['estimate_length_inch']) === $inches
@@ -1826,8 +1833,11 @@ if (isset($_POST['save_trim'])) {
                 'custom_grade'          => $grade,
                 'custom_gauge'          => $gauge,
                 'custom_profile'        => $profile ?: getLastValue($row['profile']),
+                'width'                 => $width,
+                'hem'                   => $hem,
+                'bend'                  => $bend,
                 'note'                  => $note,
-                'weight'                => 0,
+                'weight'                => $row['weight'],
                 'usage'                 => 0,
                 'supplier_id'           => '',
                 'estimate_width'        => 0,

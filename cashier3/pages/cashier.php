@@ -959,7 +959,7 @@ $editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) :
     <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
         <form id="trim_form" class="modal-content modal-content-demo">
             <div class="modal-header">
-                <h6 class="modal-title">Trim Configuration</h6>
+                <h6 class="trim-modal-title">Trim Configuration</h6>
                 <button aria-label="Close" class="close" data-bs-dismiss="modal" type="button">
                     <span aria-hidden="true">&times;</span>
                 </button>
@@ -4061,8 +4061,9 @@ $editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) :
                     fetch_modal: 'fetch_modal'
                 },
                 success: function(response) {
-                    $('#special_trim_body').html(response);
-                    $('#special_trim_modal').modal('show');
+                    $('.trim-modal-title').text("Special Trim Configuration");
+                    $('#trim_container').html(response);
+                    $('#trim_modal').modal('show');
                 },
                 error: function(jqXHR, textStatus, errorThrown) {
                     alert('Error: ' + textStatus + ' - ' + errorThrown);

@@ -3262,8 +3262,10 @@ function calculateCartItem($values) {
 
     $panel_type = $values["panel_type"] ?? '';
     $panel_style= $values["panel_style"] ?? '';
-    $bends      = intval($values["bends"] ?? 0);
-    $hems       = intval($values["hems"] ?? 0);
+
+    $width    = floatval($values["width"] ?? 0);
+    $hems      = floatval($values["hem"] ?? 0);
+    $bends     = floatval($values["bend"] ?? 0);
 
     $bulk_price     = isset($product["bulk_price"]) ? floatval($product["bulk_price"]) : 0;
     $bulk_starts_at = isset($product["bulk_starts_at"]) ? floatval($product["bulk_starts_at"]) : 0;
@@ -3283,7 +3285,8 @@ function calculateCartItem($values) {
         $hems,
         $color_id,
         $grade,
-        $gauge
+        $gauge,
+        $width
     );
 
     $product_id_abbrev = fetchSingleProductABR(
