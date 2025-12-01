@@ -60,7 +60,7 @@ if(isset($_REQUEST['action'])) {
                             <a href="?page=product_line" target="_blank" class="text-decoration-none">Edit</a>
                         </div>
                         <div class="mb-3">
-                        <select id="product_line" class="form-control calculate add-category select2" name="product_line" multiple>
+                        <select id="product_line" class="form-control calculate add-category select2" name="product_line">
                             <option value="" >Select Line...</option>
                             <?php
                             $query_roles = "SELECT * FROM product_line WHERE hidden = '0' AND status = '1' ORDER BY `product_line` ASC";
@@ -83,7 +83,7 @@ if(isset($_REQUEST['action'])) {
                             <a href="?page=product_type" target="_blank" class="text-decoration-none">Edit</a>
                         </div>
                         <div class="mb-3">
-                            <select id="product_type" class="form-control add-category calculate select2" name="product_type[]" multiple>
+                            <select id="product_type" class="form-control add-category calculate select2" name="product_type">
                                 <option value="" >Select Type...</option>
                                 <?php
                                 $query_roles = "SELECT * FROM product_type WHERE hidden = '0' AND status = '1' ORDER BY `product_type` ASC";
@@ -413,7 +413,7 @@ if(isset($_REQUEST['action'])) {
                                 while ($row_fs_width = mysqli_fetch_array($result_fs_width)) {
                                     $selected = in_array($row_fs_width['id'], $selected_fs_width) ? 'selected' : '';
                                 ?>
-                                    <option value="<?= $row_fs_width['id'] ?>" <?= $selected ?>><?= $row_fs_width['width'] ?></option>
+                                    <option value="<?= $row_fs_width['id'] ?>" data-type="<?= $row_fs_width['product_type'] ?>" data-line="<?= $row_fs_width['product_line'] ?>" <?= $selected ?>><?= $row_fs_width['width'] ?></option>
                                 <?php   
                                 }
                                 ?>

@@ -33,6 +33,10 @@ $permission = $_SESSION['permission'];
     .inactive-row {
         display: none;
     }
+
+    .select2-container--default .select2-results__option[aria-disabled=true] {
+        display: none;
+    }
 </style>
 <div class="font-weight-medium shadow-none position-relative overflow-hidden mb-7">
   <div class="card-body px-0">
@@ -384,78 +388,81 @@ if ($permission === 'edit') {
 
 <script>
     function updateSearchCategory() {
-        let selectedCategory = $('#search-category option:selected').data('category');
-        let hasCategory = !!selectedCategory;
+        const selectedCategory = $('#select-category option:selected').data('category') || '';
 
-        $('.search-category').each(function () {
-            let $select2Element = $(this);
+        const selects = ['#select-line', '#select-type'];
 
-            if (!$select2Element.data('all-options')) {
-                $select2Element.data('all-options', $select2Element.find('option').clone(true));
+        selects.forEach(function(selector) {
+            const $select = $(selector);
+
+            if (!$select.data('all-options')) {
+                $select.data('all-options', $select.find('option').clone(true));
             }
 
-            let allOptions = $select2Element.data('all-options');
+            const allOptions = $select.data('all-options');
 
-            $select2Element.empty();
+            $select.empty();
+            $select.append('<option value="">Select...</option>');
 
-            if (hasCategory) {
-                allOptions.each(function () {
-                    let optionCategory = $(this).data('category');
-                    if (String(optionCategory) === String(selectedCategory)) {
-                        $select2Element.append($(this).clone(true));
-                    }
-                });
-            } else {
-                allOptions.each(function () {
-                    $select2Element.append($(this).clone(true));
-                });
+            allOptions.each(function() {
+                $select.append($(this).clone(true));
+            });
+
+            $select.find('option').each(function() {
+                let categories = $(this).attr('data-category') || '';
+                categories = categories.replace(/[\[\]\s]/g, '');
+                const arr = categories.split(',').filter(Boolean);
+                const match = !selectedCategory || arr.includes(String(selectedCategory));
+
+                $(this).prop('disabled', !match);
+                if (!match) $(this).prop('selected', false);
+            });
+
+            if ($select.hasClass('select2-hidden-accessible')) {
+                $select.select2('destroy');
+                $select.removeAttr('data-select2-id');
+                $select.next('.select2-container').remove();
             }
 
-            $select2Element.select2('destroy');
-
-            let parentContainer = $select2Element.parent();
-            $select2Element.select2({
+            $select.select2({
                 width: '100%',
-                dropdownParent: parentContainer
+                dropdownParent: $select.parent()
             });
         });
-
     }
+
+
 
     function updateSelectCategory() {
         let selectedCategory = $('#select-category option:selected').data('category');
         let hasCategory = !!selectedCategory;
 
         $('.search-category').each(function () {
-            let $select2Element = $(this);
+            const selectedCategory = $('#product_category_filter').val() || '';
+            $('#select-category').val(selectedCategory).trigger('change');
 
-            if (!$select2Element.data('all-options')) {
-                $select2Element.data('all-options', $select2Element.find('option').clone(true));
-            }
+            $('.search-category option').each(function () {
+                let categories = $(this).attr('data-category') || '';
+                categories = categories.replace(/[\[\]\s]/g, '');
+                const arr = categories.split(',').filter(Boolean);
+                const match = arr.includes(selectedCategory);
 
-            let allOptions = $select2Element.data('all-options');
+                $(this).prop('disabled', !match);
+            });
 
-            $select2Element.empty();
+            $(".select2").each(function () {
+                const $this = $(this);
 
-            if (hasCategory) {
-                allOptions.each(function () {
-                    let optionCategory = $(this).data('category');
-                    if (String(optionCategory) === String(selectedCategory)) {
-                        $select2Element.append($(this).clone(true));
-                    }
+                if ($this.hasClass("select2-hidden-accessible")) {
+                    $this.select2('destroy');
+                    $this.removeAttr('data-select2-id');
+                    $this.next('.select2-container').remove();
+                }
+
+                $this.select2({
+                    width: '100%',
+                    dropdownParent: $this.parent()
                 });
-            } else {
-                allOptions.each(function () {
-                    $select2Element.append($(this).clone(true));
-                });
-            }
-
-            $select2Element.select2('destroy');
-
-            let parentContainer = $select2Element.parent();
-            $select2Element.select2({
-                width: '100%',
-                dropdownParent: parentContainer
             });
         });
 
@@ -679,7 +686,7 @@ if ($permission === 'edit') {
         $('.filter-selection').each(function() {
             var selectedOption = $(this).find('option:selected');
             var selectedText = selectedOption.text().trim();
-            var filterName = $(this).data('filter-name'); // Custom attribute for display
+            var filterName = $(this).data('filter-name');
 
             if ($(this).val()) {
                 displayDiv.append(`
@@ -721,9 +728,10 @@ if ($permission === 'edit') {
               action: 'fetch_modal_content'
             },
             success: function (response) {
-                console.log(response);
                 $('#add-fields').html(response);
                 $('#addModal').modal('show');
+
+                updateSearchCategory();
             },
             error: function (jqXHR, textStatus, errorThrown) {
                 console.error('AJAX Error:', textStatus, errorThrown);

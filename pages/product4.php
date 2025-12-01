@@ -743,6 +743,7 @@ function showCol($name) {
                             });
                         });
                         fetchPricingSection();
+                        updateFlatSheetWidthOptions();
                     }
                 });
             } else {
@@ -751,6 +752,37 @@ function showCol($name) {
             }
         }
 
+        function updateFlatSheetWidthOptions() {
+            const selectedLines = $('#product_line').val() || [];
+            const selectedTypes = $('#product_type').val() || [];
+
+            $('#flat_sheet_width option').each(function () {
+                let line = $(this).data('line') || '';
+                let type = $(this).data('type') || '';
+
+                const match = (selectedLines.length === 0 || selectedLines.includes(line.toString())) &&
+                            (selectedTypes.length === 0 || selectedTypes.includes(type.toString()));
+
+                $(this).prop('disabled', !match);
+                if (!match) $(this).prop('selected', false);
+            });
+
+            const $fsWidth = $("#flat_sheet_width");
+
+            if ($fsWidth.hasClass("select2-hidden-accessible")) {
+                $fsWidth.select2('destroy');
+                $fsWidth.removeAttr('data-select2-id');
+                $fsWidth.next('.select2-container').remove();
+            }
+
+            $fsWidth.select2({
+                width: '100%',
+                dropdownParent: $fsWidth.parent()
+            });
+        }
+
+
+        $(document).on('change', '#product_line, #product_type', updateFlatSheetWidthOptions);
 
         $(document).on('click', '#addProductModalBtn', function(event) {
             event.preventDefault();
