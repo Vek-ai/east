@@ -637,7 +637,7 @@ $page_title = "Special Trim";
 
         $(document).on('click', '#view_product_btn', function(event) {
             event.preventDefault(); 
-            var id = $(this).data('id');
+            /* var id = $(this).data('id');
             $.ajax({
                     url: 'pages/customer_special_trim_ajax.php',
                     type: 'POST',
@@ -652,7 +652,7 @@ $page_title = "Special Trim";
                     error: function(jqXHR, textStatus, errorThrown) {
                         alert('Error: ' + textStatus + ' - ' + errorThrown);
                     }
-            });
+            }); */
         });
 
         $(document).on('click', '.changeStatus', function(event) {

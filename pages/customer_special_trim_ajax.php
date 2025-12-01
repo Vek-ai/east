@@ -12,7 +12,7 @@ use PhpOffice\PhpSpreadsheet\IOFactory;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 
-$product_excel = 'product_excel';
+$product_excel = 'special_trim_excel';
 //4 = TRIM
 $trim_id = 4;
 $category_id = 4;
