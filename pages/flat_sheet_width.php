@@ -117,23 +117,6 @@ if ($permission === 'edit') {
                   </select>
               </div>
               <div class="position-relative w-100 px-1 mb-2">
-                  <select class="form-control filter-category py-0 ps-5 select2 filter-selection" id="filter-system" data-filter="system" data-filter-name="Product System">
-                      <option value="">All Product Systems</option>
-                      <optgroup label="Product Type">
-                          <?php
-                          $query_system = "SELECT * FROM product_system WHERE hidden = '0' AND status = '1' ORDER BY `product_system` ASC";
-                          $result_system = mysqli_query($conn, $query_system);
-                          while ($row_system = mysqli_fetch_array($result_system)) {
-                              $selected = ($product_system == $row_system['product_system_id']) ? 'selected' : '';
-                          ?>
-                              <option value="<?= $row_system['product_system'] ?>" data-category="<?= $row_system['product_category'] ?>" <?= $selected ?>><?= $row_system['product_system'] ?></option>
-                          <?php
-                          }
-                          ?>
-                      </optgroup>
-                  </select>
-              </div>
-              <div class="position-relative w-100 px-1 mb-2">
                   <select class="form-control filter-category py-0 ps-5 select2 filter-selection" id="filter-line" data-filter="line" data-filter-name="Product Line">
                       <option value="">All Product Lines</option>
                       <optgroup label="Product Type">
@@ -185,7 +168,6 @@ if ($permission === 'edit') {
                     <thead>
                       <tr>
                         <th>Width</th>
-                        <th>Product System</th>
                         <th>Product Category</th>
                         <th>Product Line</th>
                         <th>Type</th>
@@ -343,7 +325,6 @@ if ($permission === 'edit') {
                             <option value="">All Classifications</option>
                             <optgroup label="Classifications">
                                 <option value="category">Category</option>
-                                <option value="system">Product System</option>
                                 <option value="line">Product Line</option> 
                                 <option value="type">Product Type</option> 
                             </optgroup>
@@ -478,7 +459,6 @@ if ($permission === 'edit') {
             });
         });
 
-        $('.category_selection').toggleClass('d-none', !hasCategory);
     }
 
   $(document).ready(function() {
@@ -493,7 +473,6 @@ if ($permission === 'edit') {
         },
         columns: [
             { data: 'width' },
-            { data: 'product_system' },
             { data: 'product_category_name' },
             { data: 'product_line' },
             { data: 'product_type' },
@@ -502,7 +481,6 @@ if ($permission === 'edit') {
         ],
         createdRow: function (row, data, dataIndex) {
             $(row).attr('data-category', data.product_category_name);
-            $(row).attr('data-system', data.product_system);
             $(row).attr('data-line', data.product_line);
             $(row).attr('data-type', data.product_type);
         }
@@ -594,7 +572,7 @@ if ($permission === 'edit') {
                 if (response == 'success') {
                     table.ajax.reload(null, false);
                 } else {
-                    alert('Failed to hide product system.');
+                    alert('Failed to hide product Width.');
                 }
             },
             error: function(jqXHR, textStatus, errorThrown) {
@@ -743,6 +721,7 @@ if ($permission === 'edit') {
               action: 'fetch_modal_content'
             },
             success: function (response) {
+                console.log(response);
                 $('#add-fields').html(response);
                 $('#addModal').modal('show');
             },

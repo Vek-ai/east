@@ -24,7 +24,6 @@ if(isset($_REQUEST['action'])) {
     if ($action == "add_update") {
         $id = mysqli_real_escape_string($conn, $_POST['id'] ?? null);
         $product_category = mysqli_real_escape_string($conn, $_POST['product_category'] ?? 0);
-        $product_system = mysqli_real_escape_string($conn, $_POST['product_system'] ?? 0);
         $product_line = mysqli_real_escape_string($conn, $_POST['product_line'] ?? 0);
         $product_type = mysqli_real_escape_string($conn, $_POST['product_type'] ?? 0);
         $width = mysqli_real_escape_string($conn, $_POST['width'] ?? '');
@@ -36,7 +35,6 @@ if(isset($_REQUEST['action'])) {
         if ($result && mysqli_num_rows($result) > 0) {
             $updateQuery = "UPDATE flat_sheet_width 
                             SET product_category = '$product_category', 
-                                product_system = '$product_system', 
                                 product_line = '$product_line', 
                                 product_type = '$product_type', 
                                 width = '$width',
@@ -50,8 +48,8 @@ if(isset($_REQUEST['action'])) {
                 echo "Error updating coil width: " . mysqli_error($conn);
             }
         } else {
-            $insertQuery = "INSERT INTO flat_sheet_width (product_category, product_system, product_line, product_type, width, added_by, last_edit) 
-                            VALUES ('$product_category', '$product_system', '$product_line', '$product_type', '$width', '$userid', NOW())";
+            $insertQuery = "INSERT INTO flat_sheet_width (product_category, product_line, product_type, width, added_by, last_edit) 
+                            VALUES ('$product_category', '$product_line', '$product_type', '$width', '$userid', NOW())";
     
             if (mysqli_query($conn, $insertQuery)) {
                 echo "success_add";
@@ -91,7 +89,7 @@ if(isset($_REQUEST['action'])) {
         }
 
         ?>
-        <div class="row pt-3">
+        <div class="row pt-3 category_selection">
             <div class="col-md-4">
                 <label class="form-label">Product Category</label>
                 <div class="mb-3">
@@ -105,29 +103,6 @@ if(isset($_REQUEST['action'])) {
                                 $selected = (($row['product_category'] ?? '') == $row_category['product_category_id']) ? 'selected' : '';
                             ?>
                                 <option value="<?= $row_category['product_category_id'] ?>" data-category="<?= $row_category['product_category_id'] ?>" <?= $selected ?>><?= $row_category['product_category'] ?></option>
-                            <?php
-                            }
-                            ?>
-                        </optgroup>
-                    </select>
-                </div>
-            </div>
-        </div>
-
-        <div class="row pt-3 category_selection d-none">
-            <div class="col-md-4">
-                <label class="form-label">Product System</label>
-                <div class="mb-3">
-                    <select class="form-control select2 search-category" id="select-system" name="product_system">
-                        <option value="">All Product Systems</option>
-                        <optgroup label="Product Type">
-                            <?php
-                            $query_system = "SELECT * FROM product_system WHERE hidden = '0'";
-                            $result_system = mysqli_query($conn, $query_system);
-                            while ($row_system = mysqli_fetch_array($result_system)) {
-                                $selected = (($row['product_system'] ?? '') == $row_system['product_system_id']) ? 'selected' : '';
-                            ?>
-                                <option value="<?= $row_system['product_system_id'] ?>" data-category="<?= $row_system['product_category'] ?>" <?= $selected ?>><?= $row_system['product_system'] ?></option>
                             <?php
                             }
                             ?>
@@ -218,7 +193,6 @@ if(isset($_REQUEST['action'])) {
 
         $includedColumns = [ 
             'id',
-            'product_system',
             'product_category',
             'product_line',
             'product_type',
@@ -440,7 +414,6 @@ if(isset($_REQUEST['action'])) {
     
             $includedColumns = [ 
                 'id',
-                'product_system',
                 'product_category',
                 'product_line',
                 'product_type',
@@ -514,11 +487,6 @@ if(isset($_REQUEST['action'])) {
             'category' => [
                 'columns' => ['product_category_id', 'product_category'],
                 'table' => 'product_category',
-                'where' => "status = '1'"
-            ],
-            'system' => [
-                'columns' => ['product_system_id', 'product_system'],
-                'table' => 'product_system',
                 'where' => "status = '1'"
             ],
             'line' => [
@@ -601,7 +569,6 @@ if(isset($_REQUEST['action'])) {
         while ($row = mysqli_fetch_assoc($result)) {
             $no = $row['id'];
             $product_category = getProductCategoryName($row['product_category']);
-            $product_system = getProductSystemName($row['product_system']);
             $product_line = getProductLineName($row['product_line']);
             $product_type = getProductTypeName($row['product_type']);
             $width = number_format(floatval($row['width']),2);
@@ -640,7 +607,6 @@ if(isset($_REQUEST['action'])) {
     
             $data[] = [
                 'width' => $width,
-                'product_system' => $product_system,
                 'product_category_name' => $product_category,
                 'product_line' => $product_line,
                 'product_type' => $product_type,
