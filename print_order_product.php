@@ -143,7 +143,7 @@ function renderPanelCategory($pdf, $product, $conn) {
         '$ ' . number_format($disc_price, 2),
     ];
 
-    renderRow($pdf, $columns, $summaryRow, false);
+    $pdf->renderRow($columns, $summaryRow);
 
     if (!empty($note)) {
         $pdf->SetFont('Arial', 'I', 7);
@@ -204,7 +204,7 @@ function renderTrimCategory($pdf, $product, $conn) {
         '$ ' . number_format($disc_price, 2),
     ];
 
-    renderRow($pdf, $columns, $summaryRow, false);
+    $pdf->renderRow($columns, $summaryRow);
 
     if (!empty($note)) {
         $pdf->SetFont('Arial', 'I', 7);
@@ -262,7 +262,7 @@ function renderScrewCategory($pdf, $product, $conn) {
         '$ ' . number_format($disc_price, 2),
     ];
 
-    renderRow($pdf, $columns, $summaryRow, false);
+    $pdf->renderRow($columns, $summaryRow);
 
     if (!empty($note)) {
         $pdf->SetFont('Arial', 'I', 7);
@@ -319,7 +319,7 @@ function renderDefaultCategory($pdf, $product, $conn) {
         '$ ' . number_format($disc_price, 2),
     ];
 
-    renderRow($pdf, $columns, $summaryRow, false);
+    $pdf->renderRow($columns, $summaryRow);
 
     if (!empty($note)) {
         $pdf->SetFont('Arial', 'I', 7);
@@ -334,56 +334,6 @@ function renderDefaultCategory($pdf, $product, $conn) {
     return [$totalPrice, $totalQty, $totalActual];
 }
 
-function renderRow($pdf, $columns, $row, $bold = false) {
-    $lineHeight = 5;
-    $xStart = $pdf->GetX();
-    $yStart = $pdf->GetY();
-    $x = $xStart;
-
-    $row = array_slice($row, 0, count($columns));
-
-    $columnHeights = [];
-
-    foreach ($columns as $i => $col) {
-        $w = $col['width'];
-        $fontSize = $col['fontsize'] ?? 8;
-        $pdf->SetFont('Arial', $bold ? 'B' : '', $fontSize);
-        $pdf->SetXY($x, $yStart);
-
-        if ($i === 0) {
-            $fittedSize = $pdf->fitTextToWidth($row[$i], $w, $fontSize, 'Arial', $bold ? 'B' : '');
-            $pdf->SetFont('Arial', $bold ? 'B' : '', $fittedSize);
-            $pdf->Cell($w, $lineHeight, $row[$i], 0, 0, $col['align']);
-            $columnHeights[$i] = $lineHeight;
-        }
-        elseif ($i === 6 && strpos($row[$i], 'ft') !== false && strpos($row[$i], 'in') !== false) {
-            preg_match('/(\d+)ft\s*(\d+)in/', $row[$i], $matches);
-            if ($matches) {
-                $ft = $matches[1] . 'ft';
-                $in = $matches[2] . 'in';
-                $pdf->Cell($w, $lineHeight, $ft, 0, 0, 'L');
-                $pdf->SetXY($x, $yStart);
-                $pdf->Cell($w, $lineHeight, $in, 0, 0, 'R');
-            } else {
-                $pdf->Cell($w, $lineHeight, $row[$i], 0, 0, $col['align']);
-            }
-            $columnHeights[$i] = $lineHeight;
-        }
-        else {
-            $startY = $pdf->GetY();
-            $pdf->MultiCell($w, $lineHeight, $row[$i], 0, $col['align']);
-            $endY = $pdf->GetY();
-            $columnHeights[$i] = $endY - $startY;
-        }
-
-        $x += $w;
-    }
-
-    $maxHeight = max($columnHeights);
-    $totalWidth = array_sum(array_column($columns, 'width'));
-    $pdf->Rect($xStart, $yStart, $totalWidth, $maxHeight);
-    $pdf->SetXY($xStart, $yStart + $maxHeight);
-}
 
 
 class PDF extends FPDF {
@@ -407,6 +357,84 @@ class PDF extends FPDF {
 
         return $fontSize;
     }
+
+    public function renderRow($columns, $row, $bold = false) {
+        $lineHeight = 4;
+
+        $xStart = $this->GetX();
+        $yStart = $this->GetY();
+
+        $row = array_slice($row, 0, count($columns));
+
+        $heights = [];
+        $cellTexts = [];
+
+        foreach ($columns as $i => $col) {
+            $w = $col['width'];
+            $fontSize = $col['fontsize'] ?? 8;
+
+            $this->SetFont('Arial', $bold ? 'B' : '', $fontSize);
+
+            if ($i === 6 && strpos($row[$i], 'ft') !== false && strpos($row[$i], 'in') !== false) {
+                preg_match('/(\d+)ft\s*(\d+)in/', $row[$i], $m);
+                $cellTexts[$i] = $m ? $m[1] . "ft\n" . $m[2] . "in" : $row[$i];
+            } elseif ($i === 0) {
+                $fit = $this->fitTextToWidth($row[$i], $w, $fontSize, 'Arial', $bold ? 'B' : '');
+                $this->SetFont('Arial', $bold ? 'B' : '', $fit);
+                $cellTexts[$i] = $row[$i];
+            } else {
+                $cellTexts[$i] = $row[$i];
+            }
+
+            $heights[$i] = $this->GetMultiCellHeight($w, $lineHeight, $cellTexts[$i]);
+        }
+
+        $rowHeight = max($heights);
+
+        // Page break check
+        $bottom = $this->h - $this->bMargin;
+        if ($yStart + $rowHeight > $bottom) {
+            $this->AddPage();
+            $xStart = $this->GetX();
+            $yStart = $this->GetY();
+        }
+
+        $x = $xStart;
+
+        // Draw the outer border for the row
+        $totalWidth = array_sum(array_column($columns, 'width'));
+        $this->Rect($xStart, $yStart, $totalWidth, $rowHeight);
+
+        // Print each cell's content
+        foreach ($columns as $i => $col) {
+            $w = $col['width'];
+            $fontSize = $col['fontsize'] ?? 8;
+
+            $this->SetFont('Arial', $bold ? 'B' : '', $fontSize);
+
+            $saveX = $x;
+            $saveY = $yStart;
+            $this->SetXY($saveX, $saveY);
+
+            if ($i === 6 && strpos($cellTexts[$i], "\n") !== false) {
+                list($ft, $inch) = explode("\n", $cellTexts[$i]);
+                $this->Cell($w, $lineHeight, $ft, 0, 0, 'L');
+                $this->SetXY($saveX, $saveY);
+                $this->Cell($w, $lineHeight, $inch, 0, 0, 'R');
+            } else {
+                $this->MultiCell($w, $lineHeight, $cellTexts[$i], 0, $col['align']);
+            }
+
+            // Move to the right for next column
+            $x += $w;
+            $this->SetXY($x, $saveY);
+        }
+
+        // Move cursor to next row
+        $this->SetXY($xStart, $yStart + $rowHeight);
+    }
+
+
 
     function Header() {
         $this->SetFont('Arial', '', 9);
