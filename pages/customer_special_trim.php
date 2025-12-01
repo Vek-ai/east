@@ -165,7 +165,7 @@ $page_title = "Special Trim";
             <div class="modal-content">
                 <div class="modal-header d-flex align-items-center">
                     <h4 class="modal-title" id="myLargeModalLabel">
-                        Add Product
+                        Special Trim
                     </h4>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
@@ -404,7 +404,7 @@ $page_title = "Special Trim";
                 <div id="selected-tags" class="mb-2"></div>
                 <div class="datatables">
                     <div class="table-responsive">
-                        <table id="productList" class="table search-table align-middle text-wrap">
+                        <table id="productList" class="table search-table align-middle text-wrap text-center">
                             <thead class="header-item">
                                 <tr>
                                     <th>Customer</th>
