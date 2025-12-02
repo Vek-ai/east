@@ -34,6 +34,7 @@ function calculateUnitPrice(
 
     $totalLength = $lengthFeet + ($lengthInch / 12);
     if ($totalLength <= 0) $totalLength = 1;
+    if ($width <= 0) $width = 1;
 
     //$baseTotal = ($soldByFeet == 1) ? $basePrice * $totalLength : $basePrice;
     $baseTotal = $basePrice * $totalLength * $width;
