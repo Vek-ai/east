@@ -41,6 +41,7 @@ if(isset($_POST['fetch_modal'])){
         <input type="hidden" id="is_pre_order" name="is_pre_order" value="0" />
         <input type="hidden" id="is_custom_trim" name="is_custom" value="0" />
         <input type="hidden" id="category_id" name="category_id" value="<?= $category_id ?>" />
+        <input type="hidden" id="trim_no" name="trim_no" value="" />
 
         <h5 class="text-center"><?= $product_details['description'] ?></h5>
         <div class="d-flex justify-content-center flex-column align-items-center mb-3">
@@ -262,11 +263,11 @@ if(isset($_POST['fetch_modal'])){
                 <div class="d-flex justify-content-center">
                     <button
                         class="btn btn-warning ripple btn-secondary"
-                        id="trim_draw"
+                        id="customer_special_trim_btn"
                         data-drawing='<?= $drawing_str ?>'
                         type="button"
-                    >                        
-                        Modify Trim
+                        >                        
+                        Search Customer SPCL Trim
                     </button>                
                 </div>
                 <div class="d-flex justify-content-center d-none">

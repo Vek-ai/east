@@ -1754,14 +1754,16 @@ if (isset($_POST['save_trim'])) {
     $is_pre_order = (int)($_POST['is_pre_order'] ?? 0);
     $is_custom    = (int)($_POST['is_custom'] ?? 0);
 
-    $color   = trim($_POST['color'] ?? '');
-    $grade   = trim($_POST['grade'] ?? '');
-    $gauge   = trim($_POST['gauge'] ?? '');
-    $profile = trim($_POST['profile'] ?? '');
+    $color          = trim($_POST['color'] ?? '');
+    $grade          = trim($_POST['grade'] ?? '');
+    $gauge          = trim($_POST['gauge'] ?? '');
+    $profile        = trim($_POST['profile'] ?? '');
+    $description    = trim($_POST['description'] ?? '');
+    $trim_no        = trim($_POST['trim_no'] ?? '');
 
-    $width = floatval($_POST['width'] ?? '');
-    $hem = floatval($_POST['hem'] ?? '');
-    $bend = floatval($_POST['bend'] ?? '');
+    $width      = floatval($_POST['width'] ?? '');
+    $hem        = floatval($_POST['hem'] ?? '');
+    $bend       = floatval($_POST['bend'] ?? '');
 
     $quantities = $_POST['quantity'] ?? [];
     $lengths    = $_POST['length'] ?? [];
@@ -1789,13 +1791,16 @@ if (isset($_POST['save_trim'])) {
         $length_id = intval($length_ids[$i] ?? 0);
         $note      = trim($notes[$i] ?? '');
 
+        if(!empty($description)){
+            $note = $description .', ' .$note;
+        }
+
         if ($quantity <= 0) continue;
 
         $feet   = intval(floor($length));
         $inches = intval(round(($length - $feet) * 12));
         if ($inches >= 12) { $feet++; $inches = 0; }
 
-        // --- MERGE CHECK ---
         $foundKey = null;
         foreach ($_SESSION["cart"] as $key => $item) {
             if (
@@ -1844,6 +1849,7 @@ if (isset($_POST['save_trim'])) {
                 'is_pre_order'          => $is_pre_order,
                 'is_custom'             => $is_custom,
                 'custom_trim_src'       => $img_src,
+                'trim_no'               => $trim_no,
                 'drawing_data'          => $drawing_data
             ];
         }
@@ -3426,6 +3432,47 @@ if (isset($_POST['toggle_group'])) {
     exit;
 }
 
+if (isset($_POST['fetch_special_trim_details'])) {
 
+    $special_trim_id = intval($_POST['id']);
+    $query = "
+        SELECT *
+        FROM special_trim
+        WHERE special_trim_id = $special_trim_id
+        LIMIT 1
+    ";
+    $result = mysqli_query($conn, $query);
+
+    if ($result && mysqli_num_rows($result) > 0) {
+        $row = mysqli_fetch_assoc($result);
+        $flat_sheet_width = is_array(json_decode($row['flat_sheet_width'], true)) ? json_decode($row['flat_sheet_width'], true)[0] : $row['flat_sheet_width'];
+        $fsw_det = getFlatSheetWidthDetails($flat_sheet_width);
+        $width = $fsw_det['width'];
+
+        $response = [
+            'success' => true,
+            'trim_no' => $row['trim_no'],
+            'unit_price' => $row['unit_price'],
+            'color' => is_array(json_decode($row['color'], true)) ? json_decode($row['color'], true)[0] : $row['color'],
+            'grade' => is_array(json_decode($row['grade'], true)) ? json_decode($row['grade'], true)[0] : $row['grade'],
+            'gauge' => is_array(json_decode($row['gauge'], true)) ? json_decode($row['gauge'], true)[0] : $row['gauge'],
+            'flat_sheet_width' => $width,
+            'hems' => $row['hems'],
+            'bends' => $row['bends'],
+            'description' => $row['description']
+        ];
+
+        echo json_encode($response);
+
+    } else {
+
+        echo json_encode([
+            'success' => false,
+            'message' => 'Special trim not found.'
+        ]);
+    }
+
+    exit;
+}
 ?>
 

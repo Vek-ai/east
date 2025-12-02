@@ -939,7 +939,7 @@ $editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) :
 </div>
 
 <div class="modal fade" id="prompt_quantity_modal" tabindex="-1" style="background-color: rgba(0, 0, 0, 0.5);">
-    <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
+    <div class="modal-dialog modal-xl modal-dialog-centered" role="document">
         <form id="quantity_form" class="modal-content modal-content-demo">
             <div class="modal-header">
                 <h6 class="modal-title">Metal Panel Configuration</h6>
@@ -956,7 +956,7 @@ $editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) :
 </div>
 
 <div class="modal fade" id="trim_modal" tabindex="-1" style="background-color: rgba(0, 0, 0, 0.5);">
-    <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
+    <div class="modal-dialog modal-xl modal-dialog-centered" role="document">
         <form id="trim_form" class="modal-content modal-content-demo">
             <div class="modal-header">
                 <h6 class="trim-modal-title">Trim Configuration</h6>
@@ -972,8 +972,37 @@ $editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) :
     </div>
 </div>
 
+<div class="modal fade" id="customer_special_trim_modal" tabindex="-1" style="background-color: rgba(0, 0, 0, 0.5);">
+    <div class="modal-dialog modal-xl modal-dialog-centered" role="document">
+        <form id="customer_special_trim_form" class="modal-content modal-content-demo">
+            <div class="modal-header">
+                <h6 class="trim-modal-title">Customer Special Trim</h6>
+                <button aria-label="Close" class="close" data-bs-dismiss="modal" type="button">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="row align-items-end g-2 mb-3">
+                    <div class="col-md-5">
+                        <label for="customer_name" class="form-label">Customer Name</label>
+                        <input type="text" class="form-control" id="customer_special_trim_name" name="customer_special_trim_name" placeholder="Enter Customer Name">
+                        <input type="hidden" id="customer_special_trim_id" name="customer_special_trim_id">
+                    </div>
+                    <div class="col-md-2 d-grid">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fa fa-search mx-2"></i> Search
+                        </button>
+                    </div>
+                </div>
+                <div id="customer_special_trim_body"></div>
+            </div>
+        </form>
+        </div>
+    </div>
+</div>
+
 <div class="modal fade" id="lumber_modal" tabindex="-1" style="background-color: rgba(0, 0, 0, 0.5);">
-    <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
+    <div class="modal-dialog modal-xl modal-dialog-centered" role="document">
         <form id="lumber_form" class="modal-content modal-content-demo">
             <div class="modal-header">
                 <button aria-label="Close" class="close" data-bs-dismiss="modal" type="button">
@@ -989,7 +1018,7 @@ $editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) :
 </div>
 
 <div class="modal fade" id="screw_modal" tabindex="-1" style="background-color: rgba(0, 0, 0, 0.5);">
-    <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
+    <div class="modal-dialog modal-xl modal-dialog-centered" role="document">
         <form id="screw_form" class="modal-content modal-content-demo">
             <div class="modal-header">
                 <button aria-label="Close" class="close" data-bs-dismiss="modal" type="button">
@@ -1005,7 +1034,7 @@ $editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) :
 </div>
 
 <div class="modal fade" id="custom_length_modal" tabindex="-1" style="background-color: rgba(0, 0, 0, 0.5);">
-    <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
+    <div class="modal-dialog modal-xl modal-dialog-centered" role="document">
         <form id="custom_length_form" class="modal-content modal-content-demo">
             <div class="modal-header">
                 <button aria-label="Close" class="close" data-bs-dismiss="modal" type="button">
@@ -1021,7 +1050,7 @@ $editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) :
 </div>
 
 <div class="modal fade" id="screw_modal" tabindex="-1" style="background-color: rgba(0, 0, 0, 0.5);">
-    <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
+    <div class="modal-dialog modal-xl modal-dialog-centered" role="document">
         <form id="screw_form" class="modal-content modal-content-demo">
             <div class="modal-header">
                 <button aria-label="Close" class="close" data-bs-dismiss="modal" type="button">
@@ -2002,6 +2031,34 @@ $editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) :
             }
         });
     }
+
+    $("#customer_special_trim_name").autocomplete({
+        source: function(request, response) {
+            $.ajax({
+                url: "pages/cashier_ajax.php",
+                type: 'post',
+                dataType: "json",
+                data: {
+                    search_customer: request.term
+                },
+                success: function(data) {
+                    response(data);
+                },
+                error: function(xhr, status, error) {
+                    console.log("Error: " + xhr.responseText);
+                }
+            });
+        },
+        select: function(event, ui) {
+            $('#customer_special_trim_name').val(ui.item.label);
+            $('#customer_special_trim_id').val(ui.item.value);
+            return false;
+        },
+        appendTo: "#customer_special_trim_modal", 
+        open: function() {
+            $(".ui-autocomplete").css("z-index", 1050);
+        }
+    });
 
     $("#return_customer_name").autocomplete({
         source: function(request, response) {
@@ -4067,6 +4124,89 @@ $editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) :
                 },
                 error: function(jqXHR, textStatus, errorThrown) {
                     alert('Error: ' + textStatus + ' - ' + errorThrown);
+                }
+            });
+        });
+
+        $(document).on("click", "#customer_special_trim_btn", function() {
+            $('#customer_special_trim_modal').modal('show');
+        });
+
+        $(document).on('click', '.select_special_trim_btn', function () {
+            const id = $(this).data('id');
+
+            $.ajax({
+                url: 'pages/cashier_ajax.php',
+                type: 'POST',
+                dataType: 'json',
+                data: {
+                    id: id,
+                    fetch_special_trim_details: 'fetch_special_trim_details'
+                },
+                success: function (response) {
+                    console.log(response);
+                    $('#trim-color')
+                        .val(response.color)
+                        .trigger('change');
+                    $('#trim-grade')
+                        .val(response.grade)
+                        .trigger('change');
+                    $('#trim-gauge')
+                        .val(response.gauge)
+                        .trigger('change');
+                    $('#trim-width')
+                        .val(response.flat_sheet_width)
+                        .trigger('change');
+                    $('.trim-hem').val(response.hems);
+                    $('.trim-bend').val(response.bends);
+                    $('#trim_no').val(response.trim_no);
+                    $('input[name="description"]').val(response.description);
+
+                    $('#customer_special_trim_modal').modal('hide');
+                }
+            });
+        });
+
+
+        $(document).on('submit', '#customer_special_trim_form', function (event) {
+            event.preventDefault();
+            const formData = new FormData(this);
+            formData.append('fetch_modal', 'fetch_modal');
+            $.ajax({
+                url: 'pages/cashier_customer_special_trim_modal.php',
+                type: 'POST',
+                data: formData,
+                processData: false,
+                contentType: false,
+                success: function (response) {
+                    $('#customer_special_trim_body').html(response);
+                },
+                error: function (xhr) {
+                    console.error('Error:', xhr.responseText);
+                }
+            });
+        });
+
+
+        $(document).on('click', '.toggle-details', function () {
+            const groupId = $(this).data('group');
+            const rows = $(`.group-details-row[data-group="${groupId}"]`);
+            const isVisible = rows.first().is(':visible');
+
+            $.ajax({
+                url: 'pages/cashier_ajax.php',
+                type: 'POST',
+                data: {
+                    toggle_group: 'toggle_group',
+                    group_id: groupId,
+                    state: isVisible ? 'closed' : 'open'
+                },
+                success: function(response) {
+                    console.log('Toggle result:', response);
+                    loadCart();
+                },
+                error: function(jqXHR, textStatus, errorThrown) {
+                    console.error('Toggle group error:', textStatus, errorThrown);
                 }
             });
         });

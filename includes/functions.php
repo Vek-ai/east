@@ -1,4 +1,5 @@
 <?php
+session_start();
 include "calculate_price.php";
 include "notifications.php";
 require_once __DIR__ . '/../modules/EmailTemplates.php';
@@ -3213,6 +3214,8 @@ function calculateCartItem($values) {
     $gauge    = intval($values["custom_gauge"] ?? 0);
     $profile  = intval($values["custom_profile"] ?? 0);
 
+    $trim_no  = trim($values["trim_no"] ?? 0);
+
     if ($category_id == $panel_id || $category_id == $trim_id) {
 
         $query_coil = "
@@ -3333,7 +3336,8 @@ function calculateCartItem($values) {
             'grade'    => $grade,
             'gauge'    => $gauge,
             'color'    => $color_id,
-            'product_id' => $data_id
+            'product_id' => $data_id,
+            'trim_no' => $trim_no
         ]);
 
         $unique_prod_id = getProdID([
@@ -3344,7 +3348,8 @@ function calculateCartItem($values) {
             'gauge'    => $gauge,
             'color'    => $color_id,
             'length'   => $total_length,
-            'product_id' => $data_id
+            'product_id' => $data_id,
+            'trim_no' => $trim_no
         ]);
     }else if($category_id == $screw_id){
         $screw_length = $values["screw_length"] ?? '';
@@ -4043,6 +4048,8 @@ function getProdID(array $d) {
     $screw_type  = $v('screw_type');
     $screw_coating = $v('screw_coating');
     $screw_length  = $v('screw_length');
+    $customer_id  = $_SESSION['customer_id'];
+    $special_trim_no  = $v('trim_no');
 
     $categoryAbbr = getAbbr('product_category', 'category_abreviations', $category);
     $profileAbbr  = getAbbr('profile_type', 'profile_abbreviations', $profile);
@@ -4055,9 +4062,11 @@ function getProdID(array $d) {
     $screwCoatingAbbr = getAbbr('product_screw_coating', 'abbreviation', $screw_coating);
 
     $prodDescAbbr = '';
+    $is_special_trim = 0;
     if ($product_id) {
         $p = getProductDetails($product_id);
         $prodDescAbbr = $p['abbreviation'] ?? '';
+        $is_special_trim = $p['is_special_trim'];
     }
 
     $panelTypeAbbr  = ($profile && $panel_type) ? getProfileTypeAbbrev($profile, $panel_type) : '';
@@ -4081,6 +4090,10 @@ function getProdID(array $d) {
         if ($colorAbbr !== '') $abbr .= "-$colorAbbr";
         $abbr .= $prodDescAbbr;
         $abbr .= $lengthAbbr;
+        if($is_special_trim){
+            if (!empty($customer_id)) $abbr .= "/$customer_id";
+            if (!empty($special_trim_no)) $abbr .= "/$special_trim_no";
+        } 
     }
 
     else if ($category == $screw_id) {
@@ -4698,5 +4711,17 @@ function array_combinations($arrays) {
         $result = $tmp;
     }
     return $result;
+}
+
+function getFlatSheetWidthDetails($id) {
+    global $conn;
+    $id = mysqli_real_escape_string($conn, $id);
+    $query = "SELECT * FROM flat_sheet_width WHERE id = '$id'";
+    $result = mysqli_query($conn, $query);
+    $flat_sheet_width = [];
+    if ($row = mysqli_fetch_assoc($result)) {
+        $flat_sheet_width = $row;
+    }
+    return $flat_sheet_width;
 }
 ?>
