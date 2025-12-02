@@ -7,6 +7,7 @@ require 'includes/dbconn.php';
 require 'includes/functions.php';
 
 $permission = $_SESSION['permission'];
+$page_title = "Trim Spec";
 ?>
 <style>
     td.notes,  td.last-edit{
@@ -42,14 +43,14 @@ $permission = $_SESSION['permission'];
   <div class="card-body px-0">
     <div class="d-flex justify-content-between align-items-center">
       <div><br>
-        <h4 class="font-weight-medium fs-14 mb-0">Flat Sheet Width</h4>
+        <h4 class="font-weight-medium fs-14 mb-0"><?= $page_title ?></h4>
         <nav aria-label="breadcrumb">
           <ol class="breadcrumb">
             <li class="breadcrumb-item">
-              <a class="text-muted text-decoration-none" href="?page=coil_product">Coils
+              <a class="text-muted text-decoration-none" href="?page=">Home
               </a>
             </li>
-            <li class="breadcrumb-item text-muted" aria-current="page">Flat Sheet Width</li>
+            <li class="breadcrumb-item text-muted" aria-current="page"><?= $page_title ?></li>
           </ol>
         </nav>
       </div>
@@ -74,16 +75,16 @@ if ($permission === 'edit') {
     <div class="row">
       <div class="col-md-12 col-xl-12 text-end d-flex justify-content-md-end justify-content-center mt-3 mt-md-0 gap-3">
           <button type="button" id="addModalBtn" class="btn btn-primary d-flex align-items-center" data-id="" data-type="add">
-              <i class="ti ti-plus text-white me-1 fs-5"></i> Add Flat Sheet Width
+              <i class="ti ti-plus text-white me-1 fs-5"></i> Add <?= $page_title ?>
           </button>
           <button type="button" id="downloadClassModalBtn" class="btn btn-primary d-flex align-items-center">
               <i class="ti ti-download text-white me-1 fs-5"></i> Download Classifications
           </button>
           <button type="button" id="downloadBtn" class="btn btn-primary d-flex align-items-center">
-              <i class="ti ti-download text-white me-1 fs-5"></i> Download Flat Sheet Width
+              <i class="ti ti-download text-white me-1 fs-5"></i> Download <?= $page_title ?>
           </button>
           <button type="button" id="uploadBtn" class="btn btn-primary d-flex align-items-center">
-              <i class="ti ti-upload text-white me-1 fs-5"></i> Upload Flat Sheet Width
+              <i class="ti ti-upload text-white me-1 fs-5"></i> Upload <?= $page_title ?>
           </button>
       </div>
     </div>
@@ -164,17 +165,20 @@ if ($permission === 'edit') {
           <div class="datatables">
             <div class="card">
               <div class="card-body">
-                <h4 class="card-title d-flex justify-content-between align-items-center">Flat Sheet Widths List</h4>
+                <h4 class="card-title d-flex justify-content-between align-items-center"><?= $page_title ?> List</h4>
                 
                 <div class="table-responsive">
               
                   <table id="display_flat_sheet_width" class="table table-striped table-bordered align-middle text-center">
                     <thead>
                       <tr>
-                        <th>Width</th>
-                        <th>Product Category</th>
-                        <th>Product Line</th>
-                        <th>Type</th>
+                        <th>Product Type</th>
+                        <th>Trim Name</th>
+                        <th>Customer SPCL Trim</th>
+                        <th>Customer Name</th>
+                        <th>Flat Sheet Width</th>
+                        <th>Hems</th>
+                        <th>Bends</th>
                         <th>Status</th>
                         <th>Action</th>
                       </tr>
@@ -268,7 +272,7 @@ if ($permission === 'edit') {
       <div class="modal-content">
           <div class="modal-header d-flex align-items-center">
               <h4 class="modal-title" id="myLargeModalLabel">
-                  Upload Flat Sheet Width
+                  Upload <?= $page_title ?>
               </h4>
               <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
           </div>
@@ -323,7 +327,7 @@ if ($permission === 'edit') {
             </div>
             <div class="modal-body">
                 <form id="download_class_form" class="form-horizontal">
-                    <label for="select-category" class="form-label fw-semibold">Select Classification</label>
+                    <label for="select-class-category" class="form-label fw-semibold">Select Classification</label>
                     <div class="mb-3">
                         <select class="form-select select2" id="select-download-class" name="category">
                             <option value="">All Classifications</option>
@@ -351,30 +355,13 @@ if ($permission === 'edit') {
       <div class="modal-content">
           <div class="modal-header d-flex align-items-center">
               <h4 class="modal-title" id="myLargeModalLabel">
-                  Download Flat Sheet Widths
+                  Download <?= $page_title ?>
               </h4>
               <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
           </div>
           <div class="modal-body">
               <form id="download_excel_form" class="form-horizontal">
                   <label for="search-category" class="form-label fw-semibold">Select Category</label>
-                  <div class="mb-3">
-                      <select class="form-select select2" id="select-download-category" name="category">
-                          <option value="">All Categories</option>
-                          <optgroup label="Category">
-                              <?php
-                              $query_category = "SELECT * FROM product_category WHERE hidden = '0' AND status = '1' ORDER BY `product_category` ASC";
-                              $result_category = mysqli_query($conn, $query_category);
-                              while ($row_category = mysqli_fetch_array($result_category)) {
-                              ?>
-                                  <option value="<?= $row_category['product_category_id'] ?>"><?= $row_category['product_category'] ?></option>
-                              <?php
-                              }
-                              ?>
-                          </optgroup>
-                      </select>
-                  </div>
-
                   <div class="d-grid">
                       <button type="submit" class="btn btn-primary fw-semibold">
                           <i class="fas fa-download me-2"></i> Download Excel
@@ -387,89 +374,52 @@ if ($permission === 'edit') {
 </div>
 
 <script>
-    function updateSearchCategory() {
-        const selectedCategory = $('#select-category option:selected').data('category') || '';
+function updateSearchCategory() {
+    let selectedCategory = $('#select-category').val();
 
-        const selects = ['#select-line', '#select-type'];
+    const selects = ['#select-line', '#select-type'];
 
-        selects.forEach(function(selector) {
-            const $select = $(selector);
+    selects.forEach(function(selector) {
+        const $select = $(selector);
 
-            if (!$select.data('all-options')) {
-                $select.data('all-options', $select.find('option').clone(true));
-            }
+        if (!$select.data('all-options')) {
+            $select.data('all-options', $select.find('option').clone(true));
+        }
 
-            const allOptions = $select.data('all-options');
+        const allOptions = $select.data('all-options');
 
-            $select.empty();
-            $select.append('<option value="">Select...</option>');
+        $select.empty();
+        $select.append('<option value="">Select...</option>');
 
-            allOptions.each(function() {
-                $select.append($(this).clone(true));
-            });
-
-            $select.find('option').each(function() {
-                let categories = $(this).attr('data-category') || '';
-                categories = categories.replace(/[\[\]\s]/g, '');
-                const arr = categories.split(',').filter(Boolean);
-                const match = !selectedCategory || arr.includes(String(selectedCategory));
-
-                $(this).prop('disabled', !match);
-                if (!match) $(this).prop('selected', false);
-            });
-
-            if ($select.hasClass('select2-hidden-accessible')) {
-                $select.select2('destroy');
-                $select.removeAttr('data-select2-id');
-                $select.next('.select2-container').remove();
-            }
-
-            $select.select2({
-                width: '100%',
-                dropdownParent: $select.parent()
-            });
-        });
-    }
-
-
-
-    function updateSelectCategory() {
-        let selectedCategory = $('#select-category option:selected').data('category');
-        let hasCategory = !!selectedCategory;
-
-        $('.search-category').each(function () {
-            const selectedCategory = $('#product_category_filter').val() || '';
-            $('#select-category').val(selectedCategory).trigger('change');
-
-            $('.search-category option').each(function () {
-                let categories = $(this).attr('data-category') || '';
-                categories = categories.replace(/[\[\]\s]/g, '');
-                const arr = categories.split(',').filter(Boolean);
-                const match = arr.includes(selectedCategory);
-
-                $(this).prop('disabled', !match);
-            });
-
-            $(".select2").each(function () {
-                const $this = $(this);
-
-                if ($this.hasClass("select2-hidden-accessible")) {
-                    $this.select2('destroy');
-                    $this.removeAttr('data-select2-id');
-                    $this.next('.select2-container').remove();
-                }
-
-                $this.select2({
-                    width: '100%',
-                    dropdownParent: $this.parent()
-                });
-            });
+        allOptions.each(function() {
+            $select.append($(this).clone(true));
         });
 
-    }
+        $select.find('option').each(function() {
+            let categories = $(this).attr('data-category') || '';
+            categories = categories.replace(/[\[\]\s]/g, '');
+            const arr = categories.split(',').filter(Boolean);
+            const match = !selectedCategory || arr.includes(String(selectedCategory));
 
-  $(document).ready(function() {
-    document.title = "Flat Sheet Width";
+            $(this).prop('disabled', !match);
+            if (!match) $(this).prop('selected', false);
+        });
+
+        if ($select.hasClass('select2-hidden-accessible')) {
+            $select.select2('destroy');
+            $select.removeAttr('data-select2-id');
+            $select.next('.select2-container').remove();
+        }
+
+        $select.select2({
+            width: '100%',
+            dropdownParent: $select.parent()
+        });
+    });
+}
+
+$(document).ready(function() {
+    document.title = "<?= $page_title ?>";
 
     var table = $('#display_flat_sheet_width').DataTable({
         pageLength: 100,
@@ -479,17 +429,20 @@ if ($permission === 'edit') {
             data: { action: 'fetch_table' }
         },
         columns: [
-            { data: 'width' },
-            { data: 'product_category_name' },
-            { data: 'product_line' },
             { data: 'product_type' },
+            { data: 'trim_name' },
+            { data: 'is_special_trim' },
+            { data: 'customer_name' },
+            { data: 'flat_sheet_width' },
+            { data: 'hems' },
+            { data: 'bends' },
             { data: 'status_html' },
             { data: 'action_html' }
         ],
         createdRow: function (row, data, dataIndex) {
-            $(row).attr('data-category', data.product_category_name);
-            $(row).attr('data-line', data.product_line);
-            $(row).attr('data-type', data.product_type);
+            $(row).attr('data-type', data.product_type_id);
+            $(row).attr('data-trim-type', data.trim_type);
+            $(row).attr('data-customer', data.customer_id);
         }
     });
 
@@ -526,10 +479,6 @@ if ($permission === 'edit') {
         }
         return null;
     }
-
-    $(document).on('change', '#select-category', function() {
-        updateSearchCategory();
-    });
 
     $(".select2").each(function () {
         $(this).select2({
@@ -607,14 +556,14 @@ if ($permission === 'edit') {
                 $('.modal').modal("hide");
                 if (response.trim() === "success_update") {
                     $('#responseHeader').text("Success");
-                    $('#responseMsg').text('Flat Sheet Width updated successfully.');
+                    $('#responseMsg').text('<?= $page_title ?> updated successfully.');
                     $('#responseHeaderContainer').removeClass("bg-danger");
                     $('#responseHeaderContainer').addClass("bg-success");
                     $('#response-modal').modal("show");
                     table.ajax.reload(null, false);
                 } else if (response.trim() === "success_add") {
                     $('#responseHeader').text("Success");
-                    $('#responseMsg').text('New Flat Sheet Width added successfully.');
+                    $('#responseMsg').text('New <?= $page_title ?> added successfully.');
                     $('#responseHeaderContainer').removeClass("bg-danger");
                     $('#responseHeaderContainer').addClass("bg-success");
                     $('#response-modal').modal("show");
@@ -715,9 +664,9 @@ if ($permission === 'edit') {
         var type = $(this).data('type') || '';
 
         if(type == 'edit'){
-          $('#add-header').html('Update Flat Sheet Width');
+          $('#add-header').html('Update <?= $page_title ?>');
         }else{
-          $('#add-header').html('Add Flat Sheet Width');
+          $('#add-header').html('Add <?= $page_title ?>');
         }
 
         $.ajax({
@@ -730,6 +679,12 @@ if ($permission === 'edit') {
             success: function (response) {
                 $('#add-fields').html(response);
                 $('#addModal').modal('show');
+
+                $(".select2").each(function () {
+                    $(this).select2({
+                        dropdownParent: $(this).parent()
+                    });
+                });
 
                 updateSearchCategory();
             },
@@ -776,7 +731,7 @@ if ($permission === 'edit') {
     
     $("#download_excel_form").submit(function (e) {
         e.preventDefault();
-        window.location.href = "pages/flat_sheet_width_ajax.php?action=download_excel&category=" + encodeURIComponent($("#select-download-category").val());
+        window.location.href = "pages/flat_sheet_width_ajax.php?action=download_excel";
     });
 
     $("#download_class_form").submit(function (e) {
@@ -895,7 +850,7 @@ if ($permission === 'edit') {
     });
 
     $(document).on('click', '#saveTable', function(event) {
-        if (confirm("Are you sure you want to save this Excel data to the flat sheet widths data?")) {
+        if (confirm("Are you sure you want to save this Excel data to the <?= $page_title ?> data?")) {
             var formData = new FormData();
             formData.append("action", "save_table");
 

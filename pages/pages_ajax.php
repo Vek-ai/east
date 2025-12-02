@@ -16,7 +16,7 @@ if(isset($_REQUEST['action'])) {
         $menu_icon = mysqli_real_escape_string($conn, $_POST['menu_icon']);
         $visibility = mysqli_real_escape_string($conn, $_POST['visibility'] ?? 0);
         $category_id = !empty($_POST['category_id']) ? mysqli_real_escape_string($conn, $_POST['category_id']) : 'NULL';
-
+        $sort_order = mysqli_real_escape_string($conn, $_POST['sort_order']);
         
 
         $checkQuery = "SELECT * FROM pages WHERE id = '$id'";
@@ -31,6 +31,7 @@ if(isset($_REQUEST['action'])) {
                                 menu_category = '$menu_category', 
                                 menu_icon = '$menu_icon', 
                                 visibility = '$visibility', 
+                                sort_order = '$sort_order', 
                                 category_id = $category_id 
                             WHERE id = '$id'";
             if (mysqli_query($conn, $updateQuery)) {
@@ -39,8 +40,8 @@ if(isset($_REQUEST['action'])) {
                 echo "Error updating page: " . mysqli_error($conn);
             }
         } else {
-            $insertQuery = "INSERT INTO pages (page_name, file_name, url, category_id, menu_name, menu_category, menu_icon, visibility) 
-                            VALUES ('$page_name', '$file_name', '$url', '$category_id', '$menu_name', '$menu_category', '$menu_icon', '$visibility')";
+            $insertQuery = "INSERT INTO pages (page_name, file_name, url, category_id, menu_name, menu_category, menu_icon, sort_order, visibility) 
+                            VALUES ('$page_name', '$file_name', '$url', '$category_id', '$menu_name', '$menu_category', '$menu_icon', '$sort_order', '$visibility')";
             if (mysqli_query($conn, $insertQuery)) {
                 echo "success_add";
             } else {
@@ -129,6 +130,13 @@ if(isset($_REQUEST['action'])) {
                         <option value="1" <?= isset($row['visibility']) && $row['visibility'] == 1 ? 'selected' : '' ?>>Yes</option>
                         <option value="0" <?= isset($row['visibility']) && $row['visibility'] == 0 ? 'selected' : '' ?>>No</option>
                     </select>
+                </div>
+            </div>
+
+            <div class="col-md-6">
+                <div class="mb-3">
+                    <label class="form-label">Order</label>
+                    <input type="text" id="sort_order" name="sort_order" placeholder="Enter Sort Order" class="form-control" value="<?= htmlspecialchars($row['sort_order'] ?? '') ?>"/>
                 </div>
             </div>
 

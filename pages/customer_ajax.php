@@ -113,7 +113,7 @@ if(isset($_REQUEST['action'])) {
             $result = mysqli_query($conn, $checkQuery) or die("Error checking username: " . mysqli_error($conn));
 
             if (mysqli_num_rows($result) > 0) {
-                echo "username_exist";
+                echo "The username \"$username\" is already taken. Please use another username.";
                 exit;
             }
         }

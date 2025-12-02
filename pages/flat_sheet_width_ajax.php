@@ -18,46 +18,90 @@ use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 $table = 'flat_sheet_width';
 $test_table = 'flat_sheet_width_excel';
 
+$trim_id  = 4;
+
+function clean($v) {
+    global $conn;
+    return mysqli_real_escape_string($conn, $v ?? '');
+}
+
+$includedColumns = [
+    'id',
+    'product_category',
+    'product_line',
+    'product_type',
+    'trim_id',
+    'abbreviation',
+    'is_customer_special',
+    'customer_id',
+    'width',
+    'hems',
+    'bends'
+];
+
 if(isset($_REQUEST['action'])) {
     $action = $_REQUEST['action'];
 
     if ($action == "add_update") {
-        $id = mysqli_real_escape_string($conn, $_POST['id'] ?? null);
-        $product_category = mysqli_real_escape_string($conn, $_POST['product_category'] ?? 0);
-        $product_line = mysqli_real_escape_string($conn, $_POST['product_line'] ?? 0);
-        $product_type = mysqli_real_escape_string($conn, $_POST['product_type'] ?? 0);
-        $width = mysqli_real_escape_string($conn, $_POST['width'] ?? '');
-        $userid = mysqli_real_escape_string($conn, $_POST['userid'] ?? '');
-    
-        $checkQuery = "SELECT * FROM coil_width WHERE id = '$id'";
+        $id                 = clean($_POST['id']);
+        $product_category   = clean($_POST['product_category']);
+        $product_line       = clean($_POST['product_line']);
+        $product_type       = clean($_POST['product_type']);
+        $trim_id            = clean($_POST['trim_id']);
+        $abbreviation       = clean($_POST['abbreviation']);
+        $is_customer_special= isset($_POST['is_customer_special']) ? 1 : 0;
+        $customer_id        = clean($_POST['customer_id']);
+        $width              = clean($_POST['width']);
+        $hems               = clean($_POST['hems']);
+        $bends              = clean($_POST['bends']);
+        $userid             = clean($_POST['userid']);
+
+        $checkQuery = "SELECT id FROM flat_sheet_width WHERE id = '$id'";
         $result = mysqli_query($conn, $checkQuery);
-    
+
         if ($result && mysqli_num_rows($result) > 0) {
-            $updateQuery = "UPDATE flat_sheet_width 
-                            SET product_category = '$product_category', 
-                                product_line = '$product_line', 
-                                product_type = '$product_type', 
-                                width = '$width',
-                                last_edit = NOW(), 
-                                edited_by = '$userid' 
-                            WHERE id = '$id'";
-    
+
+            $updateQuery = "
+                UPDATE flat_sheet_width SET
+                    product_category    = '$product_category',
+                    product_line        = '$product_line',
+                    product_type        = '$product_type',
+                    trim_id             = '$trim_id',
+                    abbreviation        = '$abbreviation',
+                    is_customer_special = '$is_customer_special',
+                    customer_id         = '$customer_id',
+                    width               = '$width',
+                    hems                = '$hems',
+                    bends               = '$bends',
+                    edited_by           = '$userid',
+                    last_edit           = NOW()
+                WHERE id = '$id'
+            ";
+
             if (mysqli_query($conn, $updateQuery)) {
                 echo "success_update";
             } else {
-                echo "Error updating coil width: " . mysqli_error($conn);
+                echo "Error updating: " . mysqli_error($conn);
             }
+
         } else {
-            $insertQuery = "INSERT INTO flat_sheet_width (product_category, product_line, product_type, width, added_by, last_edit) 
-                            VALUES ('$product_category', '$product_line', '$product_type', '$width', '$userid', NOW())";
-    
+            $insertQuery = "
+                INSERT INTO flat_sheet_width 
+                    (product_category, product_line, product_type, trim_id, abbreviation, is_customer_special,
+                    customer_id, width, hems, bends, added_by, last_edit)
+                VALUES
+                    ('$product_category', '$product_line', '$product_type', '$trim_id', '$abbreviation', '$is_customer_special',
+                    '$customer_id', '$width', '$hems', '$bends', '$userid', NOW())
+            ";
+
             if (mysqli_query($conn, $insertQuery)) {
                 echo "success_add";
             } else {
-                echo "Error adding coil width: " . mysqli_error($conn);
+                echo "Error adding: " . mysqli_error($conn);
             }
         }
-    }    
+    }
+
     
     if ($action == "change_status") {
         $id = mysqli_real_escape_string($conn, $_POST['id']);
@@ -84,94 +128,155 @@ if(isset($_REQUEST['action'])) {
         $id = mysqli_real_escape_string($conn, $_POST['id']);
         $query = "SELECT * FROM flat_sheet_width WHERE id = '$id'";
         $result = mysqli_query($conn, $query);
+        $is_customer_special = 0;
         if ($result && mysqli_num_rows($result) > 0) {
             $row = mysqli_fetch_array($result);
+            $is_customer_special = floatval($row['is_customer_special'] ?? 0);
         }
-
         ?>
-        <div class="row pt-3 category_selection">
-            <div class="col-md-4">
-                <label class="form-label">Product Category</label>
-                <div class="mb-3">
-                    <select class="form-control select2" id="select-category" name="product_category">
-                        <option value="">All Categories</option>
-                        <optgroup label="Category">
-                            <?php
-                            $query_category = "SELECT * FROM product_category WHERE hidden = '0' AND status = '1' ORDER BY `product_category` ASC";
-                            $result_category = mysqli_query($conn, $query_category);
-                            while ($row_category = mysqli_fetch_array($result_category)) {
-                                $selected = (($row['product_category'] ?? '') == $row_category['product_category_id']) ? 'selected' : '';
-                            ?>
-                                <option value="<?= $row_category['product_category_id'] ?>" data-category="<?= $row_category['product_category_id'] ?>" <?= $selected ?>><?= $row_category['product_category'] ?></option>
-                            <?php
-                            }
-                            ?>
-                        </optgroup>
-                    </select>
+
+        <div class="card shadow-sm rounded-3 mb-3">
+            <div class="card-header bg-light border-bottom">
+                <h5 class="mb-0 fw-bold">Trim Identifiers</h5>
+            </div>
+            <div class="card-body border rounded p-3">
+                <div class="row">
+                    <div class="col-md-4">
+                        <label class="form-label">Product Category</label>
+                        <div class="mb-3">
+                            <h4>Trim</h4>
+                            <input type="hidden" name="product_category" id="select-category" value="<?= $trim_id ?>"/>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Product Line</label>
+                        <div class="mb-3">
+                            <select class="form-control select2 search-category" id="select-line" name="product_line">
+                                <option value="" >All Product Lines</option>
+                                <optgroup label="Product Type">
+                                    <?php
+                                    $query_line = "SELECT * FROM product_line WHERE hidden = '0' AND status = '1' ORDER BY `product_line` ASC";
+                                    $result_line = mysqli_query($conn, $query_line);
+                                    while ($row_line = mysqli_fetch_array($result_line)) {
+                                        $selected = (($row['product_line'] ?? '') == $row_line['product_line_id']) ? 'selected' : '';
+                                    ?>
+                                        <option value="<?= $row_line['product_line_id'] ?>" data-category="<?= $row_line['product_category'] ?>" <?= $selected ?>><?= $row_line['product_line'] ?></option>
+                                    <?php
+                                    }
+                                    ?>
+                                </optgroup>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Product Type</label>
+                        <div class="mb-3">
+                            <select class="form-control select2 search-category" id="select-type" name="product_type">
+                                <option value="" >All Product Types</option>
+                                <optgroup label="Product Type">
+                                    <?php
+                                    $query_type = "SELECT * FROM product_type WHERE hidden = '0' AND status = '1' ORDER BY `product_type` ASC";
+                                    $result_type = mysqli_query($conn, $query_type);
+                                    while ($row_type = mysqli_fetch_array($result_type)) {
+                                        $selected = (($row['product_type'] ?? '') == $row_type['product_type_id']) ? 'selected' : '';
+                                    ?>
+                                        <option value="<?= $row_type['product_type_id'] ?>" data-category="<?= $row_type['product_category'] ?>" <?= $selected ?>><?= $row_type['product_type'] ?></option>
+                                    <?php
+                                    }
+                                    ?>
+                                </optgroup>
+                            </select>
+                        </div>
+                    </div>
                 </div>
             </div>
-            <div class="col-md-4">
-                <label class="form-label">Product Line</label>
-                <div class="mb-3">
-                    <select class="form-control select2 search-category" id="select-line" name="product_line">
-                        <option value="" >All Product Lines</option>
-                        <optgroup label="Product Type">
-                            <?php
-                            $query_line = "SELECT * FROM product_line WHERE hidden = '0' AND status = '1' ORDER BY `product_line` ASC";
-                            $result_line = mysqli_query($conn, $query_line);
-                            while ($row_line = mysqli_fetch_array($result_line)) {
-                                $selected = (($row['product_line'] ?? '') == $row_line['product_line_id']) ? 'selected' : '';
-                            ?>
-                                <option value="<?= $row_line['product_line_id'] ?>" data-category="<?= $row_line['product_category'] ?>" <?= $selected ?>><?= $row_line['product_line'] ?></option>
-                            <?php
-                            }
-                            ?>
-                        </optgroup>
-                    </select>
-                </div>
+        </div>
+
+         <div class="card shadow-sm rounded-3 mb-3">
+            <div class="card-header bg-light border-bottom">
+                <h5 class="mb-0 fw-bold">Trim Specifications</h5>
             </div>
-            <div class="col-md-4">
-                <label class="form-label">Product Type</label>
-                <div class="mb-3">
-                    <select class="form-control select2 search-category" id="select-type" name="product_type">
-                        <option value="" >All Product Types</option>
-                        <optgroup label="Product Type">
-                            <?php
-                            $query_type = "SELECT * FROM product_type WHERE hidden = '0' AND status = '1' ORDER BY `product_type` ASC";
-                            $result_type = mysqli_query($conn, $query_type);
-                            while ($row_type = mysqli_fetch_array($result_type)) {
-                                $selected = (($row['product_type'] ?? '') == $row_type['product_type_id']) ? 'selected' : '';
-                            ?>
-                                <option value="<?= $row_type['product_type_id'] ?>" data-category="<?= $row_type['product_category'] ?>" <?= $selected ?>><?= $row_type['product_type'] ?></option>
-                            <?php
-                            }
-                            ?>
-                        </optgroup>
-                    </select>
-                </div>
-            </div>
-            <div class="col-md-12 pt-3">
-                <label class="form-label">Width</label>
-                <div class="mb-3">
-                    <input type="number" step="0.000001" id="width" name="width" class="form-control" value="<?= $row['width'] ?? '' ?>"/>
+            <div class="card-body border rounded p-3">
+                <div class="row">
+                    <div class="col-md-3 pt-3">
+                        <label class="form-label">Trim Product</label>
+                        <div class="mb-3">
+                            <select class="form-control select2" id="select-trim-id" name="trim_id">
+                                <option value="" >All Trim Products</option>
+                                <optgroup label="Trim Products">
+                                    <?php
+                                    $query_prod = "SELECT * FROM product WHERE hidden = '0' AND status = '1' AND product_category = '$trim_id' ORDER BY `product_item` ASC";
+                                    $result_prod = mysqli_query($conn, $query_prod);
+                                    while ($row_prod = mysqli_fetch_array($result_prod)) {
+                                        $selected = (($row['trim_id'] ?? '') == $row_prod['product_id']) ? 'selected' : '';
+                                    ?>
+                                        <option value="<?= $row_prod['product_id'] ?>" <?= $selected ?>><?= $row_prod['product_item'] ?></option>
+                                    <?php
+                                    }
+                                    ?>
+                                </optgroup>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-3 pt-3">
+                        <label class="form-label">Abbreviation</label>
+                        <div class="mb-3">
+                            <input type="text" id="abbreviation" name="abbreviation" class="form-control" value="<?= $row['abbreviation'] ?? '' ?>"/>
+                        </div>
+                    </div>
+                    <div class="col-3 mb-3 pt-3 text-center">
+                        <label class="form-check-label fw-bold d-block mb-1" for="is_customer_special">
+                            Customer SPCL Trim
+                        </label>
+                        <div class="form-check d-flex justify-content-center">
+                            <input class="form-check-input" type="checkbox" id="is_customer_special" name="is_customer_special" <?= ($is_customer_special > 0) ? 'checked' : '' ?>>
+                        </div>
+                    </div>
+
+                    <div class="col-md-3 pt-3">
+                        <label class="form-label">Customer</label>
+                        <div class="mb-3">
+                            <select class="form-control select2" id="select-customer" name="customer_id">
+                                <option value="" >All Customers</option>
+                                <optgroup label="Customers">
+                                    <?php
+                                    $query_cust = "SELECT customer_id FROM customer WHERE hidden = '0' AND status = '1' ORDER BY `customer_first_name` ASC";
+                                    $result_cust = mysqli_query($conn, $query_cust);
+                                    while ($row_cust = mysqli_fetch_array($result_cust)) {
+                                        $customer_name = get_customer_name($row_cust['customer_id']);
+                                        $selected = (($row['customer_id'] ?? '') == $row_cust['customer_id']) ? 'selected' : '';
+                                    ?>
+                                        <option value="<?= $row_cust['customer_id'] ?>" <?= $selected ?>><?= $customer_name ?></option>
+                                    <?php
+                                    }
+                                    ?>
+                                </optgroup>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-3 pt-3">
+                        <label class="form-label">Flat Sheet Width</label>
+                        <div class="mb-3">
+                            <input type="number" step="0.000001" id="width" name="width" class="form-control" value="<?= $row['width'] ?? '' ?>"/>
+                        </div>
+                    </div>
+                    <div class="col-md-3 pt-3">
+                        <label class="form-label">Hems</label>
+                        <div class="mb-3">
+                            <input type="number" step="1" id="hems" name="hems" class="form-control" value="<?= $row['hems'] ?? '' ?>"/>
+                        </div>
+                    </div>
+                    <div class="col-md-3 pt-3">
+                        <label class="form-label">Bends</label>
+                        <div class="mb-3">
+                            <input type="number" step="1" id="bends" name="bends" class="form-control" value="<?= $row['bends'] ?? '' ?>"/>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
 
         <input type="hidden" id="id" name="id" class="form-control"  value="<?= $id ?>"/>
-
-        <script>
-            $(document).ready(function () {
-                $(".select2").each(function () {
-                    $(this).select2({
-                        dropdownParent: $(this).parent()
-                    });
-                });
-
-                updateSelectCategory();
-            });
-
-        </script>
         <?php
     }
 
@@ -185,26 +290,9 @@ if(isset($_REQUEST['action'])) {
     }
 
     if ($action == "download_excel") {
-        $product_category = mysqli_real_escape_string($conn, $_REQUEST['category'] ?? '');
-        $category_name = strtoupper(getProductCategoryName($product_category));
-
-        $includedColumns = array();
-        $column_txt = '*';
-
-        $includedColumns = [ 
-            'id',
-            'product_category',
-            'product_line',
-            'product_type',
-            'width'
-        ];
-
         $column_txt = implode(', ', $includedColumns);
 
         $sql = "SELECT " . $column_txt . " FROM $table WHERE hidden = '0' AND status = '1'";
-        if (!empty($product_category)) {
-            $sql .= " AND product_category = '$product_category'";
-        }
         $result = $conn->query($sql);
 
         $spreadsheet = new Spreadsheet();
@@ -240,7 +328,7 @@ if(isset($_REQUEST['action'])) {
 
         $name = strtoupper(str_replace('_', ' ', $table));
 
-        $filename = "$category_name $name.xlsx";
+        $filename = "$name.xlsx";
         $filePath = $filename;
 
         $writer = new Xlsx($spreadsheet);
@@ -412,14 +500,6 @@ if(isset($_REQUEST['action'])) {
                 $columns[] = $field->name;
             }
     
-            $includedColumns = [ 
-                'id',
-                'product_category',
-                'product_line',
-                'product_type',
-                'width'
-            ];
-    
             $columns = array_filter($columns, function ($col) use ($includedColumns) {
                 return in_array($col, $includedColumns, true);
             });
@@ -564,61 +644,76 @@ if(isset($_REQUEST['action'])) {
     if ($action === 'fetch_table') {
         $query = "SELECT * FROM flat_sheet_width WHERE hidden = 0";
         $result = mysqli_query($conn, $query);
-    
         $data = [];
         while ($row = mysqli_fetch_assoc($result)) {
             $no = $row['id'];
-            $product_category = getProductCategoryName($row['product_category']);
-            $product_line = getProductLineName($row['product_line']);
-            $product_type = getProductTypeName($row['product_type']);
-            $width = number_format(floatval($row['width']),2);
-    
-            $last_edit = !empty($row['last_edit']) ? (new DateTime($row['last_edit']))->format('m-d-Y') : '';
-    
-            $added_by = $row['added_by'];
-            $edited_by = $row['edited_by'];
-    
-            if ($edited_by != "0") {
-                $last_user_name = get_name($edited_by);
-            } elseif ($added_by != "0") {
-                $last_user_name = get_name($added_by);
+            $product_type_id = $row['product_type']; 
+            $trim_type = $row['is_customer_special'];
+            $customer_id = $row['customer_id'];
+
+            $product_type = getProductTypeName($product_type_id);
+            $trim_name = getProductName($row['trim_id']);
+            $customer_name = get_customer_name($customer_id);
+
+            $flat_sheet_width = number_format((float)$row['width'], 2);
+            $hems = $row['hems'] ?? '';
+            $bends = $row['bends'] ?? '';
+
+            if ($row['edited_by'] != "0") {
+                $last_user_name = get_name($row['edited_by']);
+            } elseif ($row['added_by'] != "0") {
+                $last_user_name = get_name($row['added_by']);
             } else {
                 $last_user_name = "";
             }
-    
+
+            $last_edit = !empty($row['last_edit'])
+                ? (new DateTime($row['last_edit']))->format('m-d-Y')
+                : "";
+
             $status_html = $row['status'] == '0'
                 ? "<a href='javascript:void(0)' class='changeStatus' data-no='$no' data-id='$no' data-status='0'>
                         <div id='status-alert$no' class='alert alert-danger bg-danger text-white border-0 text-center py-1 px-2 my-0' style='border-radius: 5%;'>Inactive</div>
-                   </a>"
+                </a>"
                 : "<a href='javascript:void(0)' class='changeStatus' data-no='$no' data-id='$no' data-status='1'>
                         <div id='status-alert$no' class='alert alert-success bg-success text-white border-0 text-center py-1 px-2 my-0' style='border-radius: 5%;'>Active</div>
-                   </a>";
-    
-            $action_html = '';
+                </a>";
+
             if ($permission === 'edit') {
                 $action_html = $row['status'] == '0'
-                    ? "<a href='javascript:void(0)' class='py-1 text-dark hideFSWidth' title='Archive' data-id='$no' data-row='$no' style='border-radius: 10%;'>
+                    ? "<a href='javascript:void(0)' class='py-1 text-dark hideFSWidth' title='Archive' data-id='$no' data-row='$no'>
                             <i class='text-danger ti ti-trash fs-7'></i>
                     </a>"
-                    : "<a href='javascript:void(0)' id='addModalBtn' title='Edit' class='d-flex align-items-center justify-content-center text-decoration-none' data-id='$no' data-type='edit'>
+                    : "<a href='javascript:void(0)' id='addModalBtn' title='Edit'
+                        class='d-flex align-items-center justify-content-center text-decoration-none'
+                        data-id='$no' data-type='edit'>
                             <i class='ti ti-pencil fs-7'></i>
                     </a>";
+            } else {
+                $action_html = '';
             }
-    
+
             $data[] = [
-                'width' => $width,
-                'product_category_name' => $product_category,
-                'product_line' => $product_line,
-                'product_type' => $product_type,
-                'last_edit' => "Last Edited $last_edit by $last_user_name",
-                'status_html' => $status_html,
-                'action_html' => $action_html
+                'product_type'      => $product_type,
+                'trim_name'         => $trim_name,
+                'is_special_trim'   => $trim_type,
+                'customer_name'     => $customer_name,
+                'flat_sheet_width'  => $flat_sheet_width,
+                'hems'              => $hems,
+                'bends'             => $bends,
+                'status_html'       => $status_html,
+                'action_html'       => $action_html,
+
+                'product_type_id'   => $product_type_id,
+                'trim_type'         => $trim_type,
+                'customer_id'       => $customer_id
             ];
         }
-    
+
         echo json_encode(['data' => $data]);
         exit;
     }
+
     mysqli_close($conn);
 }
 ?>

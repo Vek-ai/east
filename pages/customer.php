@@ -457,26 +457,6 @@ if ($permission === 'edit') {
     </div>
 </div>
 
-<div class="modal fade" id="response-modal" tabindex="-1" aria-labelledby="vertical-center-modal" aria-hidden="true">
-  <div class="modal-dialog modal-dialog-centered">
-    <div class="modal-content">
-      <div id="responseHeaderContainer" class="modal-header align-items-center modal-colored-header">
-        <h4 id="responseHeader" class="m-0"></h4>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-      </div>
-      <div class="modal-body">
-
-        <p id="responseMsg"></p>
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn bg-danger-subtle text-danger  waves-effect text-start" data-bs-dismiss="modal">
-          Close
-        </button>
-      </div>
-    </div>
-  </div>
-</div>
-
 <div class="modal fade" id="customerModal" tabindex="-1" aria-labelledby="customerModalLabel" aria-hidden="true">
   <div class="modal-dialog modal-xl">
     <div class="modal-content">
@@ -618,6 +598,26 @@ if ($permission === 'edit') {
               </form>
           </div>
       </div>
+  </div>
+</div>
+
+<div class="modal fade" id="response-modal" tabindex="-1" aria-labelledby="vertical-center-modal" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div id="responseHeaderContainer" class="modal-header align-items-center modal-colored-header">
+        <h4 id="responseHeader" class="m-0"></h4>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+
+        <p id="responseMsg"></p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn bg-danger-subtle text-danger  waves-effect text-start" data-bs-dismiss="modal">
+          Close
+        </button>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -1011,7 +1011,6 @@ if ($permission === 'edit') {
         processData: false,
         contentType: false,
         success: function (response) {
-          $('.modal').modal("hide");
           if (response.trim() === "success_update") {
             $('#responseHeader').text("Success");
             $('#responseMsg').text("Customer updated successfully.");
@@ -1032,12 +1031,6 @@ if ($permission === 'edit') {
             $('#response-modal').on('hide.bs.modal', function () {
               location.reload();
             });
-          } else if (response.trim() === "username_exist") {
-            $('#responseHeader').text("Failed to update");
-            $('#responseMsg').text("Username already taken. Please use another username.");
-            $('#responseHeaderContainer').removeClass("bg-success");
-            $('#responseHeaderContainer').addClass("bg-danger");
-            $('#response-modal').modal("show");
           } else {
             $('#responseHeader').text("Failed");
             $('#responseMsg').text(response);

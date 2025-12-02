@@ -47,12 +47,17 @@ $pageIds = array_keys($profilePages + $userPages);
 $menu_items = [];
 if (!empty($pageIds)) {
     $sql = "
-        SELECT id, url, menu_icon, menu_name, menu_category
+        SELECT id, url, menu_icon, menu_name, menu_category, sort_order
         FROM pages
         WHERE visibility = 1
           AND id IN (" . implode(",", array_map('intval', $pageIds)) . ")
           AND menu_category IN ('" . implode("','", $allowed_categories) . "')
-        ORDER BY menu_category, id ASC
+        ORDER BY 
+            CASE 
+                WHEN sort_order = 0 THEN 999999
+                ELSE sort_order
+            END ASC,
+            id ASC
     ";
     $result = mysqli_query($conn, $sql);
     if ($result && mysqli_num_rows($result) > 0) {
@@ -112,7 +117,7 @@ if (!empty($pageIds)) {
                             echo '<li class="sidebar-item">
                                     <a class="sidebar-link" href="' . htmlspecialchars($href) . '"' . $target . '>
                                         <iconify-icon icon="' . htmlspecialchars($page['menu_icon']) . '" class="aside-icon"></iconify-icon>
-                                        <span class="hide-menu">' . htmlspecialchars($page['menu_name']) . '</span>
+                                        <span class="hide-menu">' . htmlspecialchars($page['menu_name']) .'</span>
                                     </a>
                                   </li>';
                         }

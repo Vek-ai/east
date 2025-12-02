@@ -1,5 +1,7 @@
 <?php
-session_start();
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
 include "calculate_price.php";
 include "notifications.php";
 require_once __DIR__ . '/../modules/EmailTemplates.php';
@@ -877,7 +879,6 @@ function getCustomerAddress($customer_id) {
 
 function log_approval_changes($approval_id, $product_id, $action, $approval_product_id = 0){
     global $conn;
-    session_start();
     $approval_id = mysqli_real_escape_string($conn, $approval_id);
     $approval_product_id = mysqli_real_escape_string($conn, $approval_product_id);
     $product_id = mysqli_real_escape_string($conn, $product_id);
@@ -894,7 +895,6 @@ function log_approval_changes($approval_id, $product_id, $action, $approval_prod
 
 function log_estimate_changes($estimate_id, $product_id, $action, $estimate_prod_id = 0){
     global $conn;
-    session_start();
     $estimate_id = mysqli_real_escape_string($conn, $estimate_id);
     $estimate_prod_id = mysqli_real_escape_string($conn, $estimate_prod_id);
     $product_id = mysqli_real_escape_string($conn, $product_id);
@@ -911,7 +911,6 @@ function log_estimate_changes($estimate_id, $product_id, $action, $estimate_prod
 
 function log_order_changes($orderid, $product_id, $action, $order_product_id = 0){
     global $conn;
-    session_start();
     $orderid = mysqli_real_escape_string($conn, $orderid);
     $order_product_id = mysqli_real_escape_string($conn, $order_product_id);
     $product_id = mysqli_real_escape_string($conn, $product_id);
