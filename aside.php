@@ -2,10 +2,10 @@
 $staff_id = intval($_SESSION['userid']);
 $allowed_categories = [
                       'Sales', 
+                      'EKM Tools', 
                       'Products', 
                       'Customers', 
                       'Reports', 
-                      'EKM Tools', 
                       'Supplier', 
                       'Employees', 
                       'Warehouse', 
