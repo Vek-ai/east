@@ -976,7 +976,7 @@ $editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) :
     <div class="modal-dialog modal-xl modal-dialog-centered" role="document">
         <form id="customer_special_trim_form" class="modal-content modal-content-demo">
             <div class="modal-header">
-                <h6 class="trim-modal-title">Customer Special Trim</h6>
+                <h6 class="modal-title">Customer Special Trim</h6>
                 <button aria-label="Close" class="close" data-bs-dismiss="modal" type="button">
                     <span aria-hidden="true">&times;</span>
                 </button>
