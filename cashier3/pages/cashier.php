@@ -3702,6 +3702,10 @@ $editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) :
             $('#cartColumnModal').modal('show');
         }); 
 
+        $(document).on('click', '#total_linear_ft_btn', function(event) {
+            $('#totalLinearFtModal').modal('show');
+        }); 
+
         $(document).on('submit', '#cartColumnForm', function(e) {
             e.preventDefault();
 
@@ -3717,6 +3721,29 @@ $editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) :
                 success: function(response) {
                     console.log('Response:', response);
                     $('#cartColumnModal').modal('hide');
+                    loadCart();
+                },
+                error: function(jqXHR, textStatus, errorThrown) {
+                    console.log('Error:', jqXHR.responseText + ' - ' + errorThrown);
+                }
+            });
+        });
+
+        $(document).on('submit', '#linearFtForm', function(e) {
+            e.preventDefault();
+
+            const formData = new FormData(this);
+            formData.append('change_linear_ft', 'change_linear_ft');
+
+            $.ajax({
+                url: 'pages/cashier_ajax.php',
+                type: 'POST',
+                data: formData,
+                processData: false,
+                contentType: false,
+                success: function(response) {
+                    console.log('Response:', response);
+                    $('#totalLinearFtModal').modal('hide');
                     loadCart();
                 },
                 error: function(jqXHR, textStatus, errorThrown) {

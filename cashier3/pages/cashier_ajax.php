@@ -956,7 +956,7 @@ if (isset($_POST['load_estimate'])) {
     if ($result && $result->num_rows > 0) {
         $estimate = $result->fetch_assoc();
         $_SESSION['customer_id'] = $estimate['customerid'];
-        $_SESSION['estimateid'] = $estimateid;
+        $_SESSION['estimateid']   = $estimateid;
 
         $query = "SELECT * FROM estimate_prod WHERE estimateid = '$estimateid'";
         $result_products = $conn->query($query);
@@ -966,31 +966,59 @@ if (isset($_POST['load_estimate'])) {
             $line = 1;
 
             while ($row = $result_products->fetch_assoc()) {
-                $product_details = getProductDetails($row['product_id']);
 
-                $quantityInStock = getProductStockInStock($row['product_id']);
-                $totalQuantity = getProductStockTotal($row['product_id']);
-                $totalStock = $totalQuantity;
+                $product_details   = getProductDetails($row['product_id']);
+                $quantityInStock   = getProductStockInStock($row['product_id']);
+                $totalQuantity     = getProductStockTotal($row['product_id']);
 
                 $cart[] = [
                     'line' => $line,
-                    'product_id' => $row['product_id'],
-                    'product_item' => getProductName($product_details['product_id']),
-                    'quantity_cart' => $row['quantity'],
-                    'quantity_ttl' => $totalStock,
+                    'product_id'   => $row['product_id'],
+                    'product_item' => getProductName($row['product_id']),
+
+                    'quantity'      => $row['quantity'],
                     'quantity_in_stock' => $quantityInStock,
-                    'unit_price' => $row['actual_price'],
-                    'estimate_width' => $row['custom_width'],
-                    'estimate_bend' => $row['custom_bend'],
-                    'estimate_hem' => $row['custom_hem'],
-                    'estimate_length' => $row['custom_length'],
+                    'quantity_ttl'       => $totalQuantity,
+
+                    'unit_price'       => $row['actual_price'],
+                    'product_price'    => $row['actual_price'],
+                    'customer_price'   => $row['discounted_price'],
+                    'amount_discount'  => '',
+
+                    'custom_color'  => $row['custom_color'],
+                    'custom_grade'  => $row['custom_grade'],
+                    'custom_gauge'  => $row['custom_gauge'],
+                    'custom_profile'=> $row['custom_profile'],
+                    'category_id'   => $row['product_category'],
+                    'usageid'       => '',
+                    
+                    'estimate_width'       => $row['custom_width'],
+                    'estimate_height'      => $row['custom_height'],
+                    'estimate_bend'        => $row['custom_bend'],
+                    'estimate_hem'         => $row['custom_hem'],
+                    'estimate_length'      => $row['custom_length'],
                     'estimate_length_inch' => $row['custom_length2'],
-                    'custom_color' => $row['custom_color'],
-                    'usageid' => $row['usageid']
+
+                    'current_customer_discount' => $row['current_customer_discount'],
+                    'current_loyalty_discount'  => $row['current_loyalty_discount'],
+                    'used_discount'              => $row['used_discount'],
+
+                    'stiff_stand_seam'   => $row['stiff_stand_seam'],
+                    'stiff_board_batten' => $row['stiff_board_batten'],
+                    'panel_type'         => $row['panel_type'],
+                    'panel_style'        => $row['panel_style'],
+
+                    'custom_trim_src'    => $row['custom_img_src'],
+                    'bundle_name'        => $row['bundle_id'],
+                    'note'               => $row['note'],
+                    'product_id_abbrev'  => $row['product_id_abbrev'],
+
+                    'screw_length' => $row['screw_length'] ?? ''
                 ];
 
                 $line++;
             }
+
             $_SESSION['cart'] = $cart;
 
             $response['success'] = true;
@@ -2283,6 +2311,32 @@ if (isset($_POST['return_product'])) {
                 recordCashOutflow($pay_method, 'product_return', $amount_returned);
             }
 
+            $changes = [
+                'quantity_returned' => $quantity,
+                'amount_returned' => $amount_returned,
+                'stock_fee' => $stock_fee,
+                'pay_method' => $pay_method,
+                'return_id' => $return_id
+            ];
+
+            $old_json = mysqli_real_escape_string($conn, json_encode([]));
+            $new_json = mysqli_real_escape_string($conn, json_encode($changes));
+            $user = mysqli_real_escape_string($conn, $_SESSION['userid'] ?? 'System');
+
+            $log_sql = "
+                INSERT INTO order_history 
+                (orderid, action_type, old_value, new_value, updated_by)
+                VALUES 
+                (
+                    '{$order['orderid']}',
+                    'product_return',
+                    '$old_json',
+                    '$new_json',
+                    '$user'
+                )
+            ";
+            mysqli_query($conn, $log_sql);
+
             if ($status === 0) {
                 $actorId = $_SESSION['userid'];
                 $actor_name = get_staff_name($actorId);
@@ -3353,6 +3407,49 @@ if (isset($_POST['change_cart_columns'])) {
         'show_retail_price',
         'show_profile',
         'show_drag_handle'
+    ];
+
+    foreach ($all_settings as $key) {
+        $setting_key   = mysqli_real_escape_string($conn, $key);
+        $setting_value = isset($_POST[$key]) ? 1 : 0;
+
+        $check = mysqli_query($conn, "
+            SELECT id FROM staff_settings 
+            WHERE staff_id = '$staff_id' AND setting_key = '$setting_key' 
+            LIMIT 1
+        ");
+
+        if ($check && mysqli_num_rows($check) > 0) {
+            $update = "
+                UPDATE staff_settings 
+                SET setting_value = '$setting_value', updated_at = NOW()
+                WHERE staff_id = '$staff_id' AND setting_key = '$setting_key'
+            ";
+            mysqli_query($conn, $update);
+        } else {
+            $insert = "
+                INSERT INTO staff_settings (staff_id, setting_key, setting_value, created_at, updated_at)
+                VALUES ('$staff_id', '$setting_key', '$setting_value', NOW(), NOW())
+            ";
+            mysqli_query($conn, $insert);
+        }
+    }
+
+    echo "success";
+    exit;
+}
+
+if (isset($_POST['change_linear_ft'])) {
+    $staff_id = $_SESSION['userid'] ?? 0;
+    if (!$staff_id) {
+        echo "No staff ID found.";
+        exit;
+    }
+
+    $all_settings = [
+        'linear_ft_panel',
+        'linear_ft_trim',
+        'show_calculate_screw'
     ];
 
     foreach ($all_settings as $key) {

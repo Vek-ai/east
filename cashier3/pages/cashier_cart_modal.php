@@ -48,6 +48,10 @@ if ($staff_id) {
     $show_total_price = 1;
     $show_drag_handle = 0;
 
+    $linear_ft_panel = 0;
+    $linear_ft_trim = 0;
+    $show_calculate_screw = 0;
+
     if ($result && $result->num_rows > 0) {
         while ($row = $result->fetch_assoc()) {
             ${$row['setting_key']} = (int)$row['setting_value'];
@@ -346,33 +350,6 @@ if(isset($_POST['fetch_cart'])){
                                     $linear_price =$item['linear_price'];
                                     $panel_price = $item['panel_price'];
 
-                                    if (!isset($totals_by_custom[$group_key])) {
-                                        $nameParts = [];
-
-                                        $profileAbbr = $custom_profile ? getAbbr('profile_type', 'profile_type', $custom_profile) : null;
-                                        $gradeAbbr   = $custom_grade   ? getAbbr('product_grade', 'product_grade', $custom_grade) : null;
-                                        $gaugeAbbr   = $custom_gauge   ? getAbbr('product_gauge', 'product_gauge', $custom_gauge) : null;
-                                        $colorAbbr   = $custom_color   ? getAbbr('paint_colors', 'color_name', $custom_color) : null;
-
-                                        if ($profileAbbr) $nameParts[] = $profileAbbr;
-                                        if ($gradeAbbr)   $nameParts[] = $gradeAbbr;
-                                        if ($gaugeAbbr)   $nameParts[] = $gaugeAbbr;
-                                        if ($colorAbbr)   $nameParts[] = $colorAbbr;
-
-                                        $groupName = implode(' - ', $nameParts);
-
-                                        $totals_by_custom[$group_key] = [
-                                            'profile'      => $custom_profile,
-                                            'grade'        => $custom_grade,
-                                            'gauge'        => $custom_gauge,
-                                            'color'        => $custom_color,
-                                            'total_length' => 0,
-                                            'name'         => $groupName
-                                        ];
-                                    }
-
-                                    $totals_by_custom[$group_key]['total_length'] += $total_length * $quantity;
-
                                     $total_price_actual = $item['product_price'];
                                     $total_customer_price = $item['customer_price'];
 
@@ -393,6 +370,35 @@ if(isset($_POST['fetch_cart'])){
                                     $panel_style_3 = $profile_details['panel_style_3'];
 
                                     if ($category_id == $panel_id) {
+
+                                        if($linear_ft_panel > 0){
+                                            if (!isset($totals_by_custom[$group_key])) {
+                                                $nameParts = [];
+
+                                                $profileAbbr = $custom_profile ? getAbbr('profile_type', 'profile_type', $custom_profile) : null;
+                                                $gradeAbbr   = $custom_grade   ? getAbbr('product_grade', 'product_grade', $custom_grade) : null;
+                                                $gaugeAbbr   = $custom_gauge   ? getAbbr('product_gauge', 'product_gauge', $custom_gauge) : null;
+                                                $colorAbbr   = $custom_color   ? getAbbr('paint_colors', 'color_name', $custom_color) : null;
+
+                                                if ($profileAbbr) $nameParts[] = $profileAbbr;
+                                                if ($gradeAbbr)   $nameParts[] = $gradeAbbr;
+                                                if ($gaugeAbbr)   $nameParts[] = $gaugeAbbr;
+                                                if ($colorAbbr)   $nameParts[] = $colorAbbr;
+
+                                                $groupName = implode(' - ', $nameParts);
+
+                                                $totals_by_custom[$group_key] = [
+                                                    'profile'      => $custom_profile,
+                                                    'grade'        => $custom_grade,
+                                                    'gauge'        => $custom_gauge,
+                                                    'color'        => $custom_color,
+                                                    'total_length' => 0,
+                                                    'name'         => $groupName
+                                                ];
+                                            }
+
+                                            $totals_by_custom[$group_key]['total_length'] += $total_length * $quantity;
+                                        }
                                         ?>
                                         <tr class="thick-border" data-line="<?= $line ?>" data-bundle="<?= $bundle_name ?>" data-mult="<?= $multiplier ?>"> 
                                             <td class="text-center align-middle">
@@ -639,6 +645,34 @@ if(isset($_POST['fetch_cart'])){
                                         </tr>
                                         <?php 
                                     } elseif ($category_id == $trim_id) {
+                                        if($linear_ft_trim > 0){
+                                            if (!isset($totals_by_custom[$group_key])) {
+                                                $nameParts = [];
+
+                                                $profileAbbr = $custom_profile ? getAbbr('profile_type', 'profile_type', $custom_profile) : null;
+                                                $gradeAbbr   = $custom_grade   ? getAbbr('product_grade', 'product_grade', $custom_grade) : null;
+                                                $gaugeAbbr   = $custom_gauge   ? getAbbr('product_gauge', 'product_gauge', $custom_gauge) : null;
+                                                $colorAbbr   = $custom_color   ? getAbbr('paint_colors', 'color_name', $custom_color) : null;
+
+                                                if ($profileAbbr) $nameParts[] = $profileAbbr;
+                                                if ($gradeAbbr)   $nameParts[] = $gradeAbbr;
+                                                if ($gaugeAbbr)   $nameParts[] = $gaugeAbbr;
+                                                if ($colorAbbr)   $nameParts[] = $colorAbbr;
+
+                                                $groupName = implode(' - ', $nameParts);
+
+                                                $totals_by_custom[$group_key] = [
+                                                    'profile'      => $custom_profile,
+                                                    'grade'        => $custom_grade,
+                                                    'gauge'        => $custom_gauge,
+                                                    'color'        => $custom_color,
+                                                    'total_length' => 0,
+                                                    'name'         => $groupName
+                                                ];
+                                            }
+
+                                            $totals_by_custom[$group_key]['total_length'] += $total_length * $quantity;
+                                        }
                                         ?>
                                         <tr class="thick-border" data-line="<?= $line ?>" data-bundle="<?= $bundle_name ?>" data-mult="<?= $multiplier ?>"> 
                                             <td class="text-center align-middle">
@@ -1214,7 +1248,11 @@ if(isset($_POST['fetch_cart'])){
                         </td>
                     </tr>
                     <tr>
-                        <th colspan="12" style="border-bottom: none; border-top: none;">Total Linear Ft</th>
+                        <th colspan="12" style="border-bottom: none; border-top: none;">
+                           <a href="javascript:void(0)" id="total_linear_ft_btn"> 
+                                Total Linear Ft
+                            </a>
+                        </th>
                         <th colspan="2" class="text-end fw-bold" style="border-bottom: 1px solid #dee2e6;">Total Due:</th>
                         <td class="text-end fw-bold" style="border-bottom: 1px solid #dee2e6;">
                             $<span id="total_payable_est"><?= number_format((floatval($grand_customer_price) + $total_tax), 2) ?></span>
@@ -1363,6 +1401,53 @@ if(isset($_POST['fetch_cart'])){
                                     
                                     
                                 </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-primary">Save</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="totalLinearFtModal" tabindex="-1" aria-labelledby="totalLinearFtModalLabel" aria-hidden="true" style="background-color: rgba(0, 0, 0, 0.5);">
+        <div class="modal-dialog modal-md modal-dialog-centered">
+            <div class="modal-content">
+                <form id="linearFtForm" method="POST">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="totalLinearFtModalLabel">Total Linear Ft Settings</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+
+                    <div class="modal-body text-center">
+                        <div class="mb-4">
+                            <label class="form-check-label fw-bold d-block mb-1" for="linear_ft_panel">
+                                Metal Panel
+                            </label>
+                            <div class="form-check d-flex justify-content-center">
+                                <input class="form-check-input" type="checkbox" id="linear_ft_panel" name="linear_ft_panel" <?= $linear_ft_panel > 0 ? 'checked' : '' ?>>
+                            </div>
+                        </div>
+                            
+                        <div class="mb-4">
+                            <label class="form-check-label fw-bold d-block mb-1" for="linear_ft_trim">
+                                Trim
+                            </label>
+                            <div class="form-check d-flex justify-content-center">
+                                <input class="form-check-input" type="checkbox" id="linear_ft_trim" name="linear_ft_trim" <?= $linear_ft_trim > 0 ? 'checked' : '' ?>>
+                            </div>
+                        </div>
+
+                        <div class="">
+                            <label class="form-check-label fw-bold d-block mb-1" for="show_calculate_screw">
+                                Calculate Screws Button
+                            </label>
+                            <div class="form-check d-flex justify-content-center">
+                                <input class="form-check-input" type="checkbox" id="show_calculate_screw" name="show_calculate_screw" <?= $show_calculate_screw > 0 ? 'checked' : '' ?>>
                             </div>
                         </div>
                     </div>

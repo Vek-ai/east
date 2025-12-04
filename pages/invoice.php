@@ -423,16 +423,6 @@ function showCol($name) {
                                                         <i class="text-success fa fa-print fs-5"></i>
                                                     </a>
 
-                                                    <?php                                                    
-                                                    if ($permission === 'edit') {
-                                                    ?>
-                                                    <a href="javascript:void(0)" type="button" id="email_order_btn" class="me-1 email_order_btn" data-customer="<?= $row["customerid"]; ?>" data-id="<?= $row["orderid"]; ?>" title="Send to Customer">
-                                                        <iconify-icon icon="solar:plain-linear" class="fs-5 text-info"></iconify-icon>
-                                                    </a>
-                                                    <?php                                                    
-                                                    }
-                                                    ?>
-
                                                     <button class="btn btn-danger-gradient btn-sm p-0 me-1" id="view_changes_btn" type="button" data-id="<?= $row["orderid"]; ?>" data-bs-toggle="tooltip" title="View Change History">
                                                         <i class="text-info fa fa-clock-rotate-left fs-5"></i>
                                                     </button>
