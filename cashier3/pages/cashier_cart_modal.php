@@ -1202,21 +1202,6 @@ if(isset($_POST['fetch_cart'])){
                 
                 ?>
                 <tfoot>
-                    <?php 
-                    if ($is_panel_present) {
-                    ?>
-                    <tr>
-                        <td colspan="16">
-                            <div class="d-flex flex-column align-items-end justify-content-end">
-                                <button type="button" class="btn btn-sm btn-info btn-add-screw" data-id="<?= $product_id; ?>">
-                                    Add Screw
-                                </button>
-                            </div>
-                        </td>
-                    </tr>
-                    <?php 
-                    }
-                    ?>
                     <tr>
                         <td colspan="5" class="text-start align-middle">Total Weight <?= number_format(floatval($total_weight), 2) ?> LBS</td>
                         <td></td>
@@ -1272,7 +1257,7 @@ if(isset($_POST['fetch_cart'])){
                                 <?php 
                                 if($show_calculate_screw > 0){
                                 ?>
-                                    <button type="button" class="btn btn-sm btn-info btn-add-screw ms-3" data-id="<?= $product_id; ?>">
+                                    <button type="button" class="btn btn-sm btn-info ms-3" id="add-to-cart-screw-btn" data-color="<?= $info['color'] ?>">
                                         Add Screw
                                     </button>
                                 <?php

@@ -6,6 +6,7 @@ require_once '../includes/dbconn.php';
 require_once '../includes/functions.php';
 
 $panel_id = 3;
+$screw_id = 16;
 
 $deliveryAmt = getDeliveryCost();
 $addressSettings = getSettingAddressDetails();
@@ -1025,22 +1026,6 @@ $editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) :
     </div>
 </div>
 
-<div class="modal fade" id="screw_modal" tabindex="-1" style="background-color: rgba(0, 0, 0, 0.5);">
-    <div class="modal-dialog modal-xl modal-dialog-centered" role="document">
-        <form id="screw_form" class="modal-content modal-content-demo">
-            <div class="modal-header">
-                <button aria-label="Close" class="close" data-bs-dismiss="modal" type="button">
-                    <span aria-hidden="true">&times;</span>
-                </button>
-            </div>
-            <div class="modal-body">
-                <div id="screw_container"></div>
-            </div>
-        </form>
-        </div>
-    </div>
-</div>
-
 <div class="modal fade" id="custom_length_modal" tabindex="-1" style="background-color: rgba(0, 0, 0, 0.5);">
     <div class="modal-dialog modal-xl modal-dialog-centered" role="document">
         <form id="custom_length_form" class="modal-content modal-content-demo">
@@ -1066,6 +1051,43 @@ $editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) :
                 </button>
             </div>
             <div class="modal-body">
+                <div class="row">
+                    <div class="col-4">
+                        <label class="form-label">Select Screw Product</label>
+                        <div class="mb-3">
+                            <select class="form-control" id="screw-product-select" name="product_id">
+                                <option value="" data-category="">All Screws</option>
+                                <optgroup label="Screws">
+                                    <?php
+                                    $query_screw = "
+                                        SELECT *
+                                        FROM product
+                                        WHERE product_category = '$screw_id'
+                                        AND hidden = 0
+                                        AND status = 1
+                                        ORDER BY product_item ASC
+                                    ";
+                                    $result_screw = mysqli_query($conn, $query_screw);
+                                    while ($row = mysqli_fetch_assoc($result_screw)) {
+                                        $screw_type = $row['screw_type'];
+                                        $screw_type_det = getProductScrewType($screw_type);
+                                        $dimension = $screw_type_det['dimensions'];
+                                        $product_price = $row['unit_price'];
+                                        $pack = $row['pack'];
+                                    ?>
+                                        <option 
+                                            value="<?= htmlspecialchars($row['product_id']) ?>">
+                                            <?= htmlspecialchars($row['product_item']) ?>
+                                        </option>
+                                    <?php
+                                    }
+                                    ?>
+                                </optgroup>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                
                 <div id="screw_container"></div>
             </div>
         </form>
@@ -5873,24 +5895,28 @@ $editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) :
             });
         });
 
-
         $(document).on("click", ".btn-add-screw", function () {
-            let $row = $(this).closest("tr");
-            let product_id = $(this).data("id");
-
-            let colorVal = $row.find("select.color-cart").val();
-            let colorText = $row.find("select.color-cart option:selected").text();
-
-            console.log("Product ID:", product_id);
-            console.log("Selected Color Value:", colorVal);
-            console.log("Selected Color Text:", colorText);
-            
             $.ajax({
                 url: "pages/cashier_add_screw_modal.php",
                 type: "POST",
                 data: {
-                    product_id: product_id,
-                    color_id: colorVal,
+                    fetch_modal: 'fetch_modal'
+                },
+                success: function(response) {
+                    $('#screw_container').html(response);
+                    $('#screw_modal').modal('show');
+                }
+            });
+        });
+
+        $(document).on("change", "#screw-product-select", function () {
+            var id = $(this).val();
+
+            $.ajax({
+                url: 'pages/cashier_screw_modal.php',
+                type: 'POST', 
+                data: {
+                    id: id,
                     fetch_modal: 'fetch_modal'
                 },
                 success: function(response) {
@@ -5905,9 +5931,11 @@ $editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) :
                     });
 
                     $('#screw_modal').modal('show');
+                },
+                error: function(jqXHR, textStatus, errorThrown) {
+                    alert('Error: ' + textStatus + ' - ' + errorThrown);
                 }
             });
-           
         });
 
         $(document).on("click", "#btn-add-cart-screw", function () {
