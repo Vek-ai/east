@@ -5574,7 +5574,7 @@ $editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) :
                 contentType: false,
                 success: function (response) {
                     console.log(response);
-                    $('.modal').modal("hide");
+                    $('#screw_modal').modal("hide");
                     loadCart();
                 },
                 error: function (xhr) {
@@ -5895,17 +5895,11 @@ $editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) :
             });
         });
 
-        $(document).on("click", ".btn-add-screw", function () {
-            $.ajax({
-                url: "pages/cashier_add_screw_modal.php",
-                type: "POST",
-                data: {
-                    fetch_modal: 'fetch_modal'
-                },
-                success: function(response) {
-                    $('#screw_container').html(response);
-                    $('#screw_modal').modal('show');
-                }
+        $('#screw-product-select').each(function () {
+            $(this).select2({
+                width: '300px',
+                dropdownParent: $(this).parent(),
+                dropdownPosition: 'below'
             });
         });
 
@@ -5921,15 +5915,6 @@ $editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) :
                 },
                 success: function(response) {
                     $('#screw_container').html(response);
-
-                    $('.screw_select2').each(function () {
-                        $(this).select2({
-                            width: '300px',
-                            dropdownParent: $(this).parent(),
-                            dropdownPosition: 'below'
-                        });
-                    });
-
                     $('#screw_modal').modal('show');
                 },
                 error: function(jqXHR, textStatus, errorThrown) {
