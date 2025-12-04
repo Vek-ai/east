@@ -417,7 +417,7 @@ if(isset($_POST['fetch_cart'])){
                                                 </div>
                                             </td>
 
-                                            <td class="text-center align-middle">
+                                            <td class="align-middle">
                                                 <a href="javascript:void(0);" data-id="<?= $product_id ?>" class="d-flex align-items-center view_product_details">
                                                     <h6 class="fw-semibold mb-0 fs-4"><?= $product['product_item'] ?></h6>
                                                 </a>
@@ -662,7 +662,7 @@ if(isset($_POST['fetch_cart'])){
                                                     </span>
                                                 </div>
                                             </td>
-                                            <td class="text-center align-middle">
+                                            <td class="align-middle">
                                                 <a href="javascript:void(0);" data-id="<?= $product_id ?>" class="d-flex align-items-center view_product_details">
                                                     <h6 class="fw-semibold mb-0 fs-4"><?= $product['product_item'] ?></h6>
                                                 </a>
@@ -855,7 +855,7 @@ if(isset($_POST['fetch_cart'])){
                                                     </span>
                                                 </div>
                                             </td>
-                                            <td class="text-center align-middle">
+                                            <td class="align-middle">
                                                 <div class="d-flex flex-column align-items-center">
                                                     <a href="javascript:void(0);" data-id="<?= $product_id ?>" class="w-100 view_product_details">
                                                         <h6 class="fw-semibold mb-0"><?= htmlspecialchars($values['product_item']) ?></h6>
@@ -1034,7 +1034,7 @@ if(isset($_POST['fetch_cart'])){
                                                 </div>
                                             </td>
 
-                                            <td class="text-center align-middle">
+                                            <td class="align-middle">
                                                 <a href="javascript:void(0);" data-id="<?= $product_id ?>" class="d-flex align-items-center view_product_details">
                                                     <h6 class="fw-semibold mb-0 fs-4"><?= $product['product_item'] ?></h6>
                                                 </a>

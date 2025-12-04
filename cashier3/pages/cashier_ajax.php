@@ -371,11 +371,10 @@ if (isset($_REQUEST['query'])) {
                 $btn_id = 'add-to-cart-custom-truss-btn';
             }else if($is_panel){
                 $btn_id = 'add-to-cart-panel-btn';
-            }else if($is_trim){
-                $btn_id = 'add-to-cart-trim-btn' .$is_special_trim;
-                if($is_special_trim){
-                    $btn_id = 'add-to-cart-special-trim-btn';
-                }
+            }else if ($is_special_trim) {
+                $btn_id = 'add-to-cart-special-trim-btn';
+            } else if($is_trim){
+                $btn_id = 'add-to-cart-trim-btn';
             }else if($is_screw){
                 $btn_id = 'add-to-cart-screw-btn';
             }else if($is_lumber){
