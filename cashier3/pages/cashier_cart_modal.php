@@ -1267,7 +1267,18 @@ if(isset($_POST['fetch_cart'])){
                         ?>
                         <tr>
                             <th colspan="3">
-                                <?= $info['name'] . ': ' . number_format((float)$info['total_length'], 2) . ' ft' ?>
+                                <?= $info['name'] . ': ' . number_format((float)$info['total_length'], 2) . ' ft' ?> 
+                                
+                                <?php 
+                                if($show_calculate_screw > 0){
+                                ?>
+                                    <button type="button" class="btn btn-sm btn-info btn-add-screw ms-3" data-id="<?= $product_id; ?>">
+                                        Add Screw
+                                    </button>
+                                <?php
+                                }
+                                ?>
+                                
                             </th>
                         </tr>
                         <?php 
