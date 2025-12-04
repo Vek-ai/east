@@ -3044,7 +3044,14 @@ if (isset($_POST['filter_category'])) {
 
     $category_condition = "";
     if (!empty($product_category)) {
-        $category_condition = "AND product_category = '$product_category'";
+        $clean_category = intval($product_category);
+
+        $category_condition = "
+            AND FIND_IN_SET(
+                '$clean_category',
+                REPLACE(REPLACE(REPLACE(REPLACE(product_category, '\"', ''), \"'\", ''), '[', ''), ']', '')
+            )
+        ";
     }
         ?>
         <!-- Profile Type -->

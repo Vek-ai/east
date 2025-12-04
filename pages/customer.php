@@ -1315,6 +1315,9 @@ if ($permission === 'edit') {
             $('.portal_user_pass_section').removeClass('d-none');
         } else {
             $('.portal_user_pass_section').addClass('d-none');
+
+            $('#username').val('');
+            $('#password').val('');
         }
     });
 

@@ -52,6 +52,7 @@ if (!empty($pageIds)) {
         WHERE visibility = 1
           AND id IN (" . implode(",", array_map('intval', $pageIds)) . ")
           AND menu_category IN ('" . implode("','", $allowed_categories) . "')
+          AND category_id = '1'
         ORDER BY 
             CASE 
                 WHEN sort_order = 0 THEN 999999
