@@ -170,7 +170,6 @@ $page_key = !empty($_REQUEST['page']) ? $_REQUEST['page'] : 'cashier';
                       </div>
                     </a>
                     <div class="dropdown-menu py-0 content-dd  dropdown-menu-animate-up overflow-hidden" aria-labelledby="drop2">
-
                       <div class="py-3 px-4 bg-primary">
                         <div class="mb-0 fs-6 fw-medium text-white">Notifications</div>
                         <div class="mb-0 fs-2 fw-medium text-white">You have 4 Notifications</div>
@@ -372,48 +371,13 @@ $page_key = !empty($_REQUEST['page']) ? $_REQUEST['page'] : 'cashier';
 
                   <li class="nav-item hover-dd dropdown nav-icon-hover-bg rounded-circle d-none d-lg-block">
                     <a class="nav-link nav-icon-hover waves-effect waves-dark" href="/" aria-expanded="false">
-                      <iconify-icon icon="ic:round-home" class="home-icon"></iconify-icon>
+                      <iconify-icon icon="ic:round-home" class="home-icon iconify-lg"></iconify-icon>
                     </a>
-                  </li>
-                
-                  <li class="nav-item nav-icon-hover-bg rounded-circle">
-                    <a class="nav-link nav-icon-hover moon dark-layout" href="javascript:void(0)">
-                      <iconify-icon icon="solar:moon-line-duotone" class="moon"></iconify-icon>
-                    </a>
-                    <a class="nav-link nav-icon-hover sun light-layout" href="javascript:void(0)">
-                      <iconify-icon icon="solar:sun-2-line-duotone" class="sun"></iconify-icon>
-                    </a>
-                  </li>
-
-                  <li class="nav-item hover-dd dropdown nav-icon-hover-bg rounded-circle d-none d-lg-block">
-                    <a class="nav-link nav-icon-hover waves-effect waves-dark notificationsContainerIcon" href="javascript:void(0)" id="drop2" aria-expanded="false">
-                      <iconify-icon icon="solar:bell-bing-line-duotone"></iconify-icon>
-                      <div class="notify">
-                        <span class="heartbit"></span>
-                        <span class="point"></span>
-                      </div>
-                    </a>
-                    <div class="dropdown-menu py-0 content-dd  dropdown-menu-animate-up overflow-hidden dropdown-menu-end" aria-labelledby="drop2">
-
-                      <div class="py-3 px-4 bg-primary">
-                        <div class="mb-0 fs-6 fw-medium text-white">Notifications</div>
-                        <div class="mb-0 fs-2 fw-medium text-white" id="notifCountLabel">You have 4 Notifications</div>
-                      </div>
-                      <div class="message-body" data-simplebar id="notificationsContainer" style="max-height: 300px; overflow-y: auto;">
-                        <!-- Notifications will be injected here -->
-                      </div>
-                      <div class="p-3">
-                        <a class="d-flex btn btn-primary  align-items-center justify-content-center gap-2" href="?page=notifications">
-                          <span>Check all Notifications</span>
-                          <iconify-icon icon="solar:alt-arrow-right-outline" class="iconify-sm"></iconify-icon>
-                        </a>
-                      </div>
-                    </div>
                   </li>
 
                   <li class="nav-item hover-dd dropdown  nav-icon-hover-bg rounded-circle d-none d-lg-block">
                     <a class="nav-link nav-icon-hover" href="javascript:void(0)" id="drop2" aria-expanded="false">
-                      <iconify-icon icon="solar:inbox-line-line-duotone"></iconify-icon>
+                      <iconify-icon icon="solar:inbox-line-line-duotone" class="iconify-lg"></iconify-icon>
                       <div class="notify">
                         <span class="heartbit"></span>
                         <span class="point"></span>
@@ -516,158 +480,41 @@ $page_key = !empty($_REQUEST['page']) ? $_REQUEST['page'] : 'cashier';
                     </div>
                   </li>
 
-                  <li class="nav-item nav-icon-hover-bg d-lg-block rounded-circle">
-                    <a class="nav-link nav-icon-hover d-none d-md-flex waves-effect waves-dark" 
-                        href="?page=approved_list"
-                        data-bs-toggle="tooltip" 
-                        data-bs-placement="bottom" 
-                        data-bs-html="true"
-                        title="<h6 class='mb-0'>Approved List</h6>">
-                        <i class="fa fa-check" aria-hidden="true"></i>
-                    </a>
-                  </li>
-
-                  <li class="nav-item dropdown hover-dd nav-icon-hover-bg rounded-circle d-none d-lg-block">
-                    <a class="nav-link nav-icon-hover waves-effect waves-dark" href="javascript:void(0)" id="openingBalanceDropdown" data-bs-toggle="dropdown" aria-expanded="false" data-bs-auto-close="outside">
-                      <iconify-icon icon="mdi:cash" class="search-icon"></iconify-icon>
-                    </a>
-
-                    <div class="dropdown-menu py-0 content-dd dropdown-menu-animate-up overflow-hidden dropdown-menu-end" aria-labelledby="openingBalanceDropdown" style="min-width: 220px;">
-                      <div class="py-3 px-4 bg-primary">
-                        <div class="mb-0 fs-6 fw-medium text-white">Opening Balance</div>
-                      </div>
-
-                      <div class="p-3 d-flex align-items-center border-bottom">
-                        <div class="w-100 text-center">
-                          <div class="fs-4 fw-bold text-dark">$ <span id="opening-balance-display">0.00</span></div>
-                          <div class="small text-muted">for today</div>
-                        </div>
-                      </div>
-                    </div>
-                  </li>
-
-                  <li class="nav-item dropdown hover-dd nav-icon-hover-bg rounded-circle d-none d-lg-block">
-                    <a class="nav-link nav-icon-hover waves-effect waves-dark" href="javascript:void(0)" id="cashOutflowDropdown" data-bs-toggle="dropdown" aria-expanded="false" data-bs-auto-close="outside">
-                        <iconify-icon icon="mdi:bank" class="search-icon"></iconify-icon>
-                    </a>
-
-                    <div class="dropdown-menu py-0 content-dd dropdown-menu-animate-up overflow-hidden dropdown-menu-end" aria-labelledby="cashOutflowDropdown" style="min-width: 250px;">
-                        <div class="py-3 px-4 bg-primary">
-                            <div class="mb-0 fs-6 fw-medium text-white">New Cash Outflow</div>
-                        </div>
-
-                        <!-- Content -->
-                        <div class="p-3">
-                            <form id="cashOutflowForm">
-                                <div class="mb-3">
-                                    <label for="cash_outflow_select" class="form-label">Select Outflow</label>
-                                    <select class="form-select" id="cash_outflow_select" name="description" required>
-                                        <option value="" hidden>Select Outflow</option>
-                                        <?php
-                                        $res = $conn->query("SELECT description FROM cash_outflows WHERE description != 'Product Returns' ORDER BY description DESC");
-                                        while ($row = $res->fetch_assoc()) {
-                                            echo '<option value="' . htmlspecialchars($row['description']) . '">' . htmlspecialchars($row['description']) . '</option>';
-                                        }
-                                        ?>
-                                    </select>
-                                </div>
-
-                                <div class="mb-3">
-                                    <label for="cash_outflow_amount" class="form-label">Amount</label>
-                                    <input type="number" class="form-control" id="cash_outflow_amount" name="amount" placeholder="Enter amount" step="0.01" required>
-                                </div>
-
-                                <div class="text-end">
-                                    <button type="submit" class="btn btn-sm btn-primary">Save</button>
-                                </div>
-                            </form>
-                        </div>
-                    </div>
-                </li>
-
-
                   <li class="nav-item hover-dd dropdown nav-icon-hover-bg rounded-circle d-none d-lg-block">
-                    <a class="nav-link nav-icon-hover waves-effect waves-dark" href="javascript:void(0)" aria-expanded="false">
-                      <iconify-icon icon="ic:round-search" class="search-icon"></iconify-icon>
+                    <a class="nav-link nav-icon-hover waves-effect waves-dark notificationsContainerIcon" href="javascript:void(0)" id="drop2" aria-expanded="false">
+                      <iconify-icon icon="solar:bell-bing-line-duotone" class="iconify-lg"></iconify-icon>
+                      <div class="notify">
+                        <span class="heartbit"></span>
+                        <span class="point"></span>
+                      </div>
                     </a>
                     <div class="dropdown-menu py-0 content-dd  dropdown-menu-animate-up overflow-hidden dropdown-menu-end" aria-labelledby="drop2">
 
                       <div class="py-3 px-4 bg-primary">
-                        <div class="mb-0 fs-6 fw-medium text-white">Search Customers</div>
+                        <div class="mb-0 fs-6 fw-medium text-white">Notifications</div>
+                        <div class="mb-0 fs-2 fw-medium text-white" id="notifCountLabel">You have 4 Notifications</div>
                       </div>
-                      <div class="p-3 d-flex align-items-center border-bottom">
-                        <div class="w-100">
-                          <div class="d-flex align-items-center justify-content-between">
-                            <input type="text" id="customer-search-input" class="form-control" placeholder="Search Customer Name">
-                          </div>
-                        </div>
+                      <div class="message-body" data-simplebar id="notificationsContainer" style="max-height: 300px; overflow-y: auto;">
+                        <!-- Notifications will be injected here -->
                       </div>
-                      <div id="customer-search-list"></div>
+                      <div class="p-3">
+                        <a class="d-flex btn btn-primary  align-items-center justify-content-center gap-2" href="?page=notifications">
+                          <span>Check all Notifications</span>
+                          <iconify-icon icon="solar:alt-arrow-right-outline" class="iconify-sm"></iconify-icon>
+                        </a>
+                      </div>
                     </div>
                   </li>
-
-                  <li class="nav-item nav-icon-hover-bg d-lg-block rounded-circle d-none">
-                    <a class="nav-link nav-icon-hover d-none d-md-flex waves-effect waves-dark order-icon" 
-                        id="order_product" 
-                        href="#" 
-                        data-bs-toggle="tooltip" 
-                        data-bs-placement="bottom" 
-                        data-bs-html="true"
-                        title="<h6 class='mb-0'>Order Products from Supplier</h6>">
-                      <i class="fas fa-boxes-stacked"></i>
+                
+                  <li class="nav-item nav-icon-hover-bg rounded-circle">
+                    <a class="nav-link nav-icon-hover moon dark-layout" href="javascript:void(0)">
+                      <iconify-icon icon="solar:moon-line-duotone" class="moon iconify-lg"></iconify-icon>
+                    </a>
+                    <a class="nav-link nav-icon-hover sun light-layout" href="javascript:void(0)">
+                      <iconify-icon icon="solar:sun-2-line-duotone" class="sun iconify-lg"></iconify-icon>
                     </a>
                   </li>
 
-                  <li class="nav-item hover-dd dropdown nav-icon-hover-bg rounded-circle d-none d-lg-block">
-                      <a class="nav-link nav-icon-hover waves-effect waves-dark" href="javascript:void(0)" id="view_cart" aria-expanded="false">
-                        <iconify-icon icon="ic:round-shopping-cart" class="cart-icon"></iconify-icon>
-                        <div class="cart-number">
-                          <span id="cartQty" class="cart-quantity">
-                            <?php
-                              $totalQuantity = 0;
-                              if (!empty($_SESSION["cart"])) {
-                                foreach ($_SESSION["cart"] as $item) {
-                                  $totalQuantity += $item["quantity_cart"];
-                                }
-                              }
-                              echo $totalQuantity;
-                            ?>
-                          </span>
-                        </div>
-                      </a>
-
-                      <div class="dropdown-menu py-0 content-dd dropdown-menu-animate-up dropdown-menu-end" 
-                          aria-labelledby="drop2" style="width: 40vw; max-height: 50vh; overflow-y: auto; padding: 0; margin: 0;">
-                          <div class="py-3 px-4 bg-primary">
-                            <div class="d-flex align-items-center justify-content-between">
-                              <div class="mb-0 fs-6 fw-medium text-white">Cart Contents</div>
-                              <button type="button" class="btn btn-sm mb-2 me-2 " id="clear_cart" style="background-color: #dc3545; color: white;">
-                                  <i class="fa fa-trash fs-4 me-2"></i>
-                                  Clear Cart
-                              </button>
-                              <span id="cartTotal" class="mb-0 fs-6 fw-medium text-white"><?= "$" . number_format($_SESSION["grandtotal"] ?? 0, 2); ?></span>
-                            </div>
-                          </div>
-                          <div class="row bg-light text-secondary py-2 mx-0 text-center">
-                              <div class="col-1">Image</div>
-                              <div class="col-7">Description</div>
-                              <div class="col-2">Color</div>
-                              <div class="col-1">Qty</div>
-                              <div class="col-1"></div>
-                          </div>
-                          <div class="cart-body" data-simplebar>
-                              
-                          </div>
-                      </div>
-                  </li>
-
-                  <!-- ------------------------------- -->
-                  <!-- end notification Dropdown -->
-                  <!-- ------------------------------- -->
-
-                  <!-- ------------------------------- -->
-                  <!-- start profile Dropdown -->
-                  <!-- ------------------------------- -->
                   <li class="nav-item hover-dd dropdown">
                     <a class="nav-link nav-icon-hover" href="javascript:void(0)" id="drop2" aria-expanded="false">
                       <img src="../assets/images/profile/user-1.jpg" alt="user" class="profile-pic rounded-circle round-30" />
@@ -739,6 +586,78 @@ $page_key = !empty($_REQUEST['page']) ? $_REQUEST['page'] : 'cashier';
                       </div>
                     </div>
                   </li>
+
+                  <li class="nav-item hover-dd dropdown nav-icon-hover-bg rounded-circle d-none d-lg-block me-4">
+                    <a class="nav-link nav-icon-hover waves-effect waves-dark" href="javascript:void(0)" aria-expanded="false">
+                      <iconify-icon icon="ic:round-search" class="search-icon iconify-lg"></iconify-icon>
+                    </a>
+                    <div class="dropdown-menu py-0 content-dd  dropdown-menu-animate-up overflow-hidden dropdown-menu-end" aria-labelledby="drop2">
+
+                      <div class="py-3 px-4 bg-primary">
+                        <div class="mb-0 fs-6 fw-medium text-white">Search Customers</div>
+                      </div>
+                      <div class="p-3 d-flex align-items-center border-bottom">
+                        <div class="w-100">
+                          <div class="d-flex align-items-center justify-content-between">
+                            <input type="text" id="customer-search-input" class="form-control" placeholder="Search Customer Name">
+                          </div>
+                        </div>
+                      </div>
+                      <div id="customer-search-list"></div>
+                    </div>
+                  </li>
+
+                  <li class="nav-item hover-dd dropdown nav-icon-hover-bg rounded-circle d-none d-lg-block">
+                      <a class="nav-link nav-icon-hover waves-effect waves-dark" href="javascript:void(0)" id="view_cart" aria-expanded="false">
+                        <iconify-icon icon="ic:round-shopping-cart" class="cart-icon iconify-lg"></iconify-icon>
+                        <div class="cart-number">
+                          <span id="cartQty" class="cart-quantity">
+                            <?php
+                              $totalQuantity = 0;
+                              if (!empty($_SESSION["cart"])) {
+                                foreach ($_SESSION["cart"] as $item) {
+                                  $totalQuantity += $item["quantity_cart"];
+                                }
+                              }
+                              echo $totalQuantity;
+                            ?>
+                          </span>
+                        </div>
+                      </a>
+
+                      <div class="dropdown-menu py-0 content-dd dropdown-menu-animate-up dropdown-menu-end" 
+                          aria-labelledby="drop2" style="width: 40vw; max-height: 50vh; overflow-y: auto; padding: 0; margin: 0;">
+                          <div class="py-3 px-4 bg-primary">
+                            <div class="d-flex align-items-center justify-content-between">
+                              <div class="mb-0 fs-6 fw-medium text-white">Cart Contents</div>
+                              <button type="button" class="btn btn-sm mb-2 me-2 " id="clear_cart" style="background-color: #dc3545; color: white;">
+                                  <i class="fa fa-trash fs-4 me-2"></i>
+                                  Clear Cart
+                              </button>
+                              <span id="cartTotal" class="mb-0 fs-6 fw-medium text-white"><?= "$" . number_format($_SESSION["grandtotal"] ?? 0, 2); ?></span>
+                            </div>
+                          </div>
+                          <div class="row bg-light text-secondary py-2 mx-0 text-center">
+                              <div class="col-1">Image</div>
+                              <div class="col-7">Description</div>
+                              <div class="col-2">Color</div>
+                              <div class="col-1">Qty</div>
+                              <div class="col-1"></div>
+                          </div>
+                          <div class="cart-body" data-simplebar>
+                              
+                          </div>
+                      </div>
+                  </li>
+
+                  <!-- ------------------------------- -->
+                  <!-- end notification Dropdown -->
+                  <!-- ------------------------------- -->
+
+                  <!-- ------------------------------- -->
+                  <!-- start profile Dropdown -->
+                  <!-- ------------------------------- -->
+                  
 
 
                   <!-- ------------------------------- -->
@@ -962,9 +881,6 @@ $page_key = !empty($_REQUEST['page']) ? $_REQUEST['page'] : 'cashier';
                     </span>
                   </a>
                 </div>
-
-
-
               </li>
 
               <li class="nav-item d-none d-lg-block search-box">

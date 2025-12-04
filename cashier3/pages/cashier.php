@@ -171,6 +171,13 @@ $editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) :
         border-radius: 5px;
     }
 
+    .start-return-fixed {
+        position: fixed;
+        bottom: 20px;
+        left: 40px;
+        width: 200px;
+    }
+
 </style>
 <div class="product-list pt-4">
     <div class="card">
@@ -187,7 +194,7 @@ $editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) :
                             <input type="text" class="form-control search-chat py-2 ps-5 " id="text-srh" placeholder="Search Product">
                             <i class="ti ti-search position-absolute top-50 start-0 translate-middle-y fs-6 text-dark ms-3"></i>
                         </div>
-                        <div class="align-items-center">
+                        <div class="filter-wrapper d-flex flex-column h-100">
                             <div class="position-relative w-100 py-2 px-1">
                                 <select class="form-control search-chat ps-5 filter-selection" id="select-category" data-filter-name="Category">
                                     <option value="">All Categories</option>
@@ -333,7 +340,6 @@ $editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) :
                                     </button>
                                 </div>
                             </div>
-
                         </div>
                     </div>
                 </div>
@@ -342,12 +348,6 @@ $editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) :
                         <div class="col-sm-12 col-md-10">
                             <h5>Selected Items:</h5>
                             <div id="selected-tags"></div>
-                        </div>
-                        <div class="col-sm-12 col-md-2 d-flex justify-content-sm-start justify-content-end">
-                            <button type="button" class="btn mb-2 me-2 flex-fill" id="view_order_list" style="background-color: rgb(1, 85, 187); color: white;">
-                                <i class="fa fa-undo fs-4 me-2"></i>
-                                Start Return
-                            </button>
                         </div>
                     </div>
                     <div class="table-responsive border rounded">
@@ -389,6 +389,14 @@ $editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) :
             </div>
         </div>
     </div>
+</div>
+
+<div class="start-return-fixed">
+    <button type="button" class="btn mb-2 me-2 w-100" id="view_order_list"
+            style="background-color: rgb(1, 85, 187); color: white;">
+        <i class="fa fa-undo fs-4 me-2"></i>
+        Start Return
+    </button>
 </div>
 
 <div class="modal" id="custom_trim_draw_modal">
