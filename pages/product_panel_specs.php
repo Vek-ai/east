@@ -78,7 +78,20 @@ $page_title = "Panel Spec";
               <input type="text" class="form-control py-2 ps-5 " id="text-srh" placeholder="Search Widths">
               <i class="ti ti-search position-absolute top-50 start-0 translate-middle-y fs-6 text-dark ms-3"></i>
           </div>
-          <div class="align-items-center"></div>
+          <div class="align-items-center">
+            <div class="position-relative w-100 px-1 mb-2">
+                  <select class="form-control py-0 ps-5 select2 filter-selection" id="filter-fastener" data-filter="fastener" data-filter-name="Fastener">
+                      <option value="">All Fasteners</option>
+                      <option value="concealed">Concealed</option>
+                      <option value="exposed">Exposed</option>
+                  </select>
+              </div>
+          </div>
+            <div class="d-flex justify-content-end py-2">
+                <button type="button" class="btn btn-outline-primary reset_filters">
+                    <i class="fas fa-sync-alt me-1"></i> Reset Filters
+                </button>
+            </div>
       </div>
       <div class="col-10">
           <div id="selected-tags" class="mb-2"></div>
@@ -356,8 +369,7 @@ $(document).ready(function() {
             }
         ],
         createdRow: function (row, data, dataIndex) {
-            $(row).attr('data-concealed', data.is_concealed_fastener);
-            $(row).attr('data-explosed', data.is_exposed_fastener);
+            $(row).attr('data-fastener', data.fastener);
         }
     });
 
@@ -723,6 +735,16 @@ $(document).ready(function() {
                 }
             });
         }
+    });
+
+    $(document).on('click', '.reset_filters', function () {
+        $('.filter-selection').each(function () {
+            $(this).val(null).trigger('change.select2');
+        });
+
+        $('#text-srh').val('');
+
+        filterTable();
     });
 });
 </script>

@@ -558,12 +558,21 @@ if(isset($_REQUEST['action'])) {
                 $action_html = '';
             }
 
+            $fastener = '';
+            if(intval($row['concealed_fastener'])){
+                $fastener = 'concealed';
+            }
+
+            if(intval($row['exposed_fastener'])){
+                $fastener = 'exposed';
+            }
+
             $data[] = [
                 'metal_panel_name'      => $metal_panel_name,
                 'exposed_fastener'      => $exposed_fastener,
                 'concealed_fastener'    => $concealed_fastener,
                 'action_html'           => $action_html,
-                'is_concealed_fastener' => intval($row['concealed_fastener']),
+                'fastener'              => $fastener,
                 'is_exposed_fastener'   => intval($row['exposed_fastener'])
             ];
         }
