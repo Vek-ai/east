@@ -3196,6 +3196,7 @@ function calculateCartItem($values) {
     $panel_id = 3;
     $trim_id  = 4;
     $screw_id = 16;
+    $lumber_id = 1;
 
     $customer_id = $_SESSION['customer_id'];
     $customer_details = getCustomerDetails($customer_id);
@@ -3217,13 +3218,14 @@ function calculateCartItem($values) {
     $total_length = $estimate_length + ($estimate_length_inch / 12);
     if ($total_length <= 0) $total_length = 1;
 
-    $amount_discount = isset($values["amount_discount"]) ? floatval($values["amount_discount"]) : 0;
-    $quantity   = isset($values["quantity_cart"]) ? floatval($values["quantity_cart"]) : 0;
+    $amount_discount= isset($values["amount_discount"]) ? floatval($values["amount_discount"]) : 0;
+    $quantity       = isset($values["quantity_cart"]) ? floatval($values["quantity_cart"]) : 0;
 
-    $color_id = intval($values["custom_color"] ?? 0);
-    $grade    = intval($values["custom_grade"] ?? 0);
-    $gauge    = intval($values["custom_gauge"] ?? 0);
-    $profile  = intval($values["custom_profile"] ?? 0);
+    $color_id       = intval($values["custom_color"] ?? 0);
+    $grade          = intval($values["custom_grade"] ?? 0);
+    $gauge          = intval($values["custom_gauge"] ?? 0);
+    $profile        = intval($values["custom_profile"] ?? 0);
+    $dimension_id   = intval($values["dimension_id"] ?? 0);
 
     $trim_no  = trim($values["trim_no"] ?? 0);
 
@@ -3384,9 +3386,6 @@ function calculateCartItem($values) {
             'screw_length'  => $screw_length,
             'product_id' => $data_id
         ]);
-
-        $dimension_id = getDimensionID($screw_length);
-
         $res = mysqli_query($conn, "SELECT * FROM product_screw_lengths WHERE product_id = '$data_id' AND dimension_id = '$dimension_id' LIMIT 1");
         $row = mysqli_fetch_assoc($res);
 
@@ -3409,6 +3408,29 @@ function calculateCartItem($values) {
             '',
             ''
         ) * $pack;
+    }else if($category_id == $lumber_id){
+        $res = mysqli_query($conn, "SELECT * FROM product_lumber_lengths WHERE product_id = '$data_id' AND dimension_id = '$dimension_id' LIMIT 1");
+        $row = mysqli_fetch_assoc($res);
+
+        $base_price  = floatval($row['unit_price'] ?? 0);
+        $bulk_price  = floatval($row['bulk_price'] ?? 0);
+
+        if ($bulk_price > 0 && $bulk_starts_at > 0 && $quantity >= $bulk_starts_at) {
+            $base_price = $bulk_price;
+        }
+
+        $unit_price = calculateUnitPrice(
+            $base_price,
+            $estimate_length,
+            $estimate_length_inch,
+            '',
+            '',
+            '',
+            '',
+            $color_id,
+            '',
+            ''
+        );
     }
 
     $linear_price = $base_price;

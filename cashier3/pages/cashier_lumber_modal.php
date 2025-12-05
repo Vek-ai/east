@@ -14,6 +14,9 @@ if(isset($_POST['fetch_modal'])){
     if (!empty($product_details)) {
         $category_id = $product_details['product_category'];
         $unit_price  = $product_details['unit_price'];
+
+        $lumber_type = $product_details['lumber_type'];
+        $lumber_type_det = getProductLumberType($lumber_type);
         ?>
         <input type="hidden" id="product_id" name="id" value="<?= $id ?>" />
         <input type="hidden" id="product_price" name="price" value="<?= $unit_price ?>" />
@@ -37,14 +40,32 @@ if(isset($_POST['fetch_modal'])){
                     <div class="col-3">
                         <select class="form-control mb-0 length_select" name="dimension_id[]">
                             <option value="" selected>Select Length</option>
-                            <?php
-                            $lengths = getProductAvailableLengths($id);
-                            foreach ($lengths as $entry) {
-                                $product_length = htmlspecialchars($entry['length']);
-                                $dimension_id   = htmlspecialchars($entry['dimension_id']);
-                                echo "<option value=\"$dimension_id\">$product_length</option>";
-                            }
-                            ?>
+                            <?php 
+                                $dimension_arr = json_decode($lumber_type_det['dimensions'] ?? '[]', true);
+                                if (!is_array($dimension_arr)) $dimension_arr = [];
+
+                                $lengths = [];
+                                $lengthQuery = "SELECT * FROM dimensions WHERE dimension_category = 1 ORDER BY dimension ASC";
+                                $lengthRes = mysqli_query($conn, $lengthQuery);
+                                while ($l = mysqli_fetch_assoc($lengthRes)) {
+                                    $lengths[$l['dimension_id']] = $l;
+                                }
+
+                                foreach ($dimension_arr as $dim_id):
+                                    $dim = $lengths[$dim_id] ?? null;
+                                    if (!$dim) continue;
+
+                                    $unit_price  = $product_lengths[$dim_id]['unit_price'] ?? '';
+                                    $floor_price = $product_lengths[$dim_id]['floor_price'] ?? '';
+                                    $bulk_price  = $product_lengths[$dim_id]['bulk_price'] ?? '';
+                                    $bulk_starts_at = $product_lengths[$dim_id]['bulk_starts_at'] ?? '';
+
+                                    $dimensionDisplay = trim(($dim['dimension'] ?? 0));
+                                ?>
+                                <option value="<?= $dim_id ?>">
+                                    <?= $dimensionDisplay ?>
+                                </option>
+                                <?php endforeach; ?>
                         </select>
                     </div>
                     <div class="col-3 notes-col d-none">
@@ -145,20 +166,14 @@ if (isset($_POST['fetch_price'])) {
 
     if ($product_id > 0) {
         $product     = getProductDetails($product_id);
-        $basePrice   = floatval($product['unit_price']);
         $soldByFeet  = intval($product['sold_by_feet'] ?? 1);
 
         $bulk = getBulkData($product_id);
-        $bulk_price     = floatval($bulk['bulk_price']);
         $bulk_starts_at = floatval($bulk['bulk_starts_at']);
 
         $totalQty = 0;
         foreach ($quantities as $qty) {
             $totalQty += floatval($qty);
-        }
-
-        if ($bulk_price > 0 && $bulk_starts_at > 0 && $totalQty >= $bulk_starts_at) {
-            $basePrice = $bulk_price;
         }
 
         foreach ($quantities as $index => $qty) {
@@ -167,6 +182,16 @@ if (isset($_POST['fetch_price'])) {
 
             $dim_id = intval($dimension_ids[$index] ?? 0);
 
+            $res = mysqli_query($conn, "SELECT * FROM product_lumber_lengths WHERE product_id = '$product_id' AND dimension_id = '$dim_id' LIMIT 1");
+            $row = mysqli_fetch_assoc($res);
+
+            $unit_price  = floatval($row['unit_price'] ?? $product['unit_price'] ?? 0);
+            $bulk_price  = floatval($row['bulk_price'] ?? 0);
+
+            if ($bulk_price > 0 && $qty >= $bulk_starts_at) {
+                $unit_price = $bulk_price;
+            }
+
             $res = mysqli_query($conn, "SELECT * FROM dimensions WHERE dimension_id = '$dim_id' LIMIT 1");
             $row = mysqli_fetch_assoc($res);
 
@@ -174,7 +199,7 @@ if (isset($_POST['fetch_price'])) {
             $inch  = floatval($row['dimension_inches'] ?? 0);
 
             $unitPrice = calculateUnitPrice(
-                $basePrice,
+                $unit_price,
                 $feet,
                 $inch,
                 '',
