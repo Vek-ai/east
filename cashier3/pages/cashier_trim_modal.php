@@ -216,7 +216,7 @@ if(isset($_POST['fetch_modal'])){
                 <div class="d-flex justify-content-center">
                     <button type="button" class="btn btn-secondary" id="toggleNotes">Add Notes</button>
                 </div>
-                <div class="d-flex justify-content-center">
+                <div class="d-flex justify-content-center d-none">
                     <button
                         class="btn btn-warning ripple btn-secondary"
                         id="trim_draw"
