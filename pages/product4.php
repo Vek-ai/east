@@ -1550,14 +1550,14 @@ function showCol($name) {
         });
 
         function fetchPricingSection() {
-            var $screwType = $('#screw_type');
-            var screw_type = $screwType.val();
+            var screw_type = $('#screw_type').val();
+            var lumber_type = $('#lumber_type').val();
             var product_id = $('#product_id').val();
             var $container = $('#pricing_section');
 
             $container.html('<div class="text-muted">Loading...</div>');
 
-            if (!screw_type) {
+            if (!screw_type && !lumber_type) {
                 $container.html('');
                 return;
             }
@@ -1567,10 +1567,12 @@ function showCol($name) {
                 type: 'POST',
                 data: {
                     screw_type: screw_type,
+                    lumber_type: lumber_type,
                     product_id: product_id,
                     action: 'fetch_pricing_section'
                 },
                 success: function(response) {
+                    console.log(response);
                     $container.html(response);
                 },
                 error: function(xhr, status, error) {
@@ -1580,7 +1582,7 @@ function showCol($name) {
             });
         }
 
-        $(document).on('change', '#screw_type', fetchPricingSection);
+        $(document).on('change', '#screw_type, #lumber_type', fetchPricingSection);
 
         filterTable();
 

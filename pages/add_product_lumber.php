@@ -100,6 +100,29 @@ if(isset($_REQUEST['action'])) {
                         </div>
                     </div>
 
+                    <?php $selected_product_lumber_type = (array) json_decode($row['lumber_type'] ?? '[]', true); ?>
+                    <div class="col-md-4">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <label class="form-label">Lumber Type</label>
+                            <a href="?page=product_lumber_type" target="_blank" class="text-decoration-none">Edit</a>
+                        </div>
+                        <div class="mb-3">
+                            <select id="lumber_type" class="form-control calculate select2" name="lumber_type">
+                                <option value="" >Select Lumber Type...</option>
+                                <?php
+                                $query_roles = "SELECT * FROM product_lumber_type WHERE hidden = '0' AND status = '1' ORDER BY `product_lumber_type` ASC";
+                                $result_roles = mysqli_query($conn, $query_roles);            
+                                while ($row_lumber_type = mysqli_fetch_array($result_roles)) {
+                                    $selected = in_array($row_lumber_type['product_lumber_type_id'], $selected_product_lumber_type) ? 'selected' : '';
+                                ?>
+                                    <option value="<?= $row_lumber_type['product_lumber_type_id'] ?>" <?= $selected ?>><?= $row_lumber_type['product_lumber_type'] ?></option>
+                                <?php   
+                                }
+                                ?>
+                            </select>
+                        </div>
+                    </div>
+
                     <?php 
                     $has_color = $row['has_color'] ?? null;
                     $checked = (!isset($row['has_color']) || $has_color > 0) ? 'checked' : '';
@@ -227,82 +250,7 @@ if(isset($_REQUEST['action'])) {
                 <h5 class="mb-0 fw-bold">Product Pricing</h5>
             </div>
             <div class="card-body border rounded p-3">
-                <div class="row">
-                    <div class="col-md-4">
-                        <div class="d-flex justify-content-between align-items-center">
-                            <label class="form-label">Available Lengths</label>
-                            <a href="?page=dimensions" target="_blank" class="text-decoration-none">Edit</a>
-                        </div>
-                        <div class="mb-3">
-                            <?php
-                            $selected_lengths = (array) json_decode($row['available_lengths'] ?? '[]', true);
-                            ?>
-                            <select id="available_lengths" name="available_lengths[]" class="select2 form-control" multiple="multiple">
-                                <optgroup label="Select Available Lengths">
-                                    <?php
-                                    $sql = "SELECT dimension_id, dimension, dimension_unit 
-                                            FROM dimensions 
-                                            WHERE dimension_category = $lumber_id 
-                                            ORDER BY dimension ASC";
-                                    $result = $conn->query($sql);
-
-                                    if ($result && $result->num_rows > 0) {
-                                        while ($row_dim = $result->fetch_assoc()) {
-                                            $dimension_id = $row_dim['dimension_id'];
-                                            $dimension    = $row_dim['dimension'];
-                                            $unit         = $row_dim['dimension_unit'];
-
-                                            $selected = in_array($dimension_id, $selected_lengths) ? 'selected' : '';
-
-                                            echo '<option value="' . $dimension_id . '" ' . $selected . '>'
-                                                . $dimension . ' ' . '</option>';
-                                        }
-                                    }
-                                    ?>
-                                </optgroup>
-                            </select>
-                        </div>
-                    </div>
-                    <div class="col-md-4">
-                        <?php $unit_price = floatval($row['unit_price']) ?? 0; ?>
-                        <div class="mb-3">
-                            <label class="form-label">Retail Price</label>
-                            <input type="text" id="retail" name="unit_price" class="form-control" value="<?=number_format($unit_price ?? 0,3)?>"/>
-                        </div>
-                    </div>
-                    <div class="col-md-4">
-                        <?php $floor_price = floatval($row['floor_price']) ?? 0; ?>
-                        <div class="mb-3">
-                            <label class="form-label">Floor Price</label>
-                            <input type="text" id="floor_price" name="floor_price" class="form-control" value="<?=number_format($floor_price ?? 0,3)?>"/>
-                        </div>
-                    </div>
-                    <div class="col-md-4"></div>
-                    <?php 
-                    $bulk_price = floatval($row['bulk_price'] ?? 0);
-                    $bulk_starts_at = floatval($row['bulk_starts_at'] ?? 0);
-                    ?>
-                    <div class="col-12 mb-3">
-                        <div class="form-check">
-                            <input class="form-check-input" type="checkbox" id="enable_bulk_pricing" <?= ($bulk_price > 0 || $bulk_starts_at > 0) ? 'checked' : '' ?>>
-                            <label class="form-check-label fw-bold" for="enable_bulk_pricing">
-                                Bulk Pricing
-                            </label>
-                        </div>
-                    </div>
-
-                    <div id="bulk_pricing_fields" class="row align-items-end <?= ($bulk_price > 0) ? '' : 'd-none' ?>">
-                        <div class="col-md-4 mb-3">
-                            <label class="form-label fw-semibold mb-1">Bulk Price</label>
-                            <input type="number" class="form-control" id="bulk_price" name="bulk_price" step="0.0001" placeholder="Enter bulk price" value="<?= $bulk_price ?>">
-                        </div>
-                        <div class="col-md-4 mb-3">
-                            <label class="form-label fw-semibold mb-1">Bulk Pricing Starts At</label>
-                            <input type="number" class="form-control" id="bulk_starts_at" name="bulk_starts_at" placeholder="Enter quantity threshold" value="<?= $bulk_starts_at ?>">
-                        </div>
-                    </div>
-
-                </div>
+                <div class="row" id="pricing_section"></div>
             </div>
         </div>
 

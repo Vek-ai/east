@@ -570,6 +570,18 @@ function getProductScrewType($product_screw_type_id) {
     return $product_screw_type;
 }
 
+function getProductLumberType($product_lumber_type_id) {
+    global $conn;
+    $product_lumber_type_id = mysqli_real_escape_string($conn, $product_lumber_type_id);
+    $query = "SELECT * FROM product_lumber_type WHERE product_lumber_type_id = '$product_lumber_type_id'";
+    $result = mysqli_query($conn, $query);
+    $product_lumber_type = [];
+    if ($row = mysqli_fetch_assoc($result)) {
+        $product_lumber_type = $row;
+    }
+    return $product_lumber_type;
+}
+
 function getColorDetails($color_id) {
     global $conn;
     $color_id = mysqli_real_escape_string($conn, $color_id);

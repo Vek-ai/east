@@ -16,6 +16,9 @@ $product_excel = 'product_excel';
 //4 = TRIM
 $trim_id = 4;
 $category_id = 4;
+$lumber_id = 1;
+$panel_id = 3;
+$screw_id = 16;
 
 $includedColumns = [
     'product_id'        => 'Product ID',
@@ -53,6 +56,7 @@ if(isset($_REQUEST['action'])) {
 
     if ($action == "add_update") {
         $product_id = mysqli_real_escape_string($conn, $_POST['product_id']);
+        $category = mysqli_real_escape_string($conn, $_POST['product_category']);
 
         $product_type      = isset($_POST['product_type']) ? array_filter(array_map('intval', (array)$_POST['product_type'])) : [];
         $profile           = isset($_POST['profile']) ? array_filter(array_map('intval', (array)$_POST['profile'])) : [];
@@ -60,7 +64,6 @@ if(isset($_REQUEST['action'])) {
         $gauge             = isset($_POST['gauge']) ? array_filter(array_map('intval', (array)$_POST['gauge'])) : [];
         $color_paint       = isset($_POST['color_paint']) ? array_filter(array_map('intval', (array)$_POST['color_paint'])) : [];
         $available_lengths = isset($_POST['available_lengths']) ? array_filter(array_map('intval', (array)$_POST['available_lengths'])) : [];
-
 
         $fields = [];
         foreach ($_POST as $key => $value) {
@@ -179,17 +182,32 @@ if(isset($_REQUEST['action'])) {
             $floor_price = isset($floor_prices[$i]) ? floatval($floor_prices[$i]) : 0;
             $bulk_price  = isset($bulk_prices[$i]) ? floatval($bulk_prices[$i]) : 0;
 
-            $res = mysqli_query($conn, "SELECT id FROM product_screw_lengths WHERE product_id = '$product_id' AND dimension_id = '$dim_id'");
-            if (mysqli_num_rows($res) > 0) {
-                mysqli_query($conn, "UPDATE product_screw_lengths SET 
-                    unit_price = '$unit_price', 
-                    floor_price = '$floor_price', 
-                    bulk_price = '$bulk_price'
-                    WHERE product_id = '$product_id' AND dimension_id = '$dim_id'");
-            } else {
-                mysqli_query($conn, "INSERT INTO product_screw_lengths 
-                    (product_id, dimension_id, unit_price, floor_price, bulk_price) 
-                    VALUES ('$product_id', '$dim_id', '$unit_price', '$floor_price', '$bulk_price')");
+            if($category == $screw_id){
+                $res = mysqli_query($conn, "SELECT id FROM product_screw_lengths WHERE product_id = '$product_id' AND dimension_id = '$dim_id'");
+                if (mysqli_num_rows($res) > 0) {
+                    mysqli_query($conn, "UPDATE product_screw_lengths SET 
+                        unit_price = '$unit_price', 
+                        floor_price = '$floor_price', 
+                        bulk_price = '$bulk_price'
+                        WHERE product_id = '$product_id' AND dimension_id = '$dim_id'");
+                } else {
+                    mysqli_query($conn, "INSERT INTO product_screw_lengths 
+                        (product_id, dimension_id, unit_price, floor_price, bulk_price) 
+                        VALUES ('$product_id', '$dim_id', '$unit_price', '$floor_price', '$bulk_price')");
+                }
+            }else if($category == $lumber_id){
+                $res = mysqli_query($conn, "SELECT id FROM product_lumber_lengths WHERE product_id = '$product_id' AND dimension_id = '$dim_id'");
+                if (mysqli_num_rows($res) > 0) {
+                    mysqli_query($conn, "UPDATE product_lumber_lengths SET 
+                        unit_price = '$unit_price', 
+                        floor_price = '$floor_price', 
+                        bulk_price = '$bulk_price'
+                        WHERE product_id = '$product_id' AND dimension_id = '$dim_id'");
+                } else {
+                    mysqli_query($conn, "INSERT INTO product_lumber_lengths 
+                        (product_id, dimension_id, unit_price, floor_price, bulk_price) 
+                        VALUES ('$product_id', '$dim_id', '$unit_price', '$floor_price', '$bulk_price')");
+                }
             }
         }
 
@@ -589,27 +607,50 @@ if(isset($_REQUEST['action'])) {
 
     if ($action == "fetch_pricing_section") {
         $screw_type = mysqli_real_escape_string($conn, $_POST['screw_type']);
+        $lumber_type = mysqli_real_escape_string($conn, $_POST['lumber_type']);
+
         $product_id = mysqli_real_escape_string($conn, $_POST['product_id']);
         $product_details = getProductDetails($product_id);
-
         $bulk_starts_at = $product_details['bulk_starts_at'] ?? 0;
 
-        $screw_type_det = getProductScrewType($screw_type);
+        $dimension_arr = [];
+        if(!empty($screw_type)){
+            $screw_type_det = getProductScrewType($screw_type);
 
-        $dimension_arr = json_decode($screw_type_det['dimensions'] ?? '[]', true);
-        if (!is_array($dimension_arr)) $dimension_arr = [];
+            $dimension_arr = json_decode($screw_type_det['dimensions'] ?? '[]', true);
+            if (!is_array($dimension_arr)) $dimension_arr = [];
 
-        $lengths = [];
-        $lengthQuery = "SELECT * FROM dimensions WHERE dimension_category = 16 ORDER BY dimension ASC";
-        $lengthRes = mysqli_query($conn, $lengthQuery);
-        while ($l = mysqli_fetch_assoc($lengthRes)) {
-            $lengths[$l['dimension_id']] = $l;
-        }
+            $lengths = [];
+            $lengthQuery = "SELECT * FROM dimensions WHERE dimension_category = '$screw_id' ORDER BY dimension ASC";
+            $lengthRes = mysqli_query($conn, $lengthQuery);
+            while ($l = mysqli_fetch_assoc($lengthRes)) {
+                $lengths[$l['dimension_id']] = $l;
+            }
 
-        $product_lengths = [];
-        $res = mysqli_query($conn, "SELECT * FROM product_screw_lengths WHERE product_id = '$product_id'");
-        while ($r = mysqli_fetch_assoc($res)) {
-            $product_lengths[$r['dimension_id']] = $r;
+            $product_lengths = [];
+            $res = mysqli_query($conn, "SELECT * FROM product_screw_lengths WHERE product_id = '$product_id'");
+            while ($r = mysqli_fetch_assoc($res)) {
+                $product_lengths[$r['dimension_id']] = $r;
+            }
+
+        }else if(!empty($lumber_type)){
+            $lumber_type_det = getProductLumberType($lumber_type);
+
+            $dimension_arr = json_decode($lumber_type_det['dimensions'] ?? '[]', true);
+            if (!is_array($dimension_arr)) $dimension_arr = [];
+
+            $lengths = [];
+            $lengthQuery = "SELECT * FROM dimensions WHERE dimension_category = '$lumber_id' ORDER BY dimension ASC";
+            $lengthRes = mysqli_query($conn, $lengthQuery);
+            while ($l = mysqli_fetch_assoc($lengthRes)) {
+                $lengths[$l['dimension_id']] = $l;
+            }
+
+            $product_lengths = [];
+            $res = mysqli_query($conn, "SELECT * FROM product_lumber_lengths WHERE product_id = '$product_id'");
+            while ($r = mysqli_fetch_assoc($res)) {
+                $product_lengths[$r['dimension_id']] = $r;
+            }
         }
 
         foreach ($dimension_arr as $dim_id):
