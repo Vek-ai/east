@@ -107,23 +107,29 @@ function showCol($name) {
                 </div>
                 <div class="modal-body">
                     <form id="download_form" class="form-horizontal">
-                        <label for="select-category" class="form-label fw-semibold">Select Category</label>
+                        <label for="select-groupby" class="form-label fw-semibold">Group By</label>
                         <div class="mb-3">
-                            <select class="form-select select2" id="select-download-category" name="category">
-                                <option value="">All Categories</option>
-                                <optgroup label="Category">
-                                    <?php
-                                    $query_category = "SELECT * FROM product_category WHERE hidden = '0' AND status = '1' ORDER BY `product_category` ASC";
-                                    $result_category = mysqli_query($conn, $query_category);
-                                    while ($row_category = mysqli_fetch_array($result_category)) {
-                                    ?>
-                                        <option value="<?= $row_category['product_category_id'] ?>"><?= $row_category['product_category'] ?></option>
-                                    <?php
-                                    }
-                                    ?>
-                                </optgroup>
+                            <select class="form-select select2-filter" id="select-groupby" name="group_by">
+                                <option value="category">Category</option>
+                                <option value="product">Product</option>
                             </select>
                         </div>
+
+                        <label for="select-category" class="form-label fw-semibold">Select Category</label>
+                        <div class="mb-3">
+                            <select class="form-select select2-filter" id="select-download-category" name="category[]" multiple>
+                                <?php
+                                $query_category = "SELECT * FROM product_category WHERE hidden = '0' AND status = '1' ORDER BY `product_category` ASC";
+                                $result_category = mysqli_query($conn, $query_category);
+                                while ($row_category = mysqli_fetch_array($result_category)) {
+                                ?>
+                                    <option value="<?= $row_category['product_category_id'] ?>">
+                                        <?= $row_category['product_category'] ?>
+                                    </option>
+                                <?php } ?>
+                            </select>
+                        </div>
+
 
                         <div class="d-grid">
                             <button type="submit" class="btn btn-primary fw-semibold">
@@ -747,25 +753,18 @@ function showCol($name) {
             });
         });
 
-        $("#download_form").submit(function (e) {
+        $("#download_form").submit(function(e) {
             e.preventDefault();
 
-            let formData = new FormData(this);
-            formData.append("action", "download_excel");
+            const categories = $("#select-download-category").val() || [];
+            const group_by = $("select[name='group_by']").val() || "category";
 
-            $.ajax({
-                url: "pages/inventory_ajax.php",
-                type: "POST",
-                data: formData,
-                contentType: false,
-                processData: false,
-                success: function (response) {
-                    window.location.href = "pages/inventory_ajax.php?action=download_excel&category=" + encodeURIComponent($("#select-download-category").val());
-                },
-                error: function (xhr, status, error) {
-                    alert("Error downloading file: " + error);
-                }
-            });
+            const params = new URLSearchParams();
+            params.append("action", "download_excel");
+            params.append("group_by", group_by);
+            categories.forEach(cat => params.append("category[]", cat));
+
+            window.location.href = "pages/inventory_ajax.php?" + params.toString();
         });
 
         $("#download_class_form").submit(function (e) {

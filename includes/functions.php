@@ -4757,4 +4757,10 @@ function getFlatSheetWidthDetails($id) {
     }
     return $flat_sheet_width;
 }
+
+function sanitizeSheetTitle($title) {
+    $invalidChars = ['\\', '/', '?', '*', '[', ']'];
+    $title = str_replace($invalidChars, '_', $title);
+    return mb_substr($title, 0, 31);
+}
 ?>

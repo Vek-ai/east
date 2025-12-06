@@ -16,22 +16,23 @@ $table = 'inventory';
 $test_table = 'inventory_excel';
 
 $includedColumns = [
-    'Inventory_id'      => 'Inventory ID',
-    'product_line'      => 'Product Line',
-    'product_type'      => 'Product Type',
-    'grade'             => 'Product Grade',
-    'gauge'             => 'Product Gauge',
-    'dimension_id'      => 'Product Length',
-    'color_id'          => 'Product Color',
-    'Product_id'        => 'Product ID',
-    'quantity_ttl'      => 'Quantity',
-    'reorder_level'     => 'Reorder Qty',
-    'Warehouse_id'      => 'Warehouse',
-    'rack'              => 'Rack',
-    'slot'              => 'Slot',
-    'Shelves_id'        => 'Shelf',
-    'Row_id'            => 'Row',
-    'Bin_id'            => 'Bin',
+    'i.Inventory_id'      => 'Product Entry #',
+    'p.product_category'  => 'Product Category',
+    'i.product_line'      => 'Product Line',
+    'i.product_type'      => 'Product Type',
+    'i.grade'             => 'Product Grade',
+    'i.gauge'             => 'Product Gauge',
+    'i.dimension_id'      => 'Product Length',
+    'i.color_id'          => 'Product Color',
+    'i.Product_id'        => 'Product ID',
+    'i.quantity_ttl'      => 'Quantity',
+    'i.reorder_level'     => 'Reorder Qty',
+    'i.Warehouse_id'      => 'Warehouse',
+    'i.rack'              => 'Rack',
+    'i.slot'              => 'Slot',
+    'i.Shelves_id'        => 'Shelf',
+    'i.Row_id'            => 'Row',
+    'i.Bin_id'            => 'Bin',
 ];
 
 function cachedColorName($id) {
@@ -606,64 +607,101 @@ if(isset($_REQUEST['action'])) {
         echo json_encode($cases);
     }
 
-    if ($action == "download_excel") {
-        $product_category = mysqli_real_escape_string($conn, $_REQUEST['category'] ?? '');
-        $category_name = strtoupper(getProductCategoryName($product_category));
-        $column_txt = implode(', ', array_map(fn($col) => "i.$col", array_keys($includedColumns)));
+    if ($_REQUEST['action'] == "download_excel") {
+        $product_category = $_REQUEST['category'] ?? [];
+        $group_by = $_REQUEST['group_by'] ?? 'category';
 
-        $sql = "
-            SELECT $column_txt
-            FROM $table AS i
-            LEFT JOIN product AS p 
-                ON i.Product_id = p.product_id
-            WHERE 1
-        ";
+        $column_txt = implode(', ', array_keys($includedColumns));
+
+        $sql = "SELECT $column_txt
+                FROM $table AS i
+                LEFT JOIN product AS p ON i.Product_id = p.product_id
+                WHERE 1";
 
         if (!empty($product_category)) {
-            $sql .= " AND p.product_category = '$product_category'";
+            $escaped = array_map(fn($id) => intval($id), $product_category);
+            $sql .= " AND p.product_category IN (" . implode(',', $escaped) . ")";
         }
 
         $result = $conn->query($sql);
         $spreadsheet = new Spreadsheet();
-        $sheet = $spreadsheet->getActiveSheet();
 
-        $colIndex = 0;
-        foreach ($includedColumns as $dbColumn => $displayName) {
-            $columnLetter = ($colIndex >= 26)
-                ? indexToColumnLetter($colIndex)
-                : chr(65 + $colIndex);
+        $spreadsheet->removeSheetByIndex(0);
 
-            $sheet->setCellValue($columnLetter . '1', $displayName);
-            $colIndex++;
-        }
+        $sheets = [];
 
-        $row = 2;
         while ($data = $result->fetch_assoc()) {
+
+            $sheetName = ($group_by == "category") 
+                ? ($data['product_category'] ? getProductCategoryName($data['product_category']) : 'Uncategorized')
+                : ($data['Product_id'] ? getProductName($data['Product_id']) : 'Uncategorized');
+
+            $sheetName = sanitizeSheetTitle($sheetName);
+
+            if (!isset($sheets[$sheetName])) {
+                $sheet = $spreadsheet->createSheet();
+                $sheet->setTitle($sheetName);
+                $sheets[$sheetName] = $sheet;
+
+                $colIndex = 0;
+                foreach ($includedColumns as $dbColumn => $displayName) {
+                    $columnLetter = ($colIndex >= 26) ? indexToColumnLetter($colIndex) : chr(65+$colIndex);
+                    $sheet->setCellValue($columnLetter . '1', $displayName);
+
+                    if ($dbColumn == 'i.Inventory_id') {
+                        $sheet->getColumnDimension($columnLetter)->setVisible(false);
+                    }
+                    $colIndex++;
+                }
+            }
+
+            $sheet = $sheets[$sheetName];
+            $row = $sheet->getHighestRow() + 1;
+
             $colIndex = 0;
             foreach ($includedColumns as $dbColumn => $displayName) {
-                $columnLetter = ($colIndex >= 26)
-                    ? indexToColumnLetter($colIndex)
-                    : chr(65 + $colIndex);
+                $columnLetter = ($colIndex >= 26) ? indexToColumnLetter($colIndex) : chr(65+$colIndex);
+                $rawColumn = str_replace(['i.', 'p.'], '', $dbColumn);
+                $value = $data[$rawColumn] ?? '';
 
-                $sheet->setCellValue($columnLetter . $row, $data[$dbColumn] ?? '');
+                switch ($rawColumn) {
+                    case 'product_line':   $value = getProductLineName($value); break;
+                    case 'product_type':   $value = getProductTypeName($value); break;
+                    case 'grade':          $value = getGradeName($value); break;
+                    case 'gauge':          $value = getGaugeName($value); break;
+                    case 'color_id':       $value = getColorName($value); break;
+                    case 'Warehouse_id':   $value = getWarehouseName($value); break;
+                    case 'dimension_id':   $value = getDimensionName($value); break;
+                    case 'Product_id':     $value = getProductName($value); break;
+                    case 'product_category': $value = getProductCategoryName($value); break;
+                }
+
+                $sheet->setCellValue($columnLetter.$row, $value);
                 $colIndex++;
             }
-            $row++;
         }
 
-        $name = strtoupper(str_replace('_', ' ', $table));
-        $filename = "$category_name $name.xlsx";
-        $filePath = $filename;
+        $spreadsheet->setActiveSheetIndex(0);
+
+        $downloadDir = 'downloads';
+        if (!is_dir($downloadDir)) {
+            mkdir($downloadDir, 0777, true);
+        }
+
+        $timestamp = date('Ymd_His');
+        $filename = "inventory_{$timestamp}.xlsx";
+        $filePath = $downloadDir . '/' . $filename;
 
         $writer = new Xlsx($spreadsheet);
         $writer->save($filePath);
 
+        header('Content-Description: File Transfer');
         header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
         header('Content-Disposition: attachment; filename="' . $filename . '"');
         header('Content-Length: ' . filesize($filePath));
         header('Cache-Control: max-age=0');
-
         readfile($filePath);
+
         unlink($filePath);
         exit;
     }
