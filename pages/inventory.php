@@ -107,14 +107,6 @@ function showCol($name) {
                 </div>
                 <div class="modal-body">
                     <form id="download_form" class="form-horizontal">
-                        <label for="select-groupby" class="form-label fw-semibold">Group By</label>
-                        <div class="mb-3">
-                            <select class="form-select select2-filter" id="select-groupby" name="group_by">
-                                <option value="category">Category</option>
-                                <option value="product">Product</option>
-                            </select>
-                        </div>
-
                         <label for="select-category" class="form-label fw-semibold">Select Category</label>
                         <div class="mb-3">
                             <select class="form-select select2-filter" id="select-download-category" name="category[]" multiple>
@@ -129,8 +121,6 @@ function showCol($name) {
                                 <?php } ?>
                             </select>
                         </div>
-
-
                         <div class="d-grid">
                             <button type="submit" class="btn btn-primary fw-semibold">
                                 <i class="fas fa-download me-2"></i> Download Excel
@@ -757,11 +747,8 @@ function showCol($name) {
             e.preventDefault();
 
             const categories = $("#select-download-category").val() || [];
-            const group_by = $("select[name='group_by']").val() || "category";
-
             const params = new URLSearchParams();
             params.append("action", "download_excel");
-            params.append("group_by", group_by);
             categories.forEach(cat => params.append("category[]", cat));
 
             window.location.href = "pages/inventory_ajax.php?" + params.toString();
