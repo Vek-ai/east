@@ -25,7 +25,7 @@ $includedColumns = [
     'i.gauge'               => 'Product Gauge',
     'i.dimension_id'        => 'Length',
     'c.color_group'         => 'Color Group',
-    'c.color_name'          => 'Color Name',
+    'i.color_id'          => 'Color Name',
     'i.Product_id'          => 'Description',
     'p.abbreviation'        => 'Abbreviation',
     'i.quantity_ttl'        => 'Qty on Hand',
@@ -744,39 +744,112 @@ if(isset($_REQUEST['action'])) {
     }
 
     if ($action == "upload_excel") {
-        if (isset($_FILES['excel_file'])) {
-            $fileTmpPath = $_FILES['excel_file']['tmp_name'];
-            $fileName = $_FILES['excel_file']['name'];
-            $fileExtension = strtolower(pathinfo($fileName, PATHINFO_EXTENSION));
+        if (!isset($_FILES['excel_file'])) {
+            echo "No file uploaded.";
+            exit;
+        }
 
-            if (!in_array($fileExtension, ["xlsx", "xls"])) {
-                echo "Please upload a valid Excel file.";
-                exit;
-            }
+        $fileTmpPath = $_FILES['excel_file']['tmp_name'];
+        $fileExtension = strtolower(pathinfo($_FILES['excel_file']['name'], PATHINFO_EXTENSION));
 
-            $spreadsheet = IOFactory::load($fileTmpPath);
-            $sheet = $spreadsheet->getActiveSheet();
+        if (!in_array($fileExtension, ["xlsx", "xls"])) {
+            echo "Please upload a valid Excel file.";
+            exit;
+        }
+
+        $spreadsheet = IOFactory::load($fileTmpPath);
+        $inventoryColumns = [
+            'Inventory_id',
+            'Product_id',
+            'product_line',
+            'product_type',
+            'color_id',
+            'grade',
+            'gauge',
+            'Warehouse_id',
+            'rack',
+            'slot',
+            'Shelves_id',
+            'Bin_id',
+            'Row_id',
+            'dimension_id',
+            'quantity_ttl',
+            'reorder_level'
+        ];
+
+        if (!$conn->query("TRUNCATE TABLE $test_table")) {
+            echo "Error truncating table: " . $conn->error;
+            exit;
+        }
+        foreach ($spreadsheet->getAllSheets() as $sheet) {
             $rows = $sheet->toArray();
+            if (count($rows) < 2) continue;
 
-            $dbColumns = array_keys($includedColumns);
+            $headers = $rows[0];
+            $headerMap = [];
 
-            if (!$conn->query("TRUNCATE TABLE $test_table")) {
-                echo "Error truncating table: " . $conn->error;
-                exit;
+            foreach ($headers as $i => $header) {
+                foreach ($includedColumns as $col => $displayName) {
+                    $plainCol = preg_replace('/^[a-z]+\./i', '', $col);
+                    if ($displayName === $header && in_array($plainCol, $inventoryColumns)) {
+                        $headerMap[$i] = $plainCol;
+                    }
+                }
             }
 
             foreach ($rows as $rowIndex => $row) {
-                if ($rowIndex === 0) {
-                    continue;
-                }
+                if ($rowIndex === 0) continue;
 
                 $data = [];
                 $allEmpty = true;
-                foreach ($dbColumns as $i => $colName) {
-                    $cellValue = isset($row[$i]) ? $row[$i] : '';
-                    $cellValue = (string)$cellValue;
+
+                foreach ($headerMap as $colIndex => $dbCol) {
+                    $cellValue = isset($row[$colIndex]) ? trim($row[$colIndex]) : '';
                     if ($cellValue !== '') $allEmpty = false;
-                    $data[$colName] = mysqli_real_escape_string($conn, $cellValue);
+
+                    switch ($dbCol) {
+                        case 'product_line':
+                            $cellValue = getIDByName('product_line', 'product_line', $cellValue);
+                            break;
+                        case 'product_type':
+                            $cellValue = getIDByName('product_type', 'product_type', $cellValue);
+                            break;
+                        case 'grade':
+                            $cellValue = getIDByName('product_grade', 'product_grade', $cellValue);
+                            break;
+                        case 'gauge':
+                            $cellValue = getIDByName('product_gauge', 'product_gauge', $cellValue);
+                            break;
+                        case 'color_id':
+                            $cellValue = getIDByName('paint_colors', 'color_name', $cellValue);
+                            break;
+                        case 'dimension_id':
+                            $cellValue = getIDByName('dimensions', 'dimension', $cellValue);
+                            break;
+                        case 'Product_id':
+                            $cellValue = getIDByName('product', 'product_item', $cellValue);
+                            break;
+                        case 'Warehouse_id':
+                            $cellValue = getIDByName('warehouses', 'WarehouseName', $cellValue);
+                            break;
+                        case 'rack':
+                            $cellValue = getIDByName('warehouse_rack', 'rack', $cellValue);
+                            break;
+                        case 'slot':
+                            $cellValue = getIDByName('warehouse_slot', 'slot', $cellValue);
+                            break;
+                        case 'Shelves_id':
+                            $cellValue = getIDByName('shelves', 'ShelfCode', $cellValue);
+                            break;
+                        case 'Bin_id':
+                            $cellValue = getIDByName('bins', 'BinCode', $cellValue);
+                            break;
+                        case 'Row_id':
+                            $cellValue = getIDByName('warehouse_rows', 'RowCode', $cellValue);
+                            break;
+                    }
+
+                    $data[$dbCol] = mysqli_real_escape_string($conn, $cellValue);
                 }
 
                 if ($allEmpty) continue;
@@ -786,34 +859,76 @@ if(isset($_REQUEST['action'])) {
 
                 $sql = "INSERT INTO $test_table ($columnNames) VALUES ('$columnValues')";
                 if (!$conn->query($sql)) {
-                    echo "Error inserting data: " . $conn->error;
+                    echo "Error inserting data on sheet '{$sheet->getTitle()}', row " . ($rowIndex + 1) . ": " . $conn->error;
                     exit;
                 }
             }
-
-            echo "success";
-        } else {
-            echo "No file uploaded.";
-            exit;
         }
+
+        echo "success";
     }
 
     if ($action == "fetch_uploaded_modal") {
         $test_primary = getPrimaryKey($test_table);
-        $sql = "SELECT * FROM $test_table";
+
+        $selectCols = [];
+        foreach ($includedColumns as $dbColumn => $displayName) {
+            if ($dbColumn === 'prod_abbrev') continue;
+            $rawColumn = preg_replace('/^[a-z0-9_]+\./i', '', $dbColumn);
+            $selectCols[] = "$dbColumn AS `$rawColumn`";
+        }
+        $column_txt = implode(', ', $selectCols);
+
+        $sql = "SELECT $column_txt
+                FROM $test_table AS i
+                LEFT JOIN product AS p ON i.Product_id = p.product_id
+                LEFT JOIN paint_colors AS c ON i.color_id = c.color_id
+                LEFT JOIN product_color AS pc ON c.color_group = pc.id
+                LEFT JOIN warehouses AS w ON i.Warehouse_id = w.WarehouseID
+                LEFT JOIN warehouse_rack AS wr ON i.rack = wr.id
+                LEFT JOIN warehouse_slot AS ws ON i.slot = ws.id
+                LEFT JOIN shelves AS s ON i.Shelves_id = s.ShelfID
+                LEFT JOIN warehouse_rows AS r ON i.Row_id = r.WarehouseRowID
+                LEFT JOIN bins AS b ON i.Bin_id = b.BinID
+                WHERE 1";
+
         $result = $conn->query($sql);
 
-        if ($result->num_rows > 0) {
+        if ($result && $result->num_rows > 0) {
             ?>
+            <style>
+                .table-bordered-custom {
+                    border-collapse: collapse;
+                    width: 100%;
+                }
+                .table-bordered-custom th,
+                .table-bordered-custom td {
+                    border: 1px solid #555;
+                    padding: 8px 10px;
+                    text-align: center;
+                }
+                .table-bordered-custom th {
+                    font-weight: bold;
+                    font-size: 1rem;
+                }
+                .table-bordered-custom td.editable {
+                    border: 5px solid #fff;
+                    cursor: pointer;
+                }
+                .table-bordered-custom td.editable:focus {
+                    outline: none;
+                }
+            </style>
+
             <div class="card card-body shadow" data-table="<?= $table ?>">
                 <form id="tableForm">
                     <div style="overflow-x: auto; overflow-y: auto; max-height: 80vh; max-width: 100%;">
-                        <table class="table table-bordered table-striped text-center">
+                        <table class="table-bordered-custom text-center">
                             <thead>
                                 <tr>
                                     <?php
                                     foreach ($includedColumns as $dbColumn => $displayName) {
-                                        echo "<th class='fs-4'>" . htmlspecialchars($displayName) . "</th>";
+                                        echo "<th>" . htmlspecialchars($displayName) . "</th>";
                                     }
                                     ?>
                                 </tr>
@@ -823,10 +938,46 @@ if(isset($_REQUEST['action'])) {
                             while ($row = $result->fetch_assoc()) {
                                 $primaryValue = $row[$test_primary] ?? '';
                                 echo '<tr>';
+
+                                $prod_abbrev = getProdID([
+                                    'category' => $row['product_category'] ?? null,
+                                    'line'     => $row['product_line'] ?? null,
+                                    'type'     => $row['product_type'] ?? null,
+                                    'grade'    => $row['grade'] ?? null,
+                                    'gauge'    => $row['gauge'] ?? null,
+                                    'color'    => $row['color_id'] ?? null,
+                                    'length'   => $row['dimension_id'] ?? null,
+                                ]);
+
                                 foreach ($includedColumns as $dbColumn => $displayName) {
-                                    $value = htmlspecialchars($row[$dbColumn] ?? '', ENT_QUOTES, 'UTF-8');
-                                    echo "<td contenteditable='true' class='table_data' data-header-name='$dbColumn' data-id='$primaryValue'>$value</td>";
+                                    $rawColumn = preg_replace('/^[a-z0-9_]+\./i', '', $dbColumn);
+
+                                    if ($dbColumn === 'prod_abbrev') {
+                                        $value = $prod_abbrev;
+                                    } else {
+                                        $value = $row[$rawColumn] ?? '';
+
+                                        switch ($rawColumn) {
+                                            case 'product_line':     $value = getProductLineName($value); break;
+                                            case 'product_type':     $value = getProductTypeName($value); break;
+                                            case 'grade':            $value = getGradeName($value); break;
+                                            case 'gauge':            $value = getGaugeName($value); break;
+                                            case 'color_id':         $value = getColorName($value); break;
+                                            case 'color_group':      $value = getColorGroupName($value); break;
+                                            case 'dimension_id':     $value = getDimensionName($value); break;
+                                            case 'Product_id':       $value = getProductName($value); break;
+                                            case 'product_category': $value = getProductCategoryName($value); break;
+                                        }
+                                    }
+
+                                    $value = htmlspecialchars($value, ENT_QUOTES, 'UTF-8');
+
+                                    $editable = in_array($rawColumn, ['quantity_ttl', 'reorder_level']);
+                                    $contentEditable = $editable ? "contenteditable='true' class='editable'" : '';
+
+                                    echo "<td $contentEditable data-header-name='$rawColumn' data-id='$primaryValue'>$value</td>";
                                 }
+
                                 echo '</tr>';
                             }
                             ?>
@@ -843,6 +994,7 @@ if(isset($_REQUEST['action'])) {
             echo "<p>No data found in the table.</p>";
         }
     }
+
 
     if ($action == "update_test_data") {
         $column_name = $_POST['header_name'] ?? '';

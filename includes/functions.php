@@ -1627,6 +1627,28 @@ function getPrimaryKey($table) {
     return null;
 }
 
+function getIDByName($table, $column, $value) {
+    global $conn;
+
+    $primary = getPrimaryKey($table);
+    if (!$primary) return null;
+
+    $value = strtolower(trim($value));
+    $value = mysqli_real_escape_string($conn, $value);
+
+    $sql = "SELECT `$primary` 
+            FROM `$table` 
+            WHERE LOWER(TRIM(`$column`)) LIKE '%$value%' 
+            LIMIT 1";
+
+    $result = $conn->query($sql);
+    if ($result && $row = $result->fetch_assoc()) {
+        return $row[$primary];
+    }
+
+    return null;
+}
+
 function getCartDataByCustomerId($customer_id) {
     global $conn;
 
