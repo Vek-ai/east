@@ -3188,6 +3188,40 @@ function getColumnFromTable($table, $column, $ids = null) {
     return implode(', ', $data);
 }
 
+function getIdsFromColumnValues($table, $column, $values = null) {
+    global $conn;
+
+    $idColumn = getPrimaryKey($table);
+    if (!$idColumn) return '[]';
+
+    if (is_string($values)) {
+        $values = explode(',', $values);
+    } elseif (!is_array($values)) {
+        $values = [$values];
+    }
+
+    $values = array_map('trim', $values);
+    $values = array_filter($values, fn($v) => $v !== '' && $v !== null);
+
+    if (empty($values)) return '[]';
+
+    $escapedValues = array_map(function($val) use ($conn) {
+        return "'" . mysqli_real_escape_string($conn, $val) . "'";
+    }, $values);
+
+    $valueList = implode(',', $escapedValues);
+
+    $query = "SELECT $idColumn FROM $table WHERE $column IN ($valueList)";
+    $result = mysqli_query($conn, $query);
+
+    $ids = [];
+    while ($row = mysqli_fetch_assoc($result)) {
+        $ids[] = (int)$row[$idColumn];
+    }
+
+    return json_encode($ids);
+}
+
 function getDimensions($ids) {
     global $conn;
 
@@ -3209,7 +3243,7 @@ function getDimensions($ids) {
         if ($dim !== '') $data[] = $dim;
     }
 
-    return implode(', ', $data);
+    return implode(',', $data);
 }
 
 function calculateCartItem($values) {

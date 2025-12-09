@@ -260,7 +260,7 @@ function showCol($name) {
                     <form id="download_product_form" class="form-horizontal">
                         <label for="select-category" class="form-label fw-semibold">Select Category</label>
                         <div class="mb-3">
-                            <select class="form-select select2" id="select-download-category" name="category">
+                            <select class="form-select select2" id="select-download-category" name="category[]" multiple>
                                 <option value="">All Categories</option>
                                 <optgroup label="Category">
                                     <?php
@@ -908,7 +908,9 @@ function showCol($name) {
                 contentType: false,
                 processData: false,
                 success: function (response) {
-                    window.location.href = "pages/product4_ajax.php?action=download_excel&category=" + encodeURIComponent($("#select-download-category").val());
+                    const selected = $("#select-download-category").val() || [];
+                    const query = selected.map(encodeURIComponent).map(id => `category[]=${id}`).join("&");
+                    window.location.href = "pages/product4_ajax.php?action=download_excel&" + query;
                 },
                 error: function (xhr, status, error) {
                     alert("Error downloading file: " + error);

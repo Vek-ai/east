@@ -12,6 +12,7 @@ use PhpOffice\PhpSpreadsheet\IOFactory;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 
+$table = "product";
 $product_excel = 'product_excel';
 //4 = TRIM
 $trim_id = 4;
@@ -23,31 +24,29 @@ $screw_id = 16;
 $includedColumns = [
     'product_id'        => 'Product ID',
     'product_category'  => 'Product Category',
+    'product_line'      => 'Product Line',
     'product_type'      => 'Product Type',
     'profile'           => 'Product Profile',
     'grade'             => 'Grade',
     'gauge'             => 'Gauge',
+    'screw_type'        => 'Screw Type',
+    'screw_coating'     => 'Screw Coating',
+    'has_color'         => 'Product Has Color',
     'color_group'       => 'Color Group',
     'color_paint'       => 'Color',
     'product_item'      => 'Description',
-    'warranty_type'     => 'Warranty Type',
+    'abbreviation'      => 'Abbreviation',
     'product_origin'    => 'Manufactured or Purchased',
     'unit_of_measure'   => 'Unit of Measure',
     'weight'            => 'Weight',
-    'sold_by_feet'      => 'Sold by Linear Feet',
     'panel_type'        => 'Panel Type',
     'panel_style'       => 'Panel Style',
-    'standing_seam'     => 'Standing Seam',
-    'board_batten'      => 'Board & Batten',
-    'is_custom_length'  => 'Sold with custom length?',
+    'flat_sheet_width'  => 'Flat Sheet Width',
+    'hems'              => 'Total Hems',
+    'bends'             => 'Total Bends',
     'available_lengths' => 'Available Lengths',
-    'unit_price'        => 'Retail Price',
-    'inv_id'            => 'Inventory ID',
-    'coil_part_no'      => 'Coil Part #',
-    'product_sku'       => 'SKU',
-    'upc'               => 'UPC',
-    'reorder_level'     => 'Reorder Level',
-    'supplier_id'       => 'Supplier',
+    'unit_price'        => 'Base Price',
+    'floor_price'       => 'Floor Price',
     'comment'           => 'Notes'
 ];
 
@@ -811,6 +810,19 @@ if(isset($_REQUEST['action'])) {
         $sql = "SELECT * FROM `$product_excel`";
         $result = $conn->query($sql);
 
+        $editableColumns = [
+            'unit_price',   
+            'floor_price',    
+            'hems',        
+            'bends',           
+            'unit_of_measure', 
+            'weight',   
+            'product_item',
+            'abbreviation' 
+        ];
+
+
+
         if ($result && $result->num_rows > 0) {
             $columnsWithData = [];
             while ($row = $result->fetch_assoc()) {
@@ -823,11 +835,34 @@ if(isset($_REQUEST['action'])) {
 
             $result->data_seek(0);
             ?>
-            
+            <style>
+                .table-bordered-custom {
+                    border-collapse: collapse;
+                    width: 100%;
+                }
+                .table-bordered-custom th,
+                .table-bordered-custom td {
+                    border: 1px solid #555;
+                    padding: 8px 10px;
+                    text-align: center;
+                }
+                .table-bordered-custom th {
+                    font-weight: bold;
+                    font-size: 1rem;
+                }
+                .table-bordered-custom td.editable {
+                    border: 5px solid #fff !important;
+                    cursor: pointer;
+                }
+                .table-bordered-custom td.editable:focus {
+                    outline: none;
+                }
+            </style>
+
             <div class="card card-body shadow">
                 <form id="tableForm">
                     <div style="overflow-x: auto; overflow-y: auto; max-height: 90vh; max-width: 100%;">
-                        <table class="table table-bordered table-striped text-center">
+                        <table class="table table-bordered-custom table-striped text-center">
                             <thead>
                                 <tr>
                                     <?php
@@ -845,10 +880,61 @@ if(isset($_REQUEST['action'])) {
                                 $product_id = htmlspecialchars($row['product_id'] ?? '');
                                 echo '<tr>';
                                 foreach ($includedColumns as $dbCol => $label) {
-                                    if (isset($columnsWithData[$dbCol])) {
-                                        $value = htmlspecialchars($row[$dbCol] ?? '');
-                                        echo "<td contenteditable='true' class='table_data' data-header-name='" . htmlspecialchars($dbCol) . "' data-id='" . $product_id . "'>$value</td>";
+                                    if (!isset($columnsWithData[$dbCol])) continue;
+
+                                    $value = $row[$dbCol] ?? '';
+
+                                    switch ($dbCol) {
+                                        case 'product_category':
+                                            $value = getColumnFromTable("product_category", "product_category", $value);
+                                            break;
+                                        case 'product_line':
+                                            $value = getColumnFromTable("product_line", "product_line", $value);
+                                            break;
+                                        case 'product_type':
+                                            $value = getColumnFromTable("product_type", "product_type", $value);
+                                            break;
+                                        case 'profile':
+                                            $value = getColumnFromTable("profile_type", "profile_type", $value);
+                                            break;
+                                        case 'grade':
+                                            $value = getColumnFromTable("product_grade", "product_grade", $value);
+                                            break;
+                                        case 'gauge':
+                                            $value = getColumnFromTable("product_gauge", "product_gauge", $value);
+                                            break;
+                                        case 'color_group':
+                                            $value = getColumnFromTable("product_color", "color_name", $value);
+                                            break;
+                                        case 'color_paint':
+                                            $value = getColumnFromTable("paint_colors", "color_name", $value);
+                                            break;
+                                        case 'supplier_id':
+                                            $value = getSupplierName($value);
+                                            break;
+                                        case 'product_origin':
+                                            $value = ($value == 1) ? 'Manufactured' : 'Purchased';
+                                            break;
+                                        case 'available_lengths':
+                                            $value = getColumnFromTable("dimensions", "dimension", $value);
+                                            break;
+                                        case 'flat_sheet_width':
+                                            $value = getColumnFromTable("flat_sheet_width", "width", $value);
+                                            break;
+                                        case 'sold_by_feet':
+                                        case 'standing_seam':
+                                        case 'board_batten':
+                                        case 'has_color':
+                                        case 'bulk_price':
+                                            $value = ($value == 1) ? 'Yes' : 'No';
+                                            break;
                                     }
+
+                                    $isEditable = in_array($dbCol, $editableColumns);
+                                    $contentEditable = $isEditable ? "contenteditable='true' class='table_data editable'" : '';
+
+                                    $value = htmlspecialchars($value);
+                                    echo "<td $contentEditable data-header-name='" . htmlspecialchars($dbCol) . "' data-id='" . $product_id . "'>$value</td>";
                                 }
                                 echo '</tr>';
                             }
@@ -863,60 +949,118 @@ if(isset($_REQUEST['action'])) {
             </div>
             <?php
         } else {
-            echo "<p>No data found in the table.</p>";
+            echo "<p>No data found in the product table.</p>";
         }
     }
 
     if ($action == "upload_excel") {
-        if (isset($_FILES['excel_file'])) {
-            $fileTmpPath = $_FILES['excel_file']['tmp_name'];
-            $fileName = $_FILES['excel_file']['name'];
-            $fileExtension = strtolower(pathinfo($fileName, PATHINFO_EXTENSION));
+        if (!isset($_FILES['excel_file'])) {
+            echo "No file uploaded.";
+            exit;
+        }
 
-            if (!in_array($fileExtension, ["xlsx", "xls"])) {
-                echo "Please upload a valid Excel file.";
-                exit;
-            }
+        $fileTmpPath = $_FILES['excel_file']['tmp_name'];
+        $fileName = $_FILES['excel_file']['name'];
+        $fileExtension = strtolower(pathinfo($fileName, PATHINFO_EXTENSION));
 
-            $spreadsheet = IOFactory::load($fileTmpPath);
-            $sheet = $spreadsheet->getActiveSheet();
-            $rows = $sheet->toArray();
+        if (!in_array($fileExtension, ["xlsx", "xls"])) {
+            echo "Please upload a valid Excel file.";
+            exit;
+        }
 
-            $dbColumns = array_keys($includedColumns);
-            $numColumns = count($dbColumns);
+        $spreadsheet = IOFactory::load($fileTmpPath);
+        $dbColumns = array_keys($includedColumns);
+        $numColumns = count($dbColumns);
 
-            if (!$conn->query("TRUNCATE TABLE `$product_excel`")) {
-                echo "Error truncating table: " . $conn->error;
-                exit;
+        if (!$conn->query("TRUNCATE TABLE `$product_excel`")) {
+            echo "Error truncating table: " . $conn->error;
+            exit;
+        }
+
+        foreach ($spreadsheet->getAllSheets() as $sheet) {
+            $rows = $sheet->toArray(null, true, true, false);
+            if (count($rows) < 2) continue;
+
+            $header = array_map('trim', $rows[0]);
+            $columnMap = [];
+
+            // Match headers to db columns
+            foreach ($includedColumns as $dbCol => $label) {
+                $index = array_search($label, $header);
+                if ($index !== false) {
+                    $columnMap[$index] = $dbCol;
+                }
             }
 
             for ($i = 1; $i < count($rows); $i++) {
                 $row = $rows[$i];
+                if (empty(array_filter($row))) continue; // skip empty rows
 
-                $row = array_pad($row, $numColumns, '');
-                $row = array_slice($row, 0, $numColumns);
+                $data = [];
+                foreach ($columnMap as $colIndex => $dbCol) {
+                    $value = trim($row[$colIndex] ?? '');
 
-                $data = array_combine($dbColumns, $row);
+                    // Convert readable values back to IDs where needed
+                    switch ($dbCol) {
+                        case 'product_category':
+                            $ids = json_decode(getIdsFromColumnValues("product_category", "product_category", $value), true);
+                            $value = $ids[0] ?? '';
+                            break;
+                        case 'product_line':
+                            $value = getIdsFromColumnValues("product_line", "product_line", $value);
+                            break;
+                        case 'product_type':
+                            $value = getIdsFromColumnValues("product_type", "product_type", $value);
+                            break;
+                        case 'profile':
+                            $value = getIdsFromColumnValues("profile_type", "profile_type", $value);
+                            break;
+                        case 'grade':
+                            $value = getIdsFromColumnValues("product_grade", "product_grade", $value);
+                            break;
+                        case 'gauge':
+                            $value = getIdsFromColumnValues("product_gauge", "product_gauge", $value);
+                            break;
+                        case 'color_group':
+                            $value = getIdsFromColumnValues("product_color", "color_name", $value);
+                            break;
+                        case 'color_paint':
+                            $value = getIdsFromColumnValues("paint_colors", "color_name", $value);
+                            break;
+                        case 'available_lengths':
+                            $value = getIdsFromColumnValues("dimensions", "dimension", $value);
+                            break;
+                        case 'flat_sheet_width':
+                            $value = getIdsFromColumnValues("flat_sheet_width", "width", $value);
+                            break;
+                        case 'product_origin':
+                            $value = strtolower($value) === 'manufactured' ? 1 : 0;
+                            break;
+                        case 'sold_by_feet':
+                        case 'standing_seam':
+                        case 'board_batten':
+                        case 'has_color':
+                        case 'bulk_price':
+                            $value = strtolower($value) === 'yes' ? 1 : 0;
+                            break;
+                    }
 
-                $escapedValues = array_map(fn($v) => mysqli_real_escape_string($conn, $v ?? ''), array_values($data));
+                    $data[$dbCol] = mysqli_real_escape_string($conn, $value);
+                }
+
                 $columnNames = implode(", ", array_map(fn($col) => "`$col`", array_keys($data)));
-                $columnValues = implode("', '", $escapedValues);
+                $columnValues = implode("', '", array_values($data));
 
                 $sql = "INSERT INTO `$product_excel` ($columnNames) VALUES ('$columnValues')";
                 if (!$conn->query($sql)) {
-                    echo "Error inserting row {$i}: " . $conn->error;
+                    echo "Error inserting row {$i} in sheet '{$sheet->getTitle()}': " . $conn->error;
                     exit;
                 }
             }
-
-            echo "success";
-        } else {
-            echo "No file uploaded.";
-            exit;
         }
-    }
 
-    
+        echo "success";
+    }
     
     if ($action == "save_table") {
         $table = "product";
@@ -978,54 +1122,147 @@ if(isset($_REQUEST['action'])) {
         }
     }    
 
-    if ($action == "download_excel") {
-        $product_category = mysqli_real_escape_string($conn, $_REQUEST['category'] ?? '');
-        $category_name = strtoupper(getProductCategoryName($product_category));
-
-        $columnNames = array_keys($includedColumns);
-        $column_txt = implode(', ', $columnNames);
-
-        $sql = "SELECT $column_txt FROM product WHERE hidden = '0' AND status = '1'";
-        if (!empty($product_category)) {
-            $sql .= " AND product_category = '$product_category'";
+    if ($_REQUEST['action'] == "download_excel") {
+        $product_category = $_REQUEST['category'] ?? [];
+        if (!is_array($product_category)) {
+            $product_category = [$product_category];
         }
+
+        $selectCols = implode(', ', array_keys($includedColumns));
+        $sql = "SELECT $selectCols FROM $table WHERE 1";
+
+        if (!empty($product_category)) {
+            $escaped = array_map('intval', $product_category);
+            $sql .= " AND product_category IN (" . implode(',', $escaped) . ")";
+        }
+
         $result = $conn->query($sql);
 
         $spreadsheet = new Spreadsheet();
-        $sheet = $spreadsheet->getActiveSheet();
+        $spreadsheet->removeSheetByIndex(0);
+        $sheets = [];
+        $columnHasData = [];
 
-        $row = 1;
-
-        foreach ($includedColumns as $column => $header) {
-            $index = array_search($column, $columnNames);
-            $columnLetter = indexToColumnLetter($index);
-            $sheet->setCellValue($columnLetter . $row, $header);
-        }
-
-        $row = 2;
         while ($data = $result->fetch_assoc()) {
-            foreach ($includedColumns as $column => $header) {
-                $index = array_search($column, $columnNames);
-                $columnLetter = indexToColumnLetter($index);
-                $sheet->setCellValue($columnLetter . $row, $data[$column] ?? '');
+            $sheetName = getProductCategoryName($data['product_category'] ?? null) ?? 'Uncategorized';
+            $sheetName = sanitizeSheetTitle($sheetName);
+
+            if (!isset($sheets[$sheetName])) {
+                $sheet = $spreadsheet->createSheet();
+                $sheet->setTitle($sheetName);
+                $sheets[$sheetName] = $sheet;
+
+                $colIndex = 0;
+                foreach ($includedColumns as $dbColumn => $displayName) {
+                    $columnLetter = ($colIndex >= 26) ? indexToColumnLetter($colIndex) : chr(65 + $colIndex);
+                    $sheet->setCellValue($columnLetter . '1', $displayName);
+                    $sheet->getColumnDimension($columnLetter)->setAutoSize(true);
+                    $colIndex++;
+                }
+
+                $headerRange = 'A1:' . $sheet->getHighestColumn() . '1';
+                $sheet->getStyle($headerRange)->applyFromArray([
+                    'font' => ['bold' => true],
+                    'fill' => [
+                        'fillType' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID,
+                        'startColor' => ['rgb' => 'D9D9D9']
+                    ],
+                    'alignment' => ['horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER],
+                    'borders' => ['allBorders' => ['borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN]]
+                ]);
             }
-            $row++;
+
+            $sheet = $sheets[$sheetName];
+            $row = $sheet->getHighestRow() + 1;
+            $colIndex = 0;
+
+            foreach ($includedColumns as $dbColumn => $displayName) {
+                $columnLetter = ($colIndex >= 26) ? indexToColumnLetter($colIndex) : chr(65 + $colIndex);
+                $value = $data[$dbColumn] ?? '';
+
+                switch ($dbColumn) {
+                    case 'product_category':
+                        $value = getColumnFromTable("product_category", "product_category", $value);
+                        break;
+                    case 'product_line':
+                        $value = getColumnFromTable("product_line", "product_line", $value);
+                        break;
+                    case 'product_type':
+                        $value = getColumnFromTable("product_type", "product_type", $value);
+                        break;
+                    case 'profile':
+                        $value = getColumnFromTable("profile_type", "profile_type", $value);
+                        break;
+                    case 'grade':
+                        $value = getColumnFromTable("product_grade", "product_grade", $value);
+                        break;
+                    case 'gauge':
+                        $value = getColumnFromTable("product_gauge", "product_gauge", $value);
+                        break;
+                    case 'color_group':
+                        $value = getColumnFromTable("product_color", "color_name", $value);
+                        break;
+                    case 'color_paint':
+                        $value = getColumnFromTable("paint_colors", "color_name", $value);
+                        break;
+                    case 'supplier_id':
+                        $value = getSupplierName($value);
+                        break;
+                    case 'product_origin':
+                        $value = ($value == 1) ? 'Manufactured' : 'Purchased';
+                        break;
+                    case 'available_lengths':
+                        $value = getColumnFromTable("dimensions", "dimension", $value);
+                        break;
+                    case 'flat_sheet_width':
+                        $value = getColumnFromTable("flat_sheet_width", "width", $value);
+                        break;
+                    case 'sold_by_feet':
+                    case 'standing_seam':
+                    case 'board_batten':
+                    case 'has_color':
+                    case 'bulk_price':
+                        $value = ($value == 1) ? 'Yes' : 'No';
+                        break;
+                }
+
+                $sheet->setCellValue($columnLetter . $row, $value);
+
+                if (!isset($columnHasData[$sheetName])) {
+                    $columnHasData[$sheetName] = [];
+                }
+                if (!empty($value)) {
+                    $columnHasData[$sheetName][$columnLetter] = true;
+                }
+
+                $colIndex++;
+            }
         }
 
-        if(empty($category_name)){
-            $category_name = "PRODUCTS";
+        foreach ($sheets as $sheetName => $sheet) {
+            $highestColumn = $sheet->getHighestColumn();
+            foreach (range('A', $highestColumn) as $col) {
+                if (empty($columnHasData[$sheetName][$col])) {
+                    $sheet->getColumnDimension($col)->setVisible(false);
+                }
+            }
         }
-        $filename = "$category_name.xlsx";
-        $filePath = $filename;
+
+        $spreadsheet->setActiveSheetIndex(0);
+        $downloadDir = 'downloads';
+        if (!is_dir($downloadDir)) mkdir($downloadDir, 0777, true);
+        $timestamp = date('Ymd_His');
+        $filename = "product_export_{$timestamp}.xlsx";
+        $filePath = $downloadDir . '/' . $filename;
 
         $writer = new Xlsx($spreadsheet);
         $writer->save($filePath);
 
+        header('Content-Description: File Transfer');
         header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
         header('Content-Disposition: attachment; filename="' . $filename . '"');
         header('Content-Length: ' . filesize($filePath));
         header('Cache-Control: max-age=0');
-
         readfile($filePath);
         unlink($filePath);
         exit;
