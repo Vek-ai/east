@@ -107,7 +107,7 @@ function showCol($name) {
                 </div>
                 <div class="modal-body">
                     <form id="download_form" class="form-horizontal">
-                        <label for="select-category" class="form-label fw-semibold">Select Category</label>
+                        <label for="select-download-category" class="form-label fw-semibold">Select Category</label>
                         <div class="mb-3">
                             <select class="form-select select2-filter" id="select-download-category" name="category[]" multiple>
                                 <?php
@@ -117,6 +117,21 @@ function showCol($name) {
                                 ?>
                                     <option value="<?= $row_category['product_category_id'] ?>">
                                         <?= $row_category['product_category'] ?>
+                                    </option>
+                                <?php } ?>
+                            </select>
+                        </div>
+
+                        <label for="select-download-product" class="form-label fw-semibold">Select Specific Product/s</label>
+                        <div class="mb-3">
+                            <select class="form-select select2-filter" id="select-download-product" name="product_id[]" multiple>
+                                <?php
+                                $query_product = "SELECT * FROM product WHERE hidden = '0' AND status = '1' ORDER BY `product_item` ASC";
+                                $result_product = mysqli_query($conn, $query_product);
+                                while ($row_product = mysqli_fetch_array($result_product)) {
+                                ?>
+                                    <option value="<?= $row_product['product_id'] ?>">
+                                        <?= $row_product['product_item'] ?>
                                     </option>
                                 <?php } ?>
                             </select>
@@ -747,12 +762,27 @@ function showCol($name) {
             e.preventDefault();
 
             const categories = $("#select-download-category").val() || [];
+            const productIds = $("#select-download-product").val() || [];
+
+            if (categories.length === 0 && productIds.length === 0) {
+                alert("Please select a category or product before downloading.");
+                return;
+            }
+
             const params = new URLSearchParams();
             params.append("action", "download_excel");
-            categories.forEach(cat => params.append("category[]", cat));
+
+            categories.forEach(cat => {
+                if (cat) params.append("category[]", cat);
+            });
+
+            productIds.forEach(id => {
+                if (id) params.append("product_id[]", id);
+            });
 
             window.location.href = "pages/inventory_ajax.php?" + params.toString();
         });
+
 
         $("#download_class_form").submit(function (e) {
             e.preventDefault();

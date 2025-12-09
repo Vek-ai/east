@@ -612,8 +612,6 @@ if(isset($_REQUEST['action'])) {
     }
 
     if ($_REQUEST['action'] == "download_excel") {
-        $product_category = $_REQUEST['category'] ?? [];
-
         $selectCols = array_filter(array_keys($includedColumns), fn($k) => strpos($k, '.') !== false);
         $column_txt = implode(', ', $selectCols);
 
@@ -629,10 +627,22 @@ if(isset($_REQUEST['action'])) {
                 LEFT JOIN warehouse_rows AS r ON i.Row_id = r.WarehouseRowID
                 LEFT JOIN bins AS b ON i.Bin_id = b.BinID
                 WHERE 1";
-
+        
+        $product_category = $_REQUEST['category'] ?? [];
         if (!empty($product_category)) {
             $escaped = array_map(fn($id) => intval($id), $product_category);
             $sql .= " AND p.product_category IN (" . implode(',', $escaped) . ")";
+        }
+
+        $product_id = $_REQUEST['product_id'] ?? [];
+        if (!empty($product_id)) {
+            $ids = array_map('intval', (array)$product_id);
+            $sql .= " AND i.Product_id IN (" . implode(',', $ids) . ")";
+        }
+
+        if (empty($product_category) && empty($product_id)) {
+            echo "No category or product selected.";
+            exit;
         }
 
         $result = $conn->query($sql);
