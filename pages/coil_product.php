@@ -104,6 +104,40 @@ $permission = $_SESSION['permission'];
         </div>
     </div>
 
+    <div class="modal fade" id="inventoryCoilModal" tabindex="-1" aria-labelledby="" aria-hidden="true">
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content">
+                <div class="modal-header d-flex align-items-center">
+                    <h4 class="modal-title">
+                        Coil Inventory Check
+                    </h4>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form id="inventory_form" class="form-horizontal" autocomplete="off">
+                    <div class="modal-body" id="inventoryCoilBody">
+                        
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="viewInventoryCoilModal" tabindex="-1" aria-labelledby="" aria-hidden="true">
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content">
+                <div class="modal-header d-flex align-items-center">
+                    <h4 class="modal-title">
+                        Inventory Check History Table
+                    </h4>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body" id="viewInventoryCoilBody">
+                    
+                </div>
+            </div>
+        </div>
+    </div>
+
     <div class="modal fade" id="uploadModal" tabindex="-1" aria-labelledby="uploadModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-md">
             <div class="modal-content">
@@ -187,8 +221,8 @@ $permission = $_SESSION['permission'];
                 </div>
                 <div class="align-items-center">
                     <div class="position-relative w-100 px-1 mb-2">
-                        <select class="form-control search-chat py-0 ps-5 select2 filter-selection" id="select-color" data-filter="color" data-filter-name="Color">
-                            <option value="" data-category="">All Colors</option>
+                        <select class="form-control search-chat py-0 ps-5 select2 filter-selection" id="select-color" data-filter="color" data-filter-name="Sold As Color">
+                            <option value="" data-category="">All Sold As Color</option>
                             <optgroup label="Coil Colors">
                                 <?php
                                 $query_color = "SELECT * FROM paint_colors WHERE hidden = '0' AND color_status = '1' ORDER BY `color_name` ASC";
@@ -204,16 +238,31 @@ $permission = $_SESSION['permission'];
                         </select>
                     </div>
                     <div class="position-relative w-100 px-1 mb-2">
-                        <select class="form-control search-chat py-0 ps-5 select2 filter-selection" id="select-grade" data-filter="grade" data-filter-name="Grade">
-                            <option value="" data-category="">All Grades</option>
+                        <select class="form-control search-chat py-0 ps-5 select2 filter-selection" id="select-grade" data-filter="grade" data-filter-name="Grade Sold As">
+                            <option value="" data-category="">All Grade Sold As</option>
                             <optgroup label="Coil Grades">
                                 <?php
                                 $query_grade = "SELECT * FROM product_grade WHERE hidden = '0' AND status = '1' ORDER BY `product_grade` ASC";
                                 $result_grade = mysqli_query($conn, $query_grade);
                                 while ($row_grade = mysqli_fetch_array($result_grade)) {
-                                    $selected = ($grade_id == $row_grade['product_grade_id']) ? 'selected' : '';
                                 ?>
-                                    <option value="<?= $row_grade['product_grade_id'] ?>" data-category="grade" <?= $selected ?>><?= $row_grade['product_grade'] ?></option>
+                                    <option value="<?= $row_grade['product_grade_id'] ?>" data-category="grade"><?= $row_grade['product_grade'] ?></option>
+                                <?php
+                                }
+                                ?>
+                            </optgroup>
+                        </select>
+                    </div>
+                    <div class="position-relative w-100 px-1 mb-2">
+                        <select class="form-control search-chat py-0 ps-5 select2 filter-selection" id="select-gauge" data-filter="gauge" data-filter-name="Gauge Sold As">
+                            <option value="" data-category="">All Gauge Sold As</option>
+                            <optgroup label="Coil Gauges">
+                                <?php
+                                $query_gauge = "SELECT * FROM product_gauge WHERE hidden = '0' AND status = '1' ORDER BY `product_gauge` ASC";
+                                $result_gauge = mysqli_query($conn, $query_gauge);
+                                while ($row_gauge = mysqli_fetch_array($result_gauge)) {
+                                ?>
+                                    <option value="<?= $row_gauge['product_gauge_id'] ?>" data-category="grade"><?= $row_gauge['product_gauge'] ?></option>
                                 <?php
                                 }
                                 ?>
@@ -230,6 +279,22 @@ $permission = $_SESSION['permission'];
                                 while ($row_grade = mysqli_fetch_array($result_grade)) {
                                 ?>
                                     <option value="<?= $row_grade['supplier_id'] ?>"><?= $row_grade['supplier_name'] ?></option>
+                                <?php
+                                }
+                                ?>
+                            </optgroup>
+                        </select>
+                    </div>
+                    <div class="position-relative w-100 px-1 mb-2">
+                        <select class="form-control search-chat py-0 ps-5 select2 filter-selection" id="select-warehouse" data-filter="warehouse" data-filter-name="Warehouse">
+                            <option value="">All Warehouses</option>
+                            <optgroup label="Warehouses">
+                                <?php
+                                $query_wh = "SELECT * FROM warehouses WHERE status = '1' ORDER BY `WarehouseName` ASC";
+                                $result_wh = mysqli_query($conn, $query_wh);
+                                while ($row_wh = mysqli_fetch_array($result_wh)) {
+                                ?>
+                                    <option value="<?= $row_wh['WarehouseID'] ?>"><?= $row_wh['WarehouseName'] ?></option>
                                 <?php
                                 }
                                 ?>
@@ -257,11 +322,13 @@ $permission = $_SESSION['permission'];
                         <table id="productList" class="table search-table align-middle text-wrap">
                             <thead class="header-item">
                             <th>Coil #</th>
-                            <th>Purchased Color</th>
-                            <th>Grade</th>
+                            <th>Sleeve #</th>
+                            <th>Sold As Color</th>
+                            <th>Grade Sold As</th>
+                            <th>Gauge Sold As</th>
                             <th>Supplier</th>
-                            <th>Remaining Ft</th>
-                            <th>Notes</th>
+                            <th>Current Length (Ft)</th>
+                            <th>Warehouse</th>
                             <th>Last Edit By</th>
                             <th>Last Time Edited</th>
                             <th>Status</th>
@@ -281,8 +348,10 @@ $permission = $_SESSION['permission'];
                                 $result_coil = mysqli_query($conn, $query_coil);            
                                 while ($row_coil = mysqli_fetch_array($result_coil)) {
                                     $color = $row_coil['color_sold_as'];
-                                    $grade = $row_coil['grade'];
+                                    $grade = $row_coil['grade_sold_as'];
+                                    $gauge = $row_coil['gauge_sold_as'];
                                     $supplier = $row_coil['supplier'];
+                                    $warehouse = $row_coil['warehouse'];
                                     $remaining_feet = $row_coil['remaining_feet'] ?? 0;
                                     $notes = isset($row_coil['notes']) ? substr($row_coil['notes'], 0, 30) : '';
                                     $coil_id = $row_coil['coil_id'];
@@ -377,6 +446,8 @@ $permission = $_SESSION['permission'];
                                         data-no="<?= $no ?>"
                                         data-color="<?= $color ?>"
                                         data-grade="<?= $grade ?>"
+                                        data-gauge="<?= $gauge ?>"
+                                        data-warehouse="<?= $warehouse ?>"
                                         data-instock="<?= $instock ?>"
                                         data-supplier="<?= $supplier ?>"
                                         data-status="<?= $db_status ?>"
@@ -384,13 +455,13 @@ $permission = $_SESSION['permission'];
                                         <td>
                                             <a href="?page=coil_product_ledger&coil=<?= $row_coil['coil_id'] ?>" target="_blank" class="coil_history_btn" data-id="<?= $row_coil['coil_id'] ?>">
                                                 <div class="d-flex align-items-center">
-                                                    <img src="<?= $picture_path ?>" class="rounded-circle" alt="materialpro-img" width="56" height="56">
                                                     <div class="ms-3">
                                                         <h6 class="fw-semibold mb-0 fs-4"><?= $row_coil['entry_no'] ?></h6>
                                                     </div>
                                                 </div>
                                             </a>
                                         </td>
+                                        <td><?= $row_coil['sleeve_code'] ?></td>
                                         <td>
                                             <div class="d-inline-flex align-items-center gap-2">
                                                 <a href="javascript:void(0)" id="viewAvailableBtn" class="d-inline-flex align-items-center gap-2 text-decoration-none">
@@ -399,10 +470,11 @@ $permission = $_SESSION['permission'];
                                                 </a>
                                             </div>
                                         </td>
-                                        <td><?= getGradeName($row_coil['grade']) ?></td>
+                                        <td><?= getGradeName($row_coil['grade_sold_as']) ?></td>
+                                        <td><?= getGaugeName($row_coil['gauge_sold_as']) ?></td>
                                         <td><?= getSupplierName($row_coil['supplier']) ?></td>
                                         <td><?= number_format(floatval($remaining_feet),2) ?></td>
-                                        <td><?= $notes ?></td>
+                                        <td><?= getWarehouseName($row_coil['warehouse']) ?></td>
                                         <td><?= $last_edit_by ?></td>
                                         <td><?= $last_edit ?></td>
                                         <td><?= $status ?></td>
@@ -414,11 +486,17 @@ $permission = $_SESSION['permission'];
                                                 <?php                                                    
                                                 if ($permission === 'edit') {
                                                 ?>
-                                                <a href="?page=coil_product_ledger&coil=<?= $row_coil['coil_id'] ?>" target="_blank" title="Coil Product Ledger" class="edit coil_history_btn" data-id="<?= $row_coil['coil_id'] ?>">
-                                                    <i class="ti ti-history text-info fs-7"></i>
-                                                </a>
                                                 <a href="#" title="Edit" class="edit coil_btn" data-id="<?= $row_coil['coil_id'] ?>" data-type="add">
                                                     <i class="ti ti-pencil text-warning fs-7"></i>
+                                                </a>
+                                                <a href="#" title="Inventory Check" class="edit inv_check" data-id="<?= $row_coil['coil_id'] ?>">
+                                                    <i class="ti ti-home text-primary fs-7"></i>
+                                                </a>
+                                                <a href="#" title="View Inventory Check History" class="edit view_coil_inv_history" data-id="<?= $row_coil['coil_id'] ?>">
+                                                    <i class="ti ti-file text-primary fs-7"></i>
+                                                </a>
+                                                <a href="?page=coil_product_ledger&coil=<?= $row_coil['coil_id'] ?>" target="_blank" title="Coil Product Ledger" class="edit coil_history_btn" data-id="<?= $row_coil['coil_id'] ?>">
+                                                    <i class="ti ti-history text-info fs-7"></i>
                                                 </a>
                                                 <a href="#" title="Remove From Stock" id="delete_product_btn" class="text-danger edit changeStatus" data-no="<?= $no ?>" data-id="<?= $coil_id ?>" data-status='<?= $db_status ?>'>
                                                     <i class="text-danger ti ti-trash fs-7"></i>
@@ -562,7 +640,7 @@ $permission = $_SESSION['permission'];
         var table = $('#productList').DataTable({
             responsive: true,
             autoWidth: false,
-            order: [[1, "asc"]],
+            order: [],
             pageLength: 100,
             lengthMenu: [[10, 25, 50, 100], [10, 25, 50, 100]],
             dom: 'lftp',
@@ -655,6 +733,57 @@ $permission = $_SESSION['permission'];
             });
         });
 
+        $(document).on('click', '.inv_check', function(event) {
+            event.preventDefault(); 
+            var id = $(this).data('id');
+
+            $.ajax({
+                    url: 'pages/coil_product_ajax.php',
+                    type: 'POST',
+                    data: {
+                        id: id,
+                        action: "fetch_inventory_modal"
+                    },
+                    success: function(response) {
+                        $('#inventoryCoilBody').html(response);
+                        $('#inventoryCoilModal').modal('show');
+                    },
+                    error: function(jqXHR, textStatus, errorThrown) {
+                        alert('Error: ' + textStatus + ' - ' + errorThrown);
+                    }
+            });
+        });
+
+        $(document).on('click', '.view_coil_inv_history', function(event) {
+            event.preventDefault(); 
+            var id = $(this).data('id');
+
+            $.ajax({
+                url: 'pages/coil_product_ajax.php',
+                type: 'POST',
+                data: {
+                    id: id,
+                    action: "fetch_inventory_check_history"
+                },
+                success: function(response) {
+
+                    $('#viewInventoryCoilBody').html(response);
+
+                    $('#inventoryCheckTable').DataTable({
+                        order: [[7, "desc"]],
+                        pageLength: 10,
+                        responsive: true
+                    });
+
+                    $('#viewInventoryCoilModal').modal('show');
+                },
+                error: function(jqXHR, textStatus, errorThrown) {
+                    alert('Error: ' + textStatus + ' - ' + errorThrown);
+                }
+            });
+        });
+
+
         $(document).on('submit', '#coil_form', function(event) {
             event.preventDefault(); 
 
@@ -686,6 +815,46 @@ $permission = $_SESSION['permission'];
                     }else if (response.trim() === "success_update") {
                         $('#responseHeader').text("Success");
                         $('#responseMsg').text("Coil updated successfully.");
+                        $('#responseHeaderContainer').removeClass("bg-danger");
+                        $('#responseHeaderContainer').addClass("bg-success");
+                        $('#response-modal').modal("show");
+
+                        $('#response-modal').on('hide.bs.modal', function () {
+                            location.reload();
+                        });
+                    } else {
+                        $('#responseHeader').text("Failed");
+                        $('#responseMsg').text(response);
+
+                        $('#responseHeaderContainer').removeClass("bg-success");
+                        $('#responseHeaderContainer').addClass("bg-danger");
+                        $('#response-modal').modal("show");
+                    }
+                    
+                },
+                error: function(jqXHR, textStatus, errorThrown) {
+                    alert('Error: ' + textStatus + ' - ' + errorThrown);
+                }
+            });
+        });
+
+        $(document).on('submit', '#inventory_form', function(event) {
+            event.preventDefault(); 
+
+            var formData = new FormData(this);
+            formData.append('action', 'inventory_record');
+
+            $.ajax({
+                url: 'pages/coil_product_ajax.php',
+                type: 'POST',
+                data: formData,
+                processData: false,
+                contentType: false,
+                success: function(response) {
+                    $('.modal').modal('hide');
+                    if (response.trim() === "success") {
+                        $('#responseHeader').text("Success");
+                        $('#responseMsg').text("Coil Inventory Recorded successfully.");
                         $('#responseHeaderContainer').removeClass("bg-danger");
                         $('#responseHeaderContainer').addClass("bg-success");
                         $('#response-modal').modal("show");

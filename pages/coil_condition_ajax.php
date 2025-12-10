@@ -1,0 +1,397 @@
+<?php
+session_start();
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ALL);
+
+require '../includes/dbconn.php';
+require '../includes/functions.php';
+require '../includes/vendor/autoload.php';
+
+use PhpOffice\PhpSpreadsheet\IOFactory;
+use PhpOffice\PhpSpreadsheet\Spreadsheet;
+use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
+
+$table = 'coil_condition';
+$test_table = 'coil_condition_excel';
+
+$includedColumns = [
+    'id'   => 'Product Type ID',
+    'coil_condition'    => 'Product Type',
+    'abbreviation'     => 'abbreviation',
+    'notes'             => 'Notes'
+];
+
+if(isset($_REQUEST['action'])) {
+    $action = $_REQUEST['action'];
+
+    if ($action == "add_update") {
+        $id = mysqli_real_escape_string($conn, $_POST['id']);
+        $coil_condition = mysqli_real_escape_string($conn, $_POST['coil_condition']);
+        $abbreviation = mysqli_real_escape_string($conn, $_POST['abbreviation']);
+        $notes = mysqli_real_escape_string($conn, $_POST['notes']);
+        $userid = mysqli_real_escape_string($conn, $_POST['userid']);
+
+        $checkQuery = "SELECT abbreviation FROM coil_condition WHERE id = '$id'";
+        $result = mysqli_query($conn, $checkQuery);
+
+        if (mysqli_num_rows($result) > 0) {
+            $row = mysqli_fetch_assoc($result);
+            $old_abbr = $row['abbreviation'];
+
+            $updateQuery = "UPDATE coil_condition 
+                            SET coil_condition = '$coil_condition',
+                                abbreviation = '$abbreviation',
+                                notes = '$notes',
+                                last_edit = NOW(),
+                                edited_by = '$userid'
+                            WHERE id = '$id'";
+
+            if (mysqli_query($conn, $updateQuery)) {
+                echo "update-success";
+                if ($old_abbr !== $abbreviation) {
+                    regenerateABR('coil_condition', $id);
+                }
+            } else {
+                echo "Error updating product type: " . mysqli_error($conn);
+            }
+        } else {
+            $insertQuery = "INSERT INTO coil_condition 
+                            (coil_condition, abbreviation, notes, added_date, added_by) 
+                            VALUES 
+                            ('$coil_condition', '$abbreviation', '$notes', NOW(), '$userid')";
+            if (mysqli_query($conn, $insertQuery)) {
+                echo "add-success";
+            } else {
+                echo "Error adding product type: " . mysqli_error($conn);
+            }
+        }
+    }
+
+    
+    if ($action == "change_status") {
+        $id = mysqli_real_escape_string($conn, $_POST['id']);
+        $status = mysqli_real_escape_string($conn, $_POST['status']);
+        $new_status = ($status == '0') ? '1' : '0';
+
+        $statusQuery = "UPDATE coil_condition SET status = '$new_status' WHERE id = '$id'";
+        if (mysqli_query($conn, $statusQuery)) {
+            echo "success";
+        } else {
+            echo "Error updating status: " . mysqli_error($conn);
+        }
+    }
+    if ($action == 'hide_coil_condition') {
+        $id = mysqli_real_escape_string($conn, $_POST['id']);
+        $query = "UPDATE coil_condition SET hidden='1' WHERE id='$id'";
+        if (mysqli_query($conn, $query)) {
+            echo 'success';
+        } else {
+            echo 'error';
+        }
+    }
+
+    if ($action == 'fetch_modal_content') {
+        $id = mysqli_real_escape_string($conn, $_POST['id']);
+        $query = "SELECT * FROM coil_condition WHERE id = '$id'";
+        $result = mysqli_query($conn, $query);
+        if ($result && mysqli_num_rows($result) > 0) {
+            $row = mysqli_fetch_array($result);
+        }
+
+        ?>
+            <div class="row pt-3">
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label class="form-label">Coil Condition</label>
+                        <input type="text" id="coil_condition" name="coil_condition" class="form-control"  value="<?= $row['coil_condition'] ?? '' ?>"/>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label class="form-label">abbreviation</label>
+                        <input type="text" id="abbreviation" name="abbreviation" class="form-control" value="<?= $row['abbreviation'] ?? '' ?>" />
+                    </div>
+                </div>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Notes</label>
+                <textarea class="form-control" id="notes" name="notes" rows="5"><?= $row['notes'] ?? '' ?></textarea>
+            </div>
+
+            <input type="hidden" id="id" name="id" class="form-control"  value="<?= $id ?>"/>
+        <?php
+    }
+
+    if ($action == "download_excel") {
+        $column_txt = implode(', ', array_keys($includedColumns));
+        $sql = "SELECT $column_txt FROM $table WHERE hidden = '0' AND status = '1'";
+        $result = $conn->query($sql);
+
+        $spreadsheet = new Spreadsheet();
+        $sheet = $spreadsheet->getActiveSheet();
+
+        $row = 1;
+        while ($data = $result->fetch_assoc()) {
+            $index = 0;
+            foreach ($includedColumns as $dbColumn => $displayName) {
+                $columnLetter = ($index >= 26)
+                    ? indexToColumnLetter($index)
+                    : chr(65 + $index);
+
+                $sheet->setCellValue($columnLetter . $row, $data[$dbColumn] ?? '');
+                $index++;
+            }
+            $row++;
+        }
+
+        $name = strtoupper(str_replace('_', ' ', $table));
+        $filename = "$name.xlsx";
+        $filePath = $filename;
+
+        $writer = new Xlsx($spreadsheet);
+        $writer->save($filePath);
+
+        header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+        header('Content-Disposition: attachment; filename="' . $filename . '"');
+        header('Content-Length: ' . filesize($filePath));
+        header('Cache-Control: max-age=0');
+
+        readfile($filePath);
+        unlink($filePath);
+        exit;
+    }
+
+    if ($action == "upload_excel") {
+        if (isset($_FILES['excel_file'])) {
+            $fileTmpPath = $_FILES['excel_file']['tmp_name'];
+            $fileName = $_FILES['excel_file']['name'];
+            $fileExtension = strtolower(pathinfo($fileName, PATHINFO_EXTENSION));
+
+            if (!in_array($fileExtension, ["xlsx", "xls"])) {
+                echo "Please upload a valid Excel file.";
+                exit;
+            }
+
+            $spreadsheet = IOFactory::load($fileTmpPath);
+            $sheet = $spreadsheet->getActiveSheet();
+            $rows = $sheet->toArray();
+
+            $dbColumns = array_keys($includedColumns);
+
+            if (!$conn->query("TRUNCATE TABLE $test_table")) {
+                echo "Error truncating table: " . $conn->error;
+                exit;
+            }
+
+            foreach ($rows as $rowIndex => $row) {
+                if ($rowIndex === 0) {
+                    continue;
+                }
+
+                $data = [];
+                $allEmpty = true;
+                foreach ($dbColumns as $i => $colName) {
+                    $cellValue = isset($row[$i]) ? $row[$i] : '';
+                    $cellValue = (string)$cellValue;
+                    if ($cellValue !== '') $allEmpty = false;
+                    $data[$colName] = mysqli_real_escape_string($conn, $cellValue);
+                }
+
+                if ($allEmpty) continue;
+
+                $columnNames = implode(", ", array_keys($data));
+                $columnValues = implode("', '", array_values($data));
+
+                $sql = "INSERT INTO $test_table ($columnNames) VALUES ('$columnValues')";
+                if (!$conn->query($sql)) {
+                    echo "Error inserting data: " . $conn->error;
+                    exit;
+                }
+            }
+
+            echo "success";
+        } else {
+            echo "No file uploaded.";
+            exit;
+        }
+    }
+
+    if ($action == "fetch_uploaded_modal") {
+        $test_primary = getPrimaryKey($test_table);
+        $sql = "SELECT * FROM $test_table";
+        $result = $conn->query($sql);
+
+        if ($result->num_rows > 0) {
+            ?>
+            <div class="card card-body shadow" data-table="<?= $table ?>">
+                <form id="tableForm">
+                    <div style="overflow-x: auto; overflow-y: auto; max-height: 80vh; max-width: 100%;">
+                        <table class="table table-bordered table-striped text-center">
+                            <thead>
+                                <tr>
+                                    <?php
+                                    foreach ($includedColumns as $dbColumn => $displayName) {
+                                        echo "<th class='fs-4'>" . htmlspecialchars($displayName) . "</th>";
+                                    }
+                                    ?>
+                                </tr>
+                            </thead>
+                            <tbody>
+                            <?php
+                            while ($row = $result->fetch_assoc()) {
+                                $primaryValue = $row[$test_primary] ?? '';
+                                echo '<tr>';
+                                foreach ($includedColumns as $dbColumn => $displayName) {
+                                    $value = htmlspecialchars($row[$dbColumn] ?? '', ENT_QUOTES, 'UTF-8');
+                                    echo "<td contenteditable='true' class='table_data' data-header-name='$dbColumn' data-id='$primaryValue'>$value</td>";
+                                }
+                                echo '</tr>';
+                            }
+                            ?>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="text-end mt-3">
+                        <button type="button" id="saveTable" class="btn btn-primary mt-3">Save</button>
+                    </div>
+                </form>
+            </div>
+            <?php
+        } else {
+            echo "<p>No data found in the table.</p>";
+        }
+    }
+
+    if ($action == "update_test_data") {
+        $column_name = $_POST['header_name'] ?? '';
+        $new_value = $_POST['new_value'] ?? '';
+        $id = $_POST['id'] ?? '';
+
+        if (empty($column_name) || empty($id)) exit;
+
+        $test_primary = getPrimaryKey($test_table);
+
+        $column_name = mysqli_real_escape_string($conn, $column_name);
+        $new_value = mysqli_real_escape_string($conn, $new_value);
+        $id = mysqli_real_escape_string($conn, $id);
+
+        $sql = "UPDATE $test_table SET `$column_name` = '$new_value' WHERE $test_primary = '$id'";
+        echo $conn->query($sql) ? 'success' : 'Error updating record: ' . $conn->error;
+    }
+
+    if ($action == "save_table") {
+        $main_primary = getPrimaryKey($table);
+        $test_primary = getPrimaryKey($test_table);
+
+        $result = $conn->query("SELECT * FROM $test_table");
+        if ($result->num_rows > 0) {
+            while ($row = $result->fetch_assoc()) {
+                $main_primary_id = trim($row[$main_primary] ?? '');
+                unset($row[$test_primary]);
+
+                if (!empty($main_primary_id)) {
+                    $checkSql = "SELECT COUNT(*) as count FROM $table WHERE $main_primary = '$main_primary_id'";
+                    $checkResult = $conn->query($checkSql);
+                    $exists = $checkResult->fetch_assoc()['count'] > 0;
+
+                    if ($exists) {
+                        $updateFields = [];
+                        foreach ($row as $column => $value) {
+                            if ($column !== $main_primary) {
+                                $updateFields[] = "$column = '" . mysqli_real_escape_string($conn, $value) . "'";
+                            }
+                        }
+                        if (!empty($updateFields)) {
+                            $updateSql = "UPDATE $table SET " . implode(", ", $updateFields) . " WHERE $main_primary = '$main_primary_id'";
+                            $conn->query($updateSql);
+                        }
+                        continue;
+                    }
+                }
+
+                $columns = [];
+                $values = [];
+                foreach ($row as $column => $value) {
+                    $columns[] = $column;
+                    $values[] = "'" . mysqli_real_escape_string($conn, $value) . "'";
+                }
+                if (!empty($columns)) {
+                    $insertSql = "INSERT INTO $table (" . implode(", ", $columns) . ") VALUES (" . implode(", ", $values) . ")";
+                    $conn->query($insertSql);
+                }
+            }
+
+            echo "Data has been successfully saved";
+
+            $conn->query("TRUNCATE TABLE $test_table");
+        } else {
+            echo "No data found in test color table.";
+        }
+    }
+
+    if ($action === 'fetch_table') {
+        $permission = $_SESSION['permission'];
+        $query = "SELECT * FROM coil_condition WHERE hidden = 0";
+        $result = mysqli_query($conn, $query);
+    
+        $data = [];
+        while ($row = mysqli_fetch_assoc($result)) {
+            $no = $row['id'];
+            $coil_condition = $row['coil_condition'];
+            $abbreviation = $row['abbreviation'];
+            $notes = !empty($row['notes']) 
+            ? (strlen($row['notes']) > 30 ? substr($row['notes'], 0, 30) . '...' : $row['notes']) 
+            : '';
+    
+            $last_edit = !empty($row['last_edit']) ? (new DateTime($row['last_edit']))->format('m/d/Y') : '';
+    
+            $added_by = $row['added_by'];
+            $edited_by = $row['edited_by'];
+    
+            if ($edited_by != "0") {
+                $last_user_name = get_name($edited_by);
+            } elseif ($added_by != "0") {
+                $last_user_name = get_name($added_by);
+            } else {
+                $last_user_name = "";
+            }
+    
+            $status_html = $row['status'] == '0'
+                ? "<a href='javascript:void(0)' class='changeStatus' data-no='$no' data-id='$no' data-status='0'>
+                        <div id='status-alert$no' class='alert alert-danger bg-danger text-white border-0 text-center py-1 px-2 my-0' style='border-radius: 5%;'>Inactive</div>
+                   </a>"
+                : "<a href='javascript:void(0)' class='changeStatus' data-no='$no' data-id='$no' data-status='1'>
+                        <div id='status-alert$no' class='alert alert-success bg-success text-white border-0 text-center py-1 px-2 my-0' style='border-radius: 5%;'>Active</div>
+                   </a>";
+    
+            $action_html = '';
+            if ($permission === 'edit') {
+                $action_html = $row['status'] == '0'
+                    ? "<a href='javascript:void(0)' class='py-1 text-dark hideType' title='Archive' data-id='$no' data-row='$no' style='border-radius: 10%;'>
+                            <i class='text-danger ti ti-trash fs-7'></i>
+                    </a>"
+                    : "<a href='javascript:void(0)' id='addModalBtn' title='Edit' class='d-flex align-items-center justify-content-center text-decoration-none' data-id='$no' data-type='edit'>
+                            <i class='ti ti-pencil fs-7'></i>
+                    </a>";
+            }
+    
+            $data[] = [
+                'coil_condition' => $coil_condition,
+                'abbreviation' => $abbreviation,
+                'notes' => $notes,
+                'last_edit_by' => $last_user_name,
+                'last_edit' => $last_edit,
+                'status_html' => $status_html,
+                'action_html' => $action_html
+            ];
+        }
+    
+        echo json_encode(['data' => $data]);
+        exit;
+    }
+
+    mysqli_close($conn);
+}
+?>

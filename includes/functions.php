@@ -60,6 +60,15 @@ function getProductName($product_id){
     return  $product_item;
 }
 
+function getCoilConditionName($id){
+    global $conn;
+    $query = "SELECT coil_condition FROM coil_condition WHERE id = '$id'";
+    $result = mysqli_query($conn,$query);
+    $row = mysqli_fetch_array($result); 
+    $coil_condition = !empty($row['coil_condition']) ? $row['coil_condition'] : '';
+    return  $coil_condition;
+}
+
 function getProductColorMultName($id){
     global $conn;
     $query = "SELECT color FROM color_multiplier WHERE id = '$id'";
