@@ -14,30 +14,30 @@ require 'includes/dbconn.php';
 require 'includes/functions.php';
 
 $columns = [
-    ['label' => 'PRODUCT ID', 'width' => 25, 'align' => 'C', 'fontsize' => 8],
-    ['label' => 'DESCRIPTION',  'width' => 26, 'align' => 'C', 'fontsize' => 8],
-    ['label' => 'COLOR',        'width' => 20, 'align' => 'C', 'fontsize' => 8],
-    ['label' => 'GRADE',        'width' => 17, 'align' => 'C', 'fontsize' => 8],
-    ['label' => 'GAUGE',        'width' => 12, 'align' => 'C', 'fontsize' => 8],
-    ['label' => 'QTY',          'width' => 13, 'align' => 'C', 'fontsize' => 8],
-    ['label' => 'LENGTH',       'width' => 15, 'align' => 'C', 'fontsize' => 8],
-    ['label' => 'TYPE',         'width' => 14, 'align' => 'C', 'fontsize' => 8],
-    ['label' => 'STYLE',        'width' => 14, 'align' => 'C', 'fontsize' => 8],
-    ['label' => 'PRICE',        'width' => 20, 'align' => 'R', 'fontsize' => 8],
-    ['label' => 'TOTAL',        'width' => 14, 'align' => 'R', 'fontsize' => 8],
+    ['label' => 'PRODUCT ID', 'width' => 25, 'align' => 'C', 'fontsize' => 9],
+    ['label' => 'DESCRIPTION',  'width' => 26, 'align' => 'C', 'fontsize' => 9],
+    ['label' => 'COLOR',        'width' => 20, 'align' => 'C', 'fontsize' => 9],
+    ['label' => 'GRADE',        'width' => 17, 'align' => 'C', 'fontsize' => 9],
+    ['label' => 'GAUGE',        'width' => 12, 'align' => 'C', 'fontsize' => 9],
+    ['label' => 'QTY',          'width' => 13, 'align' => 'C', 'fontsize' => 9],
+    ['label' => 'LENGTH',       'width' => 15, 'align' => 'C', 'fontsize' => 9],
+    ['label' => 'TYPE',         'width' => 14, 'align' => 'C', 'fontsize' => 9],
+    ['label' => 'STYLE',        'width' => 14, 'align' => 'C', 'fontsize' => 9],
+    ['label' => 'PRICE',        'width' => 20, 'align' => 'R', 'fontsize' => 9],
+    ['label' => 'TOTAL',        'width' => 14, 'align' => 'R', 'fontsize' => 9],
 ];
 $subcolumns = [
-    ['label' => '', 'width' => 25, 'align' => 'C', 'fontsize' => 8],
-    ['label' => '',  'width' => 26, 'align' => 'C', 'fontsize' => 8],
-    ['label' => '',        'width' => 20, 'align' => 'C', 'fontsize' => 8],
-    ['label' => '',        'width' => 17, 'align' => 'C', 'fontsize' => 8],
-    ['label' => '',        'width' => 12, 'align' => 'C', 'fontsize' => 8],
-    ['label' => '',          'width' => 13, 'align' => 'C', 'fontsize' => 8],
-    ['label' => 'Ft     In',       'width' => 15, 'align' => 'C', 'fontsize' => 8],
-    ['label' => '',         'width' => 14, 'align' => 'C', 'fontsize' => 8],
-    ['label' => '',        'width' => 14, 'align' => 'C', 'fontsize' => 8],
-    ['label' => '',        'width' => 17, 'align' => 'R', 'fontsize' => 8],
-    ['label' => '',        'width' => 17, 'align' => 'R', 'fontsize' => 8],
+    ['label' => '', 'width' => 25, 'align' => 'C', 'fontsize' => 9],
+    ['label' => '',  'width' => 26, 'align' => 'C', 'fontsize' => 9],
+    ['label' => '',        'width' => 20, 'align' => 'C', 'fontsize' => 9],
+    ['label' => '',        'width' => 17, 'align' => 'C', 'fontsize' => 9],
+    ['label' => '',        'width' => 12, 'align' => 'C', 'fontsize' => 9],
+    ['label' => '',          'width' => 13, 'align' => 'C', 'fontsize' => 9],
+    ['label' => 'Ft     In',       'width' => 15, 'align' => 'C', 'fontsize' => 9],
+    ['label' => '',         'width' => 14, 'align' => 'C', 'fontsize' => 9],
+    ['label' => '',        'width' => 14, 'align' => 'C', 'fontsize' => 9],
+    ['label' => '',        'width' => 17, 'align' => 'R', 'fontsize' => 9],
+    ['label' => '',        'width' => 17, 'align' => 'R', 'fontsize' => 9],
 ];
 
 function decimalToFractionInch($decimal, $precision = 16) {
@@ -84,7 +84,7 @@ function renderTableHeader($pdf, $columns) {
         $y = $yStart + $yOffset;
 
         foreach ($lines as $line) {
-            $fontSize = $pdf->fitTextToWidth($line, $col['width'], $col['fontsize'] ?? 8, 'Arial', 'B');
+            $fontSize = $pdf->fitTextToWidth($line, $col['width'], $col['fontsize'] ?? 9, 'Arial', 'B');
             $pdf->SetFont('Arial', 'B', $fontSize);
             $pdf->SetXY($x, $y);
             $pdf->Cell($col['width'], $lineHeight, $line, 0, 0, $col['align']);
@@ -344,7 +344,7 @@ class PDF extends FPDF {
     public $salesperson;
     public $token;
 
-    public function fitTextToWidth($text, $maxWidth, $initialFontSize = 8, $font = 'Arial', $style = '') {
+    public function fitTextToWidth($text, $maxWidth, $initialFontSize = 9, $font = 'Arial', $style = '') {
         $this->SetFont($font, $style, $initialFontSize);
         $width = $this->GetStringWidth($text);
         $fontSize = $initialFontSize;
@@ -359,7 +359,7 @@ class PDF extends FPDF {
     }
 
     public function renderRow($columns, $row, $bold = false) {
-        $lineHeight = 4;
+        $lineHeight = 5;
 
         $xStart = $this->GetX();
         $yStart = $this->GetY();
@@ -371,7 +371,7 @@ class PDF extends FPDF {
 
         foreach ($columns as $i => $col) {
             $w = $col['width'];
-            $fontSize = $col['fontsize'] ?? 8;
+            $fontSize = $col['fontsize'] ?? 9;
 
             $this->SetFont('Arial', $bold ? 'B' : '', $fontSize);
 
@@ -408,7 +408,7 @@ class PDF extends FPDF {
         // Print each cell's content
         foreach ($columns as $i => $col) {
             $w = $col['width'];
-            $fontSize = $col['fontsize'] ?? 8;
+            $fontSize = $col['fontsize'] ?? 9;
 
             $this->SetFont('Arial', $bold ? 'B' : '', $fontSize);
 
@@ -644,7 +644,7 @@ if (mysqli_num_rows($result) > 0) {
         $currentY = $pdf->GetY();
         $pdf->SetFillColor(211, 211, 211);
         $pdf->SetTextColor(0, 0, 0);
-        $pdf->SetFont('Arial', 'B', 8);
+        $pdf->SetFont('Arial', 'B', 9);
         $pdf->SetXY($col1_x, $currentY);
         $pdf->Cell($mailToWidth + 10, 7, 'BILL TO:', 1, 0, 'L', true);
 
@@ -751,7 +751,7 @@ if (mysqli_num_rows($result) > 0) {
 
         foreach ($bundledProducts as $bundleId => $bundleGroup) {
             $bundleName = $bundleGroup[0]['bundle_name'] ?? 'Bundle ' . $bundleId;
-            $pdf->SetFont('Arial', 'B', 8);
+            $pdf->SetFont('Arial', 'B', 9);
             $pdf->Cell(0, 6, $bundleName, 1, 1, 'L');
             $pdf->SetFont('Arial', '', 7);
 
@@ -808,7 +808,7 @@ if (mysqli_num_rows($result) > 0) {
         $col2_x = 140;
         $col_y = $pdf->GetY();
 
-        $pdf->SetFont('Arial', '', 8);
+        $pdf->SetFont('Arial', '', 9);
 
         $disclaimer = "Customer is solely responsible for accuracy of order and for verifying accuracy of materials before leaving EKMS or at time of delivery. If an agent orders or takes materials on customer's behalf, EKMS is entitled to rely upon the agent as if s/he has full authority to act on customer's behalf. No returns on metal panels or special trim. All other materials returned undamaged within 60 days of invoice date are subject to a restocking fee equal to 25% of current retail price.";
 
@@ -840,14 +840,14 @@ if (mysqli_num_rows($result) > 0) {
             $pdf->MultiCell(120, 4, $savings_note, 0, 'L');
         }
 
-        $pdf->SetFont('Arial', '', 8);
+        $pdf->SetFont('Arial', '', 9);
 
         $pdf->Cell(60, 6, 'Customer confirmed Color Selections', 0, 0, 'C');
         $pdf->Cell(60, 6, 'Customer confirmed Qty/Length Selections', 0, 0, 'C');
 
         $pdf->Ln();
 
-        $pdf->SetFont('Arial', '', 8);
+        $pdf->SetFont('Arial', '', 9);
 
         $color_confirm = ($row_orders['color_confirm'] == 1) ? 'Yes' : 'No';
         $qty_len_confirm = ($row_orders['qty_len_confirm'] == 1) ? 'Yes' : 'No';

@@ -195,7 +195,7 @@ if (mysqli_num_rows($result) > 0) {
                 $total_qty += $row_product['quantity'];
             }
 
-            $pdf->SetFont('Arial', '', 8);
+            $pdf->SetFont('Arial', '', 9);
 
             foreach ($data as $row) {
                 $height = NbLines($pdf, $widths[1], $row[1]) * 5; 

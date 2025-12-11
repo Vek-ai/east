@@ -14,30 +14,30 @@ require 'includes/dbconn.php';
 require 'includes/functions.php';
 
 $columns = [
-    ['label' => 'PRODUCT ID', 'width' => 25, 'align' => 'C', 'fontsize' => 8],
-    ['label' => 'DESCRIPTION',  'width' => 26, 'align' => 'C', 'fontsize' => 8],
-    ['label' => 'COLOR',        'width' => 20, 'align' => 'C', 'fontsize' => 8],
-    ['label' => 'GRADE',        'width' => 17, 'align' => 'C', 'fontsize' => 8],
-    ['label' => 'GAUGE',        'width' => 12, 'align' => 'C', 'fontsize' => 8],
-    ['label' => 'QTY',          'width' => 13, 'align' => 'C', 'fontsize' => 8],
-    ['label' => 'LENGTH',       'width' => 15, 'align' => 'C', 'fontsize' => 8],
-    ['label' => 'TYPE',         'width' => 14, 'align' => 'C', 'fontsize' => 8],
-    ['label' => 'STYLE',        'width' => 14, 'align' => 'C', 'fontsize' => 8],
-    ['label' => 'PRICE',        'width' => 21, 'align' => 'R', 'fontsize' => 8],
-    ['label' => 'TOTAL',        'width' => 14, 'align' => 'R', 'fontsize' => 8],
+    ['label' => 'PRODUCT ID', 'width' => 25, 'align' => 'C', 'fontsize' => 9],
+    ['label' => 'DESCRIPTION',  'width' => 26, 'align' => 'C', 'fontsize' => 9],
+    ['label' => 'COLOR',        'width' => 20, 'align' => 'C', 'fontsize' => 9],
+    ['label' => 'GRADE',        'width' => 17, 'align' => 'C', 'fontsize' => 9],
+    ['label' => 'GAUGE',        'width' => 12, 'align' => 'C', 'fontsize' => 9],
+    ['label' => 'QTY',          'width' => 13, 'align' => 'C', 'fontsize' => 9],
+    ['label' => 'LENGTH',       'width' => 15, 'align' => 'C', 'fontsize' => 9],
+    ['label' => 'TYPE',         'width' => 14, 'align' => 'C', 'fontsize' => 9],
+    ['label' => 'STYLE',        'width' => 14, 'align' => 'C', 'fontsize' => 9],
+    ['label' => 'PRICE',        'width' => 20, 'align' => 'R', 'fontsize' => 9],
+    ['label' => 'TOTAL',        'width' => 14, 'align' => 'R', 'fontsize' => 9],
 ];
 $subcolumns = [
-    ['label' => '', 'width' => 25, 'align' => 'C', 'fontsize' => 8],
-    ['label' => '',  'width' => 26, 'align' => 'C', 'fontsize' => 8],
-    ['label' => '',        'width' => 20, 'align' => 'C', 'fontsize' => 8],
-    ['label' => '',        'width' => 17, 'align' => 'C', 'fontsize' => 8],
-    ['label' => '',        'width' => 12, 'align' => 'C', 'fontsize' => 8],
-    ['label' => '',          'width' => 13, 'align' => 'C', 'fontsize' => 8],
-    ['label' => 'Ft     In',       'width' => 15, 'align' => 'C', 'fontsize' => 8],
-    ['label' => '',         'width' => 14, 'align' => 'C', 'fontsize' => 8],
-    ['label' => '',        'width' => 14, 'align' => 'C', 'fontsize' => 8],
-    ['label' => '',        'width' => 17, 'align' => 'R', 'fontsize' => 8],
-    ['label' => '',        'width' => 17, 'align' => 'R', 'fontsize' => 8],
+    ['label' => '', 'width' => 25, 'align' => 'C', 'fontsize' => 9],
+    ['label' => '',  'width' => 26, 'align' => 'C', 'fontsize' => 9],
+    ['label' => '',        'width' => 20, 'align' => 'C', 'fontsize' => 9],
+    ['label' => '',        'width' => 17, 'align' => 'C', 'fontsize' => 9],
+    ['label' => '',        'width' => 12, 'align' => 'C', 'fontsize' => 9],
+    ['label' => '',          'width' => 13, 'align' => 'C', 'fontsize' => 9],
+    ['label' => 'Ft     In',       'width' => 15, 'align' => 'C', 'fontsize' => 9],
+    ['label' => '',         'width' => 14, 'align' => 'C', 'fontsize' => 9],
+    ['label' => '',        'width' => 14, 'align' => 'C', 'fontsize' => 9],
+    ['label' => '',        'width' => 17, 'align' => 'R', 'fontsize' => 9],
+    ['label' => '',        'width' => 17, 'align' => 'R', 'fontsize' => 9],
 ];
 
 function decimalToFractionInch($decimal, $precision = 16) {
@@ -63,40 +63,28 @@ function gcd($a, $b) {
     return ($b == 0) ? $a : gcd($b, $a % $b);
 }
 
-function renderTableHeader($pdf, $columns, $subcolumns) {
+function renderTableHeader($pdf, $columns) {
     $pdf->SetFillColor(211, 211, 211);
     $pdf->SetTextColor(0, 0, 0);
-
     $lineHeight = 4;
     $xStart = $pdf->GetX();
     $yStart = $pdf->GetY();
-
     $maxMainHeight = 0;
     foreach ($columns as $col) {
         $lines = preg_split("/\r\n|\n|\r/", $col['label']);
         $maxMainHeight = max($maxMainHeight, count($lines) * $lineHeight);
     }
-
-    $maxSubHeight = 0;
-    foreach ($subcolumns as $col) {
-        $lines = preg_split("/\r\n|\n|\r/", $col['label']);
-        $maxSubHeight = max($maxSubHeight, count($lines) * $lineHeight);
-    }
-
-    $totalHeight = $maxMainHeight + $maxSubHeight;
     $totalWidth = array_sum(array_column($columns, 'width'));
-
-    $pdf->Rect($xStart, $yStart, $totalWidth, $totalHeight, 'FD');
-
+    $pdf->Rect($xStart, $yStart, $totalWidth, $maxMainHeight, 'FD');
     $x = $xStart;
     foreach ($columns as $col) {
         $lines = preg_split("/\r\n|\n|\r/", $col['label']);
         $textHeight = count($lines) * $lineHeight;
         $yOffset = ($maxMainHeight - $textHeight) / 2;
-
         $y = $yStart + $yOffset;
+
         foreach ($lines as $line) {
-            $fontSize = $pdf->fitTextToWidth($line, $col['width'], $col['fontsize'] ?? 8, 'Arial', 'B');
+            $fontSize = $pdf->fitTextToWidth($line, $col['width'], $col['fontsize'] ?? 9, 'Arial', 'B');
             $pdf->SetFont('Arial', 'B', $fontSize);
             $pdf->SetXY($x, $y);
             $pdf->Cell($col['width'], $lineHeight, $line, 0, 0, $col['align']);
@@ -105,27 +93,7 @@ function renderTableHeader($pdf, $columns, $subcolumns) {
         $x += $col['width'];
     }
 
-    $x = $xStart;
-    $subY = $yStart + $maxMainHeight;
-    foreach ($subcolumns as $col) {
-        if (!empty($col['label'])) {
-            $lines = preg_split("/\r\n|\n|\r/", $col['label']);
-            $textHeight = count($lines) * $lineHeight;
-            $yOffset = ($maxSubHeight - $textHeight) / 2;
-
-            $y = $subY + $yOffset;
-            foreach ($lines as $line) {
-                $fontSize = $pdf->fitTextToWidth($line, $col['width'], $col['fontsize'] ?? 8, 'Arial', 'B');
-                $pdf->SetFont('Arial', 'B', $fontSize);
-                $pdf->SetXY($x, $y);
-                $pdf->Cell($col['width'], $lineHeight, $line, 0, 0, $col['align']);
-                $y += $lineHeight;
-            }
-        }
-        $x += $col['width'];
-    }
-
-    $pdf->SetY($yStart + $totalHeight);
+    $pdf->SetY($yStart + $maxMainHeight);
     $pdf->SetFillColor(255, 255, 255);
 }
 
@@ -175,7 +143,7 @@ function renderPanelCategory($pdf, $product, $conn) {
         '$ ' . number_format($disc_price, 2),
     ];
 
-    renderRow($pdf, $columns, $summaryRow, false);
+    $pdf->renderRow($columns, $summaryRow);
 
     if (!empty($note)) {
         $pdf->SetFont('Arial', 'I', 7);
@@ -236,7 +204,7 @@ function renderTrimCategory($pdf, $product, $conn) {
         '$ ' . number_format($disc_price, 2),
     ];
 
-    renderRow($pdf, $columns, $summaryRow, false);
+    $pdf->renderRow($columns, $summaryRow);
 
     if (!empty($note)) {
         $pdf->SetFont('Arial', 'I', 7);
@@ -258,6 +226,8 @@ function renderScrewCategory($pdf, $product, $conn) {
     $product_details = getProductDetails($product_id);
     $grade_details   = getGradeDetails($product['custom_grade']);
     $gauge_details   = getGaugeDetails($product['custom_gauge']);
+    $screw_type_details   = getProductScrewTypeDetails($product_details['screw_type']);
+    $screw_coating_details   = getProductScrewCoatingDetails($product_details['screw_coating']);
 
     $quantity   = floatval($product['quantity'] ?? 0);
     $act_price  = floatval($product['actual_price'] ?? 0);
@@ -267,13 +237,11 @@ function renderScrewCategory($pdf, $product, $conn) {
     $panel_type  = !empty($product['panel_type']) ? ucwords(str_replace('_', ' ', $product['panel_type'])) : '';
     $panel_style = !empty($product['panel_style']) ? ucwords(str_replace('_', ' ', $product['panel_style'])) : '';
 
-    $ft = floor(floatval($product['custom_length'] ?? 0));
-    $in_decimal = floatval($product['custom_length2'] ?? 0);
-    $total_length = $ft + ($in_decimal / 12);
+    $screw_length = $product['screw_length'] ?? '';
+    $screw_type = $screw_type_details['product_screw_type'] ?? '';
+    $screw_coating = $screw_coating_details['product_screw_coating'] ?? '';
 
-    $ft_only = floor($total_length);
-    $inch_only = round(($total_length - $ft_only) * 12);
-
+    $length_display = str_pad($screw_length, 12, ' ', STR_PAD_LEFT);
 
     $product_abbrev = $product['product_id_abbrev'] ?? '';
     $color = getColorName($product['custom_color']);
@@ -284,17 +252,17 @@ function renderScrewCategory($pdf, $product, $conn) {
         $product_abbrev,
         $product['product_item'],
         $color,
-        '',
-        '',
+        $screw_coating,
+        $screw_type,
         $quantity,
-        '',
+        $length_display,
         '',
         '',
         '$ ' . number_format($unit_price, 2),
         '$ ' . number_format($disc_price, 2),
     ];
 
-    renderRow($pdf, $columns, $summaryRow, false);
+    $pdf->renderRow($columns, $summaryRow);
 
     if (!empty($note)) {
         $pdf->SetFont('Arial', 'I', 7);
@@ -351,7 +319,7 @@ function renderDefaultCategory($pdf, $product, $conn) {
         '$ ' . number_format($disc_price, 2),
     ];
 
-    renderRow($pdf, $columns, $summaryRow, false);
+    $pdf->renderRow($columns, $summaryRow);
 
     if (!empty($note)) {
         $pdf->SetFont('Arial', 'I', 7);
@@ -366,56 +334,6 @@ function renderDefaultCategory($pdf, $product, $conn) {
     return [$totalPrice, $totalQty, $totalActual];
 }
 
-function renderRow($pdf, $columns, $row, $bold = false) {
-    $lineHeight = 5;
-    $xStart = $pdf->GetX();
-    $yStart = $pdf->GetY();
-    $x = $xStart;
-
-    $row = array_slice($row, 0, count($columns));
-
-    $columnHeights = [];
-
-    foreach ($columns as $i => $col) {
-        $w = $col['width'];
-        $fontSize = $col['fontsize'] ?? 8;
-        $pdf->SetFont('Arial', $bold ? 'B' : '', $fontSize);
-        $pdf->SetXY($x, $yStart);
-
-        if ($i === 1) {
-            $startY = $pdf->GetY();
-            $pdf->MultiCell($w, $lineHeight, $row[$i], 0, $col['align']);
-            $endY = $pdf->GetY();
-            $columnHeights[$i] = $endY - $startY;
-        }
-        elseif ($i === 6 && strpos($row[$i], 'ft') !== false && strpos($row[$i], 'in') !== false) {
-            preg_match('/(\d+)ft\s*(\d+)in/', $row[$i], $matches);
-            if ($matches) {
-                $ft = $matches[1] . 'ft';
-                $in = $matches[2] . 'in';
-                $pdf->Cell($w, $lineHeight, $ft, 0, 0, 'L');
-                $pdf->SetXY($x, $yStart);
-                $pdf->Cell($w, $lineHeight, $in, 0, 0, 'R');
-            } else {
-                $pdf->Cell($w, $lineHeight, $row[$i], 0, 0, $col['align']);
-            }
-            $columnHeights[$i] = $lineHeight;
-        }
-        else {
-            $fittedSize = $pdf->fitTextToWidth($row[$i], $w, $fontSize, 'Arial', $bold ? 'B' : '');
-            $pdf->SetFont('Arial', $bold ? 'B' : '', $fittedSize);
-            $pdf->Cell($w, $lineHeight, $row[$i], 0, 0, $col['align']);
-            $columnHeights[$i] = $lineHeight;
-        }
-
-        $x += $w;
-    }
-
-    $maxHeight = max($columnHeights);
-    $totalWidth = array_sum(array_column($columns, 'width'));
-    $pdf->Rect($xStart, $yStart, $totalWidth, $maxHeight);
-    $pdf->SetXY($xStart, $yStart + $maxHeight);
-}
 
 
 class PDF extends FPDF {
@@ -424,8 +342,9 @@ class PDF extends FPDF {
     public $delivery_method;
     public $scheduled_date;
     public $salesperson;
+    public $token;
 
-    public function fitTextToWidth($text, $maxWidth, $initialFontSize = 8, $font = 'Arial', $style = '') {
+    public function fitTextToWidth($text, $maxWidth, $initialFontSize = 9, $font = 'Arial', $style = '') {
         $this->SetFont($font, $style, $initialFontSize);
         $width = $this->GetStringWidth($text);
         $fontSize = $initialFontSize;
@@ -439,29 +358,119 @@ class PDF extends FPDF {
         return $fontSize;
     }
 
-    function Header() {
-        $this->SetFont('Arial', '', 10);
-        $this->Image('assets/images/logo-bw.png', 10, 6, 60, 20);
+    public function renderRow($columns, $row, $bold = false) {
+        $lineHeight = 5;
 
-        $col2_x = 140;
+        $xStart = $this->GetX();
+        $yStart = $this->GetY();
+
+        $row = array_slice($row, 0, count($columns));
+
+        $heights = [];
+        $cellTexts = [];
+
+        foreach ($columns as $i => $col) {
+            $w = $col['width'];
+            $fontSize = $col['fontsize'] ?? 9;
+
+            $this->SetFont('Arial', $bold ? 'B' : '', $fontSize);
+
+            if ($i === 6 && strpos($row[$i], 'ft') !== false && strpos($row[$i], 'in') !== false) {
+                preg_match('/(\d+)ft\s*(\d+)in/', $row[$i], $m);
+                $cellTexts[$i] = $m ? $m[1] . "ft\n" . $m[2] . "in" : $row[$i];
+            } elseif ($i === 0) {
+                $fit = $this->fitTextToWidth($row[$i], $w, $fontSize, 'Arial', $bold ? 'B' : '');
+                $this->SetFont('Arial', $bold ? 'B' : '', $fit);
+                $cellTexts[$i] = $row[$i];
+            } else {
+                $cellTexts[$i] = $row[$i];
+            }
+
+            $heights[$i] = $this->GetMultiCellHeight($w, $lineHeight, $cellTexts[$i]);
+        }
+
+        $rowHeight = max($heights);
+
+        // Page break check
+        $bottom = $this->h - $this->bMargin;
+        if ($yStart + $rowHeight > $bottom) {
+            $this->AddPage();
+            $xStart = $this->GetX();
+            $yStart = $this->GetY();
+        }
+
+        $x = $xStart;
+
+        // Draw the outer border for the row
+        $totalWidth = array_sum(array_column($columns, 'width'));
+        $this->Rect($xStart, $yStart, $totalWidth, $rowHeight);
+
+        // Print each cell's content
+        foreach ($columns as $i => $col) {
+            $w = $col['width'];
+            $fontSize = $col['fontsize'] ?? 9;
+
+            $this->SetFont('Arial', $bold ? 'B' : '', $fontSize);
+
+            $saveX = $x;
+            $saveY = $yStart;
+            $this->SetXY($saveX, $saveY);
+
+            if ($i === 6 && strpos($cellTexts[$i], "\n") !== false) {
+                list($ft, $inch) = explode("\n", $cellTexts[$i]);
+                $this->Cell($w, $lineHeight, $ft, 0, 0, 'L');
+                $this->SetXY($saveX, $saveY);
+                $this->Cell($w, $lineHeight, $inch, 0, 0, 'R');
+            } else {
+                $this->MultiCell($w, $lineHeight, $cellTexts[$i], 0, $col['align']);
+            }
+
+            // Move to the right for next column
+            $x += $w;
+            $this->SetXY($x, $saveY);
+        }
+
+        // Move cursor to next row
+        $this->SetXY($xStart, $yStart + $rowHeight);
+    }
+
+
+
+    function Header() {
+        $this->SetFont('Arial', '', 9);
+        $this->Image('assets/images/logo-bw.png', 10, 6, 60, 20);
+        $yStart = $this->GetY();
+
+        $col2_x = 120;
+        $w = 60;
+        $lineH = 5;
+
+        $blockText  = "Invoice #: " . $this->estimateid . "\n";
+        $blockText .= "Order Date: " . $this->estimated_date . "\n";
+        $blockText .= "Pick-up or Delivery: " . $this->delivery_method . "\n";
+        $blockText .= "Scheduled Date: " . $this->scheduled_date . "\n";
+        $blockText .= "Salesperson: " . $this->salesperson;
+
+        $maxHeight = $this->NbLines($w, $blockText) * $lineH;
 
         $this->SetXY($col2_x - 10, 6);
-        $this->MultiCell(95, 5, "Estimate #: " . $this->estimateid, 0, 'L');
+        $this->MultiCell($w, $lineH, $blockText, 0, 'L');
 
-        $this->SetXY($col2_x - 10, $this->GetY());
-        $this->Cell(95, 5, "Order Date: " . $this->estimated_date, 0, 1, 'L');
+        $this->SetXY($col2_x + $w, 6);
+        $this->MultiCell(30, $lineH, "Digital receipt", 0, 'L');
 
-        $this->SetXY($col2_x - 10, $this->GetY());
-        $this->Cell(95, 5, "Pick-up or Delivery: " . $this->delivery_method, 0, 1, 'L');
+        $token = $this->token;
+        $qrX = $col2_x + $w;
+        $qrY = max(0, $maxHeight - 15);
+        $qrUrl = "https://delivery.ilearnsda.com/receiptqr/receiptqr$token.png";
 
-        $this->SetXY($col2_x - 10, $this->GetY());
-        $this->Cell(95, 5, "Scheduled Date: " . $this->scheduled_date, 0, 1, 'L');
+        if (@getimagesize($qrUrl)) {
+            $this->Image($qrUrl, $qrX, $qrY, 20, 20);
+        }
 
-        $this->SetXY($col2_x - 10, $this->GetY());
-        $this->Cell(95, 5, "Salesperson: " . $this->salesperson, 0, 0, 'L');
-
-        $this->Ln(5);
+        $this->SetY(6 + $maxHeight + 5);
     }
+
 
     function Footer() {
         $marginLeft = 10;
@@ -506,16 +515,6 @@ class PDF extends FPDF {
         $this->Image($webIcon, $marginLeft + 2 * $colWidth + 10, $this->GetY(), 5, 5);
         $this->SetXY($marginLeft + 2 * $colWidth + 17, $this->GetY());
         $this->Cell($colWidth, 5, 'EastKentuckyMetal.com', 0, 0, 'L');
-
-        $yStart = $this->GetY() - 35;
-        $this->SetFont('Arial', '', 10);
-        $this->SetXY($marginLeft, $yStart);
-        $this->MultiCell($colWidthRight, 5,
-            "Scan me for a Digital copy of this receipt", 0, 'C');
-
-        $qrX = 20;
-        $qrY = $this->GetY();
-        $this->Image('assets/images/qr_rickroll.png', $qrX, $qrY, 25, 25);
     }
 
     public function GetMultiCellHeight($w, $h, $txt) {
@@ -624,13 +623,17 @@ if (mysqli_num_rows($result) > 0) {
         if($delivery_price == 0){
             $delivery_method = 'Pickup';
         }
+
+        $token = $row_estimates['token'] ?? '';
         
         $pdf->estimateid = $estimateid;
         $pdf->estimated_date = $estimated_date;
         $pdf->delivery_method = $delivery_method;
         $pdf->scheduled_date = $scheduled_date;
         $pdf->salesperson = get_staff_name($current_user_id);
+        $pdf->token = $token;
 
+        $pdf->AliasNbPages();
         $pdf->AddPage();
 
         $col1_x = 10;
@@ -645,7 +648,7 @@ if (mysqli_num_rows($result) > 0) {
         $currentY = $pdf->GetY();
         $pdf->SetFillColor(211, 211, 211);
         $pdf->SetTextColor(0, 0, 0);
-        $pdf->SetFont('Arial', 'B', 8);
+        $pdf->SetFont('Arial', 'B', 9);
         $pdf->SetXY($col1_x, $currentY);
         $pdf->Cell($mailToWidth + 10, 7, 'BILL TO:', 1, 0, 'L', true);
 
@@ -731,6 +734,9 @@ if (mysqli_num_rows($result) > 0) {
 
         renderTableHeader($pdf, $columns, $subcolumns);
 
+        $bundledProducts = [];
+        $nonBundledProducts = [];
+
         while ($row_product = mysqli_fetch_assoc($result_product)) {
             if (!empty($pricing_id) && $pricing_id == 1) {
                 $tmp = $row_product['discounted_price'];
@@ -738,26 +744,58 @@ if (mysqli_num_rows($result) > 0) {
                 $row_product['actual_price'] = $tmp;
             }
 
-            $categoryId = $row_product['product_category'];
+            $bundleId = $row_product['bundle_id'] ?? null;
 
-            $catTotal = 0;
-            $catQty = 0;
-            $catActual = 0;
+            if (!empty($bundleId)) {
+                $bundledProducts[$bundleId][] = $row_product;
+            } else {
+                $nonBundledProducts[] = $row_product;
+            }
+        }
+
+        foreach ($bundledProducts as $bundleId => $bundleGroup) {
+            $bundleName = $bundleGroup[0]['bundle_name'] ?? 'Bundle ' . $bundleId;
+            $pdf->SetFont('Arial', 'B', 9);
+            $pdf->Cell(0, 6, $bundleName, 1, 1, 'L');
+            $pdf->SetFont('Arial', '', 7);
+
+            foreach ($bundleGroup as $row_product) {
+                $categoryId = $row_product['product_category'];
+
+                if ($categoryId == $panel_id) {
+                    [$catTotal, $catQty, $catActual] = renderPanelCategory($pdf, $row_product, $conn);
+                } elseif ($categoryId == $trim_id) {
+                    [$catTotal, $catQty, $catActual] = renderTrimCategory($pdf, $row_product, $conn);
+                } elseif ($categoryId == $screw_id) {
+                    [$catTotal, $catQty, $catActual] = renderScrewCategory($pdf, $row_product, $conn);
+                } else {
+                    [$catTotal, $catQty, $catActual] = renderDefaultCategory($pdf, $row_product, $conn);
+                }
+
+                $catSaved = floatval($catActual) - floatval($catTotal);
+                $total_price  += floatval($catTotal);
+                $total_qty    += intval($catQty);
+                $total_actual += floatval($catActual);
+                $total_saved  += $catSaved;
+            }
+
+            $pdf->Ln(5);
+        }
+
+        foreach ($nonBundledProducts as $row_product) {
+            $categoryId = $row_product['product_category'];
 
             if ($categoryId == $panel_id) {
                 [$catTotal, $catQty, $catActual] = renderPanelCategory($pdf, $row_product, $conn);
             } elseif ($categoryId == $trim_id) {
                 [$catTotal, $catQty, $catActual] = renderTrimCategory($pdf, $row_product, $conn);
-            } else if ($categoryId == $screw_id) {
+            } elseif ($categoryId == $screw_id) {
                 [$catTotal, $catQty, $catActual] = renderScrewCategory($pdf, $row_product, $conn);
             } else {
                 [$catTotal, $catQty, $catActual] = renderDefaultCategory($pdf, $row_product, $conn);
             }
 
-            [$catTotal, $catQty, $catActual] = renderPanelCategory($pdf, $row_product, $conn);
-
             $catSaved = floatval($catActual) - floatval($catTotal);
-
             $total_price  += floatval($catTotal);
             $total_qty    += intval($catQty);
             $total_actual += floatval($catActual);
@@ -774,9 +812,9 @@ if (mysqli_num_rows($result) > 0) {
         $col2_x = 140;
         $col_y = $pdf->GetY();
 
-        $pdf->SetFont('Arial', '', 10);
+        $pdf->SetFont('Arial', '', 9);
 
-        $disclaimer = "Customer is solely responsible for accuracy of order and for verifying accuracy of materials before leaving EKMS or at time of delivery. If an agent orders or takes materials on customer's behalf, EKMS is entitled to rely upon the agent as if s/he has full authority to act on customer's behalf. No returns on metal panels or special trim. All other materials returned undamaged within 60 days of invoice date are subject to a restocking fee equal to 25% of current retail price.";
+        $disclaimer = "Customer is solely responsible for accuracy of order and for verifying accuracy of materials before leaving EKMS or at time of delivery. If an agent estimates or takes materials on customer's behalf, EKMS is entitled to rely upon the agent as if s/he has full authority to act on customer's behalf. No returns on metal panels or special trim. All other materials returned undamaged within 60 days of invoice date are subject to a restocking fee equal to 25% of current retail price.";
 
         $savings_note = "*Customer Savings represent your savings on this Order by being an EKM Member.*";
 
@@ -799,7 +837,7 @@ if (mysqli_num_rows($result) > 0) {
         }
 
         $pdf->SetXY($col1_x, $col_y);
-        $pdf->MultiCell(120, 4, $disclaimer, 0, 'L');
+        $pdf->MultiCell(120, 4, $disclaimer, 1, 'L');
 
         if ($total_saved > 0) {
             $pdf->Ln(3);
@@ -808,39 +846,61 @@ if (mysqli_num_rows($result) > 0) {
 
         $pdf->SetFont('Arial', '', 9);
 
+        $pdf->Cell(60, 6, 'Customer confirmed Color Selections', 0, 0, 'C');
+        $pdf->Cell(60, 6, 'Customer confirmed Qty/Length Selections', 0, 0, 'C');
+
+        $pdf->Ln();
+
+        $pdf->SetFont('Arial', '', 9);
+
+        $color_confirm = ($row_estimates['color_confirm'] == 1) ? 'Yes' : 'No';
+        $qty_len_confirm = ($row_estimates['qty_len_confirm'] == 1) ? 'Yes' : 'No';
+
+        $pdf->Cell(60, 6, $color_confirm, 0, 0, 'C');
+        $pdf->Cell(60, 6, $qty_len_confirm, 0, 0, 'C');
+
+        $pdf->Ln(5);
+        
+
+        $pdf->Cell(0, 5, 'Page ' . $pdf->PageNo() . ' of {nb}', 0, 0, 'L');
+        
+
+        $pdf->SetFont('Arial', '', 9);
+
         $subtotal   = $total_price;
         $sales_tax  = $subtotal * $tax;
         $grand_total = $subtotal + $delivery_price + $sales_tax;
 
-        $pdf->SetXY($col2_x, $col_y + 5);
-        $pdf->Cell(40, $lineheight, 'CUSTOMER SAVINGS:', 1, 0);
-        $pdf->Cell(20, $lineheight, '$ ' . number_format(max(0, $total_saved), 2), 1, 1, 'R');
-
-        $pdf->SetXY($col2_x, $pdf->GetY());
-        $pdf->Cell(40, $lineheight, 'MATERIALS PRICE:', 1, 0);
-        $pdf->Cell(20, $lineheight, '$ ' . number_format($subtotal, 2), 1, 1 , 'R');
-
-        $pdf->SetXY($col2_x, $pdf->GetY());
-        $pdf->Cell(40, $lineheight, 'DELIVERY CHARGE:', 1, 0);
-        $pdf->Cell(20, $lineheight, '$ ' . number_format($delivery_price, 2), 1, 1 , 'R');
-
-        $pdf->SetXY($col2_x, $pdf->GetY());
-        $pdf->Cell(40, $lineheight, 'SALES TAX:', 1, 0);
-        $pdf->Cell(20, $lineheight, '$ ' . number_format($sales_tax, 2), 1, 1, 'R');
-
-        $pdf->SetFont('Arial', 'B', 10);
-        $pdf->SetXY($col2_x, $pdf->GetY());
-        $pdf->Cell(40, $lineheight, 'TOTAL PRICE:', 1, 0);
-        $pdf->Cell(20, $lineheight, '$ ' . number_format($grand_total, 2), 1, 1, 'R');
-
+        $pdf->SetXY($col2_x, $col_y);
+        $pdf->Cell(40, $lineheight, 'CUSTOMER SAVINGS:', 0, 0);
+        $pdf->Cell(20, $lineheight, '$ ' . number_format(max(0, $total_saved), 2), 0, 1, 'R');
 
         $pdf->Ln(5);
 
-        $pdf->SetTitle('Estimate');
-        $pdf->Output('Estimate.pdf', 'I');
-            
+        $pdf->SetXY($col2_x, $pdf->GetY());
+        $pdf->Cell(40, $lineheight, 'MATERIALS PRICE:', 0, 0);
+        $pdf->Cell(20, $lineheight, '$ ' . number_format($subtotal, 2), 0, 1 , 'R');
 
-        
+        $pdf->SetXY($col2_x, $pdf->GetY());
+        $pdf->Cell(40, $lineheight, 'DELIVERY CHARGE:', 0, 0);
+        $pdf->Cell(20, $lineheight, '$ ' . number_format($delivery_price, 2), 0, 1 , 'R');
+
+        $pdf->SetXY($col2_x, $pdf->GetY());
+        $pdf->Cell(40, $lineheight, 'SALES TAX:', 0, 0);
+        $pdf->Cell(20, $lineheight, '$ ' . number_format($sales_tax, 2), 0, 1, 'R');
+
+        $pdf->Ln(5);
+
+        $pdf->SetFont('Arial', 'B', 10);
+        $pdf->SetXY($col2_x, $pdf->GetY());
+        $pdf->Cell(40, $lineheight, 'TOTAL PRICE:', 0, 0);
+        $pdf->Cell(20, $lineheight, '$ ' . number_format($grand_total, 2), 0, 1, 'R');
+
+        $pdf->Ln(5);
+
+        $pdf->SetTitle('Receipt');
+        $pdf->Output('Receipt.pdf', 'I');
+            
     }
 }else{
     echo "ID not Found!";

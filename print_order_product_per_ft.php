@@ -836,8 +836,8 @@ function renderDefaultCategory($pdf, $products, $conn) {
 }
 
 function renderRow($pdf, $columns, $row, $bold = false) {
-    $pdf->SetFont('Arial', $bold ? 'B' : '', 8);
-    $lineHeight = 4.2;
+    $pdf->SetFont('Arial', $bold ? 'B' : '', 9);
+    $lineHeight = 5;
 
     $cellHeights = [];
     foreach ($row as $i => $cell) {

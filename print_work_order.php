@@ -20,29 +20,29 @@ $panel_id = 3;
 $trim_id = 4;
 
 $columns = [
-    ['label' => 'PRODUCT ID', 'width' => 25, 'align' => 'C', 'fontsize' => 8],
-    ['label' => 'DESCRIPTION',  'width' => 26, 'align' => 'C', 'fontsize' => 8],
-    ['label' => 'COLOR',        'width' => 20, 'align' => 'C', 'fontsize' => 8],
-    ['label' => 'GRADE',        'width' => 17, 'align' => 'C', 'fontsize' => 8],
-    ['label' => 'GAUGE',        'width' => 17, 'align' => 'C', 'fontsize' => 8],
-    ['label' => 'QTY',          'width' => 18, 'align' => 'C', 'fontsize' => 8],
-    ['label' => 'LENGTH',       'width' => 15, 'align' => 'C', 'fontsize' => 8],
-    ['label' => 'TYPE',         'width' => 17, 'align' => 'C', 'fontsize' => 8],
-    ['label' => 'STYLE',        'width' => 17, 'align' => 'C', 'fontsize' => 8],
-    ['label' => 'COIL #',        'width' => 18, 'align' => 'C', 'fontsize' => 8],
+    ['label' => 'PRODUCT ID', 'width' => 25, 'align' => 'C', 'fontsize' => 9],
+    ['label' => 'DESCRIPTION',  'width' => 26, 'align' => 'C', 'fontsize' => 9],
+    ['label' => 'COLOR',        'width' => 20, 'align' => 'C', 'fontsize' => 9],
+    ['label' => 'GRADE',        'width' => 17, 'align' => 'C', 'fontsize' => 9],
+    ['label' => 'GAUGE',        'width' => 17, 'align' => 'C', 'fontsize' => 9],
+    ['label' => 'QTY',          'width' => 18, 'align' => 'C', 'fontsize' => 9],
+    ['label' => 'LENGTH',       'width' => 15, 'align' => 'C', 'fontsize' => 9],
+    ['label' => 'TYPE',         'width' => 17, 'align' => 'C', 'fontsize' => 9],
+    ['label' => 'STYLE',        'width' => 17, 'align' => 'C', 'fontsize' => 9],
+    ['label' => 'COIL #',        'width' => 18, 'align' => 'C', 'fontsize' => 9],
 ];
 
 $trim_columns = [
-    ['label' => 'PRODUCT ID', 'width' => 25, 'align' => 'C', 'fontsize' => 8],
-    ['label' => 'DESCRIPTION',  'width' => 26, 'align' => 'C', 'fontsize' => 8],
-    ['label' => 'COLOR',        'width' => 20, 'align' => 'C', 'fontsize' => 8],
-    ['label' => 'GRADE',        'width' => 17, 'align' => 'C', 'fontsize' => 8],
-    ['label' => 'GAUGE',        'width' => 17, 'align' => 'C', 'fontsize' => 8],
-    ['label' => 'QTY',          'width' => 18, 'align' => 'C', 'fontsize' => 8],
-    ['label' => 'LENGTH',       'width' => 15, 'align' => 'C', 'fontsize' => 8],
-    ['label' => '',         'width' => 17, 'align' => 'C', 'fontsize' => 8],
-    ['label' => '',        'width' => 17, 'align' => 'C', 'fontsize' => 8],
-    ['label' => 'COIL #',        'width' => 18, 'align' => 'C', 'fontsize' => 8],
+    ['label' => 'PRODUCT ID', 'width' => 25, 'align' => 'C', 'fontsize' => 9],
+    ['label' => 'DESCRIPTION',  'width' => 26, 'align' => 'C', 'fontsize' => 9],
+    ['label' => 'COLOR',        'width' => 20, 'align' => 'C', 'fontsize' => 9],
+    ['label' => 'GRADE',        'width' => 17, 'align' => 'C', 'fontsize' => 9],
+    ['label' => 'GAUGE',        'width' => 17, 'align' => 'C', 'fontsize' => 9],
+    ['label' => 'QTY',          'width' => 18, 'align' => 'C', 'fontsize' => 9],
+    ['label' => 'LENGTH',       'width' => 15, 'align' => 'C', 'fontsize' => 9],
+    ['label' => '',         'width' => 17, 'align' => 'C', 'fontsize' => 9],
+    ['label' => '',        'width' => 17, 'align' => 'C', 'fontsize' => 9],
+    ['label' => 'COIL #',        'width' => 18, 'align' => 'C', 'fontsize' => 9],
 ];
 
 function decimalToFractionInch($decimal, $precision = 16) {
@@ -95,7 +95,7 @@ function renderTableHeader($pdf, $columns) {
 
         $y = $yStart + $yOffset;
         foreach ($lines as $line) {
-            $fontSize = $pdf->fitTextToWidth($line, $col['width'], $col['fontsize'] ?? 8, 'Arial', 'B');
+            $fontSize = $pdf->fitTextToWidth($line, $col['width'], $col['fontsize'] ?? 9, 'Arial', 'B');
             $pdf->SetFont('Arial', 'B', $fontSize);
             $pdf->SetXY($x, $y);
             $pdf->Cell($col['width'], $lineHeight, $line, 0, 0, $col['align']);
@@ -260,7 +260,7 @@ function renderRow($pdf, $columns, $row, $bold = false) {
 
     foreach ($columns as $i => $col) {
         $w = $col['width'];
-        $fontSize = $col['fontsize'] ?? 8;
+        $fontSize = $col['fontsize'] ?? 9;
         $pdf->SetFont('Arial', $bold ? 'B' : '', $fontSize);
         $pdf->SetXY($x, $yStart);
 
@@ -349,7 +349,7 @@ function renderInvoiceHeader($pdf, $row_orders, $type) {
 
     $pdf->SetFillColor(211, 211, 211);
     $pdf->SetTextColor(0, 0, 0);
-    $pdf->SetFont('Arial', 'B', 8);
+    $pdf->SetFont('Arial', 'B', 9);
 
     $pdf->SetXY($col1_x, $currentY);
     $pdf->Cell($mailToWidth + 10, 7, 'BILL TO:', 1, 0, 'L', true);
@@ -400,7 +400,7 @@ function renderInvoiceHeader($pdf, $row_orders, $type) {
 }
 
 class PDF extends FPDF {
-    public function fitTextToWidth($text, $maxWidth, $initialFontSize = 8, $font = 'Arial', $style = '') {
+    public function fitTextToWidth($text, $maxWidth, $initialFontSize = 9, $font = 'Arial', $style = '') {
         $this->SetFont($font, $style, $initialFontSize);
         $width = $this->GetStringWidth($text);
         $fontSize = $initialFontSize;
