@@ -503,10 +503,17 @@ function showCol($name) {
                 }
                 ?>
 
-                <div class="mt-3 d-flex flex-wrap justify-content-end gap-2">
-                    <button id="printBtn" class="btn btn-success">Print</button>
-                    <button id="downloadBtn" class="btn btn-primary">Download</button>
-                    <button class="btn btn-danger" data-bs-dismiss="modal">Cancel</button>
+                <div class="mt-3 d-flex flex-wrap justify-content-between align-items-center gap-2">
+                    <div class="d-flex flex-wrap gap-2">
+                        <button id="loadCopyBtn" class="btn btn-info">Load Copy</button>
+                        <button id="deliveryTicketBtn" class="btn btn-warning">Delivery Ticket</button>
+                    </div>
+
+                    <div class="d-flex flex-wrap gap-2">
+                        <button id="printBtn" class="btn btn-success">Print</button>
+                        <button id="downloadBtn" class="btn btn-primary">Download</button>
+                        <button class="btn btn-danger" data-bs-dismiss="modal">Cancel</button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -1294,6 +1301,28 @@ function showCol($name) {
 
             const modal = new bootstrap.Modal(document.getElementById('pdfModal'));
             modal.show();
+        });
+
+        $('#loadCopyBtn').on('click', function () {
+            const $iframe = $('#pdfFrame');
+
+            const baseUrl = 'print_load_copy.php';
+            const params = new URLSearchParams();
+            params.set('id', print_order_id);
+
+            const newSrc = baseUrl + '?' + params.toString();
+            $iframe.attr('src', newSrc);
+        });
+
+        $('#deliveryTicketBtn').on('click', function () {
+            const $iframe = $('#pdfFrame');
+
+            const baseUrl = 'print_order_delivery.php';
+            const params = new URLSearchParams();
+            params.set('id', print_order_id);
+
+            const newSrc = baseUrl + '?' + params.toString();
+            $iframe.attr('src', newSrc);
         });
 
 
