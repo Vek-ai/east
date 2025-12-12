@@ -400,10 +400,15 @@ if (isset($_REQUEST['query'])) {
                 ';
             }
 
+            $view_class = 'view_product_details';
+            if($is_panel){
+                $view_class = 'view_panel_details';
+            }
+
             $tableHTML .= '
             <tr>
                 <td class="text-start">
-                    <a href="javascript:void(0);" data-id="' . $row_product['product_id'] . '" class="d-flex align-items-center view_product_details">
+                    <a href="javascript:void(0);" data-id="' . $row_product['product_id'] . '" class="d-flex align-items-center '.$view_class.'">
                         <div class="d-flex align-items-center" >
                             <div class="ms-3">
                                 <h6 class="fw-semibold mb-0 fs-4">'. getProductName($row_product['product_id']) .' ' .$dimensions .'</h6>

@@ -728,18 +728,18 @@ if(isset($_REQUEST['action'])) {
                     <div class="col-md-3">
                         <div class="d-flex justify-content-between align-items-center">
                             <label class="form-label">Grade Sold As</label>
-                            <a href="?page=coil_grade" target="_blank" class="text-decoration-none">Edit</a>
+                            <a href="?page=product_grade" target="_blank" class="text-decoration-none">Edit</a>
                         </div>
                         <div class="mb-3">
                             <select id="grade_sold_as" class="form-control select2-edit" name="grade_sold_as">
                                 <option value="" >Select Grade...</option>
                                 <?php
-                                $query_grade = "SELECT * FROM coil_grade WHERE hidden = '0' AND status = '1' ORDER BY `coil_grade` ASC";
+                                $query_grade = "SELECT * FROM product_grade WHERE hidden = '0' AND status = '1' ORDER BY `product_grade` ASC";
                                 $result_grade = mysqli_query($conn, $query_grade);            
                                 while ($row_grade = mysqli_fetch_array($result_grade)) {
-                                    $selected = (($row['grade_sold_as'] ?? '') == $row_grade['coil_grade_id']) ? 'selected' : '';
+                                    $selected = (($row['grade_sold_as'] ?? '') == $row_grade['product_grade_id']) ? 'selected' : '';
                                 ?>
-                                    <option value="<?= $row_grade['coil_grade_id'] ?>" <?= $selected ?>><?= $row_grade['coil_grade'] ?></option>
+                                    <option value="<?= $row_grade['product_grade_id'] ?>" <?= $selected ?>><?= $row_grade['product_grade'] ?></option>
                                 <?php
                                 }
                                 ?>

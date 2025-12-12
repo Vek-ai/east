@@ -20,6 +20,7 @@ if(isset($_REQUEST['action'])) {
         $profile_type_id = mysqli_real_escape_string($conn, $_POST['profile_type_id']);
         $profile_type = mysqli_real_escape_string($conn, $_POST['profile_type']);
         $profile_abbreviations = mysqli_real_escape_string($conn, $_POST['profile_abbreviations']);
+        $fastener = mysqli_real_escape_string($conn, $_POST['fastener']);
         
         $product_category_array = $_POST['product_category'] ?? [];
         $product_category_json = mysqli_real_escape_string($conn, json_encode(array_map('intval', $product_category_array)));
@@ -51,6 +52,7 @@ if(isset($_REQUEST['action'])) {
             $updateQuery = "UPDATE profile_type 
                             SET profile_type = '$profile_type', 
                                 profile_abbreviations = '$profile_abbreviations', 
+                                fastener = '$fastener', 
                                 product_category = '$product_category_json', 
                                 notes = '$notes', 
                                 panel_type_1 = '$panel_type_1',
@@ -79,12 +81,12 @@ if(isset($_REQUEST['action'])) {
             }
         } else {
             $insertQuery = "INSERT INTO profile_type 
-                            (profile_type, profile_abbreviations, product_category, notes, 
+                            (profile_type, profile_abbreviations, fastener, product_category, notes, 
                             panel_type_1, panel_type_abbrev_1, panel_type_2, panel_type_abbrev_2, panel_type_3, panel_type_abbrev_3,
                             panel_style_1, panel_style_abbrev_1, panel_style_2, panel_style_abbrev_2, panel_style_3, panel_style_abbrev_3,
                             added_date, added_by) 
                             VALUES 
-                            ('$profile_type', '$profile_abbreviations', '$product_category_json', '$notes',
+                            ('$profile_type', '$profile_abbreviations', '$fastener', '$product_category_json', '$notes',
                             '$panel_type_1', '$panel_type_abbrev_1', '$panel_type_2', '$panel_type_abbrev_2', '$panel_type_3', '$panel_type_abbrev_3',
                             '$panel_style_1', '$panel_style_abbrev_1', '$panel_style_2', '$panel_style_abbrev_2', '$panel_style_3', '$panel_style_abbrev_3',
                             NOW(), '$userid')";
@@ -170,6 +172,16 @@ if(isset($_REQUEST['action'])) {
                                         <?php
                                     }
                                     ?>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Fastener Type</label>
+                            <div class="mb-3">
+                                <select id="fastener" class="form-control select2" name="fastener">
+                                    <option value="">Select...</option>
+                                    <option value="1" <?= ($row['fastener'] ?? '') == '1' ? 'selected' : '' ?>>Concealed</option>
+                                    <option value="2" <?= ($row['fastener'] ?? '') == '2' ? 'selected' : '' ?>>Exposed</option>
                                 </select>
                             </div>
                         </div>
@@ -315,6 +327,7 @@ if(isset($_REQUEST['action'])) {
         $includedColumns = [ 
             'profile_type_id',
             'product_category',
+            'fastener',
             'profile_type',
             'profile_abbreviations',
             'notes'
@@ -536,6 +549,7 @@ if(isset($_REQUEST['action'])) {
             $includedColumns = [ 
                 'profile_type_id',
                 'product_category',
+                'fastener',
                 'profile_type',
                 'profile_abbreviations',
                 'notes'

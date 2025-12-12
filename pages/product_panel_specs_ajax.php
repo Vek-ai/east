@@ -524,30 +524,39 @@ if(isset($_REQUEST['action'])) {
     } 
     
     if ($action === 'fetch_table') {
-        $query = "  SELECT 
-                        p.product_id as product_id,
-                        p.product_item,
-                        ps.concealed_fastener,
-                        ps.exposed_fastener
-                    FROM product p
-                    LEFT JOIN product_panel_spec ps
-                        ON p.product_id = ps.product_id
-                    WHERE 
-                        p.product_category = '$panel_id' AND
-                        p.status = 1 AND 
-                        p.hidden = 0
-                    ORDER BY product_item ASC
-                    ";
+        $query="SELECT
+                    p.product_id AS product_id,
+                    p.product_item,
+                    pt.fastener,
+                    pt.profile_type
+                FROM
+                    product p
+                LEFT JOIN profile_type pt 
+                    ON JSON_CONTAINS(p.profile, pt.profile_type_id)
+                WHERE
+                    p.status = 1
+                    AND p.hidden = 0
+                    AND p.product_category = '4'
+                ORDER BY
+                    p.product_item ASC";
+
         $result = mysqli_query($conn, $query);
         $data = [];
-        while ($row = mysqli_fetch_assoc($result)) {
-            $product_id = $row['product_id']; 
 
+        while ($row = mysqli_fetch_assoc($result)) {
+            $product_id = $row['product_id'];
             $metal_panel_name = $row['product_item'];
 
-            $concealed_fastener = intval($row['concealed_fastener']) > 0 ? '<i class="fa fa-check text-success fs-8"></i>' : '';
-            $exposed_fastener = intval($row['exposed_fastener']) > 0 ? '<i class="fa fa-check text-success fs-8"></i>' : '';
-        
+            $fastener_val = intval($row['fastener']);
+
+            $concealed_fastener = $fastener_val == 1 
+                ? '<i class="fa fa-check text-success fs-8"></i>' 
+                : '';
+
+            $exposed_fastener = $fastener_val == 2 
+                ? '<i class="fa fa-check text-success fs-8"></i>' 
+                : '';
+
             if ($permission === 'edit') {
                 $action_html = "<a href='javascript:void(0)' id='addModalBtn' title='Edit'
                                     class='d-flex align-items-center justify-content-center text-decoration-none'
@@ -559,13 +568,8 @@ if(isset($_REQUEST['action'])) {
             }
 
             $fastener = '';
-            if(intval($row['concealed_fastener'])){
-                $fastener = 'concealed';
-            }
-
-            if(intval($row['exposed_fastener'])){
-                $fastener = 'exposed';
-            }
+            if ($fastener_val == 1) $fastener = 'concealed';
+            if ($fastener_val == 2) $fastener = 'exposed';
 
             $data[] = [
                 'metal_panel_name'      => $metal_panel_name,
@@ -573,7 +577,7 @@ if(isset($_REQUEST['action'])) {
                 'concealed_fastener'    => $concealed_fastener,
                 'action_html'           => $action_html,
                 'fastener'              => $fastener,
-                'is_exposed_fastener'   => intval($row['exposed_fastener'])
+                'is_exposed_fastener'   => ($fastener_val == 2 ? 1 : 0)
             ];
         }
 

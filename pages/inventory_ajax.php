@@ -301,6 +301,12 @@ if(isset($_REQUEST['action'])) {
                             >
                         </div>
                     </div>
+
+                    <div class="col-md-4 d-flex justify-content-center align-middle">
+                        <div class="p-2">
+                            <button type="button" class="btn btn-primary">Update Pack Qtys</button>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>

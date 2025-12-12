@@ -535,11 +535,11 @@ $(document).ready(function() {
         $('#add-header').html('Update <?= $page_title ?>');
 
         $.ajax({
-            url: 'pages/product_panel_specs_ajax.php',
+            url: 'pages/add_product_panel.php',
             type: 'POST',
             data: {
               id : id,
-              action: 'fetch_modal_content'
+              action: 'fetch_product_modal'
             },
             success: function (response) {
                 $('#add-fields').html(response);
@@ -550,6 +550,9 @@ $(document).ready(function() {
                         dropdownParent: $(this).parent()
                     });
                 });
+
+                $('#panelSpecForm :input').prop('disabled', true);
+                $('#panelSpecForm button, #panelSpecForm input[type="button"], #panelSpecForm input[type="submit"], #panelSpecForm input[type="reset"]').hide();
 
                 updateSearchCategory();
             },

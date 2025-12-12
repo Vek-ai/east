@@ -1267,7 +1267,7 @@ $editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) :
 </div>
 
 <div class="modal" id="viewDetailsModal" style="background-color: rgba(0, 0, 0, 0.5);">
-    <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+    <div class="modal-dialog modal-dialog-centered modal-xl" role="document">
         <div class="modal-content modal-content-demo">
             <div class="modal-header">
                 <h6 class="modal-title">Product Details</h6>
@@ -4994,6 +4994,26 @@ $editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) :
             var id = $(this).data('id');
             $.ajax({
                 url: 'pages/cashier_prod_details_modal.php',
+                type: 'POST',
+                data: {
+                    id: id,
+                    fetch_details_modal: "fetch_details_modal"
+                },
+                success: function(response) {
+                    $('#viewDetailsModalBody').html(response);
+                    $('#viewDetailsModal').modal('show');
+                },
+                error: function(jqXHR, textStatus, errorThrown) {
+                    alert('Error: ' + textStatus + ' - ' + errorThrown);
+                }
+            });
+        });
+
+        $(document).on('click', '.view_panel_details', function(event) {
+            event.preventDefault();
+            var id = $(this).data('id');
+            $.ajax({
+                url: 'pages/cashier_panel_details_modal.php',
                 type: 'POST',
                 data: {
                     id: id,
