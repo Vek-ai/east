@@ -9,6 +9,7 @@ require '../../includes/functions.php';
 
 if(isset($_POST['fetch_modal'])){
     $id = mysqli_real_escape_string($conn, $_POST['id']);
+    $color = mysqli_real_escape_string($conn, $_POST['color']);
     $product_details = getProductDetails($id);
 
     if (!empty($product_details)) {
@@ -30,8 +31,14 @@ if(isset($_POST['fetch_modal'])){
                     <optgroup label="Assigned Colors">
                         <?php
                         $assigned_colors = getAssignedProductColors($id);
-                        if (!empty($assigned_colors)) {
-                            $color_ids_str = implode(',', array_map('intval', $assigned_colors));
+                        $all_colors = $assigned_colors ?: [];
+
+                        if ($color && !in_array($color, $all_colors)) {
+                            $all_colors[] = $color;
+                        }
+
+                        if (!empty($all_colors)) {
+                            $color_ids_str = implode(',', array_map('intval', $all_colors));
                             $query_colors = "
                                 SELECT color_id, color_name, product_category
                                 FROM paint_colors
@@ -42,10 +49,12 @@ if(isset($_POST['fetch_modal'])){
                             ";
                             $result_colors = mysqli_query($conn, $query_colors);
                             while ($row = mysqli_fetch_assoc($result_colors)) {
-                            ?>
+                                $selected = ($row['color_id'] == $color) ? 'selected' : '';
+                        ?>
                                 <option 
                                     value="<?= htmlspecialchars($row['color_id']) ?>" 
-                                    data-category="<?= htmlspecialchars($row['product_category']) ?>">
+                                    data-category="<?= htmlspecialchars($row['product_category']) ?>"
+                                    <?= $selected ?>>
                                     <?= htmlspecialchars($row['color_name']) ?>
                                 </option>
                         <?php

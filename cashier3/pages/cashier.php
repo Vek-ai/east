@@ -1050,6 +1050,7 @@ $editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) :
                     <span aria-hidden="true">&times;</span>
                 </button>
             </div>
+            <input type="hidden" id="set_screw_color"/>
             <div class="modal-body">
                 <div class="row">
                     <div class="col-4">
@@ -4476,12 +4477,15 @@ $editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) :
 
         $(document).on("click", "#add-to-cart-screw-btn", function() {
             var id = $(this).data('id');
+            var color = $(this).data('color')
+            $('#set_screw_color').val(color);
 
             $.ajax({
                 url: 'pages/cashier_screw_modal.php',
                 type: 'POST', 
                 data: {
                     id: id,
+                    color: color,
                     fetch_modal: 'fetch_modal'
                 },
                 success: function(response) {
@@ -5925,17 +5929,19 @@ $editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) :
 
         $(document).on("change", "#screw-product-select", function () {
             var id = $(this).val();
+            var color = $('#set_screw_color').val();
+            
 
             $.ajax({
                 url: 'pages/cashier_screw_modal.php',
                 type: 'POST', 
                 data: {
                     id: id,
+                    color: color,
                     fetch_modal: 'fetch_modal'
                 },
                 success: function(response) {
                     $('#screw_container').html(response);
-                    $('#screw_modal').modal('show');
                 },
                 error: function(jqXHR, textStatus, errorThrown) {
                     alert('Error: ' + textStatus + ' - ' + errorThrown);
