@@ -536,7 +536,7 @@ if(isset($_REQUEST['action'])) {
         WHERE
             p.status = 1
             AND p.hidden = 0
-            AND p.product_category = '4'
+            AND p.product_category = '3'
         ORDER BY
             p.product_item ASC";
 
