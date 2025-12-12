@@ -524,21 +524,23 @@ if(isset($_REQUEST['action'])) {
     } 
     
     if ($action === 'fetch_table') {
-        $query="SELECT
-                    p.product_id AS product_id,
-                    p.product_item,
-                    pt.fastener,
-                    pt.profile_type
-                FROM
-                    product p
-                LEFT JOIN profile_type pt 
-                    ON JSON_CONTAINS(p.profile, pt.profile_type_id)
-                WHERE
-                    p.status = 1
-                    AND p.hidden = 0
-                    AND p.product_category = '4'
-                ORDER BY
-                    p.product_item ASC";
+        $query = "SELECT
+            p.product_id AS product_id,
+            p.product_item,
+            pt.fastener,
+            pt.profile_type
+        FROM
+            product p
+        LEFT JOIN profile_type pt 
+            ON JSON_CONTAINS(p.profile, CONCAT('[', pt.profile_type_id, ']'))
+        WHERE
+            p.status = 1
+            AND p.hidden = 0
+            AND p.product_category = '4'
+        ORDER BY
+            p.product_item ASC";
+
+
 
         $result = mysqli_query($conn, $query);
         $data = [];
