@@ -1317,7 +1317,7 @@ function showCol($name) {
         $('#deliveryTicketBtn').on('click', function () {
             const $iframe = $('#pdfFrame');
 
-            const baseUrl = 'print_order_delivery.php';
+            const baseUrl = 'print_delivery_ticket.php';
             const params = new URLSearchParams();
             params.set('id', print_order_id);
 
