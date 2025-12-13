@@ -14,30 +14,30 @@ require 'includes/dbconn.php';
 require 'includes/functions.php';
 
 $columns = [
-    ['label' => 'PRODUCT ID', 'width' => 25, 'align' => 'C', 'fontsize' => 9],
-    ['label' => 'DESCRIPTION',  'width' => 26, 'align' => 'C', 'fontsize' => 9],
+    ['label' => 'PRODUCT ID', 'width' => 23, 'align' => 'C', 'fontsize' => 9],
+    ['label' => 'DESCRIPTION',  'width' => 23, 'align' => 'C', 'fontsize' => 9],
     ['label' => 'COLOR',        'width' => 20, 'align' => 'C', 'fontsize' => 9],
     ['label' => 'GRADE',        'width' => 17, 'align' => 'C', 'fontsize' => 9],
     ['label' => 'GAUGE',        'width' => 12, 'align' => 'C', 'fontsize' => 9],
-    ['label' => 'QTY',          'width' => 13, 'align' => 'C', 'fontsize' => 9],
-    ['label' => 'LENGTH',       'width' => 15, 'align' => 'C', 'fontsize' => 9],
-    ['label' => 'TYPE',         'width' => 14, 'align' => 'C', 'fontsize' => 9],
-    ['label' => 'STYLE',        'width' => 14, 'align' => 'C', 'fontsize' => 9],
+    ['label' => 'QTY',          'width' => 12, 'align' => 'C', 'fontsize' => 9],
+    ['label' => 'LENGTH',       'width' => 12, 'align' => 'C', 'fontsize' => 9],
+    ['label' => 'TYPE',         'width' => 15, 'align' => 'C', 'fontsize' => 9],
+    ['label' => 'STYLE',        'width' => 15, 'align' => 'C', 'fontsize' => 9],
     ['label' => 'PRICE',        'width' => 20, 'align' => 'R', 'fontsize' => 9],
-    ['label' => 'TOTAL',        'width' => 14, 'align' => 'R', 'fontsize' => 9],
+    ['label' => 'TOTAL',        'width' => 21, 'align' => 'R', 'fontsize' => 9],
 ];
 $subcolumns = [
-    ['label' => '', 'width' => 25, 'align' => 'C', 'fontsize' => 9],
-    ['label' => '',  'width' => 26, 'align' => 'C', 'fontsize' => 9],
+    ['label' => '', 'width' => 23, 'align' => 'C', 'fontsize' => 9],
+    ['label' => '',  'width' => 23, 'align' => 'C', 'fontsize' => 9],
     ['label' => '',        'width' => 20, 'align' => 'C', 'fontsize' => 9],
     ['label' => '',        'width' => 17, 'align' => 'C', 'fontsize' => 9],
     ['label' => '',        'width' => 12, 'align' => 'C', 'fontsize' => 9],
-    ['label' => '',          'width' => 13, 'align' => 'C', 'fontsize' => 9],
-    ['label' => 'Ft     In',       'width' => 15, 'align' => 'C', 'fontsize' => 9],
-    ['label' => '',         'width' => 14, 'align' => 'C', 'fontsize' => 9],
+    ['label' => '',          'width' => 12, 'align' => 'C', 'fontsize' => 9],
+    ['label' => 'Ft     In',       'width' => 12, 'align' => 'C', 'fontsize' => 9],
+    ['label' => '',         'width' => 12, 'align' => 'C', 'fontsize' => 9],
     ['label' => '',        'width' => 14, 'align' => 'C', 'fontsize' => 9],
-    ['label' => '',        'width' => 17, 'align' => 'R', 'fontsize' => 9],
-    ['label' => '',        'width' => 17, 'align' => 'R', 'fontsize' => 9],
+    ['label' => '',        'width' => 23, 'align' => 'R', 'fontsize' => 9],
+    ['label' => '',        'width' => 24, 'align' => 'R', 'fontsize' => 9],
 ];
 
 function decimalToFractionInch($decimal, $precision = 16) {
