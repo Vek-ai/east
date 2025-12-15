@@ -12,6 +12,56 @@ use PhpOffice\PhpSpreadsheet\IOFactory;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 
+$includedColumns = [
+    'customer_id'                => 'Customer ID',
+    'customer_notes'             => 'Customer Notes',
+    'customer_first_name'        => 'First Name',
+    'customer_last_name'         => 'Last Name',
+    'customer_business_name'     => 'Business Name',
+    'customer_business_website'  => 'Business Website',
+    'customer_type_id'           => 'Customer Type',
+    'contact_email'              => 'Email',
+    'contact_phone'              => 'Phone',
+    'primary_contact'            => 'Primary Contact',
+    'contact_fax'                => 'Fax',
+    'address'                    => 'Address',
+    'city'                       => 'City',
+    'state'                      => 'State',
+    'zip'                        => 'ZIP Code',
+    'different_ship_address'     => 'Different Shipping Address',
+    'ship_address'               => 'Shipping Address',
+    'ship_city'                  => 'Shipping City',
+    'ship_state'                 => 'Shipping State',
+    'ship_zip'                   => 'Shipping ZIP',
+    'secondary_contact_name'     => 'Secondary Contact Name',
+    'secondary_contact_phone'    => 'Secondary Contact Phone',
+    'secondary_contact_email'    => 'Secondary Contact Email',
+    'tax_status'                 => 'Tax Status',
+    'tax_exempt_number'          => 'Tax Exempt Number',
+    'is_corporate_parent'        => 'Corporate Parent',
+    'corpo_parent_name'          => 'Corporate Parent Name',
+    'corpo_phone_no'             => 'Corporate Phone',
+    'corpo_address'              => 'Corporate Address',
+    'corpo_city'                 => 'Corporate City',
+    'corpo_state'                => 'Corporate State',
+    'corpo_zip'                  => 'Corporate ZIP',
+    'is_bill_corpo_address'      => 'Bill to Corporate Address',
+    'is_charge_net'              => 'Charge Net',
+    'charge_net_30'              => 'Net 30',
+    'credit_limit'               => 'Credit Limit',
+    'loyalty'                    => 'Loyalty',
+    'customer_pricing'           => 'Customer Pricing',
+    'is_approved'                => 'Approved',
+    'payment_pickup'             => 'Pickup Payment',
+    'payment_delivery'           => 'Delivery Payment',
+    'payment_cash'               => 'Cash Payment',
+    'payment_check'              => 'Check Payment',
+    'payment_card'               => 'Card Payment',
+    'is_contractor'              => 'Contractor',
+    'username'                   => 'Username',
+    'password'                   => 'Password'
+];
+
 $table = 'customer';
 $test_table = 'customer_excel';
 $main_primary_key = getPrimaryKey($table);
@@ -336,79 +386,78 @@ if(isset($_REQUEST['action'])) {
         exit;
     }
 
-    if ($action == "download_excel") {
-        $includedColumns = [
-            'customer_id',
-            'customer_notes',
-            'customer_first_name',
-            'customer_last_name',
-            'customer_business_name',
-            'customer_business_website',
-            'customer_type_id',
-            'contact_email',
-            'contact_phone',
-            'primary_contact',
-            'contact_fax',
-            'address',
-            'city',
-            'state',
-            'zip',
-            'different_ship_address',
-            'ship_address',
-            'ship_city',
-            'ship_state',
-            'ship_zip',
-            'secondary_contact_name',
-            'secondary_contact_phone',
-            'secondary_contact_email',
-            'tax_status',
-            'tax_exempt_number',
-            'is_corporate_parent',
-            'corpo_parent_name',
-            'corpo_phone_no',
-            'corpo_address',
-            'corpo_city',
-            'corpo_state',
-            'corpo_zip',
-            'is_bill_corpo_address',
-            'is_charge_net',
-            'charge_net_30',
-            'credit_limit',
-            'loyalty',
-            'customer_pricing',
-            'is_approved',
-            'payment_pickup',
-            'payment_delivery',
-            'payment_cash',
-            'payment_check',
-            'payment_card',
-            'is_contractor',
-            'username',
-            'password'
-        ];
+    if ($action === "download_excel") {
+        $column_txt = implode(', ', array_keys($includedColumns));
 
-        $column_txt = implode(', ', $includedColumns);
-        $sql = "SELECT " . $column_txt . " FROM $table WHERE hidden = '0' AND status = '1'";
+        $sql = "
+            SELECT $column_txt
+            FROM $table
+            WHERE hidden = '0'
+            AND status = '1'
+            AND customer_type_id IS NOT NULL
+            AND customer_type_id != '0'
+        ";
+
         $result = $conn->query($sql);
 
         $spreadsheet = new Spreadsheet();
-        $sheet = $spreadsheet->getActiveSheet();
+        $spreadsheet->removeSheetByIndex(0);
 
-        $row = 1;
-        foreach ($includedColumns as $index => $column) {
-            $header = ucwords(str_replace('_', ' ', $column));
-            $columnLetter = indexToColumnLetter($index);
-            $sheet->setCellValue($columnLetter . $row, $header);
-        }
+        $customerTypeMap = [
+            1 => 'Customer Type (Personal)',
+            2 => 'Customer Type (Business)',
+            3 => 'Customer Type (Farm)',
+            4 => 'Customer Type (Exempt)'
+        ];
 
-        $row = 2;
+        $sheets = [];
+        $currentRow = [];
+        $columnHasData = [];
+
         while ($data = $result->fetch_assoc()) {
-            foreach ($includedColumns as $index => $column) {
-                $columnLetter = indexToColumnLetter($index);
 
-                $value = $data[$column] ?? '';
+            $customerTypeId = (int) $data['customer_type_id'];
+            if (!isset($customerTypeMap[$customerTypeId])) continue;
 
-                if ($column === 'password' && !empty($value)) {
+            $sheetName = sanitizeSheetTitle($customerTypeMap[$customerTypeId]);
+
+            if (!isset($sheets[$sheetName])) {
+                $sheet = $spreadsheet->createSheet();
+                $sheet->setTitle($sheetName);
+                $sheets[$sheetName] = $sheet;
+                $columnHasData[$sheetName] = [];
+
+                $headerRow = 1;
+                $colIndex = 0;
+                foreach ($includedColumns as $dbColumn => $displayName) {
+                    $colLetter = indexToColumnLetter($colIndex);
+                    $sheet->setCellValue($colLetter . $headerRow, $displayName);
+                    $sheet->getColumnDimension($colLetter)->setAutoSize(true);
+                    $colIndex++;
+                }
+
+                $headerRange = 'A1:' . $sheet->getHighestColumn() . '1';
+                $sheet->getStyle($headerRange)->applyFromArray([
+                    'font' => ['bold' => true],
+                    'fill' => [
+                        'fillType' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID,
+                        'startColor' => ['rgb' => 'D9D9D9']
+                    ],
+                    'alignment' => ['horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER],
+                    'borders' => ['allBorders' => ['borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN]]
+                ]);
+
+                $currentRow[$sheetName] = 2;
+            }
+
+            $sheet = $sheets[$sheetName];
+
+            $colIndex = 0;
+            foreach ($includedColumns as $dbColumn => $displayName) {
+                $colLetter = indexToColumnLetter($colIndex);
+                $value = $data[$dbColumn] ?? '';
+
+                if ($dbColumn === 'password' && !empty($value)) {
                     try {
                         $value = decrypt_password_from_storage($value);
                     } catch (Exception $e) {
@@ -416,88 +465,120 @@ if(isset($_REQUEST['action'])) {
                     }
                 }
 
-                $sheet->setCellValue($columnLetter . $row, $value);
+                if ($value !== '' && $value !== null) {
+                    $columnHasData[$sheetName][$colLetter] = true;
+                }
+
+                $sheet->setCellValueExplicit(
+                    $colLetter . $currentRow[$sheetName],
+                    $value,
+                    \PhpOffice\PhpSpreadsheet\Cell\DataType::TYPE_STRING
+                );
+
+                $colIndex++;
             }
-            $row++;
+
+            $currentRow[$sheetName]++;
         }
 
+        foreach ($sheets as $sheetName => $sheet) {
+            $highestColumn = $sheet->getHighestColumn();
+            foreach (range('A', $highestColumn) as $colLetter) {
+                if (empty($columnHasData[$sheetName][$colLetter])) {
+                    $sheet->getColumnDimension($colLetter)->setVisible(false);
+                }
+            }
+        }
+
+        $spreadsheet->setActiveSheetIndex(0);
         $name = strtoupper(str_replace('_', ' ', $table));
-        $filename = "$name.xlsx";
-        $filePath = $filename;
+        $filename = "{$name}.xlsx";
 
         $writer = new Xlsx($spreadsheet);
-        $writer->save($filePath);
+        $writer->save($filename);
 
         header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
         header('Content-Disposition: attachment; filename="' . $filename . '"');
-        header('Content-Length: ' . filesize($filePath));
+        header('Content-Length: ' . filesize($filename));
         header('Cache-Control: max-age=0');
 
-        readfile($filePath);
-        unlink($filePath);
+        readfile($filename);
+        unlink($filename);
         exit;
     }
 
-    if ($action == "upload_excel") {
-        if (isset($_FILES['excel_file'])) {
-            $fileTmpPath = $_FILES['excel_file']['tmp_name'];
-            $fileName = $_FILES['excel_file']['name'];
-            $fileNameCmps = explode(".", $fileName);
-            $fileExtension = strtolower(end($fileNameCmps));
-
-            if ($fileExtension != "xlsx" && $fileExtension != "xls") {
-                echo "Please upload a valid Excel file.";
-                exit;
-            }
-
-            $spreadsheet = IOFactory::load($fileTmpPath);
-            $sheet = $spreadsheet->getActiveSheet();
-            $rows = $sheet->toArray();
-
-            $columns = $rows[0];
-            $dbColumns = [];
-            $columnMapping = [];
-
-            foreach ($columns as $col) {
-                $dbColumn = strtolower(str_replace(' ', '_', $col));
-
-                $dbColumns[] = $dbColumn;
-                $columnMapping[$dbColumn] = $col;
-            }
-
-            $truncateSql = "TRUNCATE TABLE $test_table";
-            $truncateResult = $conn->query($truncateSql);
-
-            if (!$truncateResult) {
-                echo "Error truncating table: " . $conn->error;
-                exit;
-            }
-
-            foreach ($rows as $index => $row) {
-                if ($index == 0) {
-                    continue;
-                }
-
-                $data = array_combine($dbColumns, $row);
-
-                $columnNames = implode(", ", array_keys($data));
-                $columnValues = implode("', '", array_map(function($value) { return $value ?? ''; }, array_values($data)));
-
-                $sql = "INSERT INTO $test_table ($columnNames) VALUES ('$columnValues')";
-                $result = $conn->query($sql);
-
-                if (!$result) {
-                    echo "Error inserting data: " . $conn->error;
-                    exit;
-                }
-            }
-
-            echo "success";
-        } else {
+    if ($action === "upload_excel") {
+        if (!isset($_FILES['excel_file'])) {
             echo "No file uploaded.";
             exit;
         }
-    }   
+
+        $fileTmpPath = $_FILES['excel_file']['tmp_name'];
+        $fileName = $_FILES['excel_file']['name'];
+        $fileExtension = strtolower(pathinfo($fileName, PATHINFO_EXTENSION));
+
+        if (!in_array($fileExtension, ['xlsx', 'xls'])) {
+            echo "Please upload a valid Excel file.";
+            exit;
+        }
+
+        $spreadsheet = IOFactory::load($fileTmpPath);
+
+        if (!$conn->query("TRUNCATE TABLE `$test_table`")) {
+            echo "Error truncating table: " . $conn->error;
+            exit;
+        }
+
+        foreach ($spreadsheet->getAllSheets() as $sheet) {
+            $rows = $sheet->toArray(null, true, true, false);
+
+            if (count($rows) < 2) {
+                continue;
+            }
+
+            $headers = array_map('trim', $rows[0]);
+
+            $columnMap = [];
+            foreach ($includedColumns as $dbCol => $displayTitle) {
+                $index = array_search($displayTitle, $headers, true);
+                if ($index !== false) {
+                    $columnMap[$index] = $dbCol;
+                }
+            }
+
+            if (empty($columnMap)) {
+                continue;
+            }
+
+            for ($i = 1; $i < count($rows); $i++) {
+                $row = $rows[$i];
+
+                if (empty(array_filter($row, fn($v) => trim((string)$v) !== ''))) {
+                    continue;
+                }
+
+                $data = [];
+                foreach ($columnMap as $excelIndex => $dbCol) {
+                    $value = trim((string)($row[$excelIndex] ?? ''));
+                    $data[$dbCol] = mysqli_real_escape_string($conn, $value);
+                }
+
+                if (empty($data)) continue;
+
+                $columnNames  = implode(', ', array_map(fn($c) => "`$c`", array_keys($data)));
+                $columnValues = implode("', '", array_values($data));
+
+                $sql = "INSERT INTO `$test_table` ($columnNames) VALUES ('$columnValues')";
+
+                if (!$conn->query($sql)) {
+                    echo "Error inserting row " . ($i + 1) . " in sheet '{$sheet->getTitle()}': " . $conn->error;
+                    exit;
+                }
+            }
+        }
+
+        echo "success";
+    }
     
     if ($action == "update_test_data") {
         $column_name = $_POST['header_name'];
