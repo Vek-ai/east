@@ -169,6 +169,7 @@ if(isset($_REQUEST['action'])) {
         }
 
         $product_details = getProductDetails($Product_id);
+        $category_id = $product_details['product_category'];
         $color_details = getColorDetails($color_id);
         ?>
         <input type="hidden" id="Product_id" name="Product_id" value="<?= $Product_id ?>" />
@@ -303,9 +304,17 @@ if(isset($_REQUEST['action'])) {
                     </div>
 
                     <div class="col-md-4 d-flex justify-content-center align-middle">
-                        <div class="p-2">
-                            <button type="button" class="btn btn-primary updateInventoryPack" data-id="<?= $Inventory_id ?>">Update Pack Qtys</button>
-                        </div>
+                        <?php
+                        $screw_id = 16;
+                        if($category_id == $screw_id){
+                            ?>
+                            <div class="p-2">
+                                <button type="button" class="btn btn-primary updateInventoryPack" data-id="<?= $Inventory_id ?>">Update Pack Qtys</button>
+                            </div>
+                            <?php
+
+                        }
+                        ?>
                     </div>
                 </div>
             </div>
