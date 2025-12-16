@@ -1042,9 +1042,9 @@ $editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) :
     </div>
 </div>
 
-<div class="modal fade" id="add_screw_modal" tabindex="-1" style="background-color: rgba(0, 0, 0, 0.5);">
+<div class="modal fade" id="screw_modal" tabindex="-1" style="background-color: rgba(0, 0, 0, 0.5);">
     <div class="modal-dialog modal-xl modal-dialog-centered" role="document">
-        <form id="add_screw_form" class="modal-content modal-content-demo">
+        <form id="screw_form" class="modal-content modal-content-demo">
             <div class="modal-header">
                 <button aria-label="Close" class="close" data-bs-dismiss="modal" type="button">
                     <span aria-hidden="true">&times;</span>
@@ -1052,7 +1052,7 @@ $editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) :
             </div>
             <input type="hidden" id="set_screw_color"/>
             <div class="modal-body">
-                <div class="row">
+                <div class="row select-screw-div">
                     <div class="col-4">
                         <label class="form-label">Select Screw Product</label>
                         <div class="mb-3">
@@ -1089,22 +1089,6 @@ $editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) :
                     </div>
                 </div>
                 
-                <div id="add_screw_container"></div>
-            </div>
-        </form>
-    </div>
-</div>
-
-<div class="modal fade" id="screw_modal" tabindex="-1" style="background-color: rgba(0, 0, 0, 0.5);">
-    <div class="modal-dialog modal-xl modal-dialog-centered" role="document">
-        <form id="screw_form" class="modal-content modal-content-demo">
-            <div class="modal-header">
-                <button aria-label="Close" class="close" data-bs-dismiss="modal" type="button">
-                    <span aria-hidden="true">&times;</span>
-                </button>
-            </div>
-            <input type="hidden" id="set_screw_color"/>
-            <div class="modal-body">
                 <div id="screw_container"></div>
             </div>
         </form>
@@ -4496,6 +4480,8 @@ $editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) :
             var color = $(this).data('color')
             $('#set_screw_color').val(color);
 
+            $('.select-screw-div').addClass('d-none');
+
             $.ajax({
                 url: 'pages/cashier_screw_modal.php',
                 type: 'POST', 
@@ -4505,7 +4491,7 @@ $editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) :
                     fetch_modal: 'fetch_modal'
                 },
                 success: function(response) {
-                    $('#add_screw_container').html(response);
+                    $('#screw_container').html(response);
 
                     $('.screw_select2').each(function () {
                         $(this).select2({
@@ -4515,7 +4501,39 @@ $editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) :
                         });
                     });
 
-                    $('#add_screw_modal').modal('show');
+                    $('#screw_modal').modal('show');
+                },
+                error: function(jqXHR, textStatus, errorThrown) {
+                    alert('Error: ' + textStatus + ' - ' + errorThrown);
+                }
+            });
+        });
+
+        $(document).on("click", "#add-to-cart-screw-panel-btn", function() {
+            var id = $(this).data('id');
+            var color = $(this).data('color')
+            $('#set_screw_color').val(color);
+
+            $.ajax({
+                url: 'pages/cashier_screw_modal.php',
+                type: 'POST', 
+                data: {
+                    id: id,
+                    color: color,
+                    fetch_modal: 'fetch_modal'
+                },
+                success: function(response) {
+                    $('#screw_container').html(response);
+
+                    $('.screw_select2').each(function () {
+                        $(this).select2({
+                            width: '300px',
+                            dropdownParent: $(this).parent(),
+                            dropdownPosition: 'below'
+                        });
+                    });
+
+                    $('#screw_modal').modal('show');
                 },
                 error: function(jqXHR, textStatus, errorThrown) {
                     alert('Error: ' + textStatus + ' - ' + errorThrown);
@@ -5623,30 +5641,6 @@ $editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) :
             });
         });
 
-        $(document).on('submit', '#add_screw_form', function (event) {
-            event.preventDefault();
-
-            const formData = new FormData(this);
-            formData.append('save_screw', 'save_screw');
-            var preselectedProfile = $('#select-profile').val();
-            formData.append('profile', preselectedProfile);
-            $.ajax({
-                url: 'pages/cashier_ajax.php',
-                type: 'POST',
-                data: formData,
-                processData: false,
-                contentType: false,
-                success: function (response) {
-                    console.log(response);
-                    $('#add_screw_modal').modal("hide");
-                    loadCart();
-                },
-                error: function (xhr) {
-                    console.error('Error:', xhr.responseText);
-                }
-            });
-        });
-
         $(document).on('submit', '#custom_length_form', function (event) {
             event.preventDefault();
 
@@ -6011,6 +6005,7 @@ $editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) :
                     add_cart_screw: 'add_cart_screw'
                 },
                 success: function (response) {
+                    console.log("Screw Add Response:", response);
                     loadCart();
                     $('#screw_modal').modal('hide');
                 },

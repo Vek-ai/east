@@ -1257,7 +1257,7 @@ if(isset($_POST['fetch_cart'])){
                                 <?php 
                                 if($show_calculate_screw > 0){
                                 ?>
-                                    <button type="button" class="btn btn-sm btn-info ms-3" id="add-to-cart-screw-btn" data-color="<?= $info['color'] ?>">
+                                    <button type="button" class="btn btn-sm btn-info ms-3" id="add-to-cart-screw-panel-btn" data-color="<?= $info['color'] ?>">
                                         Add Screw
                                     </button>
                                 <?php
