@@ -96,6 +96,26 @@ function showCol($name) {
         </div>
     </div>
 
+    <div class="modal fade" id="inventoryPackModal" tabindex="-1" aria-labelledby="inventoryPackModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-xl" style="max-width: 70%;">
+            <div class="modal-content">
+                <div class="modal-header d-flex align-items-center">
+                    <h4 class="modal-title" id="inventoryPackModal">Pack Qtys Inventory </h4>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <form id="inventory_pack_form" class="form-horizontal">
+                    <div class="modal-body inventoryPackBody">
+                        
+                    </div>
+                    <div class="modal-footer">
+                        <button type="submit" class="btn btn-success">Save</button>
+                        <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Close</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
     <div class="modal fade" id="downloadModal" tabindex="-1" aria-labelledby="downloadModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-md">
             <div class="modal-content">
@@ -626,6 +646,51 @@ function showCol($name) {
             });
         });
 
+        $(document).on('submit', '#inventory_pack_form', function(event) {
+            event.preventDefault();
+
+            var formData = new FormData(this);
+            formData.append('action', 'update_pack');
+
+            const Inventory_id = $('#Inventory_id').val();
+            let packs = [];
+
+            $('.row.g-3.mb-2').each(function() {
+                const pack_id = $(this).find('input.calc-qty').first().attr('name').match(/\[(\d+)\]/)[1];
+                const qty = parseFloat($(this).find('input[name^="pack_qty_on_hand"]').val()) || 0;
+                const reorder_qty = parseFloat($(this).find('input[name^="pack_reorder_qty"]').val()) || 0;
+
+                packs.push({ pack_id, qty, reorder_qty });
+            });
+
+            formData.append('packs', JSON.stringify(packs));
+
+            $.ajax({
+                url: 'pages/inventory_ajax.php',
+                type: 'POST',
+                data: formData,
+                processData: false,
+                contentType: false,
+                success: function(response) {
+                    $('#inventoryPackModal').modal('hide');
+                    if (response.trim() === "success") {
+                        $('#responseHeader').text("Success");
+                        $('#responseMsg').text("Pack saved successfully.");
+                        $('#responseHeaderContainer').removeClass("bg-danger").addClass("bg-success");
+                        $('#response-modal').modal("show");
+                    } else {
+                        $('#responseHeader').text("Failed");
+                        $('#responseMsg').text(response);
+                        $('#responseHeaderContainer').removeClass("bg-success").addClass("bg-danger");
+                        $('#response-modal').modal("show");
+                    }
+                },
+                error: function(jqXHR, textStatus, errorThrown) {
+                    alert('Error: ' + textStatus + ' - ' + errorThrown);
+                }
+            });
+        });
+
         var table = $('#inventoryList').DataTable({
             processing: true,
             serverSide: true,
@@ -868,6 +933,59 @@ function showCol($name) {
                     }
                 });
             }
+        });
+
+        $(document).on('click', '.updateInventoryPack', function(event) {
+            event.preventDefault(); 
+            var id = $(this).data('id');
+
+            $.ajax({
+                url: 'pages/inventory_ajax.php',
+                type: 'POST',
+                data: { 
+                    id: id, 
+                    action: "fetch_pack_modal" 
+                },
+                success: function(response) {
+                    $(".inventoryPackBody").html(response);
+                    recalcInventoryPacks();
+                    $("#inventoryPackModal").modal("show");
+                },
+                error: function(jqXHR, textStatus, errorThrown) {
+                    alert('Failed to fetch' + textStatus + ' - ' + errorThrown);
+                    console.log(jqXHR.responseText);
+                }
+            });
+        });
+
+        function recalcInventoryPacks() {
+            let totalQtyNeeded = 0;
+            let totalReorderNeeded = 0;
+            let totalQtyOnHand = parseFloat($('#total_qty_on_hand').val()) || 0;
+
+            $('.row.g-3.mb-2').each(function() {
+                const qtyInPack = parseFloat($(this).find('.calc-qty').first().data('qty-in-pack')) || 0;
+
+                const packQtyOnHand = parseFloat($(this).find('input[name^="pack_qty_on_hand"]').val()) || 0;
+                const packReorderQty = parseFloat($(this).find('input[name^="pack_reorder_qty"]').val()) || 0;
+
+                const qtyNeeded = qtyInPack * packQtyOnHand;
+                const reorderNeeded = qtyInPack * packReorderQty;
+
+                $(this).find('.qty-needed').val(qtyNeeded);
+                $(this).find('.reorder-needed').val(reorderNeeded);
+
+                totalQtyNeeded += qtyNeeded;
+                totalReorderNeeded += reorderNeeded;
+            });
+
+            $('#total_qty_needed').val(totalQtyNeeded);
+            $('#total_reorder_needed').val(totalReorderNeeded);
+            $('#qty_left_on_hand').val(totalQtyOnHand - totalQtyNeeded);
+        }
+
+        $(document).on('input', '.calc-qty', function() {
+            recalcInventoryPacks();
         });
 
         

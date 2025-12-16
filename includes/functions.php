@@ -699,6 +699,18 @@ function getSupplierDetails($supplier_id) {
     return $supplier;
 }
 
+function getSupplierPackDetails($id) {
+    global $conn;
+    $id = mysqli_real_escape_string($conn, $id);
+    $query = "SELECT * FROM supplier_pack WHERE id = '$id'";
+    $result = mysqli_query($conn, $query);
+    $supplier_pack = [];
+    if ($row = mysqli_fetch_assoc($result)) {
+        $supplier_pack = $row;
+    }
+    return $supplier_pack;
+}
+
 function getSetting($settingName) {
     global $conn;
     $query = "SELECT value FROM settings WHERE setting_name = '$settingName'";

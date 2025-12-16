@@ -304,7 +304,7 @@ if(isset($_REQUEST['action'])) {
 
                     <div class="col-md-4 d-flex justify-content-center align-middle">
                         <div class="p-2">
-                            <button type="button" class="btn btn-primary">Update Pack Qtys</button>
+                            <button type="button" class="btn btn-primary updateInventoryPack" data-id="<?= $Inventory_id ?>">Update Pack Qtys</button>
                         </div>
                     </div>
                 </div>
@@ -453,6 +453,157 @@ if(isset($_REQUEST['action'])) {
         </div>
         <?php
         
+    }
+
+    if ($action == "fetch_pack_modal") {
+
+        $Inventory_id = (int)($_POST['id'] ?? 0);
+
+        $row = [];
+        if (!empty($Inventory_id)) {
+            $query_inventory = "SELECT * FROM inventory WHERE Inventory_id = '$Inventory_id' LIMIT 1";
+            $res = mysqli_query($conn, $query_inventory);
+            if ($res) $row = mysqli_fetch_assoc($res);
+        }
+
+        $product_details = getProductDetails($row['Product_id']);
+        $packs_assigned = $product_details['pack'] ?? [];
+
+        if (is_string($packs_assigned)) {
+            $packs_assigned = json_decode($packs_assigned, true);
+        }
+
+        if (!is_array($packs_assigned)) {
+            $packs_assigned = [];
+        }
+        ?>
+
+        <style>
+        .readonly {
+            border: none !important;
+            background-color: transparent !important;
+            pointer-events: none;
+            box-shadow: none;
+            color: #495057;
+            padding-left: 0;
+            padding-right: 0;
+        }
+        </style>
+
+        <input type="hidden" id="Inventory_id" name="Inventory_id" value="<?= $Inventory_id ?>" />
+
+        <div class="row g-3 mb-3">
+            <div class="col-2">
+                <label class="form-label">Total Qty on Hand</label>
+                <input type="text" class="form-control readonly" id="total_qty_on_hand" value="<?= $row['quantity_ttl'] ?? 0 ?>">
+            </div>
+            <div class="col-2">
+                <label class="form-label">Baseline Reorder Qty</label>
+                <input type="text" class="form-control readonly" id="baseline_reorder_qty" value="<?= $row['reorder_level'] ?? 0 ?>">
+            </div>
+            <div class="col-2">
+                <label class="form-label">Qty Left on Hand</label>
+                <input type="text" class="form-control readonly" id="qty_left_on_hand" readonly>
+            </div>
+            <div class="col-2">
+                <label class="form-label">Total Qty Needed</label>
+                <input type="text" class="form-control readonly" id="total_qty_needed" readonly>
+            </div>
+            <div class="col-2">
+                <label class="form-label">Total Reorder Qty Needed</label>
+                <input type="text" class="form-control readonly" id="total_reorder_needed" readonly>
+            </div>
+        </div>
+
+
+        <hr>
+
+        <?php
+        foreach ($packs_assigned as $pack_id) {
+
+            $pack_details = getSupplierPackDetails($pack_id);
+            $pack_name = $pack_details['pack'] ?? '';
+            $pack_count = $pack_details['pack_count'] ?? 0;
+
+            $query_pack = "SELECT * FROM inventory_pack WHERE inventory_id = '$Inventory_id' AND pack_id = '$pack_id' LIMIT 1";
+            $res_pack = mysqli_query($conn, $query_pack);
+            $pack_row = $res_pack && mysqli_num_rows($res_pack) > 0 ? mysqli_fetch_assoc($res_pack) : [];
+
+            $pack_qty_on_hand = $pack_row['qty'] ?? 0;
+            $pack_reorder_qty = $pack_row['reorder_qty'] ?? 0;
+            $qty_needed = 0;
+            $reorder_needed = 0;
+            ?>
+            <div class="row g-3 mb-2">
+                <div class="col-2">
+                    <label class="form-label">Pack Name</label>
+                    <p class="form-control readonly"><?= htmlspecialchars($pack_name) ?></p>
+                </div>
+                <div class="col-2">
+                    <label class="form-label">Qty in Pack</label>
+                    <p class="form-control readonly"><?= number_format($pack_count) ?></p>
+                </div>
+                <div class="col-2">
+                    <label class="form-label">Pack Qty on Hand</label>
+                    <input type="text" class="form-control calc-qty" 
+                        data-qty-in-pack="<?= $pack_count ?>" 
+                        name="pack_qty_on_hand[<?= $pack_id ?>]" 
+                        value="<?= $pack_qty_on_hand ?>">
+                </div>
+
+                <div class="col-2">
+                    <label class="form-label">Pack Reorder Qty</label>
+                    <input type="text" class="form-control calc-qty" 
+                        data-qty-in-pack="<?= $pack_count ?>" 
+                        name="pack_reorder_qty[<?= $pack_id ?>]" 
+                        value="<?= $pack_reorder_qty ?>">
+                </div>
+
+                <div class="col-2">
+                    <label class="form-label">Qty Needed</label>
+                    <input type="text" class="form-control qty-needed readonly" readonly>
+                </div>
+
+                <div class="col-2">
+                    <label class="form-label">Reorder Qty Needed</label>
+                    <input type="text" class="form-control reorder-needed readonly" readonly>
+                </div>
+            </div>
+        <?php
+        }
+    }
+
+    if ($action == "update_pack") {
+        $Inventory_id = (int)($_POST['Inventory_id'] ?? 0);
+        $packs_json = $_POST['packs'] ?? '[]';
+        $packs = json_decode($packs_json, true);
+
+        if (!is_array($packs)) {
+            echo "Invalid packs data.";
+            exit;
+        }
+
+        foreach ($packs as $p) {
+            $pack_id = (int)($p['pack_id'] ?? 0);
+            $qty = (float)($p['qty'] ?? 0);
+            $reorder_qty = (float)($p['reorder_qty'] ?? 0);
+
+            if ($pack_id <= 0) continue;
+            $check = mysqli_query($conn, "SELECT id FROM inventory_pack WHERE inventory_id='$Inventory_id' AND pack_id='$pack_id' LIMIT 1");
+            if ($check && mysqli_num_rows($check) > 0) {
+                $update_sql = "UPDATE inventory_pack 
+                            SET qty='$qty', reorder_qty='$reorder_qty' 
+                            WHERE inventory_id='$Inventory_id' AND pack_id='$pack_id'";
+                mysqli_query($conn, $update_sql);
+            } else {
+                $insert_sql = "INSERT INTO inventory_pack (inventory_id, pack_id, qty, reorder_qty) 
+                            VALUES ('$Inventory_id', '$pack_id', '$qty', '$reorder_qty')";
+                mysqli_query($conn, $insert_sql);
+            }
+        }
+
+        echo "success";
+        exit;
     }
 
     if ($_POST['action'] == 'fetch_table') {
