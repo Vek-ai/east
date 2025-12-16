@@ -4828,4 +4828,108 @@ function sanitizeSheetTitle($title) {
     $title = str_replace($invalidChars, '_', $title);
     return mb_substr($title, 0, 31);
 }
+
+function normalizeIds($value) {
+    if ($value === null || $value === '') return [];
+    if (is_numeric($value)) return [(int)$value];
+
+    $value = trim($value);
+
+    if ($value[0] === '[') {
+        $arr = json_decode($value, true);
+        return is_array($arr) ? array_map('intval', $arr) : [];
+    }
+
+    return [(int)$value];
+}
+
+function cartesian(array $input) {
+    $result = [[]];
+    foreach ($input as $key => $values) {
+        $append = [];
+        foreach ($result as $product) {
+            foreach ($values as $value) {
+                $product[$key] = $value;
+                $append[] = $product;
+            }
+        }
+        $result = $append;
+    }
+    return $result;
+}
+
+function generateProductAbbr(int $product_id) {
+    global $conn;
+
+    $sql = "SELECT * FROM product WHERE product_id = $product_id LIMIT 1";
+    $res = $conn->query($sql);
+
+    if (!$res || $res->num_rows === 0) {
+        return false;
+    }
+
+    $row = $res->fetch_assoc();
+    $category_id = (int)$row['product_category'];
+
+    $relatedSets = [
+        'profile' => normalizeIds($row['profile'] ?? null),
+        'type'    => normalizeIds($row['product_type'] ?? null),
+        'line'    => normalizeIds($row['product_line'] ?? null),
+        'grade'   => normalizeIds($row['grade'] ?? null),
+        'gauge'   => normalizeIds($row['gauge'] ?? null),
+        'color'   => normalizeIds($row['color_paint'] ?? null),
+        'length'  => normalizeIds($row['available_lengths'] ?? null)
+    ];
+
+    foreach ($relatedSets as $k => $v) {
+        if (empty($v)) unset($relatedSets[$k]);
+    }
+
+    $combinations = cartesian($relatedSets);
+    $inserted = 0;
+
+    foreach ($combinations as $c) {
+
+        $abbr = getProdID([
+            'category' => $category_id,
+            'profile'  => $c['profile'] ?? null,
+            'type'     => $c['type'] ?? null,
+            'line'     => $c['line'] ?? null,
+            'grade'    => $c['grade'] ?? null,
+            'gauge'    => $c['gauge'] ?? null,
+            'color'    => $c['color'] ?? null,
+            'length'   => $c['length'] ?? null
+        ]);
+
+        if (!$abbr) continue;
+
+        $abbr_escaped = $conn->real_escape_string($abbr);
+
+        $check = $conn->query(
+            "SELECT 1 FROM product_abr WHERE product_id='$abbr_escaped' LIMIT 1"
+        );
+
+        if ($check && $check->num_rows > 0) continue;
+
+        $sql = sprintf(
+            "INSERT INTO product_abr
+            (product_id, category, profile, grade, gauge, type, color, length)
+            VALUES ('%s', %s, %s, %s, %s, %s, %s, %s)",
+            $abbr_escaped,
+            $category_id ?: 'NULL',
+            $c['profile'] ?? 'NULL',
+            $c['grade'] ?? 'NULL',
+            $c['gauge'] ?? 'NULL',
+            $c['type'] ?? 'NULL',
+            $c['color'] ?? 'NULL',
+            $c['length'] ?? 'NULL'
+        );
+
+        if ($conn->query($sql)) {
+            $inserted += $conn->affected_rows;
+        }
+    }
+
+    return $inserted;
+}
 ?>

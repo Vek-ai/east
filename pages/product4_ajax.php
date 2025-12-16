@@ -1064,63 +1064,58 @@ if(isset($_REQUEST['action'])) {
     
     if ($action == "save_table") {
         $table = "product";
-    
-        $selectSql = "SELECT * FROM $product_excel";
-        $result = $conn->query($selectSql);
-    
+        $primaryKey = getPrimaryKey($table);
+
+        $result = $conn->query("SELECT * FROM $product_excel");
+
         if ($result->num_rows > 0) {
             while ($row = $result->fetch_assoc()) {
+
                 unset($row['id']);
-    
-                $product_id = trim($row['product_id'] ?? '');
-    
-                $conditions = [];
-                foreach ($row as $column => $value) {
-                    $conditions[] = "$column = '" . $conn->real_escape_string($value) . "'";
-                }
-    
-                $checkSql = "SELECT COUNT(*) as count FROM $table WHERE " . implode(" AND ", $conditions);
-                $checkResult = $conn->query($checkSql);
-                $exists = $checkResult->fetch_assoc()['count'] > 0;
-    
-                if ($exists) {
-                    continue;
-                }
-    
-                if (!empty($product_id)) {
-                    $idCheckSql = "SELECT COUNT(*) as count FROM $table WHERE product_id = '$product_id'";
-                    $idCheckResult = $conn->query($idCheckSql);
-                    $idExists = $idCheckResult->fetch_assoc()['count'] > 0;
-    
-                    if ($idExists) {
-                        $updateFields = [];
-                        foreach ($row as $column => $value) {
-                            if ($column !== 'product_id') {
-                                $updateFields[] = "$column = '" . $conn->real_escape_string($value) . "'";
-                            }
+
+                $excelPK = !empty($row[$primaryKey]) ? (int)$row[$primaryKey] : null;
+
+                if ($excelPK) {
+                    $check = $conn->query(
+                        "SELECT $primaryKey FROM $table WHERE $primaryKey = $excelPK LIMIT 1"
+                    );
+
+                    if ($check && $check->num_rows > 0) {
+                        $updates = [];
+                        foreach ($row as $col => $val) {
+                            if ($col === $primaryKey) continue;
+                            $updates[] = "$col = '" . $conn->real_escape_string($val) . "'";
                         }
-                        $updateSql = "UPDATE $table SET " . implode(", ", $updateFields) . " WHERE product_id = '$product_id'";
-                        $conn->query($updateSql);
+
+                        $conn->query(
+                            "UPDATE $table SET " . implode(", ", $updates) . " WHERE $primaryKey = $excelPK"
+                        );
+
+                        generateProductAbbr($excelPK);
                         continue;
                     }
+
+                    $row[$primaryKey] = $excelPK;
                 }
-    
+
                 $columns = implode(", ", array_keys($row));
-                $values = "'" . implode("', '", array_map([$conn, 'real_escape_string'], array_values($row))) . "'";
-                $insertSql = "INSERT INTO $table ($columns) VALUES ($values)";
-                $conn->query($insertSql);
+                $values  = "'" . implode(
+                    "', '",
+                    array_map([$conn, 'real_escape_string'], array_values($row))
+                ) . "'";
+
+                if ($conn->query("INSERT INTO $table ($columns) VALUES ($values)")) {
+                    $newPK = $excelPK ?: $conn->insert_id;
+                    generateProductAbbr($newPK);
+                }
             }
-    
+
             echo "Data has been successfully saved";
-    
-            $truncateSql = "TRUNCATE TABLE $product_excel";
-            if ($conn->query($truncateSql) !== TRUE) {
-                echo " but failed to clear $product_excel table: " . $conn->error;
-            }
+            $conn->query("TRUNCATE TABLE $product_excel");
         } else {
             echo "No data found in $product_excel table.";
         }
-    }    
+    }
 
     if ($_REQUEST['action'] == "download_excel") {
         $product_category = $_REQUEST['category'] ?? [];
