@@ -381,25 +381,25 @@ function showCol($name) {
                                         data-status="<?= $status_code ?>"
                                     >
                                         <?php if (showCol('estimateid')): ?>
-                                            <td style="color: #ffffff !important;">
+                                            <td>
                                                 <?= $row["estimateid"] ?>
                                             </td>
                                         <?php endif; ?>
 
                                         <?php if (showCol('customer_name')): ?>
-                                            <td style="color: #ffffff !important;">
+                                            <td>
                                                 <?= ucwords(get_customer_name($row["customerid"])) ?>
                                             </td>
                                         <?php endif; ?>
 
                                         <?php if (showCol('total_discounted')): ?>
-                                            <td style="color: #ffffff !important;">
+                                            <td>
                                                 $ <?= getEstimateTotalsDiscounted($row["estimateid"]) ?>
                                             </td>
                                         <?php endif; ?>
 
                                         <?php if (showCol('estimated_date')): ?>
-                                            <td style="color: #ffffff !important;" 
+                                            <td 
                                                 <?php if (!empty($row["estimated_date"]) && $row["estimated_date"] !== '0000-00-00 00:00:00') : ?>
                                                     data-order="<?= date('Y-m-d', strtotime($row["estimated_date"])) ?>"
                                                 <?php endif; ?>
@@ -415,7 +415,7 @@ function showCol($name) {
                                         <?php endif; ?>
 
                                         <?php if (showCol('order_date')): ?>
-                                            <td style="color: #ffffff !important;"
+                                            <td
                                                 <?php if (isset($row["order_date"]) && !empty($row["order_date"]) && $row["order_date"] !== '0000-00-00 00:00:00') : ?>
                                                     data-order="<?= date('Y-m-d', strtotime($row["order_date"])) ?>"
                                                 <?php endif; ?>
@@ -431,13 +431,13 @@ function showCol($name) {
                                         <?php endif; ?>
 
                                         <?php if (showCol('status')): ?>
-                                            <td class="text-center" style="color: #ffffff !important;">
+                                            <td class="text-center">
                                                 <span class="estimate_status <?= $status['class']; ?> fw-bond"><?= $status['label']; ?></span>
                                             </td>
                                         <?php endif; ?>
 
                                         <?php if (showCol('cashier')): ?>
-                                            <td style="color: #ffffff !important;">
+                                            <td>
                                                 <?= ucwords(get_staff_name($row["cashier"])) ?>
                                             </td>
                                         <?php endif; ?>

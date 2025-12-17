@@ -158,27 +158,27 @@ function showCol($name) {
                             <thead class="header-item">
                                 <tr>
                                     <?php if (showCol('staff_name')): ?>
-                                        <th style="color: #ffffff !important">Staff Name</th>
+                                        <th>Staff Name</th>
                                     <?php endif; ?>
 
                                     <?php if (showCol('role')): ?>
-                                        <th style="color: #ffffff !important">Role</th>
+                                        <th>Role</th>
                                     <?php endif; ?>
 
                                     <?php if (showCol('email')): ?>
-                                        <th style="color: #ffffff !important">Email</th>
+                                        <th>Email</th>
                                     <?php endif; ?>
 
                                     <?php if (showCol('phone')): ?>
-                                        <th style="color: #ffffff !important">Phone</th>
+                                        <th>Phone</th>
                                     <?php endif; ?>
 
                                     <?php if (showCol('details')): ?>
-                                        <th style="color: #ffffff !important">Details</th>
+                                        <th>Details</th>
                                     <?php endif; ?>
 
                                     <?php if (showCol('action')): ?>
-                                        <th style="color: #ffffff !important">Action</th>
+                                        <th>Action</th>
                                     <?php endif; ?>
                                 </tr>
                             </thead>
@@ -213,7 +213,7 @@ function showCol($name) {
                                         data-warehouse="<?=$warehouse_assigned_id?>"
                                     >
                                         <?php if (showCol('staff_name')): ?>
-                                            <td style="color: #ffffff !important">
+                                            <td>
                                                 <a href="#" id="view_details_btn" data-id="<?= $row_staff['staff_id'] ?>">
                                                     <div class="d-flex align-items-center gap-3">
                                                         <img src="<?= $profile_path ?>" alt="user4" width="60" height="60" class="rounded-circle">
@@ -226,19 +226,19 @@ function showCol($name) {
                                         <?php endif; ?>
 
                                         <?php if (showCol('role')): ?>
-                                            <td style="color: #ffffff !important"><?= get_role_name($row_staff['role']) ?></td>
+                                            <td><?= get_role_name($row_staff['role']) ?></td>
                                         <?php endif; ?>
 
                                         <?php if (showCol('email')): ?>
-                                            <td style="color: #ffffff !important"><?= $row_staff['email'] ?></td>
+                                            <td><?= $row_staff['email'] ?></td>
                                         <?php endif; ?>
 
                                         <?php if (showCol('phone')): ?>
-                                            <td style="color: #ffffff !important"><?= $row_staff['phone'] ?></td>
+                                            <td><?= $row_staff['phone'] ?></td>
                                         <?php endif; ?>
 
                                         <?php if (showCol('details')): ?>
-                                            <td style="color: #ffffff !important"><?= $status ?></td>
+                                            <td><?= $status ?></td>
                                         <?php endif; ?>
 
                                         <?php if (showCol('action')): ?>

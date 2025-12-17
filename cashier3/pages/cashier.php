@@ -758,9 +758,11 @@ $editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) :
                 <div id="order-tbl"></div>
             </div>
             <div class="modal-footer">
+                <!-- 
                 <button class="btn ripple px-3" type="button" id="btnApprovalModal" style="background-color: #800080; color: white;">
                     Submit Approval
-                </button>
+                </button> 
+                -->
                 <button class="btn ripple btn-warning next" type="button" id="save_estimate">
                     Save Estimate
                 </button>
@@ -1369,6 +1371,7 @@ $editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) :
         <div class="modal-body" style="overflow: auto;">
             <iframe id="pdfFrame" src="" style="height: 70vh; width: 100%;" class="mb-3 border rounded"></iframe>
 
+            <!-- 
             <div class="container-fluid border rounded p-3">
                 <div class="print-tabs">
                     <ul class="nav nav-tabs justify-content-center mb-3" role="tablist">
@@ -1426,7 +1429,27 @@ $editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) :
                     <button id="downloadBtn" class="btn btn-primary">Download</button>
                     <button class="btn btn-danger" data-bs-dismiss="modal">Cancel</button>
                 </div>
-            </div>
+            </div> 
+            -->
+
+            <div class="container-fluid border rounded p-3">
+                <div class="d-flex flex-wrap justify-content-center gap-2 p-2">
+                    <a id="print_base_customer" class="btn btn-warning btn-sm btn-show-pdf">Office Copy</a>
+                    <a id="print_base_customer" class="btn btn-primary btn-sm btn-show-pdf">Customer Copy</a>
+                    <a id="print_summary_customer" class="btn btn-primary btn-sm btn-show-pdf">Summary Cost Breakdown </a>
+                    <a id="print_load_ekm" class="btn btn-primary btn-sm btn-show-pdf">Load Copy</a>
+                    <a id="print_delivery_ekm" class="btn btn-primary btn-sm btn-show-pdf">Delivery Ticket</a>
+                    <a id="print_metal_copy" class="btn btn-primary btn-sm btn-show-pdf">Metal Copy</a>
+                    <a id="print_trim_copy" class="btn btn-primary btn-sm btn-show-pdf">Trim Copy</a>
+                </div>
+
+                <div class="mt-3 d-flex flex-wrap justify-content-end gap-2">
+                    <button id="email_order_btn" class="btn btn-success">Email</button>
+                    <button id="printBtn" class="btn btn-success">Print</button>
+                    <button id="downloadBtn" class="btn btn-primary">Download</button>
+                    <button class="btn btn-danger" data-bs-dismiss="modal">Cancel</button>
+                </div>
+            </div> 
         </div>
 
       </div>
@@ -4840,33 +4863,44 @@ $editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) :
             //const baseUrl = window.location.origin + '/temps/east/';
 
             const links = {
-                'print_order': 'print_order_total.php',
-                'print_deliver': 'print_order_delivery.php',
+                print_order: 'print_order_total.php',
+                print_deliver: 'print_order_delivery.php',
 
-                'print_base_customer': 'print_order_product.php',
-                'print_perft_customer': 'print_order_product_per_ft.php',
-                'print_pereach_customer': 'print_order_product_per_each.php',
-                'print_all_customer': 'print_order_product_all.php',
-                'print_summary_customer': 'print_order_total.php',
+                print_base_customer: 'print_order_product.php',
+                print_perft_customer: 'print_order_product_per_ft.php',
+                print_pereach_customer: 'print_order_product_per_each.php',
+                print_all_customer: 'print_order_product_all.php',
+                print_summary_customer: 'print_order_total.php',
 
-                'print_base_retail': 'print_order_product.php',
-                'print_perft_retail': 'print_order_product_per_ft.php',
-                'print_pereach_retail': 'print_order_product_per_each.php',
-                'print_all_retail': 'print_order_product_all.php',
-                'print_summary_retail': 'print_order_total.php',
+                print_base_retail: 'print_order_product.php',
+                print_perft_retail: 'print_order_product_per_ft.php',
+                print_pereach_retail: 'print_order_product_per_each.php',
+                print_all_retail: 'print_order_product_all.php',
+                print_summary_retail: 'print_order_total.php',
 
-                'print_load_ekm': 'print_load_copy.php',
-                'print_delivery_ekm': 'print_order_delivery.php'
+                print_load_ekm: 'print_load_copy.php',
+                print_delivery_ekm: 'print_delivery_ticket.php',
+
+                print_metal_copy: 'print_work_order.php',
+                print_trim_copy: 'print_work_order.php'
             };
 
             for (const id in links) {
                 const $btn = $('#' + id);
-                if ($btn.length) {
-                    $btn.attr({
-                        href: baseUrl + links[id] + '?id=' + orderId,
-                        target: '_blank'
-                    });
+                if (!$btn.length) continue;
+
+                let url = baseUrl + links[id] + '?id=' + orderId;
+
+                if (id === 'print_metal_copy') {
+                    url += '&type=panel';
+                } else if (id === 'print_trim_copy') {
+                    url += '&type=trim';
                 }
+
+                $btn.attr({
+                    href: url,
+                    target: '_blank'
+                });
             }
         }
 
@@ -4909,6 +4943,8 @@ $editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) :
             var pay_pickup = $('#payPickup').is(':checked') ? parseFloat($('#pickupAmount').val()) || 0 : 0;
             var pay_delivery = $('#payDelivery').is(':checked') ? parseFloat($('#deliveryAmount').val()) || 0 : 0;
             var pay_net30 = $('#payNet30').is(':checked') ? parseFloat($('#net30Amount').val()) || 0 : 0;
+
+            var salesperson = $('#salesperson').val();
 
             if (
                 pay_cash <= 0 &&
@@ -4957,6 +4993,7 @@ $editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) :
                         pay_pickup: pay_pickup,
                         pay_delivery: pay_delivery,
                         pay_net30: pay_net30,
+                        salesperson: salesperson,
 
                         save_order: 'save_order'
                     },

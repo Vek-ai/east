@@ -365,156 +365,7 @@ $page_key = !empty($_REQUEST['page']) ? $_REQUEST['page'] : 'home';
                     </a>
                   </li>
 
-                  <li class="nav-item hover-dd dropdown nav-icon-hover-bg rounded-circle d-none d-lg-block">
-                    <a class="nav-link nav-icon-hover waves-effect waves-dark" href="javascript:void(0)" id="drop2" aria-expanded="false">
-                      <iconify-icon icon="ic:round-search" class="search-icon"></iconify-icon>
-                    </a>
-                    <div class="dropdown-menu py-0 content-dd  dropdown-menu-animate-up overflow-hidden dropdown-menu-end" aria-labelledby="drop2">
-
-                      <div class="py-3 px-4 bg-primary">
-                        <div class="mb-0 fs-6 fw-medium text-white">Search Customers</div>
-                      </div>
-                      <div class="p-3 d-flex align-items-center border-bottom">
-                        <div class="w-100">
-                          <div class="d-flex align-items-center justify-content-between">
-                            <input type="text" id="customer-search-input" class="form-control" placeholder="Search Customer Name">
-                          </div>
-                        </div>
-                      </div>
-                      <div id="customer-search-list"></div>
-                    </div>
-                  </li>
-
-                  <li class="nav-item hover-dd dropdown nav-icon-hover-bg rounded-circle d-none d-lg-block">
-                    <a class="nav-link nav-icon-hover waves-effect waves-dark notificationsContainerIcon" href="javascript:void(0)" id="drop2" aria-expanded="false">
-                      <iconify-icon icon="solar:bell-bing-line-duotone"></iconify-icon>
-                      <div class="notify">
-                        <span class="heartbit"></span>
-                        <span class="point"></span>
-                      </div>
-                    </a>
-                    <div class="dropdown-menu py-0 content-dd  dropdown-menu-animate-up overflow-hidden dropdown-menu-end" aria-labelledby="drop2">
-
-                      <div class="py-3 px-4 bg-primary">
-                        <div class="mb-0 fs-6 fw-medium text-white">Notifications</div>
-                        <div class="mb-0 fs-2 fw-medium text-white" id="notifCountLabel">You have 4 Notifications</div>
-                      </div>
-                      <div class="message-body" data-simplebar id="notificationsContainer" style="max-height: 300px; overflow-y: auto;">
-                        <!-- Notifications will be injected here -->
-                      </div>
-                      <div class="p-3">
-                        <a class="d-flex btn btn-primary  align-items-center justify-content-center gap-2" href="?page=notifications">
-                          <span>Check all Notifications</span>
-                          <iconify-icon icon="solar:alt-arrow-right-outline" class="iconify-sm"></iconify-icon>
-                        </a>
-                      </div>
-                    </div>
-                  </li>
-
-                  <li class="nav-item hover-dd dropdown  nav-icon-hover-bg rounded-circle d-none d-lg-block">
-                    <a class="nav-link nav-icon-hover" href="javascript:void(0)" id="drop2" aria-expanded="false">
-                      <iconify-icon icon="solar:inbox-line-line-duotone"></iconify-icon>
-                      <div class="notify">
-                        <span class="heartbit"></span>
-                        <span class="point"></span>
-                      </div>
-                    </a>
-                    <div class="dropdown-menu py-0 content-dd dropdown-menu-animate-up dropdown-menu-end overflow-hidden" aria-labelledby="drop2">
-
-                      <div class="py-3 px-4 bg-secondary">
-                        <div class="mb-0 fs-6 fw-medium text-white">Messages</div>
-                        <div class="mb-0 fs-2 fw-medium text-white">You have 5 new messages</div>
-                      </div>
-                      <div class="message-body" data-simplebar>
-                        <a href="javascript:void(0)" class="p-3 d-flex align-items-center dropdown-item gap-3 border-bottom">
-                          <span class="user-img position-relative d-inline-block">
-                            <img src="assets/images/profile/user-2.jpg" alt="user" class="rounded-circle w-100 round-40" />
-                            <span class="profile-status bg-success position-absolute rounded-circle"></span>
-                          </span>
-                          <div class="w-80">
-                            <div class="d-flex align-items-center justify-content-between">
-                              <h6 class="mb-1">Mathew Anderson</h6>
-                              <span class="fs-2 d-block text-muted">9:30 AM</span>
-                            </div>
-                            <span class="fs-2 d-block text-truncate text-muted">Just see the my new admin!</span>
-                          </div>
-                        </a>
-                        <a href="javascript:void(0)" class="p-3 d-flex align-items-center dropdown-item gap-3 border-bottom">
-                          <span class="user-img position-relative d-inline-block">
-                            <img src="assets/images/profile/user-3.jpg" alt="user" class="rounded-circle w-100 round-40" />
-                            <span class="profile-status bg-success position-absolute rounded-circle"></span>
-                          </span>
-                          <div class="w-80">
-                            <div class="d-flex align-items-center justify-content-between">
-                              <h6 class="mb-1">Bianca Anderson</h6>
-                              <span class="fs-2 d-block text-muted">9:10 AM</span>
-                            </div>
-
-                            <span class="fs-2 d-block text-truncate text-muted">Just a reminder that you have event</span>
-                          </div>
-                        </a>
-                        <a href="javascript:void(0)" class="p-3 d-flex align-items-center dropdown-item gap-3 border-bottom">
-                          <span class="user-img position-relative d-inline-block">
-                            <img src="assets/images/profile/user-4.jpg" alt="user" class="rounded-circle w-100 round-40" />
-                            <span class="profile-status bg-success position-absolute rounded-circle"></span>
-                          </span>
-                          <div class="w-80">
-                            <div class="d-flex align-items-center justify-content-between">
-                              <h6 class="mb-1">Andrew Johnson</h6>
-                              <span class="fs-2 d-block text-muted">9:08 AM</span>
-                            </div>
-                            <span class="fs-2 d-block text-truncate text-muted">You can customize this template as you want</span>
-                          </div>
-                        </a>
-                        <a href="javascript:void(0)" class="p-3 d-flex align-items-center dropdown-item gap-3 border-bottom">
-                          <span class="user-img position-relative d-inline-block">
-                            <img src="assets/images/profile/user-5.jpg" alt="user" class="rounded-circle w-100 round-40" />
-                            <span class="profile-status bg-success position-absolute rounded-circle"></span>
-                          </span>
-                          <div class="w-80">
-                            <div class="d-flex align-items-center justify-content-between">
-                              <h6 class="mb-1">Miyra Strokes</h6>
-                              <span class="fs-2 d-block text-muted">9:30 AM</span>
-                            </div>
-                            <span class="fs-2 d-block text-truncate text-muted">Just see the my new admin!</span>
-                          </div>
-                        </a>
-                        <a href="javascript:void(0)" class="p-3 d-flex align-items-center dropdown-item gap-3 border-bottom">
-                          <span class="user-img position-relative d-inline-block">
-                            <img src="assets/images/profile/user-6.jpg" alt="user" class="rounded-circle w-100 round-40" />
-                            <span class="profile-status bg-success position-absolute rounded-circle"></span>
-                          </span>
-                          <div class="w-80">
-                            <div class="d-flex align-items-center justify-content-between">
-                              <h6 class="mb-1">Mark, Stoinus & Rishvi..</h6>
-                              <span class="fs-2 d-block text-muted">9:10 AM</span>
-                            </div>
-                            <span class="fs-2 d-block text-truncate text-muted">Just a reminder that you have event</span>
-                          </div>
-                        </a>
-                        <a href="javascript:void(0)" class="p-3 d-flex align-items-center dropdown-item gap-3 border-bottom">
-                          <span class="user-img position-relative d-inline-block">
-                            <img src="assets/images/profile/user-7.jpg" alt="user" class="rounded-circle w-100 round-40" />
-                            <span class="profile-status bg-success position-absolute rounded-circle"></span>
-                          </span>
-                          <div class="w-80">
-                            <div class="d-flex align-items-center justify-content-between">
-                              <h6 class="mb-1">Eliga Rush</h6>
-                              <span class="fs-2 d-block text-muted">9:08 AM</span>
-                            </div>
-                            <span class="fs-2 d-block text-truncate text-muted">You can customize this template as you want</span>
-                          </div>
-                        </a>
-                      </div>
-                      <div class="p-3">
-                        <a class="d-flex btn btn-secondary  align-items-center justify-content-center gap-2" href="javascript:void(0);">
-                          <span>Check all Messages</span>
-                          <iconify-icon icon="solar:alt-arrow-right-outline" class="iconify-sm"></iconify-icon>
-                        </a>
-                      </div>
-
-                    </div>
-                  </li>
+                  
 
                   <!-- ------------------------------- -->
                   <!-- end notification Dropdown -->
@@ -523,72 +374,7 @@ $page_key = !empty($_REQUEST['page']) ? $_REQUEST['page'] : 'home';
                   <!-- ------------------------------- -->
                   <!-- start profile Dropdown -->
                   <!-- ------------------------------- -->
-                  <li class="nav-item hover-dd dropdown">
-                    <a class="nav-link nav-icon-hover" href="javascript:void(0)" id="drop2" aria-expanded="false">
-                      <img src="assets/images/profile/user-1.jpg" alt="user" class="profile-pic rounded-circle round-30" />
-                    </a>
-                    <div class="dropdown-menu pt-0 content-dd overflow-hidden pt-0 dropdown-menu-end user-dd" aria-labelledby="drop2">
-                      <div class="profile-dropdown position-relative" data-simplebar>
-                        <div class=" py-3 border-bottom">
-                          <div class="d-flex align-items-center px-3">
-                            <img src="assets/images/profile/user-1.jpg" class="rounded-circle round-50" alt="" />
-                            <div class="ms-3">
-                              <h5 class="mb-1 fs-4">Markarn Doe</h5>
-                              <p class="mb-0 fs-2 d-flex align-items-center text-muted">
-                                markrarn@wrappixel.com
-                              </p>
-                            </div>
-                          </div>
-                        </div>
-                        <div class="message-body pb-3">
-                          <div class="px-3 pt-3">
-                            <div class="h6 mb-0 dropdown-item py-8 px-3 rounded-2 link">
-                              <a href="dark/page-user-profile.html" class=" d-flex  align-items-center ">
-                                My Profile
-                              </a>
-                            </div>
-                            <div class="h6 mb-0 dropdown-item py-8 px-3 rounded-2 link">
-                              <a href="javascript:void(0)" class=" d-flex  align-items-center ">
-                                My Projects
-                              </a>
-                            </div>
-                            <div class="h6 mb-0 dropdown-item py-8 px-3 rounded-2 link">
-                              <a href="dark/app-email.html" class=" d-flex  align-items-center ">
-                                Inbox
-                              </a>
-                            </div>
-                          </div>
-                          <hr>
-                          <div class="px-3">
-                            <div class="py-8 px-3 d-flex justify-content-between dropdown-item align-items-center h6 mb-0  rounded-2 link">
-                              <a href="javascript:void(0)" class="">
-                                Mode
-                              </a>
-                              <div>
-                                <a class="moon dark-layout" href="javascript:void(0)">
-                                  <iconify-icon icon="solar:moon-line-duotone" class="moon"></iconify-icon>
-                                </a>
-                                <a class="sun light-layout" href="javascript:void(0)">
-                                  <iconify-icon icon="solar:sun-2-line-duotone" class="sun"></iconify-icon>
-                                </a>
-                              </div>
-                            </div>
-                            <div class="h6 mb-0 dropdown-item py-8 px-3 rounded-2 link">
-                              <a href="dark/page-account-settings.html" class=" d-flex  align-items-center  ">
-                                Account Settings
-                              </a>
-                            </div>
-                            <div class="h6 mb-0 dropdown-item py-8 px-3 rounded-2 link">
-                              <a href="logout.php" class=" d-flex  align-items-center ">
-                                Sign Out
-                              </a>
-                            </div>
-                          </div>
-                        </div>
-
-                      </div>
-                    </div>
-                  </li>
+                  
 
 
                   <!-- ------------------------------- -->
@@ -796,20 +582,9 @@ $page_key = !empty($_REQUEST['page']) ? $_REQUEST['page'] : 'home';
                 <div class="brand-logo d-flex align-items-center justify-content-between">
                   <a href="index.php" class="text-nowrap logo-img d-flex align-items-center gap-2">
                     <b class="logo-icon">
-                      <!--You can put here icon as well // <i class="wi wi-sunset"></i> //-->
-                      <!-- Dark Logo icon -->
-                      <img src="assets/images/logos/logo-light-icon.svg" alt="homepage" class="dark-logo" />
-                      <!-- Light Logo icon -->
-                      <img src="assets/images/logos/logo-light-icon.svg" alt="homepage" class="light-logo" />
+                      <img src="../assets/images/logo.png" alt="homepage" class="light-logo" />
+                      <img src="../assets/images/logo.png" alt="homepage" class="dark-logo" />
                     </b>
-                    <!--End Logo icon -->
-                    <!-- Logo text -->
-                    <span class="logo-text">
-                      <!-- dark Logo text -->
-                      <img src="assets/images/logos/logo-light-text.svg" alt="homepage" class="dark-logo ps-2" />
-                      <!-- Light Logo text -->
-                      <img src="assets/images/logos/logo-light-text.svg" class="light-logo ps-2" alt="homepage" />
-                    </span>
                   </a>
                 </div>
 
@@ -1332,21 +1107,26 @@ $page_key = !empty($_REQUEST['page']) ? $_REQUEST['page'] : 'home';
         </div>
       </div>
 
-      <div class="modal fade" id="contactInfoModal" tabindex="-1" aria-labelledby="contactInfoLabel" aria-hidden="true">
+      <div class="modal fade" id="store_information" tabindex="-1"
+          aria-labelledby="storeInformationLabel" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered modal-md">
           <div class="modal-content">
             <div class="modal-header border-0">
-              <h5 class="modal-title fw-bold fs-4" id="contactInfoLabel">Store Information</h5>
-              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+              <h4 class="modal-title fw-bold fs-5" id="storeInformationLabel">
+                East Kentucky Metal
+              </h4>
+              <button type="button" class="btn-close"
+                      data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
+
             <div class="modal-body px-4 pb-4">
 
               <div class="d-flex align-items-start gap-3 mb-4">
                 <iconify-icon icon="mdi:map-marker" class="text-primary fs-7"></iconify-icon>
                 <div>
-                  <div class="fw-semibold fs-5" style="color: #ffffff !important;">Address</div>
+                  <div class="fw-semibold fs-5">Address</div>
                   <div class="text-secondary">
-                    977 E Hal Rogers Parkway<br>
+                    977 E. Hal Rogers Parkway<br>
                     London, KY 40741
                   </div>
                 </div>
@@ -1355,17 +1135,30 @@ $page_key = !empty($_REQUEST['page']) ? $_REQUEST['page'] : 'home';
               <div class="d-flex align-items-start gap-3 mb-4">
                 <iconify-icon icon="mdi:phone" class="text-success fs-7"></iconify-icon>
                 <div>
-                  <div class="fw-semibold fs-5" style="color: #ffffff !important;">Phone</div>
-                  <a href="tel:6069999999" class="text-decoration-none text-secondary">(606) 999-9999</a><br>
+                  <div class="fw-semibold fs-5">Phone</div>
+                  <a href="tel:6068771848" class="text-decoration-none text-secondary">
+                    (606)-877-1848
+                  </a>
                 </div>
               </div>
 
               <div class="d-flex align-items-start gap-3 mb-4">
-                <iconify-icon icon="mdi:email-outline" class="text-danger fs-7"></iconify-icon>
+                <iconify-icon icon="mdi:fax" class="text-info fs-7"></iconify-icon>
                 <div>
-                  <div class="fw-semibold fs-5" style="color: #ffffff !important;">Email</div>
-                  <a href="mailto:johndoe@eastkentuckymetal.com" class="text-decoration-none text-secondary">
-                    johndoe@eastkentuckymetal.com
+                  <div class="fw-semibold fs-5">Fax</div>
+                  <a href="tel:6068644280" class="text-decoration-none text-secondary">
+                    (606)-864-4280
+                  </a>
+                </div>
+              </div>
+
+              <div class="d-flex align-items-start gap-3 mb-4">
+                <iconify-icon icon="mdi:web" class="text-danger fs-7"></iconify-icon>
+                <div>
+                  <div class="fw-semibold fs-5">Website</div>
+                  <a href="https://www.eastkentuckymetal.com/"
+                    class="text-decoration-none text-secondary">
+                    Eastkentuckymetal.com
                   </a>
                 </div>
               </div>
@@ -1373,11 +1166,10 @@ $page_key = !empty($_REQUEST['page']) ? $_REQUEST['page'] : 'home';
               <div class="d-flex align-items-start gap-3">
                 <iconify-icon icon="mdi:clock-outline" class="text-warning fs-7"></iconify-icon>
                 <div>
-                  <div class="fw-semibold fs-5" style="color: #ffffff !important;">Operating Hours</div>
+                  <div class="fw-semibold fs-5">Hours of Operation</div>
                   <div class="text-secondary">
-                    Mon – Fri: 7:30 AM – 5:30 PM<br>
-                    Saturday: 8:00 AM – 12:00 PM<br>
-                    Sunday: Closed
+                    Monday thru Friday<br>
+                    8:00am – 4:30pm
                   </div>
                 </div>
               </div>
@@ -1386,6 +1178,7 @@ $page_key = !empty($_REQUEST['page']) ? $_REQUEST['page'] : 'home';
           </div>
         </div>
       </div>
+
 
 
 
@@ -1426,6 +1219,39 @@ $page_key = !empty($_REQUEST['page']) ? $_REQUEST['page'] : 'home';
   <script src="https://unpkg.com/dropzone@6.0.0-beta.1/dist/dropzone-min.js"></script>
   
   <script>
+  function handleTheme() {
+    function setThemeAttributes(theme, darkDisplay, lightDisplay, sunDisplay, moonDisplay) {
+      $("html").attr("data-bs-theme", theme);
+      const layoutElement = $(`#${theme}-layout`);
+      if (layoutElement.length) {
+        layoutElement.prop("checked", true);
+      }
+      $(`.${darkDisplay}`).hide();
+      $(`.${lightDisplay}`).css("display", "flex");
+      $(`.${sunDisplay}`).hide();
+      $(`.${moonDisplay}`).css("display", "flex");
+    }
+
+    const currentTheme = $("html").attr("data-bs-theme") || "dark";
+    setThemeAttributes(
+      currentTheme,
+      currentTheme === "dark" ? "dark-logo" : "light-logo",
+      currentTheme === "dark" ? "light-logo" : "dark-logo",
+      currentTheme === "dark" ? "moon" : "sun",
+      currentTheme === "dark" ? "sun" : "moon"
+    );
+
+    $(".dark-layout").on("click", function () {
+      setThemeAttributes("dark", "dark-logo", "light-logo", "moon", "sun");
+    });
+
+    $(".light-layout").on("click", function () {
+      setThemeAttributes("light", "light-logo", "dark-logo", "sun", "moon");
+    });
+  }
+
+  handleTheme();
+
   $(document).ready(function() {
     $(document).on('mouseenter', '[title]', function () {
         const $el = $(this);
@@ -1543,7 +1369,7 @@ $page_key = !empty($_REQUEST['page']) ? $_REQUEST['page'] : 'home';
     fetchNotifications();
   });
   </script>
-   <?php include 'chat-widget-footer.php'; ?>
+   <?php //include 'chat-widget-footer.php'; ?>
 </body>
 
 </html>

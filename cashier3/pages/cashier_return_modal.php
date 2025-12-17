@@ -115,7 +115,7 @@ if(isset($_POST['return_product_modal'])){
             $store_credit = number_format(floatval($customer_details['store_credit'] ?? 0),2);
             $customer_name = get_customer_name($customer_id); 
             ?>
-            <div class="form-group row align-items-center" style="color: #ffffff !important;">
+            <div class="form-group row align-items-center">
                 <div class="col-6">
                     <label>Customer Name: <?= $customer_name ?></label>
                 </div>
@@ -142,15 +142,15 @@ if(isset($_POST['return_product_modal'])){
                 <input type="hidden" id="hidden_quantity" name="quantity" value="<?= $return_quantity ?>">
                 <input type="hidden" id="hidden_stock_fee" name="stock_fee" value="<?= $stock_percentage ?>">
                 <div class="row text-start">
-                    <div class="col-12 mb-2" style="color: #ffffff !important;">
+                    <div class="col-12 mb-2">
                         <h5 class="mb-1">Checkout</h5>
                         <p>Welcome, <strong><?= $customer_name ?></strong></p>
                     </div>
                     <!-- Left Side -->
-                    <div class="col-lg-8" style="color: #ffffff !important;">
+                    <div class="col-lg-8">
 
                     <!-- Payment -->
-                        <div class="card mb-3" style="color: #ffffff !important;">
+                        <div class="card mb-3">
                             <div class="card-header bg-white">
                                 <i class="fa fa-check-circle text-success me-2"></i>Payment
                             </div>
@@ -197,7 +197,7 @@ if(isset($_POST['return_product_modal'])){
 
                     <!-- Right Side (Order Summary) -->
                     <div class="col-lg-4">
-                        <div class="card" style="color: #ffffff !important;">
+                        <div class="card">
                             <div class="card-header bg-white">
                                 <strong>Return Summary</strong>
                             </div>

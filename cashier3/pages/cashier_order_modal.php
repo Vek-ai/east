@@ -7,6 +7,8 @@ error_reporting(E_ERROR | E_PARSE | E_CORE_ERROR | E_CORE_WARNING | E_COMPILE_ER
 require '../../includes/dbconn.php';
 require '../../includes/functions.php';
 
+$cashier_id = $_SESSION['userid'];
+
 $trim_id = 4;
 $panel_id = 3;
 
@@ -622,6 +624,10 @@ if(isset($_POST['fetch_order'])){
                                                 <input type="number" class="form-control form-control-sm text-center" id="cardAmount" name="cardAmount" placeholder="0.00">
                                             </div>
                                         </div>
+                                        <div class="form-group mt-2">
+                                            <label class="form-label" for="authorization_no">Authorization #</label>
+                                            <input class="form-control form-control-sm" type="text" id="authorization_no" name="authorization_no" placeholder="Authorization #">
+                                        </div>
                                     </div>
                                 </div>
 
@@ -640,9 +646,7 @@ if(isset($_POST['fetch_order'])){
                                         </div>
                                     </div>
                                 </div>
-
                             </div>
-
                         </div>
 
                         <div class="row mb-3 text-white align-items-center">
@@ -656,12 +660,6 @@ if(isset($_POST['fetch_order'])){
                                 </div>
                             </div>
                             <?php endif; ?>
-                            <div class="col mb-2">
-                                <div class="form-group">
-                                    <label class="form-label" for="authorization_no">Authorization #</label>
-                                    <input class="form-control form-control-sm" type="text" id="authorization_no" name="authorization_no" placeholder="Enter authorization number">
-                                </div>
-                            </div>
                         </div>
 
                     </div>
@@ -674,7 +672,7 @@ if(isset($_POST['fetch_order'])){
                 <div class="col-lg-4">
                 <div class="card">
                     <div class="card-header bg-white">
-                    <strong>Order Summary</strong>
+                        <strong>Order Summary</strong>
                     </div>
                     <div class="card-body">
                     <div class="d-flex justify-content-between align-items-center flex-column flex-sm-row mb-2">
@@ -736,6 +734,23 @@ if(isset($_POST['fetch_order'])){
                     <?php
                     }
                     ?>
+
+                    <hr>
+
+                    <div class="mt-3">
+                        <h6 class="mb-0">Salesperson</h6>
+                        <div id="salesperson_div">
+                            <select id="salesperson" class="form-control select2" name="salesperson">
+                                <option value="">Select Salesperson...</option>
+                                <option value="12" <?= ($cashier_id == 12) ? 'selected' : '' ?>>Kevin Vaught</option>
+                                <option value="9" <?= ($cashier_id == 9) ? 'selected' : '' ?>>Matt Wagers</option>
+                                <option value="17" <?= ($cashier_id == 17) ? 'selected' : '' ?>>Tim Broughton</option>
+                                <option value="11" <?= ($cashier_id == 11) ? 'selected' : '' ?>>Brad Lambdin</option>
+                                <option value="18" <?= ($cashier_id == 18) ? 'selected' : '' ?>>Anthony Privett</option>
+                                <option value="13" <?= ($cashier_id == 13) ? 'selected' : '' ?>>Ryan Grover</option>
+                            </select>
+                        </div>
+                    </div>
                 </div>
                 </div>
             </div>
@@ -1085,6 +1100,14 @@ if(isset($_POST['fetch_order'])){
                     dropdownParent: $('#orderTable'),
                     templateResult: formatOption,
                     templateSelection: formatSelected
+                });
+            });
+
+            $('#salesperson').each(function () {
+                $(this).select2({
+                    width: '300px',
+                    dropdownParent: $(this).parent(),
+                    dropdownPosition: 'below'
                 });
             });
 

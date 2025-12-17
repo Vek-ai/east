@@ -334,27 +334,27 @@ function showCol($name) {
                             <thead>
                                 <tr>
                                     <?php if (showCol('customer', $visibleColumns)) : ?>
-                                        <th style="color: #ffffff !important;">Customer</th>
+                                        <th>Customer</th>
                                     <?php endif; ?>
 
                                     <?php if (showCol('available_credit', $visibleColumns)) : ?>
-                                        <th style="color: #ffffff !important;">Available Credit</th>
+                                        <th>Available Credit</th>
                                     <?php endif; ?>
 
                                     <?php if (showCol('balance_due', $visibleColumns)) : ?>
-                                        <th style="color: #ffffff !important;">Balance Due</th>
+                                        <th>Balance Due</th>
                                     <?php endif; ?>
 
                                     <?php if (showCol('last_payment', $visibleColumns)) : ?>
-                                        <th style="color: #ffffff !important;">Last Payment</th>
+                                        <th>Last Payment</th>
                                     <?php endif; ?>
 
                                     <?php if (showCol('date_outstanding', $visibleColumns)) : ?>
-                                        <th style="color: #ffffff !important;">Date Outstanding</th>
+                                        <th>Date Outstanding</th>
                                     <?php endif; ?>
 
                                     <?php if (showCol('action', $visibleColumns)) : ?>
-                                        <th style="color: #ffffff !important;" class="text-center">Action</th>
+                                        <th class="text-center">Action</th>
                                     <?php endif; ?>
                                 </tr>
                                 </thead>

@@ -247,15 +247,15 @@ $permission = $_SESSION['permission'];
                             <thead>
                                 <tr>
                                     <th><input type="checkbox" id="selectAllCredits"></th>
-                                    <th style="color: #ffffff !important;">Invoice ID #</th>
-                                    <th style="color: #ffffff !important;">Date</th>
-                                    <th style="color: #ffffff !important;">Job Name</th>
-                                    <th style="color: #ffffff !important;">PO #</th>
-                                    <th style="color: #ffffff !important;">Date Outstanding</th>
-                                    <th style="color: #ffffff !important;">Invoice/Credit</th>
-                                    <th style="color: #ffffff !important;" class="text-end">Credit Amount</th>
-                                    <th style="color: #ffffff !important;" class="text-end">Balance Due</th>
-                                    <th style="color: #ffffff !important;" class="text-end">Remaining Balance</th>
+                                    <th>Invoice ID #</th>
+                                    <th>Date</th>
+                                    <th>Job Name</th>
+                                    <th>PO #</th>
+                                    <th>Date Outstanding</th>
+                                    <th>Invoice/Credit</th>
+                                    <th class="text-end">Credit Amount</th>
+                                    <th class="text-end">Balance Due</th>
+                                    <th class="text-end">Remaining Balance</th>
                                     <th>&nbsp;&nbsp;&nbsp;&nbsp;</th>
                                 </tr>
                             </thead>

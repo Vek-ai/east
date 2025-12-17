@@ -7,6 +7,21 @@ $panel_type_3 = $profile_details['panel_type_3'];
 $panel_style_1 = $profile_details['panel_style_1'];
 $panel_style_2 = $profile_details['panel_style_2'];
 $panel_style_3 = $profile_details['panel_style_3'];
+
+$gr_no_1 = 17;
+$gr_no_1_5 = 18;
+$gr_no_2 = 15;
+$gr_no_3 = 16;
+
+$ga_24 = 1;
+$ga_26 = 2;
+$ga_29 = 3;
+
+$galvalume_id = 14;
+
+$default_color_id = '';
+$default_grade_id = $gr_no_1;
+$default_gauge_id = $ga_26; 
 ?>
 <div class="row justify-content-center mb-2">
     <!-- Colors -->
@@ -28,13 +43,15 @@ $panel_style_3 = $profile_details['panel_style_3'];
                     ";
                     $result_colors = mysqli_query($conn, $query_colors);
                     while ($row = mysqli_fetch_assoc($result_colors)) {
-                ?>
-                        <option 
-                            value="<?= htmlspecialchars($row['color_id']) ?>" 
-                            data-category="<?= htmlspecialchars($row['product_category']) ?>">
+                        $colorId = (int)$row['color_id'];
+                        $selected = ($colorId == $default_color_id) ? ' selected' : '';
+                        ?>
+                        <option value="<?= $colorId ?>"
+                                data-category="<?= htmlspecialchars($row['product_category']) ?>"
+                                <?= $selected ?>>
                             <?= htmlspecialchars($row['color_name']) ?>
                         </option>
-                <?php
+                    <?php
                     }
                 }
                 ?>
@@ -65,7 +82,8 @@ $panel_style_3 = $profile_details['panel_style_3'];
                             $category = htmlspecialchars($row_grade['product_category'], ENT_QUOTES);
                             $gradeName = htmlspecialchars($row_grade['product_grade'], ENT_QUOTES);
 
-                            echo "<option value=\"$gradeId\" data-category=\"$category\">$gradeName</option>";
+                            $selected = ($gradeId == $default_grade_id) ? ' selected' : '';
+                            echo "<option value=\"$gradeId\" data-category=\"$category\"$selected>$gradeName</option>";
                         }
                     }
                 }
@@ -96,7 +114,9 @@ $panel_style_3 = $profile_details['panel_style_3'];
                             $gaugeId = (int)$row_gauge['product_gauge_id'];
                             $gaugeName = htmlspecialchars($row_gauge['product_gauge'], ENT_QUOTES);
 
-                            echo "<option value=\"$gaugeId\" data-category=\"gauge\">$gaugeName</option>";
+                            $selected = ($gaugeId == $default_gauge_id) ? ' selected' : '';
+                            echo "<option value=\"$gaugeId\" data-category=\"gauge\"$selected>$gaugeName</option>";
+
                         }
                     }
                 }
@@ -272,5 +292,9 @@ $(function() {
 
     $(document).off('change', '.panel_style').on('change', '.panel_style', calculateBackerRod);
     $(document).off('input', '.quantity-product, .length_feet, .length_inch').on('input', '.quantity-product, .length_feet, .length_inch', calculateBackerRod);
+
+    $('#qty-color').val('<?= $default_color_id ?>').trigger('change');
+    $('#qty-grade').val('<?= $default_grade_id ?>').trigger('change');
+    $('#qty-gauge').val('<?= $default_gauge_id ?>').trigger('change');
 });
 </script>

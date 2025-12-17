@@ -138,6 +138,7 @@ if(isset($_REQUEST['action'])) {
             $ship_lng     = mysqli_real_escape_string($conn, $_POST['ship_lng']);
         }
 
+        /* 
         if (!empty($_POST['username'])) {
             $username = mysqli_real_escape_string($conn, $_POST['username']);
 
@@ -166,7 +167,8 @@ if(isset($_REQUEST['action'])) {
                 echo "The username \"$username\" is already taken. Please use another username.";
                 exit;
             }
-        }
+        } 
+        */
 
         $checkQuery = "SELECT * FROM customer WHERE customer_id = '$customer_id'";
         $result = mysqli_query($conn, $checkQuery);

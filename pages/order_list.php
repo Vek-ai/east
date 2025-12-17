@@ -479,31 +479,31 @@ function showCol($name) {
                                 <thead>
                                     <tr>
                                         <?php if (showCol('orderid')): ?>
-                                            <th style="color: #ffffff !important;">Invoice ID #</th>
+                                            <th>Invoice ID #</th>
                                         <?php endif; ?>
 
                                         <?php if (showCol('customer')): ?>
-                                            <th style="color: #ffffff !important;">Customer</th>
+                                            <th>Customer</th>
                                         <?php endif; ?>
 
                                         <?php if (showCol('order_date')): ?>
-                                            <th style="color: #ffffff !important;">Order Date</th>
-                                            <th style="color: #ffffff !important;">Scheduled Date</th>
+                                            <th>Order Date</th>
+                                            <th>Scheduled Date</th>
                                         <?php endif; ?>
 
                                         <?php if (showCol('status')): ?>
-                                            <th style="color: #ffffff !important;">Pickup/Delivery</th>
-                                            <th style="color: #ffffff !important;">Metal Panels</th>
-                                            <th style="color: #ffffff !important;">Trim</th>
-                                            <th style="color: #ffffff !important;">Status</th>
+                                            <th>Pickup/Delivery</th>
+                                            <th>Metal Panels</th>
+                                            <th>Trim</th>
+                                            <th>Status</th>
                                         <?php endif; ?>
 
                                         <?php if (showCol('salesperson')): ?>
-                                            <th style="color: #ffffff !important;">Salesperson</th>
+                                            <th>Salesperson</th>
                                         <?php endif; ?>
 
                                         <?php if (showCol('action')): ?>
-                                            <th style="color: #ffffff !important;">Action</th>
+                                            <th>Action</th>
                                         <?php endif; ?>
                                     </tr>
                                 </thead>
@@ -561,19 +561,19 @@ function showCol($name) {
                                             data-show-email="<?= $show_send_email ?>"
                                         >
                                             <?php if (showCol('orderid')): ?>
-                                                <td style="color: #ffffff !important;">
+                                                <td>
                                                     <?= $row["orderid"]; ?>
                                                 </td>
                                             <?php endif; ?>
 
                                             <?php if (showCol('customer')): ?>
-                                                <td style="color: #ffffff !important;">
+                                                <td>
                                                     <?php echo get_customer_name($row["customerid"]) ?>
                                                 </td>
                                             <?php endif; ?>
 
                                             <?php if (showCol('order_date')): ?>
-                                                <td style="color: #ffffff !important;"
+                                                <td
                                                     <?php if (!empty($row["order_date"]) && $row["order_date"] !== '0000-00-00 00:00:00') : ?>
                                                         data-order="<?= date('Y-m-d H:i:s', strtotime($row["order_date"])) ?>"
                                                     <?php endif; ?>
@@ -586,7 +586,7 @@ function showCol($name) {
                                                         }
                                                     ?>
                                                 </td>
-                                                <td style="color: #ffffff !important;"
+                                                <td
                                                     <?php if (!empty($row["scheduled_date"]) && $row["scheduled_date"] !== '0000-00-00 00:00:00') : ?>
                                                         data-order="<?= date('Y-m-d H:i:s', strtotime($row["scheduled_date"])) ?>"
                                                     <?php endif; ?>
@@ -602,26 +602,26 @@ function showCol($name) {
                                             <?php endif; ?>
 
                                             <?php if (showCol('status')): ?>
-                                                <td style="color: #ffffff !important;">
+                                                <td>
                                                     <?= ucwords($row["deliver_method"]) ?>
                                                 </td>
 
-                                                <td style="color: #ffffff !important;">
+                                                <td>
                                                     <?= !empty($row["has_panel"]) ? '<i class="fa fa-check text-success fs-8"></i>' : '' ?>
                                                 </td>
 
-                                                <td style="color: #ffffff !important;">
+                                                <td>
                                                     <?= !empty($row["has_trim"]) ? '<i class="fa fa-check text-success fs-8"></i>' : '' ?>
                                                 </td>
 
-                                                <td class="text-center" style="color: #ffffff !important;">
+                                                <td class="text-center">
                                                     <span class="estimate_status <?= $status['class']; ?> fw-bond"><?= $status['label']; ?></span>
                                                 </td>
                                             <?php endif; ?>
 
 
                                             <?php if (showCol('salesperson')): ?>
-                                                <td style="color: #ffffff !important;">
+                                                <td>
                                                     <?= ucwords(get_staff_name($row["cashier"])) ?>
                                                 </td>
                                             <?php endif; ?>

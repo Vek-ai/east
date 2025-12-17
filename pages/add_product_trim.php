@@ -401,35 +401,20 @@ if(isset($_REQUEST['action'])) {
                 <div class="row">
                     <div class="col-md-4">
                         <div class="mb-3">
-                            <div class="d-flex justify-content-between align-items-center">
-                                <label class="form-label">Flat Sheet Width</label>
-                                <a href="?page=flat_sheet_width" target="_blank" class="text-decoration-none">Edit</a>
-                            </div>
-                            <select id="flat_sheet_width" class="form-control select2" name="flat_sheet_width[]" multiple>
-                                <option value="">Select Widths...</option>
-                                <?php $selected_fs_width = (array) json_decode($row['flat_sheet_width'] ?? '[]', true);
-                                $query_fs_width = "SELECT * FROM flat_sheet_width WHERE hidden = '0' AND status = '1' ORDER BY `width` ASC";
-                                $result_fs_width = mysqli_query($conn, $query_fs_width);            
-                                while ($row_fs_width = mysqli_fetch_array($result_fs_width)) {
-                                    $selected = in_array($row_fs_width['id'], $selected_fs_width) ? 'selected' : '';
-                                ?>
-                                    <option value="<?= $row_fs_width['id'] ?>" data-type="<?= $row_fs_width['product_type'] ?>" data-line="<?= $row_fs_width['product_line'] ?>" <?= $selected ?>><?= $row_fs_width['width'] ?></option>
-                                <?php   
-                                }
-                                ?>
-                            </select>
+                            <label class="form-label">Flat Sheet Width</label>
+                            <input type="text" id="flat_sheet_width" name="flat_sheet_width" class="form-control" value="<?= $row['flat_sheet_width'] ?>"/>
                         </div>
                     </div>
                     <div class="col-md-4">
                         <div class="mb-3">
                             <label class="form-label">Total Hems</label>
-                            <input type="text" id="hems" name="hems" class="form-control" value="<?= $row['hems'] ?>" placeholder="Enter Hems"/>
+                            <input type="text" id="hems" name="hems" class="form-control" value="<?= $row['hems'] ?>"/>
                         </div>
                     </div>
                     <div class="col-md-4">
                         <div class="mb-3">
                             <label class="form-label">Total Bends</label>
-                            <input type="text" id="bends" name="bends" class="form-control" value="<?= $row['bends']?>" placeholder="Enter Bends"/>
+                            <input type="text" id="bends" name="bends" class="form-control" value="<?= $row['bends']?>"/>
                         </div>
                     </div>
                 </div>

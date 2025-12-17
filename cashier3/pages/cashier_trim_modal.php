@@ -25,11 +25,53 @@ $drawingData = [
 $jsonDrawing = json_encode($drawingData, JSON_UNESCAPED_UNICODE);
 $drawing_str = htmlspecialchars($jsonDrawing, ENT_QUOTES, 'UTF-8');
 
+$gr_no_1 = 17;
+$gr_no_1_5 = 18;
+$gr_no_2 = 15;
+$gr_no_3 = 16;
+
+$ga_24 = 1;
+$ga_26 = 2;
+$ga_29 = 3;
+
+$galvalume_id = 14;
+
 if(isset($_POST['fetch_modal'])){
     $id = mysqli_real_escape_string($conn, $_POST['id']);
     $product_details = getProductDetails($id);
     $type_details = getProductTypeDetails($product_details['product_type']);
     $custom_multiplier = getCustomMultiplier($product_details['product_category']);
+
+    $default_color_id = '';
+    $default_grade_id = '';
+    $default_gauge_id = '';
+
+    switch ($product_details['product_type']) {
+        case 377: // standing seam
+            $default_color_id = '';
+            $default_grade_id = $gr_no_1;
+            $default_gauge_id = $ga_26;
+            break;
+        case 396: // hi-rib/r-panel
+            $default_color_id = '';
+            $default_grade_id = $gr_no_1;
+            $default_gauge_id = $ga_26;
+            break;
+        case 397: // board and batten
+            $default_color_id = '';
+            $default_grade_id = $gr_no_1;
+            $default_gauge_id = $ga_26;
+            break;
+        case 398: // Corrugated
+            $default_color_id = '';
+            $default_grade_id = $gr_no_1;
+            $default_gauge_id = $ga_29;
+            break;
+        default: //standard
+            $default_color_id = '';
+            $default_grade_id = $gr_no_1;
+            $default_gauge_id = $ga_29;
+    }
     ?>
     <?php
         if (!empty($product_details)) {
@@ -375,6 +417,10 @@ if(isset($_POST['fetch_modal'])){
                 for (let i = 0; i < 4; i++) {
                     duplicateTrimRow();
                 }
+
+                $('#trim-color').val('<?= $default_color_id ?>').trigger('change');
+                $('#trim-grade').val('<?= $default_grade_id ?>').trigger('change');
+                $('#trim-gauge').val('<?= $default_gauge_id ?>').trigger('change');
             });
         </script>
 <?php

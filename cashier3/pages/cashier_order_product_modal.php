@@ -129,7 +129,7 @@ if(isset($_POST['fetch_order_supplier'])){
                                                     <i class="fa fa-minus"></i>
                                                 </button>
                                             </span> 
-                                            <input class="form-control" type="text" size="5" value="<?php echo $values["quantity_cart"]; ?>" style="color:#ffffff;" onchange="updatequantity(this)" data-line="<?= $line ?>" data-key="<?= $keys ?>" data-id="<?php echo $data_id; ?>" id="item_quantity<?php echo $data_id;?>">
+                                            <input class="form-control" type="text" size="5" value="<?php echo $values["quantity_cart"]; ?>" onchange="updatequantity(this)" data-line="<?= $line ?>" data-key="<?= $keys ?>" data-id="<?php echo $data_id; ?>" id="item_quantity<?php echo $data_id;?>">
                                             <span class="input-group-btn">
                                                 <button class="btn btn-primary btn-icon p-1 ml-1" type="button" data-line="<?= $line ?>" data-key="<?= $keys ?>" data-id="<?php echo $data_id; ?>" onClick="addquantity(this)">
                                                     <i class="fa fa-plus"></i>

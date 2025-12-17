@@ -822,13 +822,14 @@ if (isset($_POST['save_estimate'])) {
     $customer_tax   = mysqli_real_escape_string($conn, $_POST['customer_tax'] ?? '');
     $contractor_id  = mysqli_real_escape_string($conn, $_POST['contractor_id'] ?? '');
     $truck          = intval($_POST['truck'] ?? 0);
+    $salesperson    = intval($_POST['salesperson'] ?? 0);
 
     $applyStoreCredit = floatval($_POST['applyStoreCredit'] ?? 0);
     $applyJobDeposit  = floatval($_POST['applyJobDeposit'] ?? 0);
 
     $estimateid  = intval($_SESSION['estimateid'] ?? 0);
     $customerid  = intval($_SESSION['customer_id']);
-    $cashierid   = intval($_SESSION['userid']);
+    $cashierid   = $salesperson ?? intval($_SESSION['userid']);
     $cart        = $_SESSION['cart'];
     $order_date  = date('Y-m-d H:i:s');
 
@@ -1083,6 +1084,8 @@ if (isset($_POST['save_order'])) {
     $pay_delivery = floatval($_POST['pay_delivery'] ?? 0);
     $pay_net30    = floatval($_POST['pay_net30'] ?? 0);
 
+    $salesperson    = intval($_POST['salesperson'] ?? 0);
+
     $pay_types = [];
     if ($pay_cash > 0)   $pay_types[] = 'cash';
     if ($pay_card > 0)   $pay_types[] = 'card';
@@ -1134,7 +1137,7 @@ if (isset($_POST['save_order'])) {
 
     $estimateid = intval($_SESSION['estimateid'] ?? 0);
     $customerid = intval($_SESSION['customer_id']);
-    $cashierid = intval($_SESSION['userid']);
+    $cashierid  = $salesperson;
     $station_id = intval($_SESSION['station'] ?? 0);
     $cart = $_SESSION['cart'];
     $order_date = date('Y-m-d H:i:s');

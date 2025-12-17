@@ -215,7 +215,7 @@ $permission = $_SESSION['permission'];
                         ?>
                         <button class="btn ripple fw-bold text-white" data-bs-dismiss="modal" type="button" 
                             style="background-color: #DC3545; border-color: #C82333;">
-                            <i class="fas fa-times" style="color: #F8D7DA;"></i> Close
+                            <i class="fas fa-times"></i> Close
                         </button>
                     </div>
                 </div>

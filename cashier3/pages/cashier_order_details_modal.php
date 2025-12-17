@@ -79,7 +79,7 @@ if(isset($_POST['fetch_order_details'])){
                                     <?php echo getProfileFromID($product_id); ?>
                                 </td>
                                 <td>
-                                    <input class="form-control" type="text" size="5" value="<?php echo $row['quantity']; ?>" style="color:#ffffff;" data-id="<?= $row["id"] ?>" id="return_quantity<?= $row["id"] ?>">
+                                    <input class="form-control" type="text" size="5" value="<?php echo $row['quantity']; ?>" data-id="<?= $row["id"] ?>" id="return_quantity<?= $row["id"] ?>">
                                 </td>
                                 <td>
                                     <?php 

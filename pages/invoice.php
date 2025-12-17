@@ -316,21 +316,21 @@ function showCol($name) {
                                             data-completed="<?= $row['status'] == '4' ? '1' : '0' ?>"
                                         >
                                             <?php if (showCol('invoice_no')): ?>
-                                                <td style="color: #ffffff !important;" data-search="<?= $row["orderid"] ?>">
+                                                <td data-search="<?= $row["orderid"] ?>">
                                                     <?= $row["orderid"] ?>
                                                 </td>
                                             <?php endif; ?>
 
                                             <?php if (showCol('customer')): ?>
                                                 <?php $customer_name = get_customer_name($row["customerid"]); ?>
-                                                <td style="color: #ffffff !important;" data-search="<?= htmlspecialchars($customer_name) ?>">
+                                                <td data-search="<?= htmlspecialchars($customer_name) ?>">
                                                     <?= $customer_name ?>
                                                 </td>
                                             <?php endif; ?>
 
                                             <?php if (showCol('total_price')): ?>
                                                 <?php $formatted_price = number_format($row["discounted_price"], 2); ?>
-                                                <td style="color: #ffffff !important; text-align: right;" data-search="<?= "$ " .$formatted_price ?>">
+                                                <td style="text-align: right;" data-search="<?= "$ " .$formatted_price ?>">
                                                     $ <?= $formatted_price ?>
                                                 </td>
                                             <?php endif; ?>
@@ -342,7 +342,7 @@ function showCol($name) {
                                                         $order_date_val = date("F d, Y", strtotime($row["order_date"]));
                                                     }
                                                 ?>
-                                                <td class="text-center" style="color: #ffffff !important;"
+                                                <td class="text-center"
                                                     data-order="<?= date('Y-m-d', strtotime($row["order_date"])) ?>"
                                                     data-search="<?= htmlspecialchars($order_date_val) ?>">
                                                     <?= $order_date_val ?>
@@ -350,7 +350,7 @@ function showCol($name) {
                                             <?php endif; ?>
 
                                             <?php if (showCol('deliver_method')): ?>
-                                                <td style="color: #ffffff !important;" data-search="<?= htmlspecialchars($row['deliver_method']) ?>">
+                                                <td data-search="<?= htmlspecialchars($row['deliver_method']) ?>">
                                                     <?= ucwords($row['deliver_method']); ?>
                                                 </td>
                                             <?php endif; ?>
@@ -368,7 +368,7 @@ function showCol($name) {
 
                                                 $search_payment = implode(' || ', $payment_labels);
                                                 ?>
-                                                <td class="text-center" style="color: #ffffff !important;" 
+                                                <td class="text-center" 
                                                     data-search="<?= htmlspecialchars($search_payment) ?>">
                                                     <?php foreach ($payment_methods as $method): 
                                                         $method_key = strtolower($method);
@@ -389,7 +389,7 @@ function showCol($name) {
                                                         $sched_val = date("F d, Y h:i A", strtotime($row["scheduled_date"]));
                                                     }
                                                 ?>
-                                                <td style="color: #ffffff !important;" data-search="<?= htmlspecialchars($sched_val) ?>">
+                                                <td data-search="<?= htmlspecialchars($sched_val) ?>">
                                                     <?= $sched_val ?>
                                                 </td>
                                             <?php endif; ?>
@@ -401,14 +401,14 @@ function showCol($name) {
                                                         $delivered_val = date("F d, Y", strtotime($row["delivered_date"]));
                                                     }
                                                 ?>
-                                                <td style="color: #ffffff !important;" data-search="<?= htmlspecialchars($delivered_val) ?>">
+                                                <td data-search="<?= htmlspecialchars($delivered_val) ?>">
                                                     <?= $delivered_val ?>
                                                 </td>
                                             <?php endif; ?>
 
                                             <?php if (showCol('salesperson')): ?>
                                                 <?php $staff_name = ucwords(get_staff_name($row["cashier"])); ?>
-                                                <td style="color: #ffffff !important;" data-search="<?= htmlspecialchars($staff_name) ?>">
+                                                <td data-search="<?= htmlspecialchars($staff_name) ?>">
                                                     <?= $staff_name ?>
                                                 </td>
                                             <?php endif; ?>

@@ -101,10 +101,16 @@ if (!empty($pageIds)) {
                     if (!empty($menu_items[$category])) {
                         echo '<li class="nav-small-cap"><span class="hide-menu">' . htmlspecialchars($category) . '</span></li>';
                         foreach ($menu_items[$category] as $page) {
-                            $url = trim($page['url']);
-                            if ($url === '') {
+                            $url    = trim($page['url']);
+                            $href   = '';
+                            $target = '';
+                            $extra  = '';
+
+                            if (strpos($url, '#') === 0) {
+                                $href  = '#';
+                                $extra = ' data-bs-toggle="modal" data-bs-target="' . htmlspecialchars($url) . '"';
+                            } elseif ($url === '') {
                                 $href = 'javascript:void(0)';
-                                $target = '';
                             } elseif (preg_match('/^https?:\/\//i', $url)) {
                                 $href = $url;
                                 $target = ' target="_blank" rel="noopener noreferrer"';
@@ -113,15 +119,16 @@ if (!empty($pageIds)) {
                                 $target = ' target="_blank" rel="noopener noreferrer"';
                             } else {
                                 $href = '?page=' . $url;
-                                $target = '';
                             }
                             echo '<li class="sidebar-item">
-                                    <a class="sidebar-link" href="' . htmlspecialchars($href) . '"' . $target . '>
+                                    <a class="sidebar-link nav_' . htmlspecialchars(ltrim($url, '#')) . '"
+                                    href="' . htmlspecialchars($href) . '"' . $target . $extra . '>
                                         <iconify-icon icon="' . htmlspecialchars($page['menu_icon']) . '" class="aside-icon"></iconify-icon>
-                                        <span class="hide-menu">' . htmlspecialchars($page['menu_name']) .'</span>
+                                        <span class="hide-menu">' . htmlspecialchars($page['menu_name']) . '</span>
                                     </a>
-                                  </li>';
+                                </li>';
                         }
+
                     }
                 }
                 ?>

@@ -28,26 +28,6 @@ $reorder_level = 1;
         </nav>
       </div>
       <div>
-        <div class="d-sm-flex d-none gap-3 no-block justify-content-end align-items-center">
-          <div class="d-flex gap-2">
-            <div class="">
-              <small>This Month</small>
-              <h4 class="text-primary mb-0 ">$58,256</h4>
-            </div>
-            <div class="">
-              <div class="breadbar"></div>
-            </div>
-          </div>
-          <div class="d-flex gap-2">
-            <div class="">
-              <small>Last Month</small>
-              <h4 class="text-secondary mb-0 ">$58,256</h4>
-            </div>
-            <div class="">
-              <div class="breadbar2"></div>
-            </div>
-          </div>
-        </div>
       </div>
     </div>
   </div>
@@ -58,6 +38,7 @@ $reorder_level = 1;
 <!-- -------------------------------------------------------------- -->
 <div class="row">
   <!-- text-cards -->
+  <!-- 
   <div class="col-lg-3 col-md-6">
     <div class="card">
       <div class="card-body p-9">
@@ -117,7 +98,8 @@ $reorder_level = 1;
         </div>
       </div>
     </div>
-  </div>
+  </div> 
+  -->
 
   <div class="col-lg-6">
     <div class="card h-100">

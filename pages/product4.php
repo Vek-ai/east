@@ -743,7 +743,7 @@ function showCol($name) {
                             });
                         });
                         fetchPricingSection();
-                        updateFlatSheetWidthOptions();
+                        fetchTrimSpec();
                     }
                 });
             } else {
@@ -751,38 +751,6 @@ function showCol($name) {
                 $('.hidden-field').addClass('d-none');
             }
         }
-
-        function updateFlatSheetWidthOptions() {
-            const selectedLines = $('#product_line').val() || [];
-            const selectedTypes = $('#product_type').val() || [];
-
-            $('#flat_sheet_width option').each(function () {
-                let line = $(this).data('line') || '';
-                let type = $(this).data('type') || '';
-
-                const match = (selectedLines.length === 0 || selectedLines.includes(line.toString())) &&
-                            (selectedTypes.length === 0 || selectedTypes.includes(type.toString()));
-
-                $(this).prop('disabled', !match);
-                if (!match) $(this).prop('selected', false);
-            });
-
-            const $fsWidth = $("#flat_sheet_width");
-
-            if ($fsWidth.hasClass("select2-hidden-accessible")) {
-                $fsWidth.select2('destroy');
-                $fsWidth.removeAttr('data-select2-id');
-                $fsWidth.next('.select2-container').remove();
-            }
-
-            $fsWidth.select2({
-                width: '100%',
-                dropdownParent: $fsWidth.parent()
-            });
-        }
-
-
-        $(document).on('change', '#product_line, #product_type', updateFlatSheetWidthOptions);
 
         $(document).on('click', '#addProductModalBtn', function(event) {
             event.preventDefault();
@@ -1659,6 +1627,39 @@ function showCol($name) {
             }
         });
 
+        $(document).on('change', '#product_line, #product_type', function () {
+            fetchTrimSpec();
+        });
+
+        function fetchTrimSpec() {
+            const product_line = $('#product_line').val();
+            const product_type = $('#product_type').val();
+
+            $.ajax({
+                url: 'pages/product4_ajax.php',
+                type: 'POST',
+                dataType: 'json',
+                data: {
+                    action: 'fetch_trim_spec',
+                    product_line: product_line,
+                    product_type: product_type
+                },
+                success: function (res) {
+                    if (res.success) {
+                        $('#flat_sheet_width').val(res.data.width);
+                        $('#bends').val(res.data.bends);
+                        $('#hems').val(res.data.hems);
+                    } else {
+                        $('#flat_sheet_width').val('');
+                        $('#bends').val('');
+                        $('#hems').val('');
+                    }
+                },
+                error: function (xhr) {
+                    console.error('AJAX error:', xhr.responseText);
+                }
+            });
+        }
 
     });
 </script>

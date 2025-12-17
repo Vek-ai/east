@@ -121,7 +121,7 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
                         <button class="btn btn-primary m-2" data-bs-toggle="modal" data-bs-target="#trim_chart_modal" type="button">
                             View Trim Chart
                         </button>
-                        <div style="color: #ffffff !important; opacity: 1;">
+                        <div>
                             <input type="checkbox" id="toggleActive" checked> Show only In Stock
                         </div>
                     </div>
@@ -166,15 +166,15 @@ $lngSettings = !empty($addressSettings['lng']) ? $addressSettings['lng'] : 0;
                         <table id="productTable" class="table align-middle text-wrap mb-0 text-white">
                             <thead>
                                 <tr>
-                                    <th scope="col" style="color: #ffffff !important; opacity: 1;">Products</th>
-                                    <th scope="col" style="color: #ffffff !important; opacity: 1;">Avail. Colors</th>
-                                    <th scope="col" style="color: #ffffff !important; opacity: 1;">Grade</th>
-                                    <th scope="col" style="color: #ffffff !important; opacity: 1;">Gauge</th>
-                                    <th scope="col" style="color: #ffffff !important; opacity: 1;">Type</th>
-                                    <th scope="col" style="color: #ffffff !important; opacity: 1;">Profile</th>
-                                    <th scope="col" style="color: #ffffff !important; opacity: 1;">Status</th>
-                                    <th scope="col" style="color: #ffffff !important; opacity: 1;">Quantity</th>
-                                    <th scope="col" style="color: #ffffff !important; opacity: 1;">Actions</th>
+                                    <th scope="col">Products</th>
+                                    <th scope="col">Avail. Colors</th>
+                                    <th scope="col">Grade</th>
+                                    <th scope="col">Gauge</th>
+                                    <th scope="col">Type</th>
+                                    <th scope="col">Profile</th>
+                                    <th scope="col">Status</th>
+                                    <th scope="col">Quantity</th>
+                                    <th scope="col">Actions</th>
                                 </tr>
                             </thead>
                             <tbody id="productTableBody"></tbody>
