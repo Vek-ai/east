@@ -375,6 +375,7 @@ $page_key = !empty($_REQUEST['page']) ? $_REQUEST['page'] : 'cashier';
                     </a>
                   </li>
 
+                  <!-- 
                   <li class="nav-item hover-dd dropdown  nav-icon-hover-bg rounded-circle d-none d-lg-block">
                     <a class="nav-link nav-icon-hover" href="javascript:void(0)" id="drop2" aria-expanded="false">
                       <iconify-icon icon="solar:inbox-line-line-duotone" class="iconify-lg"></iconify-icon>
@@ -478,8 +479,10 @@ $page_key = !empty($_REQUEST['page']) ? $_REQUEST['page'] : 'cashier';
                       </div>
 
                     </div>
-                  </li>
+                  </li> 
+                  -->
 
+                  <!-- 
                   <li class="nav-item hover-dd dropdown nav-icon-hover-bg rounded-circle d-none d-lg-block">
                     <a class="nav-link nav-icon-hover waves-effect waves-dark notificationsContainerIcon" href="javascript:void(0)" id="drop2" aria-expanded="false">
                       <iconify-icon icon="solar:bell-bing-line-duotone" class="iconify-lg"></iconify-icon>
@@ -495,7 +498,6 @@ $page_key = !empty($_REQUEST['page']) ? $_REQUEST['page'] : 'cashier';
                         <div class="mb-0 fs-2 fw-medium text-white" id="notifCountLabel">You have 4 Notifications</div>
                       </div>
                       <div class="message-body" data-simplebar id="notificationsContainer" style="max-height: 300px; overflow-y: auto;">
-                        <!-- Notifications will be injected here -->
                       </div>
                       <div class="p-3">
                         <a class="d-flex btn btn-primary  align-items-center justify-content-center gap-2" href="?page=notifications">
@@ -504,7 +506,8 @@ $page_key = !empty($_REQUEST['page']) ? $_REQUEST['page'] : 'cashier';
                         </a>
                       </div>
                     </div>
-                  </li>
+                  </li> 
+                  -->
                 
                   <li class="nav-item nav-icon-hover-bg rounded-circle">
                     <a class="nav-link nav-icon-hover moon dark-layout" href="javascript:void(0)">
@@ -515,6 +518,7 @@ $page_key = !empty($_REQUEST['page']) ? $_REQUEST['page'] : 'cashier';
                     </a>
                   </li>
 
+                  <!-- 
                   <li class="nav-item hover-dd dropdown">
                     <a class="nav-link nav-icon-hover" href="javascript:void(0)" id="drop2" aria-expanded="false">
                       <img src="../assets/images/profile/user-1.jpg" alt="user" class="profile-pic rounded-circle round-30" />
@@ -585,8 +589,10 @@ $page_key = !empty($_REQUEST['page']) ? $_REQUEST['page'] : 'cashier';
 
                       </div>
                     </div>
-                  </li>
+                  </li> 
+                  -->
 
+                  
                   <li class="nav-item hover-dd dropdown nav-icon-hover-bg rounded-circle d-none d-lg-block me-4">
                     <a class="nav-link nav-icon-hover waves-effect waves-dark" href="javascript:void(0)" aria-expanded="false">
                       <iconify-icon icon="ic:round-search" class="search-icon iconify-lg"></iconify-icon>
@@ -605,7 +611,8 @@ $page_key = !empty($_REQUEST['page']) ? $_REQUEST['page'] : 'cashier';
                       </div>
                       <div id="customer-search-list"></div>
                     </div>
-                  </li>
+                  </li> 
+                 
 
                   <li class="nav-item hover-dd dropdown nav-icon-hover-bg rounded-circle d-none d-lg-block">
                       <a class="nav-link nav-icon-hover waves-effect waves-dark" href="javascript:void(0)" id="view_cart" aria-expanded="false">
