@@ -374,7 +374,7 @@ if(isset($_REQUEST['action'])) {
                     <td>" . ucwords(str_replace('_', ' ', $movement_type)) . "</td>
                     <td>{$cash_flow_type}</td>
                     <td>{$date_display}</td>
-                    <td class='text-end'>₱" . number_format($amount, 2) . "</td>
+                    <td class='text-end'>$" . number_format($amount, 2) . "</td>
                 </tr>
             ";
         }
@@ -386,19 +386,19 @@ if(isset($_REQUEST['action'])) {
                 <tfoot>
                     <tr class="fw-bold bg-light">
                         <td colspan="5" class="text-end">Opening Balance:</td>
-                        <td class="text-end">₱' . number_format($opening_balance, 2) . '</td>
+                        <td class="text-end">$' . number_format($opening_balance, 2) . '</td>
                     </tr>
                     <tr class="fw-bold">
                         <td colspan="5" class="text-end text-success">Total Inflows:</td>
-                        <td class="text-end text-success">₱' . number_format($total_inflows, 2) . '</td>
+                        <td class="text-end text-success">$' . number_format($total_inflows, 2) . '</td>
                     </tr>
                     <tr class="fw-bold">
                         <td colspan="5" class="text-end text-danger">Total Outflows:</td>
-                        <td class="text-end text-danger">₱' . number_format($total_outflows, 2) . '</td>
+                        <td class="text-end text-danger">$' . number_format($total_outflows, 2) . '</td>
                     </tr>
                     <tr class="fw-bold bg-secondary-subtle">
                         <td colspan="5" class="text-end">Closing Balance:</td>
-                        <td class="text-end">₱' . number_format($closing_balance, 2) . '</td>
+                        <td class="text-end">$' . number_format($closing_balance, 2) . '</td>
                     </tr>
                 </tfoot>
             </table>
@@ -510,7 +510,7 @@ if(isset($_REQUEST['action'])) {
                     <tr class="text-center">
                         <td>' . htmlspecialchars($orderid) . '</td>
                         <td>' . $customer_name . '</td>
-                        <td class="text-end">₱' . number_format($amount, 2) . '</td>
+                        <td class="text-end">$' . number_format($amount, 2) . '</td>
                         <td>' . $order_date . '</td>
                         <td>' . $order_time . '</td>
                         <td>' . $badge . '</td>
@@ -532,7 +532,7 @@ if(isset($_REQUEST['action'])) {
                 <tfoot>
                     <tr class="fw-bold bg-light">
                         <td colspan="2" class="text-end">Total:</td>
-                        <td class="text-end">₱' . number_format($total_amount, 2) . '</td>
+                        <td class="text-end">$' . number_format($total_amount, 2) . '</td>
                         <td colspan="4"></td>
                     </tr>
                 </tfoot>
@@ -636,7 +636,7 @@ if(isset($_REQUEST['action'])) {
                     <tr class="text-center">
                         <td>' . htmlspecialchars($orderid) . '</td>
                         <td>' . $customer_name . '</td>
-                        <td class="text-end">₱' . number_format($amount, 2) . '</td>
+                        <td class="text-end">$' . number_format($amount, 2) . '</td>
                         <td>' . $order_date . '</td>
                         <td>' . $order_time . '</td>
                         <td>' . $badge . '</td>
@@ -658,7 +658,7 @@ if(isset($_REQUEST['action'])) {
                 <tfoot>
                     <tr class="fw-bold bg-light">
                         <td colspan="2" class="text-end">Total:</td>
-                        <td class="text-end">₱' . number_format($total_amount, 2) . '</td>
+                        <td class="text-end">$' . number_format($total_amount, 2) . '</td>
                         <td colspan="4"></td>
                     </tr>
                 </tfoot>

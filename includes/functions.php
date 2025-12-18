@@ -1480,7 +1480,7 @@ function getCustomerDiscountLoyalty($customer_id) {
 
     $discount_loyalty = 0;
     if(!empty($isLoyalty)){
-        $customer_ttl_orders = getCustomerOrderTotal($customer_id);
+        /* $customer_ttl_orders = getCustomerOrderTotal($customer_id);
         $query = "
             SELECT discount 
             FROM loyalty_program 
@@ -1491,7 +1491,7 @@ function getCustomerDiscountLoyalty($customer_id) {
         if ($result && mysqli_num_rows($result) > 0) {
             $row = mysqli_fetch_assoc($result);
             $discount_loyalty = floatval($row['discount']) ?? 0;
-        }
+        } */
     }
 
     return $discount_loyalty;

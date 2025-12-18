@@ -201,7 +201,7 @@ if(isset($_POST['fetch_order'])){
     <div class="card-body datatables">
         <form id="msform">
             <input type="hidden" id="order_payable_amt" value="<?= $total_customer_price ?>">
-            <input type="hidden" id="delivery_amt" name="delivery_amt" value="0">
+            
             <input type="hidden" id="store_credit" name="store_credit" value="<?= $store_credit ?>">
             <input type="hidden" id="points_ratio" name="points_ratio" value="<?= $points_ratio ?>">
             <input type="hidden" id="charge_net_30" value="<?= $charge_net_30 ?>">
@@ -418,16 +418,40 @@ if(isset($_POST['fetch_order'])){
                         <div class="mb-3">
                             <div class="row align-items-start">
                                 <div class="col-6">
-                                    <label class="form-label fw-bold">How would you like to pick up your order?</label>
+                                    <label class="form-label fw-bold mb-2">
+                                        How would you like to pick up your order?
+                                    </label>
 
-                                    <div class="form-check">
-                                        <input class="form-check-input" type="radio" name="order_delivery_method" id="pickup_option" value="pickup" checked>
-                                        <label class="form-check-label" for="pickup_option">Pickup</label>
+                                    <!-- Pickup -->
+                                    <div class="form-check mb-2">
+                                        <input class="form-check-input" type="radio"
+                                            name="order_delivery_method"
+                                            id="pickup_option"
+                                            value="pickup"
+                                            checked>
+                                        <label class="form-check-label" for="pickup_option">
+                                            Pickup
+                                        </label>
                                     </div>
 
                                     <div class="form-check">
-                                        <input class="form-check-input" type="radio" name="order_delivery_method" id="deliver_option" value="deliver">
-                                        <label class="form-check-label" for="deliver_option">Delivery</label>
+                                        <input class="form-check-input" type="radio"
+                                            name="order_delivery_method"
+                                            id="deliver_option"
+                                            value="deliver">
+                                        <label class="form-check-label" for="deliver_option">
+                                            Delivery
+                                        </label>
+
+                                        <div class="ms-4 mt-2 d-none" id="delivery_amt_div">
+                                            <input type="number"
+                                                step="0.001"
+                                                id="delivery_amt"
+                                                name="delivery_amt"
+                                                value="0"
+                                                class="form-control form-control-sm w-50"
+                                                placeholder="Delivery amount">
+                                        </div>
                                     </div>
                                 </div>
 
@@ -685,7 +709,7 @@ if(isset($_POST['fetch_order'])){
 
                     <div class="d-flex justify-content-between align-items-center pb-2">
                         <span>Sales Tax</span>
-                        <span>$<?= number_format((floatval($total_customer_price)) * $tax, 2) ?></span>
+                        <span>$<span id="order_tax_amt"><?= number_format((floatval($total_customer_price)) * $tax, 2) ?></span></span>
                     </div>
 
                     <div id="order_delivery_div" class="d-flex justify-content-between align-items-center pb-2 d-none">
@@ -902,14 +926,6 @@ if(isset($_POST['fetch_order'])){
                 $('#order_deliver_city').val('');
                 $('#order_deliver_state').val('');
                 $('#order_deliver_zip').val('');
-            });
-
-            $(document).on('change', '#delivery_amt', function() {
-                var product_cost = parseFloat($('#total_amt').text()) || 0;
-                var delivery_cost = parseFloat($(this).val()) || 0;
-                var total_payable = product_cost + delivery_cost;
-                $('#total_payable').text(total_payable.toFixed(2));
-                $('#order_cash').val(total_payable.toFixed(2));
             });
 
             $(document).on('change', '#ship_separate_address', function () {

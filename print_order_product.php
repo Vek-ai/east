@@ -477,10 +477,9 @@ class PDF extends FPDF {
         $colWidth = ($this->w - 2 * $marginLeft) / 3;
 
         $this->SetFont('Arial', '', 10);
-        $this->SetTextColor(0, 51, 153);
-        $this->Cell($this->w - 2 * $marginLeft, 5, 'We appreciate your continued business with East Kentucky Metal!', 0, 1, 'C');
-
         $this->SetTextColor(0, 0, 0);
+        $this->Cell($this->w - 2 * $marginLeft, 5, 'Thank you for choosing East Kentucky Metal. We appreciate your business!', 0, 1, 'C');
+
         $this->SetY($this->GetY() + 1);
         $gpsIcon = 'assets/images/gps.png';
         $text = '977 E. Hal Rogers Parkway';
@@ -812,19 +811,12 @@ if (mysqli_num_rows($result) > 0) {
 
         $disclaimer = "Customer is solely responsible for accuracy of order and for verifying accuracy of materials before leaving EKMS or at time of delivery. If an agent orders or takes materials on customer's behalf, EKMS is entitled to rely upon the agent as if s/he has full authority to act on customer's behalf. No returns on metal panels or special trim. All other materials returned undamaged within 60 days of invoice date are subject to a restocking fee equal to 25% of current retail price.";
 
-        $savings_note = "*Customer Savings represent your savings on this Order by being an EKM Member.*";
-
         $disclaimerHeight = $pdf->GetMultiCellHeight(120, 4, $disclaimer); 
-
-        $savingsHeight = 0;
-        if ($total_saved > 0) {
-            $savingsHeight = $pdf->GetMultiCellHeight(120, 4, $savings_note) + 3;
-        }
 
         $lineheight = 6;
         $summaryHeight = (5 * $lineheight) + 2;
 
-        $blockHeight = $disclaimerHeight + $savingsHeight + $summaryHeight;
+        $blockHeight = $disclaimerHeight + $summaryHeight;
         if ($pdf->GetY() + $blockHeight > $pdf->GetPageHeight() - 20) {
             $pdf->AddPage();
             $col_y = $pdf->GetY();
@@ -835,31 +827,7 @@ if (mysqli_num_rows($result) > 0) {
         $pdf->SetXY($col1_x, $col_y);
         $pdf->MultiCell(120, 4, $disclaimer, 1, 'L');
 
-        if ($total_saved > 0) {
-            $pdf->Ln(3);
-            $pdf->MultiCell(120, 4, $savings_note, 0, 'L');
-        }
-
-        $pdf->SetFont('Arial', '', 9);
-
-        $pdf->Cell(60, 6, 'Customer confirmed Color Selections', 0, 0, 'C');
-        $pdf->Cell(60, 6, 'Customer confirmed Qty/Length Selections', 0, 0, 'C');
-
-        $pdf->Ln();
-
-        $pdf->SetFont('Arial', '', 9);
-
-        $color_confirm = ($row_orders['color_confirm'] == 1) ? 'Yes' : 'No';
-        $qty_len_confirm = ($row_orders['qty_len_confirm'] == 1) ? 'Yes' : 'No';
-
-        $pdf->Cell(60, 6, $color_confirm, 0, 0, 'C');
-        $pdf->Cell(60, 6, $qty_len_confirm, 0, 0, 'C');
-
-        $pdf->Ln(5);
-        
-
         $pdf->Cell(0, 5, 'Page ' . $pdf->PageNo() . ' of {nb}', 0, 0, 'L');
-        
 
         $pdf->SetFont('Arial', '', 9);
 
@@ -868,7 +836,7 @@ if (mysqli_num_rows($result) > 0) {
         $grand_total = $subtotal + $delivery_price + $sales_tax;
 
         $pdf->SetXY($col2_x, $col_y);
-        $pdf->Cell(40, $lineheight, 'CUSTOMER SAVINGS:', 0, 0);
+        $pdf->Cell(40, $lineheight, 'SAVINGS:', 0, 0);
         $pdf->Cell(20, $lineheight, '$ ' . number_format(max(0, $total_saved), 2), 0, 1, 'R');
 
         $pdf->Ln(5);

@@ -68,31 +68,6 @@ $page_title = "Trim Spec";
   </div>
 </div>
 
-<?php                                                    
-if ($permission === 'edit') {
-?>
-<div class="card card-body">
-    <div class="row">
-      <div class="col-md-12 col-xl-12 text-end d-flex justify-content-md-end justify-content-center mt-3 mt-md-0 gap-3">
-          <button type="button" id="addModalBtn" class="btn btn-primary d-flex align-items-center" data-id="" data-type="add">
-              <i class="ti ti-plus text-white me-1 fs-5"></i> Add <?= $page_title ?>
-          </button>
-          <button type="button" id="downloadClassModalBtn" class="btn btn-primary d-flex align-items-center">
-              <i class="ti ti-download text-white me-1 fs-5"></i> Download Classifications
-          </button>
-          <button type="button" id="downloadBtn" class="btn btn-primary d-flex align-items-center">
-              <i class="ti ti-download text-white me-1 fs-5"></i> Download <?= $page_title ?>
-          </button>
-          <button type="button" id="uploadBtn" class="btn btn-primary d-flex align-items-center">
-              <i class="ti ti-upload text-white me-1 fs-5"></i> Upload <?= $page_title ?>
-          </button>
-      </div>
-    </div>
-</div>
-<?php                                                    
-}
-?>
-
 <div class="card card-body">
   <div class="row">
       <div class="col-3">
@@ -156,9 +131,6 @@ if ($permission === 'edit') {
                   </select>
               </div>
           </div>
-          <div class="px-3 mb-2"> 
-              <input type="checkbox" id="toggleActive" checked> Show Active Only
-          </div>
       </div>
       <div class="col-9">
           <div id="selected-tags" class="mb-2"></div>
@@ -179,7 +151,6 @@ if ($permission === 'edit') {
                         <th>Flat Sheet Width</th>
                         <th>Hems</th>
                         <th>Bends</th>
-                        <th>Status</th>
                         <th>Action</th>
                       </tr>
                     </thead>
@@ -436,7 +407,6 @@ $(document).ready(function() {
             { data: 'flat_sheet_width' },
             { data: 'hems' },
             { data: 'bends' },
-            { data: 'status_html' },
             { data: 'action_html' }
         ],
         createdRow: function (row, data, dataIndex) {
@@ -585,19 +555,12 @@ $(document).ready(function() {
 
     function filterTable() {
         var textSearch = $('#text-srh').val().toLowerCase();
-        var isActive = $('#toggleActive').is(':checked');
 
         $.fn.dataTable.ext.search = [];
 
         if (textSearch) {
             $.fn.dataTable.ext.search.push(function(settings, data, dataIndex) {
                 return $(table.row(dataIndex).node()).text().toLowerCase().includes(textSearch);
-            });
-        }
-
-        if (isActive) {
-            $.fn.dataTable.ext.search.push(function(settings, data, dataIndex) {
-                return $(table.row(dataIndex).node()).find('a .alert').text().trim() === 'Active';
             });
         }
 

@@ -540,8 +540,6 @@ if(isset($_REQUEST['action'])) {
         ORDER BY
             p.product_item ASC";
 
-
-
         $result = mysqli_query($conn, $query);
         $data = [];
 

@@ -1656,6 +1656,16 @@ $editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) :
 
     window.onload = loadGoogleMapsAPI;
 
+    $(document).on('change', '#delivery_amt', function() {
+        var product_cost = parseFloat($('#total_amt').text()) || 0;
+        var delivery_cost = parseFloat($(this).val()) || 0;
+        var total_payable = product_cost + delivery_cost;
+        $('#total_payable').text(total_payable.toFixed(2));
+        $('#order_cash').val(total_payable.toFixed(2));
+
+        calculateDeliveryAmount();
+    });
+
     function calculateDeliveryAmount() {
         var customerLat = parseFloat($('#lat').val());
         var customerLng = parseFloat($('#lng').val());
@@ -1671,9 +1681,12 @@ $editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) :
         var job_deposit = parseFloat(($('#pay_via_job_deposit').data('deposit') + '').replace(/,/g, ''));
         var deliver_method = $('input[name="order_delivery_method"]:checked').val();
 
+        var deliveryAmount = parseFloat($('#delivery_amt').val()) || 0;
+
         var lat2Float = typeof lat2 !== 'undefined' ? parseFloat(lat2) : 0;
         var lng2Float = typeof lng2 !== 'undefined' ? parseFloat(lng2) : 0;
 
+        /* 
         let deliveryAmount = 0;
 
         if (deliver_method === 'pickup') {
@@ -1693,7 +1706,8 @@ $editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) :
             } else {
                 deliveryAmount = parseFloat(amtDeliveryDefault.toFixed(2));
             }
-        }
+        } 
+        */
 
         let store_credit_calc = 0;
         let job_deposit_calc = 0;
@@ -1739,11 +1753,10 @@ $editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) :
         const tax_amount = raw_total * tax_rate;
         const total_amt = Math.max(0, parseFloat(raw_total + tax_amount));
 
-        $('#delivery_amt').val(deliveryAmount).trigger('change');
+        //$('#delivery_amt').val(deliveryAmount).trigger('change');
         $('#order_delivery_amt').text(deliveryAmount.toFixed(2));
+        $('#order_tax_amt').text(tax_amount.toFixed(2));
         $('#order_total').text('$' + number_format(total_amt, 2));
-
-        console.log(tax_amount);
 
         const estimated_points = Math.floor(raw_total * points_ratio);
         $('#estimated_points').text('+' + estimated_points);
@@ -5878,11 +5891,18 @@ $editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) :
                 $('#ship_separate_address_div').removeClass('d-none');
                 $('#order_delivery_div').removeClass('d-none');
                 $('#pickup_details_div').removeClass('d-none');
+
+                $('#delivery_amt_div').removeClass('d-none');
+                $('#delivery_amt').prop('disabled', false);
+
             } else {
                 $('#truck_div').addClass('d-none');
                 $('#ship_separate_address_div').addClass('d-none');
                 $('#order_delivery_div').addClass('d-none');
                 $('#pickup_details_div').addClass('d-none');
+
+                $('#delivery_amt_div').addClass('d-none');
+                $('#delivery_amt').prop('disabled', true).val(0);
             }
 
             calculateDeliveryAmount();

@@ -1268,7 +1268,7 @@ if (isset($_POST['save_order'])) {
         curl_exec($ch);
         curl_close($ch);
 
-        addPoints($customerid, $orderid);
+        //addPoints($customerid, $orderid);
 
         $po_number = mysqli_real_escape_string($conn, $job_po);
         $created_by = mysqli_real_escape_string($conn, $cashierid);
@@ -1563,6 +1563,7 @@ if (isset($_POST['save_order'])) {
         $customer_total_orders = getCustomerOrderTotal($customerid);
         $customer_details = getCustomerDetails($customerid);
         $isLoyalty = $customer_details['loyalty'];
+        /* 
         if (!$isLoyalty) {
             $query_loyalty = "SELECT * FROM loyalty_program WHERE date_from <= CURDATE() AND date_to >= CURDATE()";
             $result_loyalty = $conn->query($query_loyalty);
@@ -1577,7 +1578,8 @@ if (isset($_POST['save_order'])) {
                     }
                 }
             }
-        }
+        } 
+        */
 
         unset($_SESSION['customer_id']);
     } else {

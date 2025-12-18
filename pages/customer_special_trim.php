@@ -135,31 +135,6 @@ $page_title = "Special Trim";
     </div>
 
     <div class="widget-content searchable-container list">
-    <?php                                                    
-    if ($permission === 'edit') {
-    ?>
-    <div class="card card-body">
-        <div class="row">
-            <div class="col d-flex justify-content-md-end justify-content-center mt-3 mt-md-0 gap-3">
-                <button type="button" id="downloadClassModalBtn" class="btn btn-primary d-flex align-items-center">
-                    <i class="ti ti-download text-white me-1 fs-5"></i> Download Classifications
-                </button>
-                <button type="button" id="addProductModalBtn" class="btn btn-primary d-flex align-items-center" data-id="">
-                    <i class="ti ti-plus text-white me-1 fs-5"></i> Add <?= $page_title  ?>
-                </button>
-                <button type="button" id="downloadProductModalBtn" class="btn btn-primary d-flex align-items-center">
-                    <i class="ti ti-download text-white me-1 fs-5"></i> Download <?= $page_title  ?>
-                </button>
-                <button type="button" id="uploadProductModalBtn" class="btn btn-primary d-flex align-items-center">
-                    <i class="ti ti-upload text-white me-1 fs-5"></i> Upload <?= $page_title  ?>
-                </button>
-            </div>
-        </div>
-    </div>
-    <?php
-    }
-    ?>
-
     <div class="modal fade" id="addProductModal" tabindex="-1" aria-labelledby="addProductModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-xl">
             <div class="modal-content">
@@ -408,6 +383,7 @@ $page_title = "Special Trim";
                             <thead class="header-item">
                                 <tr>
                                     <th>Customer</th>
+                                    <th>Product</th>
                                     <th>Special Trim Description</th>
                                     <th>Special Trim #</th>
                                     <th>Last Order Date</th>
@@ -442,6 +418,7 @@ $page_title = "Special Trim";
             },
             columns: [
                 { data: 'customer' },
+                { data: 'product_item' },
                 { data: 'description' },
                 { data: 'trim_no' },
                 { data: 'last_order' },
