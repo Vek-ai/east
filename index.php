@@ -99,7 +99,8 @@ $page_key = !empty($_REQUEST['page']) ? $_REQUEST['page'] : 'home';
                     <!-- Dark Logo icon -->
                     
                     <!-- Light Logo icon -->
-                    <img src="assets/images/logo.png" alt="homepage" class="light-logo" />
+                    <img src="../assets/images/logo.png" alt="homepage" class="light-logo" />
+                    <img src="../assets/images/logo.png" alt="homepage" class="dark-logo" />
                   </b>
                   <!--End Logo icon -->
                   <!-- Logo text -->
@@ -116,11 +117,8 @@ $page_key = !empty($_REQUEST['page']) ? $_REQUEST['page'] : 'home';
               <div class="brand-logo d-flex align-items-center justify-content-between">
                 <a href="index.php" class="text-nowrap logo-img d-flex align-items-center gap-2">
                   <b class="logo-icon">
-                    <!--You can put here icon as well // <i class="wi wi-sunset"></i> //-->
-                    <!-- Dark Logo icon -->
-                    <img src="assets/images/logos/logo-light-icon.svg" alt="homepage" class="dark-logo" />
-                    <!-- Light Logo icon -->
-                    <img src="assets/images/logo.png" alt="homepage" class="light-logo" width="60%" />
+                    <img src="../assets/images/logo.png" alt="homepage" class="light-logo" />
+                    <img src="../assets/images/logo.png" alt="homepage" class="dark-logo" />
                   </b>
                   <!--End Logo icon -->
                   <!-- Logo text -->
@@ -399,16 +397,9 @@ $page_key = !empty($_REQUEST['page']) ? $_REQUEST['page'] : 'home';
                   <b class="logo-icon">
                     <!--You can put here icon as well // <i class="wi wi-sunset"></i> //-->
                     <!-- Dark Logo icon -->
-                    <img src="assets/images/logos/logo-icon.svg" alt="homepage">
+                    <img src="../assets/images/logo.png" alt="homepage" class="light-logo" />
+                    <img src="../assets/images/logo.png" alt="homepage" class="dark-logo" />
                   </b>
-                  <!--End Logo icon -->
-                  <!-- Logo text -->
-                  <span class="logo-text">
-                    <!-- dark Logo text -->
-                    <img src="assets/images/logos/logo-text.svg" alt="homepage" class="dark-logo ps-2">
-                    <!-- Light Logo text -->
-                    <img src="assets/images/logos/logo-light-text.svg" class="light-logo ps-2" alt="homepage">
-                  </span>
                 </a>
                 <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
               </div>
