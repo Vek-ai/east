@@ -523,7 +523,13 @@ function showCol($name) {
                                                     op.product_category = $trim_id OR op.product_category = $panel_id
                                                 )
                                             WHERE
-                                                o.status != 6
+                                                o.status != 6";
+
+                                    if (isset($customer_id) && !empty($customer_id)) {
+                                        $query .= " AND customerid = '$customer_id'";
+                                    }
+
+                                    $query .= "
                                             GROUP BY
                                                 o.orderid
                                             HAVING
@@ -532,11 +538,7 @@ function showCol($name) {
                                                 o.order_date
                                             DESC
                                                 ";
-
-                                    if (isset($customer_id) && !empty($customer_id)) {
-                                        $query .= " AND customerid = '$customer_id'";
-                                    }
-
+                                                
                                     $result = mysqli_query($conn, $query);
                                 
                                     if ($result && mysqli_num_rows($result) > 0) {

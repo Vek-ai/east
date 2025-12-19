@@ -523,7 +523,64 @@ function showCol($name) {
   </div>
 </div>
 
-<div class="modal fade" id="viewOrderModal" tabindex="-1" aria-labelledby="viewOrderModalLabel" aria-hidden="true"></div>
+<div class="modal fade" id="viewOrderModal" tabindex="-1" aria-labelledby="viewOrderModalLabel" aria-hidden="true">
+    <style>
+        #est_dtls_tbl {
+            width: 100% !important;
+        }
+
+        #est_dtls_tbl td, #est_dtls_tbl th {
+            white-space: normal !important;
+            word-wrap: break-word;
+        }
+    </style>
+    <div class="modal-dialog modal-xl" style="max-width: 90%;">
+        <div class="modal-content">
+            <div class="modal-header d-flex align-items-center">
+                <h4 class="modal-title" id="myLargeModalLabel">
+                    View Order
+                </h4>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="form-horizontal">
+                <div class="modal-body" id="viewOrderBody">
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="contractorModal" tabindex="-1" aria-hidden="true" style="background-color: rgba(0, 0, 0, 0.5);">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Select Contractor</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <select class="form-select" id="contractor_select">
+                    <?php
+                    $query = "SELECT * FROM customer WHERE is_contractor = 1";
+                    $result = mysqli_query($conn, $query);
+                    if (mysqli_num_rows($result) > 0) {
+                        while ($row = mysqli_fetch_assoc($result)) {
+                            $id = $row['customer_id'];
+                            $name = get_customer_name($id);
+                            $contact = htmlspecialchars($row['contact_phone']);
+                            echo "<option value='{$id}' data-name='{$name}' data-contact='{$contact}'>{$name} ({$contact})</option>";
+                        }
+                    } else {
+                        echo "<option disabled selected>No contractors available</option>";
+                    }
+                    ?>
+                </select>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" id="confirm_contractor">Confirm</button>
+            </div>
+        </div>
+    </div>
+</div>
 
 <div class="modal fade" id="response-modal" tabindex="-1" aria-labelledby="vertical-center-modal" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
@@ -545,7 +602,7 @@ function showCol($name) {
     </div>
 </div>
 
-<div class="modal fade" id="shipFormModal" tabindex="-1" aria-labelledby="shipFormModalLabel" aria-hidden="true" style="background-color: rgba(0, 0, 0, 0.5);">
+ <div class="modal fade" id="shipFormModal" tabindex="-1" aria-labelledby="shipFormModalLabel" aria-hidden="true" style="background-color: rgba(0, 0, 0, 0.5);">
     <div class="modal-dialog modal-md">
         <div class="modal-content">
             <div class="modal-header">
@@ -577,6 +634,60 @@ function showCol($name) {
                     </div>
                     </div>
                     
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-success">Save</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="pickupFormModal" tabindex="-1" aria-labelledby="pickupFormModalLabel" aria-hidden="true" style="background-color: rgba(0, 0, 0, 0.5);">
+    <div class="modal-dialog modal-md">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="pickupFormModalLabel">Pick-Up Form</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="pickupOrderForm">
+                <input type="hidden" id="pickup_order_id" name="id" value="">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="pickup_name" class="form-label">Picked Up By</label>
+                        <input type="text" class="form-control" id="pickup_name" name="pickup_name" placeholder="Enter name" required>
+                    </div>
+
+                    <div class="mb-3" id="payment_type_group">
+                        <label for="type" class="form-label">Deposit Type</label>
+                        <select class="form-select" id="payment_type" name="type" required>
+                            <option value="">-- Select Type --</option>
+                            <option value="cash">Cash</option>
+                            <option value="check">Check</option>
+                        </select>
+                    </div>
+
+                    <div id="payment_details_group" class="d-none">
+                        <div class="mb-3">
+                            <label for="payment_amount" class="form-label">Payment Amount</label>
+                            <input type="number" step="0.0001" class="form-control" id="payment_amount" name="payment_amount" >
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="reference_no" class="form-label">Reference No</label>
+                            <input type="text" class="form-control" id="reference_no" name="reference_no" required>
+                        </div>
+
+                        <div class="mb-3 d-none" id="check_no_group">
+                            <label for="check_no" class="form-label">Check No</label>
+                            <input type="text" class="form-control" id="check_no" name="check_no">
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="description" class="form-label">Description</label>
+                            <textarea class="form-control" id="description" name="description" rows="3"></textarea>
+                        </div>
+                    </div>
                 </div>
                 <div class="modal-footer">
                     <button type="submit" class="btn btn-success">Save</button>
@@ -762,6 +873,8 @@ function showCol($name) {
             order: [],
             pageLength: 100
         });
+
+        var active_order_id = 0;
 
         let columnFilters = {};
         let numericFilters = {};
@@ -1225,26 +1338,6 @@ function showCol($name) {
             });
         });
 
-        $(document).on('click', '#view_order_btn', function(event) {
-            event.preventDefault(); 
-            var id = $(this).data('id');
-            $.ajax({
-                url: 'pages/invoice_ajax.php',
-                type: 'POST',
-                data: {
-                    id: id,
-                    action: "fetch_view_modal"
-                },
-                success: function(response) {
-                    $('#viewOrderModal').html(response);
-                    $('#viewOrderModal').modal('show');
-                },
-                error: function(jqXHR, textStatus, errorThrown) {
-                    alert('Error: ' + textStatus + ' - ' + errorThrown);
-                }
-            });
-        });
-
         $(document).on('click', '.btn-show-pdf', function (e) {
             e.preventDefault();
 
@@ -1529,5 +1622,227 @@ function showCol($name) {
         });
 
         filterTable();
+
+        $(document).on("click", "#shipOrderBtn", function () {
+            dataId = $(this).data("id");
+            action = $(this).data("action");
+            selected_prods = getSelectedIDs();
+
+            if (!Array.isArray(selected_prods) || selected_prods.length === 0) {
+                alert("Select at least 1 product to deliver.");
+                return;
+            }
+
+            $("#shipFormModal").modal("show");
+        });
+
+        $(document).on("click", "#pickupOrderBtn", function () {
+            dataId = $(this).data("id");
+            action = $(this).data("action");
+
+            $("#pickup_order_id").val(dataId);
+
+            selected_prods = getSelectedIDs();
+            var unpaid_prods = getSelectedUnpaidIDs();
+            var amount_to_pay = getSelectedAmountTotal();
+
+            if (!Array.isArray(selected_prods) || selected_prods.length === 0) {
+                alert("Select at least 1 product to pickup.");
+                return;
+            }
+
+            if (unpaid_prods.length > 0) {
+                $('#payment_type_group').removeClass('d-none');
+            } else {
+                $('#payment_type_group').addClass('d-none');
+            }
+
+            $('#payment_amount').val(amount_to_pay);
+
+            $("#pickupFormModal").modal("show");
+
+            $('#payment_amount').off('input').on('input', function () {
+                let val = parseFloat($(this).val() || 0);
+                if (val > amount_to_pay) {
+                    alert(`Payment amount cannot exceed $${amount_to_pay.toFixed(2)}`);
+                    $(this).val(amount_to_pay.toFixed(2));
+                }
+            });
+        });
+
+        $(document).on("submit", "#shipOrderForm", function (e) {
+            e.preventDefault();
+
+            var tracking_number = $('#tracking_number').val();
+            var shipping_company = $('#shipping_company').val();
+
+            $.ajax({
+                url: 'pages/order_list_ajax.php',
+                type: 'POST',
+                data: {
+                    id: dataId,
+                    method: action,
+                    selected_prods: selected_prods,
+                    tracking_number: tracking_number,
+                    shipping_company: shipping_company,
+                    action: 'update_status'
+                },
+                success: function (response) {
+                    try {
+                        var jsonResponse = JSON.parse(response);
+                    } catch (e) {
+                        console.error("Invalid JSON:", e);
+                        alert("Unexpected response from server.");
+                        return;
+                    }
+
+                    if (jsonResponse.success) {
+                        alert("Status updated successfully!");
+
+                        if (jsonResponse.url && isValidURL(jsonResponse.url)) {
+                            window.open(jsonResponse.url, '_blank');
+                        }else{
+                            console.log("invalid url");
+                        }
+                    } else {
+                        alert("Failed to update");
+                    }
+
+                    location.reload();
+                },
+                error: function (xhr, status, error) {
+                    console.log("AJAX Error:", xhr.responseText);
+                    alert("An error occurred. Please try again.");
+                }
+            });
+        });
+
+        $(document).on('change', '#payment_type', function () {
+            const type = $(this).val();
+
+            if (type === 'cash') {
+                $('#payment_details_group').removeClass('d-none');
+                $('#check_no_group').addClass('d-none');
+                $('#check_no').removeAttr('required').val('');
+            } else if (type === 'check') {
+                $('#payment_details_group').removeClass('d-none');
+                $('#check_no_group').removeClass('d-none');
+                $('#check_no').attr('required', true);
+            } else {
+                $('#payment_details_group').addClass('d-none');
+                $('#check_no_group').addClass('d-none');
+                $('#check_no').removeAttr('required').val('');
+            }
+        });
+
+        $(document).on('click', '#select_contractor_btn', function () {
+            $('#contractorModal').modal('show');
+        });
+
+        $(document).on('click', '#confirm_contractor', function () {
+            var selected = $('#contractor_select option:selected');
+            if (selected.length) {
+                var contractorId = selected.val();
+                var contractorName = selected.data('name');
+
+                $.ajax({
+                    url: 'pages/order_list_ajax.php',
+                    type: 'POST',
+                    data: {
+                        orderid: active_order_id,
+                        contractor_id: contractorId,
+                        action: 'update_contractor'
+                    },
+                    success: function (response) {
+                        fetchOrderView(active_order_id);
+                        $('#contractorModal').modal('hide');
+                    },
+                    error: function (jqXHR, textStatus, errorThrown) {
+                        console.log(
+                            'Error: ' + textStatus + ' - ' + errorThrown + '\n\n' +
+                            'Response: ' + jqXHR.responseText
+                        );
+                    }
+                });
+            }
+        });
+
+        function fetchOrderView(active_order_id) {
+            if (!active_order_id) {
+                alert("No active order selected.");
+                return;
+            }
+
+            console.log(active_order_id);
+
+            $.ajax({
+                url: 'pages/invoice_ajax.php',
+                type: 'POST',
+                data: {
+                    id: active_order_id,
+                    action: "fetch_view_modal"
+                },
+                success: function (response) {
+                    $('#viewOrderBody').html(response);
+                    $('#viewOrderModal').modal('show');
+                },
+                error: function (jqXHR, textStatus, errorThrown) {
+                    alert('Error: ' + textStatus + ' - ' + errorThrown);
+                }
+            });
+        }
+
+        $(document).on('click', '#view_order_btn', function(event) {
+            event.preventDefault(); 
+            active_order_id = $(this).data('id');
+            fetchOrderView(active_order_id);
+        });
+
+        $(document).on("submit", "#pickupOrderForm", function (e) {
+            e.preventDefault();
+
+            const form = this;
+            const formData = new FormData(form);
+
+            formData.append('id', dataId);
+            formData.append('method', action);
+            formData.append('selected_prods', JSON.stringify(selected_prods));
+            formData.append('action', 'pickup_order');
+
+            $.ajax({
+                url: 'pages/order_list_ajax.php',
+                type: 'POST',
+                data: formData,
+                processData: false,
+                contentType: false,
+                success: function (response) {
+                    try {
+                        var jsonResponse = JSON.parse(response);
+                    } catch (e) {
+                        console.error("Invalid JSON:", e);
+                        alert("Unexpected response from server.");
+                        return;
+                    }
+
+                    if (jsonResponse.success) {
+                        alert("Status updated successfully!");
+
+                        if (jsonResponse.url && isValidURL(jsonResponse.url)) {
+                            window.open(jsonResponse.url, '_blank');
+                        } else {
+                            console.log("invalid url");
+                        }
+                    } else {
+                        alert("Failed to update: " + (jsonResponse.message || ''));
+                    }
+
+                    location.reload();
+                },
+                error: function (xhr, status, error) {
+                    console.log("AJAX Error:", xhr.responseText);
+                    alert("An error occurred. Please try again.");
+                }
+            });
+        });
     });
 </script>

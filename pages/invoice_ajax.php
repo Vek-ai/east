@@ -28,167 +28,223 @@ if(isset($_REQUEST['action'])) {
             $shipping_company = $shipping_comp_details['shipping_company'];
 
             $deliver_method = $order_details['deliver_method'];
+            $contractor_id = $order_details['contractor_id'];
 
             $response = array();
             ?>
-            <style>
-                #est_dtls_tbl {
-                    width: 100% !important;
-                }
-
-                #est_dtls_tbl td, #est_dtls_tbl th {
-                    white-space: normal !important;
-                    word-wrap: break-word;
-                }
-            </style>
-            <div class="modal-dialog modal-xl">
-                <div class="modal-content">
-                    <div class="modal-header d-flex align-items-center">
-                        <h4 class="modal-title" id="myLargeModalLabel">
-                            View Order
-                        </h4>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                    </div>
-                    <div id="update_product" class="form-horizontal">
-                        <div class="modal-body">
-                            <div class="card">
-                                <div class="card-body datatables">
-                                    <div class="order-details table-responsive text-nowrap">
-                                        <div class="col-12 col-md-4 col-lg-4 text-md-start mt-3 fs-5" id="shipping-info">
-                                            <?php if (!empty($shipping_company)) : ?>
-                                            <div>
-                                                <strong>Shipping Company:</strong>
-                                                <span id="shipping-company"><?= htmlspecialchars($shipping_company) ?></span>
-                                            </div>
-                                            <?php endif; ?>
-
-                                            <?php if (!empty($tracking_number)) : ?>
-                                            <div>
-                                                <strong>Tracking #:</strong>
-                                                <span id="tracking-number"><?= htmlspecialchars($tracking_number) ?></span>
-                                            </div>
-                                            <?php endif; ?>
-                                        </div>
-                                        <table id="est_dtls_tbl" class="table table-hover mb-0 text-md-nowrap w-100">
-                                            <thead>
-                                                <tr>
-                                                    <th><input type="checkbox" id="select_all"></th>
-                                                    <th>Description</th>
-                                                    <th>Color</th>
-                                                    <th>Grade</th>
-                                                    <th>Profile</th>
-                                                    <th class="text-center">Quantity</th>
-                                                    <th class="text-center">Status</th>
-                                                    <th class="text-center">Dimensions</th>
-                                                    <th class="text-center">Customer Price</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-                                                <?php 
-                                                    $is_processing = false;
-                                                    while ($row = mysqli_fetch_assoc($result)) {
-                                                        $orderid = $row['orderid'];
-                                                        $product_details = getProductDetails($row['productid']);
-                                                        
-                                                        $status_prod_db = $row['status'];
-
-                                                        $product_name = '';
-                                                        if(!empty($row['product_item'])){
-                                                            $product_name = $row['product_item'];
-                                                        }else{
-                                                            $product_name = getProductName($row['product_id']);
-                                                        }
-
-                                                        if($status_prod_db == '1'){
-                                                            $is_processing = true;
-                                                        }
-
-                                                        $status_prod_labels = [
-                                                            0 => ['label' => 'New', 'class' => 'badge bg-primary'],
-                                                            1 => ['label' => 'Processing', 'class' => 'badge bg-success'],
-                                                            2 => ['label' => 'Waiting for Dispatch', 'class' => 'badge bg-warning'],
-                                                            3 => ['label' => 'In Transit', 'class' => 'badge bg-secondary'],
-                                                            4 => ['label' => 'Delivered', 'class' => 'badge bg-success']
-                                                        ];
-
-                                                        if($deliver_method == 'pickup'){
-                                                            $is_pickup = true;
-
-                                                            $status_prod_labels[2]['label'] = 'Ready for Pick-up';
-                                                            $status_prod_labels[4]['label'] = 'Picked Up';
-                                                        }
-
-                                                        $status_prod = $status_prod_labels[$status_prod_db];
-                                                    ?> 
-                                                        <tr> 
-                                                            <td class="text-center">
-                                                                <input type="checkbox" class="row-checkbox" value="<?= $row['id'] ?>" data-status="">
-                                                            </td>
-                                                            <td>
-                                                                <?= $product_name ?>
-                                                            </td>
-                                                            <td>
-                                                                <div class="d-flex mb-0 gap-8">
-                                                                    <a class="rounded-circle d-block p-6" href="javascript:void(0)" style="background-color:<?= getColorHexFromColorID($row['custom_color'])?>"></a>
-                                                                    <?= getColorName($row['custom_color']); ?>
-                                                                </div>
-                                                            </td>
-                                                            <td>
-                                                                <?= getGradeName($row['custom_grade']); ?>
-                                                            </td>
-                                                            <td>
-                                                                <?= getProfileTypeName($row['custom_profile']); ?>
-                                                            </td>
-                                                            <td><?= $row['quantity'] ?></td>
-                                                            <td>
-                                                                <span class="<?= $status_prod['class']; ?> fw-bond"><?= $status_prod['label']; ?></span>
-                                                            </td>
-                                                            <td>
-                                                                <?php 
-                                                                $width = $row['custom_width'];
-                                                                $height = $row['custom_height'];
-                                                                
-                                                                if (!empty($width) && !empty($height)) {
-                                                                    echo htmlspecialchars($width) . " X " . htmlspecialchars($height);
-                                                                } elseif (!empty($width)) {
-                                                                    echo "Width: " . htmlspecialchars($width);
-                                                                } elseif (!empty($height)) {
-                                                                    echo "Height: " . htmlspecialchars($height);
-                                                                }
-                                                                ?>
-                                                            </td>
-                                                            <td class="text-end">$ <?= number_format($row['discounted_price'],2) ?></td>
-                                                        </tr>
-                                                <?php
-                                                        $totalquantity += $row['quantity'] ;
-                                                        $total_actual_price += $row['actual_price'];
-                                                        $total_disc_price += $row['discounted_price'];
-                                                        $total_amount += $total_disc_price;
-                                                    }
-                                                
-                                                ?>
-                                            </tbody>
-
-                                            <tfoot>
-                                                <tr>
-                                                    <td colspan="5" class="text-end">Total</td>
-                                                    <td><?= $totalquantity ?></td>
-                                                    <td></td>
-                                                    <td></td>
-                                                    <td class="text-end">$ <?= number_format($total_disc_price,2) ?></td>
-                                                </tr>
-                                            </tfoot>
-                                        </table>
-                                    </div>
-                                </div>
-                            </div>
+            <div class="card-body">
+                <div class="col-md-4">
+                    <div class="mb-2">
+                        <strong>Contractor</strong>
+                        <div class="d-flex align-items-center">
+                            <h4 class="mb-0 flex-grow-1" id="constructor_name_display">
+                                <?php echo $contractor_id > 0 ? htmlspecialchars(get_customer_name($contractor_id)) : 'No contractor assigned'; ?>
+                            </h4>
+                            <button type="button" 
+                                    class="btn btn-outline-secondary ms-2" 
+                                    id="select_contractor_btn"
+                                    data-orderid="<?php echo $orderid; ?>">
+                                <?php echo $contractor_id > 0 ? 'Change Contractor' : 'Add Contractor'; ?>
+                            </button>
                         </div>
                     </div>
                 </div>
             </div>
+            
+            <div class="card">
+                <div class="card-body datatables">
+                    <h4 class="modal-title" id="myLargeModalLabel">
+                        View Order Details
+                    </h4>
+                    <div class="order-details table-responsive">
+                        <div class="col-12 col-md-4 col-lg-4 text-md-start mt-3 fs-5" id="shipping-info">
+                            <?php if (!empty($shipping_company)) : ?>
+                            <div>
+                                <strong>Shipping Company:</strong>
+                                <span id="shipping-company"><?= htmlspecialchars($shipping_company) ?></span>
+                            </div>
+                            <?php endif; ?>
+
+                            <?php if (!empty($tracking_number)) : ?>
+                            <div>
+                                <strong>Tracking #:</strong>
+                                <span id="tracking-number"><?= htmlspecialchars($tracking_number) ?></span>
+                            </div>
+                            <?php endif; ?>
+                        </div>
+                        <table id="order_dtls_tbl" class="table table-hover mb-0 w-100">
+                            <thead>
+                                <tr>
+                                    <th><input type="checkbox" id="select_all"></th>
+                                    <th>Description</th>
+                                    <th>Color</th>
+                                    <th>Grade</th>
+                                    <th>Profile</th>
+                                    <th class="text-center">Quantity</th>
+                                    <th class="text-center">Status</th>
+                                    <th class="text-center">Payment Status</th>
+                                    <th class="text-center">Details</th>
+                                    <th class="text-center">Price</th>
+                                    <th class="text-center">Customer Price</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <?php 
+                                    $is_pickup = false;
+                                    $is_paid = 1;
+                                    $is_ready = false;
+                                    while ($row = mysqli_fetch_assoc($result)) {
+                                        $orderid = $row['orderid'];
+                                        $product_details = getProductDetails($row['productid']);
+
+                                        $is_stockable = $product_details['product_origin'] == 1;
+
+                                        $status_prod_db = (int)$row['status'];
+                                        $payment_db = (int)$row['paid_status'];
+
+                                        $price = $row['discounted_price'];
+
+                                        $product_name = '';
+                                        /* if(!empty($row['product_item'])){
+                                            $product_name = $row['product_item'];
+                                        }else{
+                                            $product_name = getProductName($row['product_id']);
+                                        } */
+
+                                        $product_name = getProductName($row['productid']);
+
+                                        if($status_prod_db == '2'){
+                                            $is_ready = true;
+                                        }
+
+                                        if($payment_db == '0'){
+                                            $is_paid = 0;
+                                        }
+
+                                        $payment_labels = [
+                                            0 => ['label' => 'Unpaid', 'class' => 'badge bg-danger'],
+                                            1 => ['label' => 'Paid', 'class' => 'badge bg-success']
+                                        ];
+                                        $payment_prod = $payment_labels[$payment_db];
+
+                                        $status_prod_labels = [
+                                            0 => ['label' => 'New', 'class' => 'badge bg-primary'],
+                                            1 => ['label' => 'Processing', 'class' => 'badge bg-success'],
+                                            2 => ['label' => 'Waiting for Dispatch', 'class' => 'badge bg-warning'],
+                                            3 => ['label' => 'In Transit', 'class' => 'badge bg-secondary'],
+                                            4 => ['label' => 'Delivered', 'class' => 'badge bg-success'],
+                                            5 => ['label' => 'On Hold', 'class' => 'badge bg-danger'],
+                                            6 => ['label' => 'Returned', 'class' => 'badge bg-danger']
+                                        ];
+
+                                        if($deliver_method == 'pickup'){
+                                            $is_pickup = true;
+
+                                            $status_prod_labels[2]['label'] = 'Ready for Pick-up';
+                                            $status_prod_labels[4]['label'] = 'Picked Up';
+                                        }
+
+                                        $status_prod = $status_prod_labels[$status_prod_db];
+                                        ?> 
+                                        <tr> 
+                                            <td class="text-center">
+                                                <?= $is_pickup && $is_ready ? "<input type='checkbox' class='row-checkbox' value='{$row['id']}' data-amount='$price' data-paid='$payment_db'>" : "" ?>
+                                            </td>
+                                            <td>
+                                                <?= $product_name ?>
+                                            </td>
+                                            <td>
+                                                <div class="d-flex mb-0 gap-8">
+                                                    <a class="rounded-circle d-block p-6" href="javascript:void(0)" style="background-color:<?= getColorHexFromColorID($row['custom_color'])?>"></a>
+                                                    <?= getColorName($row['custom_color']); ?>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <?= getGradeName($row['custom_grade']); ?>
+                                            </td>
+                                            <td>
+                                                <?= getProfileTypeName($row['custom_profile']); ?>
+                                            </td>
+                                            <td><?= $row['quantity'] ?></td>
+                                            <td>
+                                                <span class="<?= $status_prod['class']; ?> fw-bond"><?= $status_prod['label']; ?></span>
+                                            </td>
+                                            <td>
+                                                <span class="<?= $payment_prod['class']; ?> fw-bond"><?= $payment_prod['label']; ?></span>
+                                            </td>
+                                            <td>
+                                                <?php 
+                                                if($product_details['product_category'] == $screw_id){
+                                                    $pack_count = $row['custom_length'];
+                                                    echo htmlspecialchars($pack_count) . ' pcs';
+                                                }else{
+                                                    $width = $row['custom_width'];
+                                                    $ft = $row['custom_length'];
+                                                    $in = $row['custom_length2'];
+
+                                                    $length = $ft + ($in / 12);
+                                                    
+                                                    if (!empty($width) && !empty($length)) {
+                                                        echo htmlspecialchars($width) . " X " . htmlspecialchars($length) .'<br>';
+                                                    } elseif (!empty($width)) {
+                                                        echo "Width: " . htmlspecialchars($width) .'<br>';
+                                                    } elseif (!empty($length)) {
+                                                        echo "Length: " . htmlspecialchars($length) .'<br>';
+                                                    }
+                                                }
+
+                                                $panel_type = $row['panel_type'];
+                                                $panel_style = $row['panel_style'];
+                                                
+                                                if (!empty($panel_type) && $panel_type != '0') {
+                                                    echo "Panel Type: " . htmlspecialchars($panel_type) .'<br>';
+                                                }
+
+                                                if (!empty($panel_style) && $panel_style != '0') {
+                                                    echo "Panel Style: " . htmlspecialchars($panel_style) .'<br>';
+                                                }
+                                                ?>
+                                            </td>
+                                            <td class="text-end">$ <?= number_format($row['actual_price'],2) ?></td>
+                                            <td class="text-end">$ <?= number_format($row['discounted_price'],2) ?></td>
+                                        </tr>
+
+                                        <?php
+                                        $totalquantity += $row['quantity'] ;
+                                        $total_actual_price += $row['actual_price'];
+                                        $total_disc_price += $row['discounted_price'];
+                                        $total_amount += floatval($row['discounted_price']);
+                                    }
+                            ?>
+                            </tbody>
+
+                            <tfoot>
+                                <tr>
+                                    <td colspan="7" class="text-end">Total</td>
+                                    <td><?= $totalquantity ?></td>
+                                    <td></td>
+                                    <td></td>
+                                    <td class="text-end">$ <?= number_format($total_amount,2) ?></td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                    <?php if ($is_ready): ?>
+                        <div class="d-flex justify-content-end align-items-center gap-3 flex-wrap mt-3">
+                            <button type="button" id="pickupOrderBtn" class="btn btn-primary" data-id="<?=$orderid?>" data-paid="<?=$is_paid?>" data-action="pickup_order">Pickup Order</button>
+                            <button type="button" id="shipOrderBtn" class="btn btn-primary" data-id="<?=$orderid?>" data-action="ship_order">Ship Order</button>
+                        </div>
+                    <?php endif; ?>
+                </div>
+            </div>
             <script>
                 $(document).ready(function() {
-                    $('#est_dtls_tbl').DataTable({
+
+                    if ($.fn.DataTable.isDataTable('#order_dtls_tbl')) {
+                        $('#order_dtls_tbl').DataTable().clear().destroy();
+                    }
+
+                    $('#order_dtls_tbl').DataTable({
                         language: {
                             emptyTable: "Order Details not found"
                         },
@@ -211,13 +267,44 @@ if(isset($_REQUEST['action'])) {
                         $('.row-checkbox:checked').each(function () {
                             ids.push($(this).val());
                         });
-                        console.log("Selected IDs:", ids);
                         return ids;
                     };
+
+                    window.getSelectedUnpaidIDs = function () {
+                        let unpaidIds = [];
+                        $('.row-checkbox:checked').each(function () {
+                            if ($(this).data('paid') == '0') {
+                                unpaidIds.push($(this).val());
+                            }
+                        });
+                        return unpaidIds;
+                    };
+
+                    window.getSelected = function (dataAttribute = 'paid') {
+                        let filteredIds = [];
+                        $('.row-checkbox:checked').each(function () {
+                            const dataValue = $(this).data(dataAttribute);
+                            if (dataValue == '0') {
+                                filteredIds.push($(this).val());
+                            }
+                        });
+                        return filteredIds;
+                    };
+
+                    window.getSelectedAmountTotal = function () {
+                        let total = 0;
+
+                        $('.row-checkbox:checked').each(function () {
+                            const amount = parseFloat($(this).data('amount')) || 0;
+                            total += amount;
+                        });
+
+                        return total;
+                    };
+
                 });
             </script>
-
-            <?php
+        <?php
         }
     } 
 

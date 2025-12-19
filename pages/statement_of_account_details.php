@@ -14,7 +14,12 @@ if(isset($_REQUEST['customer_id'])){
 }
 $permission = $_SESSION['permission'];
 ?>
-
+<style>
+    .payout_credits {
+        position: fixed;
+        bottom: 20px;
+    }
+</style>
 <div class="container-fluid">
     <div class="font-weight-medium shadow-none position-relative overflow-hidden mb-7">
     <div class="card-body px-0">
@@ -54,25 +59,6 @@ $permission = $_SESSION['permission'];
             <div class="modal-footer">
                 <button type="button" class="btn bg-danger-subtle text-danger  waves-effect text-start" data-bs-dismiss="modal">
                     Close
-                </button>
-            </div>
-            </div>
-        </div>
-    </div>
-
-    <div class="modal fade" id="response-modal" tabindex="-1" aria-labelledby="vertical-center-modal" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content">
-            <div id="responseHeaderContainer" class="modal-header align-items-center modal-colored-header">
-                <h4 id="responseHeader" class="m-0"></h4>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <p id="responseMsg"></p>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn bg-danger-subtle text-danger  waves-effect text-start" data-bs-dismiss="modal">
-                Close
                 </button>
             </div>
             </div>
@@ -198,6 +184,14 @@ $permission = $_SESSION['permission'];
                 <div class="d-flex justify-content-end py-2">
                     <button type="button" class="btn btn-outline-primary reset_filters">
                         <i class="fas fa-sync-alt me-1"></i> Reset Filters
+                    </button>
+                </div>
+
+                <div class="payout_credits">
+                    <button type="button" class="btn mb-2 me-2 w-100" id="payOutBtn"
+                            style="background-color: rgb(1, 85, 187); color: white;">
+                        <i class="fa fa-credit-card fs-4 me-2"></i>
+                        Pay Out Available Credits 
                     </button>
                 </div>
             </div>
@@ -409,6 +403,81 @@ $permission = $_SESSION['permission'];
     </div>
 </div>
 
+<div class="modal fade" id="payoutModal" tabindex="-1" aria-labelledby="payoutModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-md">
+        <div class="modal-content">
+            <div class="modal-header d-flex align-items-center">
+                <h5 class="modal-title">Payout Available Credits</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="payoutForm" class="form-horizontal">
+                <div class="modal-body">
+                    <div class="card">
+                        <div class="card-body">
+                            <input type="hidden" id="paid_by" name="paid_by" value="<?= $customer_id ?>">
+                            <input type="hidden" id="ledger_id" name="ledger_id" value="">
+
+                            <div class="mb-3">
+                                <label for="type" class="form-label">Deposit Type</label>
+                                <select class="form-select" id="payout_type" name="type" required>
+                                    <option value="">-- Select Type --</option>
+                                    <option value="cash">Cash</option>
+                                    <option value="check">Check</option>
+                                    <option value="wire">Wire Transfer</option>
+                                </select>
+                            </div>
+
+                            <div id="payout_details_group" class="d-none">
+                                <div class="mb-3">
+                                    <label for="payment_amount" class="form-label">Payment Amount</label>
+                                    <input type="number" step="0.01" class="form-control" id="payment_amount" name="payment_amount" value="<?= $balance_due ?>">
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="reference_no" class="form-label">Reference No</label>
+                                    <input type="text" class="form-control" id="reference_no" name="reference_no" required>
+                                </div>
+
+                                <div class="mb-3 d-none" id="payout_check_no_group">
+                                    <label for="check_no" class="form-label">Check No</label>
+                                    <input type="text" class="form-control" id="payout_check_no" name="check_no">
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="description" class="form-label">Description</label>
+                                    <textarea class="form-control" id="description" name="description" rows="3"></textarea>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-primary" style="border-radius: 10%;">Save</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="response-modal" tabindex="-1" aria-labelledby="vertical-center-modal" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+        <div id="responseHeaderContainer" class="modal-header align-items-center modal-colored-header">
+            <h4 id="responseHeader" class="m-0"></h4>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+            <p id="responseMsg"></p>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn bg-danger-subtle text-danger  waves-effect text-start" data-bs-dismiss="modal">
+            Close
+            </button>
+        </div>
+        </div>
+    </div>
+</div>
+
 <script>
     
     $(document).ready(function() {
@@ -461,11 +530,23 @@ $permission = $_SESSION['permission'];
             $('#type').val('');
         });
 
+        $('#payoutModal').on('show.bs.modal', function () {
+            $('#payout_details_group').addClass('d-none');
+            $('#payout_check_no_group').addClass('d-none');
+            $('#payout_check_no').removeAttr('required').val('');
+            $('#payout_type').val('');
+        });
+
         $(document).on('click', '#paymentBtn', function(event) {
             event.preventDefault();
             const ledger_id = $(this).data('id') || '';
             $('#ledger_id').val(ledger_id);
             $('#paymentModal').modal('show');
+        });
+
+        $(document).on('click', '#payOutBtn', function(event) {
+            event.preventDefault();
+            $('#payoutModal').modal('show');
         });
 
         $(document).on('click', '#paymentHistoryBtn', function(event) {
@@ -517,6 +598,28 @@ $permission = $_SESSION['permission'];
             }
         });
 
+        $(document).on('change', '#payout_type', function () {
+            const type = $(this).val();
+
+            if (type === 'cash') {
+                $('#payout_details_group').removeClass('d-none');
+                $('#payout_check_no_group').addClass('d-none');
+                $('#payout_check_no').removeAttr('required').val('');
+            } else if (type === 'check') {
+                $('#payout_details_group').removeClass('d-none');
+                $('#payout_check_no_group').removeClass('d-none');
+                $('#payout_check_no').attr('required', true);
+            } else if (type === 'wire') {
+                $('#payout_details_group').removeClass('d-none');
+                $('#payout_check_no_group').addClass('d-none');
+                $('#payout_check_no').removeAttr('required').val('');
+            } else {
+                $('#payout_details_group').addClass('d-none');
+                $('#payout_check_no_group').addClass('d-none');
+                $('#payout_check_no').removeAttr('required').val('');
+            }
+        });
+
         $('#paymentForm').on('submit', function(event) {
             event.preventDefault(); 
             
@@ -543,6 +646,54 @@ $permission = $_SESSION['permission'];
                     if (response.status === "success") {
                         $('#responseHeader').text("Success");
                         $('#responseMsg').text(response.message || "Payment saved successfully!");
+                        $('#responseHeaderContainer').removeClass("bg-danger").addClass("bg-success");
+                        $('#response-modal').modal("show");
+
+                        $('#response-modal').on('hide.bs.modal', function () {
+                            location.reload();
+                        });
+                    } 
+                    else {
+                        let msg = response.message || "Process Failed";
+                        if (response.debug) msg += "\n\nCheck console for debug info.";
+                        
+                        $('#responseHeader').text("Failed");
+                        $('#responseMsg').text(msg);
+                        $('#responseHeaderContainer').removeClass("bg-success").addClass("bg-danger");
+                        $('#response-modal').modal("show");
+                    }
+                },
+                error: function(jqXHR, textStatus, errorThrown) {
+                    console.error("AJAX error:", textStatus, errorThrown, jqXHR.responseText);
+                    alert('Error: ' + textStatus + ' - ' + errorThrown);
+                }
+            });
+        });
+
+        $('#payoutForm').on('submit', function(event) {
+            event.preventDefault(); 
+            
+            var formData = new FormData(this);
+            formData.append('action', 'payout_receivable');
+
+            $.ajax({
+                url: 'pages/statement_of_account_details_ajax.php',
+                type: 'POST',
+                data: formData,
+                processData: false,
+                contentType: false,
+                dataType: 'json',
+                success: function(response) {
+                    if (response.debug) {
+                        console.group("💬 Debug Info (payment_receivable)");
+                        console.table(response.debug);
+                        console.groupEnd();
+                    }
+
+                    $('.modal').modal("hide");
+                    if (response.status === "success") {
+                        $('#responseHeader').text("Success");
+                        $('#responseMsg').text(response.message || "Available Credits Successfully Paid!");
                         $('#responseHeaderContainer').removeClass("bg-danger").addClass("bg-success");
                         $('#response-modal').modal("show");
 

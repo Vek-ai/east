@@ -355,11 +355,13 @@ function showCol($name) {
                             <tbody>
                                 <?php 
 
-                                $query = "SELECT * FROM estimates ORDER BY estimated_date DESC";
+                                $query = "SELECT * FROM estimates WHERE 1=1";
 
                                 if (isset($customer_id) && !empty($customer_id)) {
                                     $query .= " AND customerid = '$customer_id'";
                                 }
+
+                                $query .= " ORDER BY estimated_date DESC";
 
                                 $result = mysqli_query($conn, $query);
                             
