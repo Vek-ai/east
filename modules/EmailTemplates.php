@@ -11,7 +11,7 @@ class EmailTemplates {
         // Set default email headers
         $this->headers = "MIME-Version: 1.0\r\n";
         $this->headers .= "Content-type: text/html; charset=UTF-8\r\n";
-        $this->headers .= "From: no-reply@eastkentuckymetal.com\r\n";
+        $this->headers .= "From: sales@eastkentuckymetal.com\r\n";
     }
 
     public function sendEmail($email, $subject, $message) {
