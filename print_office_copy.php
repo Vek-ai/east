@@ -467,51 +467,6 @@ class PDF extends FPDF {
         $this->SetY(6 + $maxHeight + 5);
     }
 
-
-    function Footer() {
-        $marginLeft = 10;
-        $colWidthLeft  = 110;
-        $colWidthRight = 70;
-        $this->SetY(-40);
-
-        $colWidth = ($this->w - 2 * $marginLeft) / 3;
-
-        $this->SetFont('Arial', '', 10);
-        $this->SetTextColor(0, 0, 0);
-        $this->Cell($this->w - 2 * $marginLeft, 5, 'Thank you for choosing East Kentucky Metal. We appreciate your business!', 0, 1, 'C');
-
-        $this->SetY($this->GetY() + 1);
-        $gpsIcon = 'assets/images/gps.png';
-        $text = '977 E. Hal Rogers Parkway';
-        $iconWidth = 5;
-        $spacing = 2;
-
-        $totalWidth = $iconWidth + $spacing + $this->GetStringWidth($text);
-        $x = ($this->w - $totalWidth) / 2;
-
-        $this->Image($gpsIcon, $x, $this->GetY(), $iconWidth, 5);
-        $this->SetXY($x + $iconWidth + $spacing, $this->GetY());
-        $this->Cell($this->GetStringWidth($text), 5, $text, 0, 1, 'L');
-
-        $this->SetY(-20);
-        $this->SetFont('Arial', '', 9);
-
-        $phoneIcon = 'assets/images/phone.png';
-        $this->Image($phoneIcon, $marginLeft, $this->GetY(), 5, 5);
-        $this->SetXY($marginLeft + 7, $this->GetY());
-        $this->Cell($colWidth, 5, '(606) 877-1848 | Fax: (606) 864-4280', 0, 0, 'L');
-
-        $emailIcon = 'assets/images/email.png';
-        $this->Image($emailIcon, $marginLeft + $colWidth + 10, $this->GetY(), 5, 5);
-        $this->SetXY($marginLeft + $colWidth + 17, $this->GetY());
-        $this->Cell($colWidth, 5, 'Sales@EastKentuckyMetal.com', 0, 0, 'L');
-
-        $webIcon = 'assets/images/web.png';
-        $this->Image($webIcon, $marginLeft + 2 * $colWidth + 10, $this->GetY(), 5, 5);
-        $this->SetXY($marginLeft + 2 * $colWidth + 17, $this->GetY());
-        $this->Cell($colWidth, 5, 'EastKentuckyMetal.com', 0, 0, 'L');
-    }
-
     public function GetMultiCellHeight($w, $h, $txt) {
         $cw = &$this->CurrentFont['cw'];
         if ($w == 0)
@@ -828,6 +783,18 @@ if (mysqli_num_rows($result) > 0) {
         $pdf->SetXY($col1_x, $col_y);
         $pdf->MultiCell(120, 4, $disclaimer, 1, 'L');
 
+        $pdf->SetFont('Arial', 'B', 12);
+        $pdf->SetFillColor(220, 220, 220);
+
+        $pdf->SetX($col1_x);
+        $pdf->Cell(120, 6,'OFFICE COPY', 1, 1, 'C', true);
+
+        $pdf->SetX($col1_x);
+        $pdf->SetFont('Arial', '', 16);
+        $pdf->Cell(120, 8, 'X', 'B', 1, 'L');
+
+        $pdf->SetFont('Arial', 'B', 9);
+        $pdf->SetFillColor(255, 255, 255);
         $pdf->Cell(0, 5, 'Page ' . $pdf->PageNo() . ' of {nb}', 0, 0, 'L');
 
         $pdf->SetFont('Arial', '', 9);

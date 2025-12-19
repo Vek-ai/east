@@ -828,6 +828,14 @@ if (mysqli_num_rows($result) > 0) {
         $pdf->SetXY($col1_x, $col_y);
         $pdf->MultiCell(120, 4, $disclaimer, 1, 'L');
 
+        $pdf->SetFont('Arial', 'B', 12);
+        $pdf->SetFillColor(220, 220, 220);
+
+        $pdf->SetX($col1_x);
+        $pdf->Cell(120, 6,'CUSTOMER COPY', 1, 1, 'C', true);
+
+        $pdf->SetFont('Arial', 'B', 9);
+        $pdf->SetFillColor(255, 255, 255);
         $pdf->Cell(0, 5, 'Page ' . $pdf->PageNo() . ' of {nb}', 0, 0, 'L');
 
         $pdf->SetFont('Arial', '', 9);

@@ -1434,8 +1434,8 @@ $editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) :
 
             <div class="container-fluid border rounded p-3">
                 <div class="d-flex flex-wrap justify-content-center gap-2 p-2">
-                    <a id="print_base_customer" class="btn btn-warning btn-sm btn-show-pdf">Office Copy</a>
-                    <a id="print_base_customer" class="btn btn-primary btn-sm btn-show-pdf">Customer Copy</a>
+                    <a id="print_office_copy" class="btn btn-warning btn-sm btn-show-pdf">Office Copy</a>
+                    <a id="print_customer_copy" class="btn btn-primary btn-sm btn-show-pdf">Customer Copy</a>
                     <a id="print_summary_customer" class="btn btn-primary btn-sm btn-show-pdf">Summary Cost Breakdown </a>
                     <a id="print_load_ekm" class="btn btn-primary btn-sm btn-show-pdf">Load Copy</a>
                     <a id="print_delivery_ekm" class="btn btn-primary btn-sm btn-show-pdf">Delivery Ticket</a>
@@ -4894,6 +4894,8 @@ $editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) :
                 print_load_ekm: 'print_load_copy.php',
                 print_delivery_ekm: 'print_delivery_ticket.php',
 
+                print_office_copy: 'print_office_copy.php',
+                print_customer_copy: 'print_customer_copy.php',
                 print_metal_copy: 'print_work_order.php',
                 print_trim_copy: 'print_work_order.php'
             };
@@ -5389,7 +5391,7 @@ $editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) :
         var order_url = '';
 
         $(document).on('click', '#print_order_category', function () {
-            const $baseBtn = $('#print_base_customer');
+            const $baseBtn = $('#print_office_copy');
 
             $('.btn-show-pdf').removeClass('btn-warning').addClass('btn-primary');
             $baseBtn.addClass('btn-warning').removeClass('btn-primary');
