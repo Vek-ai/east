@@ -72,7 +72,7 @@ if(isset($_REQUEST['action'])) {
                             </div>
                             <?php endif; ?>
                         </div>
-                        <table id="order_dtls_tbl" class="table table-hover mb-0 w-100">
+                        <table id="order_dtls_tbl" class="table table-hover mb-0 w-100 text-center">
                             <thead>
                                 <tr>
                                     <th><input type="checkbox" id="select_all"></th>
@@ -83,8 +83,6 @@ if(isset($_REQUEST['action'])) {
                                     <th class="text-center">Quantity</th>
                                     <th class="text-center">Status</th>
                                     <th class="text-center">Payment Status</th>
-                                    <th class="text-center">Details</th>
-                                    <th class="text-center">Price</th>
                                     <th class="text-center">Customer Price</th>
                                 </tr>
                             </thead>
@@ -150,7 +148,7 @@ if(isset($_REQUEST['action'])) {
                                             <td class="text-center">
                                                 <?= $is_pickup && $is_ready ? "<input type='checkbox' class='row-checkbox' value='{$row['id']}' data-amount='$price' data-paid='$payment_db'>" : "" ?>
                                             </td>
-                                            <td>
+                                            <td class="text-start">
                                                 <?= $product_name ?>
                                             </td>
                                             <td>
@@ -172,40 +170,6 @@ if(isset($_REQUEST['action'])) {
                                             <td>
                                                 <span class="<?= $payment_prod['class']; ?> fw-bond"><?= $payment_prod['label']; ?></span>
                                             </td>
-                                            <td>
-                                                <?php 
-                                                if($product_details['product_category'] == $screw_id){
-                                                    $pack_count = $row['custom_length'];
-                                                    echo htmlspecialchars($pack_count) . ' pcs';
-                                                }else{
-                                                    $width = $row['custom_width'];
-                                                    $ft = $row['custom_length'];
-                                                    $in = $row['custom_length2'];
-
-                                                    $length = $ft + ($in / 12);
-                                                    
-                                                    if (!empty($width) && !empty($length)) {
-                                                        echo htmlspecialchars($width) . " X " . htmlspecialchars($length) .'<br>';
-                                                    } elseif (!empty($width)) {
-                                                        echo "Width: " . htmlspecialchars($width) .'<br>';
-                                                    } elseif (!empty($length)) {
-                                                        echo "Length: " . htmlspecialchars($length) .'<br>';
-                                                    }
-                                                }
-
-                                                $panel_type = $row['panel_type'];
-                                                $panel_style = $row['panel_style'];
-                                                
-                                                if (!empty($panel_type) && $panel_type != '0') {
-                                                    echo "Panel Type: " . htmlspecialchars($panel_type) .'<br>';
-                                                }
-
-                                                if (!empty($panel_style) && $panel_style != '0') {
-                                                    echo "Panel Style: " . htmlspecialchars($panel_style) .'<br>';
-                                                }
-                                                ?>
-                                            </td>
-                                            <td class="text-end">$ <?= number_format($row['actual_price'],2) ?></td>
                                             <td class="text-end">$ <?= number_format($row['discounted_price'],2) ?></td>
                                         </tr>
 
@@ -220,7 +184,7 @@ if(isset($_REQUEST['action'])) {
 
                             <tfoot>
                                 <tr>
-                                    <td colspan="7" class="text-end">Total</td>
+                                    <td colspan="5" class="text-end">Total</td>
                                     <td><?= $totalquantity ?></td>
                                     <td></td>
                                     <td></td>
