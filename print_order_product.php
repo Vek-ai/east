@@ -360,7 +360,6 @@ class PDF extends FPDF {
 
     public function renderRow($columns, $row, $bold = false) {
         $lineHeight = 5;
-
         $xStart = $this->GetX();
         $yStart = $this->GetY();
 
@@ -368,32 +367,52 @@ class PDF extends FPDF {
 
         $heights = [];
         $cellTexts = [];
+        $cellStyles = [];
 
         foreach ($columns as $i => $col) {
             $w = $col['width'];
             $fontSize = $col['fontsize'] ?? 9;
 
-            $this->SetFont('Arial', $bold ? 'B' : '', $fontSize);
+            $cellBold = $bold;
+            $cellItalic = false;
+            $cellUnderline = false;
+
+            if ($i === 4) {
+                if ($row[$i] === '26ga') $cellBold = true;
+                elseif ($row[$i] === '24ga') { $cellBold = true; $cellItalic = true; $cellUnderline = true; }
+            } elseif ($i === 7 && stripos($row[$i], 'Vented') !== false) {
+                $cellBold = true;
+            } elseif ($i === 8) {
+                if (stripos($row[$i], 'Reversed') !== false) { $cellBold = true; $cellUnderline = true; }
+                elseif (stripos($row[$i], 'Minor Rib') !== false) $cellBold = true;
+                elseif (stripos($row[$i], 'Pencil Ribs') !== false) $cellUnderline = true;
+            }
+
+            $style = '';
+            if ($cellBold) $style .= 'B';
+            if ($cellItalic) $style .= 'I';
+            if ($cellUnderline) $style .= 'U';
+
+            $cellStyles[$i] = $style;
 
             if ($i === 6 && strpos($row[$i], 'ft') !== false && strpos($row[$i], 'in') !== false) {
                 preg_match('/(\d+)ft\s*(\d+)in/', $row[$i], $m);
                 $cellTexts[$i] = $m ? $m[1] . "ft\n" . $m[2] . "in" : $row[$i];
             } elseif ($i === 0) {
-                $fit = $this->fitTextToWidth($row[$i], $w, $fontSize, 'Arial', $bold ? 'B' : '');
-                $this->SetFont('Arial', $bold ? 'B' : '', $fit);
+                $fit = $this->fitTextToWidth($row[$i], $w, $fontSize, 'Arial', $style);
+                $this->SetFont('Arial', $style, $fit);
                 $cellTexts[$i] = $row[$i];
             } else {
                 $cellTexts[$i] = $row[$i];
             }
 
+            $this->SetFont('Arial', $style, $fontSize);
             $heights[$i] = $this->GetMultiCellHeight($w, $lineHeight, $cellTexts[$i]);
         }
 
         $rowHeight = max($heights);
 
-        // Page break check
-        $bottom = $this->h - $this->bMargin;
-        if ($yStart + $rowHeight > $bottom) {
+        if ($yStart + $rowHeight > $this->h - $this->bMargin) {
             $this->AddPage();
             $xStart = $this->GetX();
             $yStart = $this->GetY();
@@ -401,16 +420,14 @@ class PDF extends FPDF {
 
         $x = $xStart;
 
-        // Draw the outer border for the row
         $totalWidth = array_sum(array_column($columns, 'width'));
         $this->Rect($xStart, $yStart, $totalWidth, $rowHeight);
 
-        // Print each cell's content
         foreach ($columns as $i => $col) {
             $w = $col['width'];
             $fontSize = $col['fontsize'] ?? 9;
 
-            $this->SetFont('Arial', $bold ? 'B' : '', $fontSize);
+            $this->SetFont('Arial', $cellStyles[$i], $fontSize);
 
             $saveX = $x;
             $saveY = $yStart;
@@ -425,24 +442,20 @@ class PDF extends FPDF {
                 $this->MultiCell($w, $lineHeight, $cellTexts[$i], 0, $col['align']);
             }
 
-            // Move to the right for next column
             $x += $w;
             $this->SetXY($x, $saveY);
         }
 
-        // Move cursor to next row
         $this->SetXY($xStart, $yStart + $rowHeight);
     }
-
-
 
     function Header() {
         $this->SetFont('Arial', '', 9);
         $this->Image('assets/images/logo-bw.png', 10, 6, 60, 20);
         $yStart = $this->GetY();
 
-        $col2_x = 120;
-        $w = 60;
+        $col2_x = 100;
+        $w = 80;
         $lineH = 5;
 
         $blockText  = "Invoice #: " . $this->orderid . "\n";
@@ -453,7 +466,7 @@ class PDF extends FPDF {
 
         $maxHeight = $this->NbLines($w, $blockText) * $lineH;
 
-        $this->SetXY($col2_x - 10, 6);
+        $this->SetXY($col2_x, 6);
         $this->MultiCell($w, $lineH, $blockText, 0, 'L');
 
         $this->SetXY($col2_x + $w, 6);
@@ -466,7 +479,6 @@ class PDF extends FPDF {
 
         $this->SetY(6 + $maxHeight + 5);
     }
-
 
     function Footer() {
         $marginLeft = 10;
@@ -607,13 +619,14 @@ if (mysqli_num_rows($result) > 0) {
         $delivery_method = 'Deliver';
         $order_date = '';
         if (!empty($row_orders['order_date']) && $row_orders['order_date'] !== '0000-00-00 00:00:00') {
-            $order_date = date("m/d/Y || g:i A", strtotime($row_orders['order_date']));
+            $order_date = date("(l) - m/d/Y || g:i A", strtotime($row_orders['order_date']));
         }
 
         $scheduled_date = '';
-        if (!empty($row_orders["scheduled_date"]) && $row_orders["delivered_date"] !== '0000-00-00 00:00:00') {
-            $scheduled_date = date("m/d/Y || g:i A", strtotime($row_orders["scheduled_date"]));
+        if (!empty($row_orders["scheduled_date"]) && $row_orders["scheduled_date"] !== '0000-00-00 00:00:00') {
+            $scheduled_date = date("(l) - m/d/Y || g:i A", strtotime($row_orders["scheduled_date"]));
         }
+
         if($delivery_price == 0){
             $delivery_method = 'Pickup';
         }
@@ -832,9 +845,20 @@ if (mysqli_num_rows($result) > 0) {
 
         $pdf->SetFont('Arial', '', 9);
 
-        $subtotal   = $total_price;
-        $sales_tax  = $subtotal * $tax;
-        $grand_total = $subtotal + $delivery_price + $sales_tax;
+        $materials_total = $row_orders['total_price'] ?? 0;
+        $discount_value = 0;
+        if (!empty($row_orders['discount_percent']) && $row_orders['discount_percent'] > 0) {
+            $discount_value = $materials_total * ($row_orders['discount_percent'] / 100);
+        } elseif (!empty($row_orders['discount_amount']) && $row_orders['discount_amount'] > 0) {
+            $discount_value = min($row_orders['discount_amount'], $materials_total);
+        }
+
+        $subtotal = max(0, $materials_total - $discount_value);
+        $taxable_total = $subtotal + $delivery_price;
+        $sales_tax = $taxable_total * $tax;
+        $grand_total = $taxable_total + $sales_tax;
+
+        $total_saved = $discount_value;
 
         $pdf->SetXY($col2_x, $col_y);
         $pdf->Cell(40, $lineheight, 'SAVINGS:', 0, 0);

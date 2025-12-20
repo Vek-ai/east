@@ -255,13 +255,33 @@ function renderRow($pdf, $columns, $row, $bold = false) {
     $x = $xStart;
 
     $row = array_slice($row, 0, count($columns));
-
     $columnHeights = [];
 
     foreach ($columns as $i => $col) {
         $w = $col['width'];
         $fontSize = $col['fontsize'] ?? 9;
-        $pdf->SetFont('Arial', $bold ? 'B' : '', $fontSize);
+
+        $cellBold = $bold;
+        $cellItalic = false;
+        $cellUnderline = false;
+
+        if ($i === 4) {
+            if ($row[$i] === '26ga') $cellBold = true;
+            elseif ($row[$i] === '24ga') { $cellBold = true; $cellItalic = true; $cellUnderline = true; }
+        } elseif ($i === 7 && stripos($row[$i], 'Vented') !== false) {
+            $cellBold = true;
+        } elseif ($i === 8) {
+            if (stripos($row[$i], 'Reversed') !== false) { $cellBold = true; $cellUnderline = true; }
+            elseif (stripos($row[$i], 'Minor Rib') !== false) $cellBold = true;
+            elseif (stripos($row[$i], 'Pencil Ribs') !== false) $cellUnderline = true;
+        }
+
+        $style = '';
+        if ($cellBold) $style .= 'B';
+        if ($cellItalic) $style .= 'I';
+        if ($cellUnderline) $style .= 'U';
+
+        $pdf->SetFont('Arial', $style, $fontSize);
         $pdf->SetXY($x, $yStart);
 
         if ($i === 1) {
@@ -269,8 +289,7 @@ function renderRow($pdf, $columns, $row, $bold = false) {
             $pdf->MultiCell($w, $lineHeight, $row[$i], 0, $col['align']);
             $endY = $pdf->GetY();
             $columnHeights[$i] = $endY - $startY;
-        }
-        elseif ($i === 6 && strpos($row[$i], 'ft') !== false && strpos($row[$i], 'in') !== false) {
+        } elseif ($i === 6 && strpos($row[$i], 'ft') !== false && strpos($row[$i], 'in') !== false) {
             preg_match('/(\d+)ft\s*(\d+)in/', $row[$i], $matches);
             if ($matches) {
                 $ft = $matches[1] . 'ft';
@@ -282,10 +301,9 @@ function renderRow($pdf, $columns, $row, $bold = false) {
                 $pdf->Cell($w, $lineHeight, $row[$i], 0, 0, $col['align']);
             }
             $columnHeights[$i] = $lineHeight;
-        }
-        else {
-            $fittedSize = $pdf->fitTextToWidth($row[$i], $w, $fontSize, 'Arial', $bold ? 'B' : '');
-            $pdf->SetFont('Arial', $bold ? 'B' : '', $fittedSize);
+        } else {
+            $fittedSize = $pdf->fitTextToWidth($row[$i], $w, $fontSize, 'Arial', $style);
+            $pdf->SetFont('Arial', $style, $fittedSize);
             $pdf->Cell($w, $lineHeight, $row[$i], 0, 0, $col['align']);
             $columnHeights[$i] = $lineHeight;
         }
@@ -312,13 +330,14 @@ function renderInvoiceHeader($pdf, $row_orders, $type) {
     $delivery_method = 'Deliver';
     $order_date = '';
     if (!empty($row_orders['order_date']) && $row_orders['order_date'] !== '0000-00-00 00:00:00') {
-        $order_date = date("m/d/Y || g:i A", strtotime($row_orders['order_date']));
+        $order_date = date("(l) - m/d/Y || g:i A", strtotime($row_orders['order_date']));
     }
 
     $scheduled_date = '';
-    if (!empty($row_orders["scheduled_date"]) && $row_orders["delivered_date"] !== '0000-00-00 00:00:00') {
-        $scheduled_date = date("m/d/Y || g:i A", strtotime($row_orders["scheduled_date"]));
+    if (!empty($row_orders["scheduled_date"]) && $row_orders["scheduled_date"] !== '0000-00-00 00:00:00') {
+        $scheduled_date = date("(l) - m/d/Y || g:i A", strtotime($row_orders["scheduled_date"]));
     }
+
     if($delivery_price == 0){
         $delivery_method = 'Pickup';
     }

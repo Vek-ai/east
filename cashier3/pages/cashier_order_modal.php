@@ -201,7 +201,7 @@ if(isset($_POST['fetch_order'])){
     <div class="card-body datatables">
         <form id="msform">
             <input type="hidden" id="order_payable_amt" value="<?= $total_customer_price ?>">
-            
+            <input type="hidden" id="final_payable_amt" value="0">
             <input type="hidden" id="store_credit" name="store_credit" value="<?= $store_credit ?>">
             <input type="hidden" id="points_ratio" name="points_ratio" value="<?= $points_ratio ?>">
             <input type="hidden" id="charge_net_30" value="<?= $charge_net_30 ?>">
@@ -775,6 +775,16 @@ if(isset($_POST['fetch_order'])){
                             </select>
                         </div>
                     </div>
+
+                    <div class="mt-3">
+                        <h6 class="mb-0">Discount (%)</h6>
+                        <input class="form-control discount_input" placeholder="Enter Discount (%)" type="number" step="0.001" id="discount" value="<?=$values['used_discount']?>">
+                    </div>
+
+                    <div class="mt-3">
+                        <h6 class="mb-0">Discount Amount ($)</h6>
+                        <input class="form-control discount_amount_input" placeholder="Enter Discount ($0.00)" type="number" step="0.001" id="discount_amount">
+                    </div>
                 </div>
                 </div>
             </div>
@@ -1194,11 +1204,9 @@ if(isset($_POST['fetch_order'])){
             });
 
             function distributePaymentAmounts() {
-                const baseAmt = parseFloat($('#order_payable_amt').val().replace(/,/g, '')) || 0;
-                const taxRate = parseFloat($('#customer_tax_hidden').val()) || 0;
-                const totalWithTax = roundTo2(baseAmt * (1 + taxRate));
+                const totalWithTax = parseFloat($('#final_payable_amt').val()) || 0;
 
-                console.log(totalWithTax);
+                console.log('Distributing:', totalWithTax);
 
                 const activeMethods = $('.pay-method:checked');
                 if (activeMethods.length === 0) {
@@ -1221,8 +1229,7 @@ if(isset($_POST['fetch_order'])){
                     const lastInput = $('#' + lastCheckedMethod + 'AmountDiv input');
                     if (lastInput.length) {
                         let currentVal = parseFloat(lastInput.val()) || 0;
-                        const adjusted = Math.max(0, currentVal - excess);
-                        lastInput.val(adjusted.toFixed(2));
+                        lastInput.val(Math.max(0, currentVal - excess).toFixed(2));
                     }
                     totalManual = totalWithTax;
                 }
@@ -1231,24 +1238,24 @@ if(isset($_POST['fetch_order'])){
                 if (remaining < 0) remaining = 0;
 
                 const autoFillMethods = activeMethods.filter(function () {
-                    const method = $(this).val();
-                    return !manuallyEdited[method];
+                    return !manuallyEdited[$(this).val()];
                 });
 
                 const numAuto = autoFillMethods.length;
                 if (numAuto > 0) {
-                    const splitRaw = remaining / numAuto;
-                    const split = roundTo2(splitRaw);
-
+                    const split = roundTo2(remaining / numAuto);
                     let distributed = 0;
+
                     autoFillMethods.each(function (index) {
                         const method = $(this).val();
                         let val = split;
+
                         if (index === numAuto - 1) {
                             val = roundTo2(remaining - distributed);
                         } else {
                             distributed += val;
                         }
+
                         $('#' + method + 'AmountDiv input').val(val.toFixed(2));
                     });
                 }

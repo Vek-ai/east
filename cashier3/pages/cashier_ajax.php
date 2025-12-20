@@ -1046,7 +1046,19 @@ if (isset($_POST['save_order'])) {
     header('Content-Type: application/json');
     $response = [];
 
-    $discount = floatval($_POST['discount'] ?? 0);
+    $discount_percent = floatval($_POST['discount'] ?? 0);
+    $discount_amount  = floatval($_POST['discount_amount'] ?? 0);
+
+    $discount_percent = max(0, min(100, $discount_percent));
+    $discount_amount  = max(0, $discount_amount);
+
+    if ($discount_percent > 0 && $discount_amount > 0) {
+        echo json_encode([
+            'error' => 'Cannot apply percent and amount discount at the same time.'
+        ]);
+        exit;
+    }
+
     $posted_credit_amt = isset($_POST['credit_amt']) ? floatval($_POST['credit_amt']) : null;
     $posted_cash_amt   = isset($_POST['cash_amt']) ? floatval($_POST['cash_amt']) : null;
 
@@ -1159,15 +1171,28 @@ if (isset($_POST['save_order'])) {
 
     $total_price = 0;
     $total_discounted_price = 0;
-    $pre_orders = [];
+
     foreach ($cart as $item) {
         $calculated = calculateCartItem($item);
-        $actual_price = $calculated['product_price'];
+        $actual_price   = $calculated['product_price'];
         $customer_price = $calculated['customer_price'];
-        $discounted_price = $customer_price * (1 + $tax_rate);
+
         $total_price += $actual_price;
-        $total_discounted_price += $discounted_price;
+        $total_discounted_price += $customer_price;
     }
+
+    $applied_discount_value = 0;
+
+    if ($discount_percent > 0) {
+        $applied_discount_value = ($discount_percent / 100) * $total_discounted_price;
+    } elseif ($discount_amount > 0) {
+        $applied_discount_value = min($discount_amount, $total_discounted_price);
+    }
+
+    $total_discounted_price -= $applied_discount_value;
+    $total_discounted_price = max(0, $total_discounted_price);
+
+    $total_discounted_price *= (1 + $tax_rate);
 
     $original_cash_amt = $payments_cash_like;
     $original_credit_amt = $payments_credit_like;
@@ -1233,10 +1258,9 @@ if (isset($_POST['save_order'])) {
 
     $token = bin2hex(random_bytes(8));
 
-    $discount_percent = ($discount * 100);
     $sql_insert = "
         INSERT INTO orders (
-            estimateid, cashier, station, total_price, discounted_price, discount_percent,
+            estimateid, cashier, station, total_price, discounted_price, discount_percent, discount_amount,
             order_date, scheduled_date, customerid, originalcustomerid,
             cash_amt, credit_amt, job_name, job_po,
             deliver_address, deliver_city, deliver_state, deliver_zip,
@@ -1244,7 +1268,7 @@ if (isset($_POST['save_order'])) {
             pay_type, pay_cash, pay_card, pay_check, pay_pickup, pay_delivery, pay_net30,
             tax_status, tax_exempt_number, truck, contractor_id, token
         ) VALUES (
-            '$estimateid', '$cashierid', '$station_id', '$total_price', '$total_discounted_price', '$discount_percent',
+            '$estimateid', '$cashierid', '$station_id', '$total_price', '$total_discounted_price', '$discount_percent', '$discount_amount',
             '$order_date', '$scheduled_datetime', '$customerid', '$customerid',
             '$cash_amt', '$credit_amt', '$job_name', '$job_po',
             '$deliver_address', '$deliver_city', '$deliver_state', '$deliver_zip',

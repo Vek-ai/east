@@ -238,13 +238,14 @@ if (mysqli_num_rows($result) > 0) {
         $delivery_method = 'Deliver';
         $order_date = '';
         if (!empty($row_orders['order_date']) && $row_orders['order_date'] !== '0000-00-00 00:00:00') {
-            $order_date = date("m/d/Y || g:i A", strtotime($row_orders['order_date']));
+            $order_date = date("(l) m/d/Y || g:i A", strtotime($row_orders['order_date']));
         }
 
         $scheduled_date = '';
-        if (!empty($row_orders["scheduled_date"]) && $row_orders["delivered_date"] !== '0000-00-00 00:00:00') {
-            $scheduled_date = date("m/d/Y || g:i A", strtotime($row_orders["scheduled_date"]));
+        if (!empty($row_orders["scheduled_date"]) && $row_orders["scheduled_date"] !== '0000-00-00 00:00:00') {
+            $scheduled_date = date("(l) m/d/Y || g:i A", strtotime($row_orders["scheduled_date"]));
         }
+
         if($delivery_price == 0){
             $delivery_method = 'Pickup';
         }
@@ -332,24 +333,24 @@ if (mysqli_num_rows($result) > 0) {
 
         $query_category = "SELECT * FROM product_category WHERE hidden = 0";
         $result_category = mysqli_query($conn, $query_category);
+
         if (mysqli_num_rows($result_category) > 0) {
             $pdf->SetFont('Arial', 'B', 9);
             $widths = [138, 53];
-            $headers = ['PRODUCT CATEGORY' , 'PRICE'];
+            $headers = ['PRODUCT CATEGORY', 'PRICE'];
 
             for ($i = 0; $i < count($headers); $i++) {
                 $pdf->Cell($widths[$i], 10, $headers[$i], 1, 0, 'C');
             }
             $pdf->Ln();
 
+            $total_price = 0;
+            $total_qty = 0;
+
             while ($row_category = mysqli_fetch_assoc($result_category)) {
                 $product_category_id = $row_category['product_category_id'];
 
-                $qty_per_component = 0.0;
                 $total_per_component = 0.0;
-                $undisc_total_per_component = 0.0;
-
-                $data = array();
 
                 $query_product = "
                     SELECT p.product_category, op.*
@@ -361,52 +362,55 @@ if (mysqli_num_rows($result) > 0) {
                 $result_product = mysqli_query($conn, $query_product);
                 if (mysqli_num_rows($result_product) > 0) {
                     while ($row_product = mysqli_fetch_assoc($result_product)) {
-                        $productid = $row_product['productid'];
-                        $product_details = getProductDetails($productid);
-                        $grade_details = getGradeDetails($product_details['grade']);
-
                         $quantity = is_numeric($row_product['quantity']) ? floatval($row_product['quantity']) : 0.0;
 
-                        $price = floatval($row_product['discounted_price']);
                         $price_undisc = floatval($row_product['actual_price']);
 
-                        $total_price += $price;
-                        $total_price_undisc += $price_undisc;
+                        $total_price += $price_undisc;
+                        $total_per_component += $price_undisc;
                         $total_qty += $quantity;
-
-                        $total_per_component += $price;
-                        $undisc_total_per_component += $price_undisc;
-                        $qty_per_component += $quantity;
                     }
 
-                    $data[] = [
-                        getProductCategoryName($product_category_id),
-                        '$ ' . number_format($total_per_component, 2),
+                    $data = [
+                        [getProductCategoryName($product_category_id), '$ ' . number_format($total_per_component, 2)]
                     ];
-
                     $pdf->SetFont('Arial', '', 8);
                     renderTableRows($data);
                 }
             }
 
-            $subtotal = $total_price;
+            $materials_total = $total_price;
+            $discount_value = 0;
+            if (!empty($row_orders['discount_percent']) && $row_orders['discount_percent'] > 0) {
+                $discount_value = $materials_total * ($row_orders['discount_percent'] / 100);
+            } elseif (!empty($row_orders['discount_amount']) && $row_orders['discount_amount'] > 0) {
+                $discount_value = min($row_orders['discount_amount'], $materials_total);
+            }
+
+            $subtotal = max(0, $materials_total - $discount_value);
+            $delivery_price = isset($delivery_price) ? floatval($delivery_price) : 0.0;
+            $taxable_total = $subtotal + $delivery_price;
 
             $tax = isset($tax) ? floatval($tax) : 0.0;
-            $sales_tax = $subtotal * $tax;
+            $sales_tax = $taxable_total * $tax;
 
-            $delivery_price = isset($delivery_price) ? floatval($delivery_price) : 0.0;
+            $grand_total = $taxable_total + $sales_tax;
 
-            $grand_total = $subtotal + $delivery_price + $sales_tax;
+            $total_saved = $discount_value;
+
+            $pdf->Ln(5);
+
             $miscRows = [
                 ['Job Site Fees', '$ 0.00'],
                 ['Delivery Charge', '$ ' . number_format($delivery_price, 2)],
+                ['Savings', '$ ' . number_format($total_saved, 2)],
             ];
-            $pdf->Ln(5);
             renderTableRows($miscRows);
             $pdf->Ln(5);
 
             $subtotalRows = [
-                ['Subtotal', '$ ' . number_format($subtotal, 2)]
+                ['Subtotal (after discount)', '$ ' . number_format($subtotal, 2)],
+                ['Sales Tax', '$ ' . number_format($sales_tax, 2)],
             ];
             renderTableRows($subtotalRows);
             $pdf->Ln(5);
@@ -422,6 +426,7 @@ if (mysqli_num_rows($result) > 0) {
         } else {
             echo "No key components found";
         }
+
 
         $pdf->Ln(5);
 

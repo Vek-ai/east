@@ -1686,6 +1686,9 @@ $editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) :
         var lat2Float = typeof lat2 !== 'undefined' ? parseFloat(lat2) : 0;
         var lng2Float = typeof lng2 !== 'undefined' ? parseFloat(lng2) : 0;
 
+        var discount_percent = parseFloat($('#discount').val()) || 0;
+        var discount_amount_input = parseFloat($('#discount_amount').val()) || 0;
+
         /* 
         let deliveryAmount = 0;
 
@@ -1713,7 +1716,19 @@ $editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) :
         let job_deposit_calc = 0;
         let net30_calc = 0;
 
-        const totalBeforeCredit = payable_amt + deliveryAmount;
+        const subtotal = payable_amt;
+
+        let discount_value = 0;
+
+        if (discount_percent > 0) {
+            discount_value = subtotal * (discount_percent / 100);
+        } else if (discount_amount_input > 0) {
+            discount_value = Math.min(discount_amount_input, subtotal);
+        }
+
+        const discounted_subtotal = subtotal - discount_value;
+
+        const totalBeforeCredit = discounted_subtotal + deliveryAmount;
 
         if (isapplystorecredit) {
             store_credit_calc = Math.min(store_credit, totalBeforeCredit);
@@ -1760,6 +1775,8 @@ $editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) :
 
         const estimated_points = Math.floor(raw_total * points_ratio);
         $('#estimated_points').text('+' + estimated_points);
+
+        $('#final_payable_amt').val(total_amt.toFixed(2));
     }
 
     function number_format(number, decimals = 2) {
@@ -3985,6 +4002,10 @@ $editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) :
 
         $(document).on('change', '.discount_input', function () {
             var discount = $(this).val();
+
+            if (discount > 100) discount = 100;
+            if (discount < 0) discount = 0;
+
             $.ajax({
                 url: 'pages/cashier_ajax.php',
                 type: 'POST',
@@ -4872,8 +4893,8 @@ $editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) :
         var customerIdSaved = '';
 
         function updatePrintLinks(orderId) {
-            const baseUrl = window.location.origin + '/';
-            //const baseUrl = window.location.origin + '/temps/east/';
+            //const baseUrl = window.location.origin + '/';
+            const baseUrl = window.location.origin + '/temps/east/';
 
             const links = {
                 print_order: 'print_order_total.php',
@@ -4922,7 +4943,9 @@ $editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) :
         $(document).on('click', '#save_order', function(event) {
             event.preventDefault();
 
-            var discount = $('#order_discount').val();
+            var discount = $('.discount_input').val();
+            var discount_amount = $('.discount_amount_input').val();
+
             var delivery_amt = $('#delivery_amt').val();
             var cash_amt = $('#order_payable_amt').val();
             var truck = $('#truck').val() || '';
@@ -4979,6 +5002,7 @@ $editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) :
                         cash_amt: cash_amt,
                         credit_amt: credit_amt,
                         discount: discount,
+                        discount_amount: discount_amount,
                         delivery_amt: delivery_amt,
                         job_id: job_id,
                         job_name: job_name,
@@ -5915,6 +5939,10 @@ $editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) :
         });
 
         $(document).on('change', '[name="payMethod"]', function () {
+            calculateDeliveryAmount();
+        });
+
+        $(document).on('input', '.discount_input, .discount_amount_input', function () {
             calculateDeliveryAmount();
         });
 
