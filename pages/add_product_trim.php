@@ -194,6 +194,19 @@ if(isset($_REQUEST['action'])) {
                             <input class="form-check-input" type="checkbox" id="has_color" name="has_color" <?= $checked ?>>
                         </div>
                     </div>
+
+                    <?php 
+                    $is_special_trim = $row['is_special_trim'] ?? null;
+                    $checked = (!isset($row['is_special_trim']) || $is_special_trim > 0) ? 'checked' : '';
+                    ?>
+                    <div class="col-4 mb-3 text-center">
+                        <label class="form-check-label fw-bold d-block mb-1" for="is_special_trim">
+                            Is Product Special Trim?
+                        </label>
+                        <div class="form-check d-flex justify-content-center">
+                            <input class="form-check-input" type="checkbox" id="is_special_trim" name="is_special_trim" <?= $checked ?>>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
