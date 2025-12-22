@@ -10,13 +10,10 @@ $picture_path = "images/product/product.jpg";
 
 $page_title = "Work Order List";
 
-$status_labels = [
-    1 => ['label' => 'New Order', 'class' => 'badge bg-primary'],
-    2 => ['label' => 'Processing', 'class' => 'badge bg-warning'],
-    3 => ['label' => 'In Transit', 'class' => 'badge bg-info'],
-    4 => ['label' => 'Sent to Customer', 'class' => 'badge bg-success'],
-    5 => ['label' => 'On Hold', 'class' => 'badge bg-danger'],
-    6 => ['label' => 'Archived/Returned', 'class' => 'badge bg-secondary'],
+$wo_status_labels = [
+    0 => ['label' => 'New Order', 'class' => 'badge bg-primary'],
+    1 => ['label' => 'Work Orders Printed', 'class' => 'badge bg-warning'],
+    2 => ['label' => 'Work Orders Completed ', 'class' => 'badge bg-success']
 ];
 
 if(isset($_REQUEST['customer_id'])){
@@ -515,7 +512,8 @@ function showCol($name) {
                                                 o.*,
                                                 COUNT(op.id) AS total_count,
                                                 CASE WHEN SUM(CASE WHEN op.product_category = $trim_id THEN 1 END) > 0 THEN 1 ELSE 0 END AS has_trim,
-                                                CASE WHEN SUM(CASE WHEN op.product_category = $panel_id THEN 1 END) > 0 THEN 1 ELSE 0 END AS has_panel
+                                                CASE WHEN SUM(CASE WHEN op.product_category = $panel_id THEN 1 END) > 0 THEN 1 ELSE 0 END AS has_panel,
+                                                o.wo_status
                                             FROM
                                                 orders o
                                             LEFT JOIN order_product op ON
@@ -523,7 +521,8 @@ function showCol($name) {
                                                     op.product_category = $trim_id OR op.product_category = $panel_id
                                                 )
                                             WHERE
-                                                o.status != 6";
+                                                o.status != 6
+                                    ";
 
                                     if (isset($customer_id) && !empty($customer_id)) {
                                         $query .= " AND customerid = '$customer_id'";
@@ -545,11 +544,14 @@ function showCol($name) {
                                         $response = array();
                                         while ($row = mysqli_fetch_assoc($result)) {
                                             $orderid = $row['orderid'];
-                                            $status_code = $row['status'];
+
+                                            updateWorkOrderStatus($orderid);
+
+                                            $wo_status_code = $row['wo_status'];
                                             $customer_id = $row["customerid"];
                                             $customer_details = getCustomerDetails($customer_id);
                                         
-                                            $status = $status_labels[$status_code];
+                                            $status = $wo_status_labels[$wo_status_code];
 
                                             $show_send_email = getOrderChangeCount($orderid) > 0 ? '1' : '0';
                                         ?>
@@ -1340,26 +1342,41 @@ function showCol($name) {
         });
 
         $('#printBtn').on('click', function () {
-            if (isPrinting) {
-                return;
-            }
+            if (isPrinting) return;
 
             isPrinting = true;
             const $iframe = $('#pdfFrame');
+            const modalEl = document.getElementById('pdfModal');
+            const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
 
             $iframe.off('load').one('load', function () {
                 try {
                     this.contentWindow.focus();
                     this.contentWindow.print();
+
+                    $.ajax({
+                        url: 'pages/order_list_ajax.php',
+                        type: 'POST',
+                        data: {
+                            order_id: print_order_id,
+                            action: 'set_status_printed'
+                        }
+                    });
+
                 } catch (e) {
                     alert("Failed to print PDF.");
+                } finally {
+                    isPrinting = false;
+
+                    $('.modal-backdrop').each(function () {
+                        if (!$(this).closest('.modal').length) {
+                            $(this).remove();
+                        }
+                    });
                 }
-                isPrinting = false;
             });
 
             $iframe.attr('src', pdfUrl);
-
-            const modal = new bootstrap.Modal(document.getElementById('pdfModal'));
             modal.show();
         });
 

@@ -163,28 +163,7 @@ if(isset($_POST['fetch_modal'])){
             <div class="row justify-content-center mb-3">
                 <div class="col-3 text-center">
                     <label class="fs-4 fw-semibold">Flat Sheet Width</label>
-                    <select class="form-control trim-width" id="trim-width" name="width">
-                        <option value="" data-category="">Select Width...</option>
-                        <optgroup label="Flat Sheet Width">
-                            <?php
-                            $query_colors = "
-                                SELECT DISTINCT width
-                                FROM flat_sheet_width
-                                WHERE
-                                    hidden = 0 AND 
-                                    status = 1
-                                ORDER BY CAST(width AS DECIMAL(10,2)) ASC
-                            ";
-                            $result_colors = mysqli_query($conn, $query_colors);
-                            while ($row = mysqli_fetch_assoc($result_colors)) {
-                            ?>
-                                <option value="<?= htmlspecialchars($row['width']) ?>">
-                                        <?= htmlspecialchars($row['width']) ?>
-                                    </option>
-                            <?php } 
-                            ?>
-                        </optgroup>
-                    </select>
+                    <input type="number" step="0.01" name="width" class="form-control mb-1 trim-width" placeholder="Enter Flat Sheet Width">
                 </div>
                 <div class="col-3 text-center">
                     <label class="fs-4 fw-semibold">Total Hems</label>

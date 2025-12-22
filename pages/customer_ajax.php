@@ -115,6 +115,8 @@ if(isset($_REQUEST['action'])) {
         $is_approved = mysqli_real_escape_string($conn, $_POST['portal_access'] ?? 0);
         $username = mysqli_real_escape_string($conn, $_POST['username'] ?? '');
 
+        $desired_invoice_preference = mysqli_real_escape_string($conn, $_POST['desired_invoice_preference'] ?? 0);
+
         $payment_pickup    = isset($_POST['payment_pickup']) ? 1 : 0;
         $payment_delivery  = isset($_POST['payment_delivery']) ? 1 : 0;
         $payment_cash      = isset($_POST['payment_cash']) ? 1 : 0;
@@ -223,6 +225,7 @@ if(isset($_REQUEST['action'])) {
                     credit_limit = '$credit_limit',
                     customer_type_id = '$customer_type_id',
                     loyalty = '$loyalty',
+                    desired_invoice_preference = '$desired_invoice_preference',
                     customer_pricing = '$customer_pricing',
                     is_approved = '$is_approved',
                     payment_pickup = '$payment_pickup',
@@ -248,7 +251,7 @@ if(isset($_REQUEST['action'])) {
                 tax_status, tax_exempt_number, customer_notes,
                 customer_type_id, call_status, is_charge_net, is_contractor, is_corporate_parent, is_bill_corpo_address,
                 corpo_parent_name, corpo_phone_no, corpo_address, corpo_city, corpo_state, corpo_zip, corpo_lat, corpo_lng,
-                charge_net_30, credit_limit, loyalty, customer_pricing, is_approved,
+                charge_net_30, credit_limit, loyalty, desired_invoice_preference, customer_pricing, is_approved,
                 payment_pickup, payment_delivery, payment_cash, payment_check, payment_card, username,
                 created_at, updated_at
             ) VALUES (
@@ -261,7 +264,7 @@ if(isset($_REQUEST['action'])) {
                 '$tax_status', '$tax_exempt_number', '$customer_notes',
                 '$customer_type_id', '$call_status', '$is_charge_net', '$is_contractor', '$is_corporate_parent', '$is_bill_corpo_address',
                 '$corpo_parent_name', '$corpo_phone_no', '$corpo_address', '$corpo_city', '$corpo_state', '$corpo_zip', '$corpo_lat', '$corpo_lng',
-                '$charge_net_30', '$credit_limit', '$loyalty', '$customer_pricing', '$is_approved',
+                '$charge_net_30', '$credit_limit', '$loyalty', '$desired_invoice_preference', '$customer_pricing', '$is_approved',
                 '$payment_pickup', '$payment_delivery', '$payment_cash', '$payment_check', '$payment_card', '$username',
                 NOW(), NOW()
             )";

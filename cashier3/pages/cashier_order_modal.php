@@ -766,12 +766,18 @@ if(isset($_POST['fetch_order'])){
                         <div id="salesperson_div">
                             <select id="salesperson" class="form-control select2" name="salesperson">
                                 <option value="">Select Salesperson...</option>
-                                <option value="12" <?= ($cashier_id == 12) ? 'selected' : '' ?>>Kevin Vaught</option>
-                                <option value="9" <?= ($cashier_id == 9) ? 'selected' : '' ?>>Matt Wagers</option>
-                                <option value="17" <?= ($cashier_id == 17) ? 'selected' : '' ?>>Tim Broughton</option>
-                                <option value="11" <?= ($cashier_id == 11) ? 'selected' : '' ?>>Brad Lambdin</option>
-                                <option value="18" <?= ($cashier_id == 18) ? 'selected' : '' ?>>Anthony Privett</option>
-                                <option value="13" <?= ($cashier_id == 13) ? 'selected' : '' ?>>Ryan Grover</option>
+                                <?php
+                                $query_staff = "SELECT staff_id, staff_fname, staff_lname FROM staff WHERE status = 1 ORDER BY staff_fname ASC";
+                                $result_staff = mysqli_query($conn, $query_staff);
+                                while ($row_staff = mysqli_fetch_assoc($result_staff)) {
+                                    $selected = ($cashier_id == $row_staff['staff_id']) ? 'selected' : '';
+                                    ?>
+                                    <option value="<?= $row_staff['staff_id'] ?>" <?= $selected ?>>
+                                        <?= htmlspecialchars($row_staff['staff_fname'] . ' ' . $row_staff['staff_lname']) ?>
+                                    </option>
+                                <?php
+                                }
+                                ?>
                             </select>
                         </div>
                     </div>

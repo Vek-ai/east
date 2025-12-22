@@ -1986,6 +1986,24 @@ if(isset($_REQUEST['action'])) {
         }
     }
 
+    if ($action == "set_status_printed") {
+        $orderid = intval($_POST['order_id'] ?? 0);
+        if ($orderid > 0) {
+            $sql = "UPDATE orders 
+                    SET wo_status = 1 
+                    WHERE orderid = $orderid AND wo_status = 0";
+            mysqli_query($conn, $sql);
+            if (mysqli_affected_rows($conn) > 0) {
+                echo json_encode(['success' => true]);
+            } else {
+                echo json_encode(['success' => false]);
+            }
+        } else {
+            echo json_encode(['success' => false]);
+        }
+    }
+
+
     mysqli_close($conn);
 }
 ?>

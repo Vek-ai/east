@@ -84,6 +84,7 @@ if(isset($_REQUEST['action'])) {
                 $ship_zip ?? ''
             ]);
             $loyalty = $row['loyalty'];
+            $desired_invoice_preference = $row['desired_invoice_preference'];
             }
         ?>
 
@@ -464,7 +465,18 @@ if(isset($_REQUEST['action'])) {
                             echo 'selected'; ?>>On</option>
                         </select>
                     </div>
-                    <div class="col-4"></div>
+                    <div class="col-4">
+                        <label for="desired_invoice_preference">Desired Invoice Preference</label>
+                        <select name="desired_invoice_preference" class="form-control desired_invoice_preference">
+                            <option value="" <?= ($desired_invoice_preference ?? '') === '' ? 'selected' : '' ?>>Select Preference</option>
+                            <option value="1" <?= ($desired_invoice_preference ?? '') == 1 ? 'selected' : '' ?>>Statement of Account – Mail</option>
+                            <option value="2" <?= ($desired_invoice_preference ?? '') == 2 ? 'selected' : '' ?>>Invoices Only - Mail</option>
+                            <option value="3" <?= ($desired_invoice_preference ?? '') == 3 ? 'selected' : '' ?>>Statement of Account w/ Invoices – Mail</option>
+                            <option value="4" <?= ($desired_invoice_preference ?? '') == 4 ? 'selected' : '' ?>>Statement of Account – Email</option>
+                            <option value="5" <?= ($desired_invoice_preference ?? '') == 5 ? 'selected' : '' ?>>Invoices Only - Email</option>
+                            <option value="6" <?= ($desired_invoice_preference ?? '') == 6 ? 'selected' : '' ?>>Statement of Account w/ Invoices - Email</option>
+                        </select>
+                    </div>
 
                     <div class="col-12">
                         <div class="container mb-3">
@@ -786,6 +798,7 @@ if(isset($_REQUEST['action'])) {
                 $ship_zip ?? ''
             ]);
             $loyalty = $row['loyalty'];
+            $desired_invoice_preference = $row['desired_invoice_preference'];
             }
         ?>
 
@@ -1256,7 +1269,18 @@ if(isset($_REQUEST['action'])) {
                             echo 'selected'; ?>>On</option>
                         </select>
                     </div>
-                    <div class="col-4"></div>
+                    <div class="col-4">
+                        <label for="desired_invoice_preference">Desired Invoice Preference</label>
+                        <select name="desired_invoice_preference" class="form-control desired_invoice_preference">
+                            <option value="" <?= ($desired_invoice_preference ?? '') === '' ? 'selected' : '' ?>>Select Preference</option>
+                            <option value="1" <?= ($desired_invoice_preference ?? '') == 1 ? 'selected' : '' ?>>Statement of Account – Mail</option>
+                            <option value="2" <?= ($desired_invoice_preference ?? '') == 2 ? 'selected' : '' ?>>Invoices Only - Mail</option>
+                            <option value="3" <?= ($desired_invoice_preference ?? '') == 3 ? 'selected' : '' ?>>Statement of Account w/ Invoices – Mail</option>
+                            <option value="4" <?= ($desired_invoice_preference ?? '') == 4 ? 'selected' : '' ?>>Statement of Account – Email</option>
+                            <option value="5" <?= ($desired_invoice_preference ?? '') == 5 ? 'selected' : '' ?>>Invoices Only - Email</option>
+                            <option value="6" <?= ($desired_invoice_preference ?? '') == 6 ? 'selected' : '' ?>>Statement of Account w/ Invoices - Email</option>
+                        </select>
+                    </div>
 
                     <div class="col-12">
                         <div class="container mb-3">
@@ -1488,6 +1512,7 @@ if(isset($_REQUEST['action'])) {
                 $ship_zip ?? ''
             ]);
             $loyalty = $row['loyalty'];
+            $desired_invoice_preference = $row['desired_invoice_preference'];
             }
         ?>
 
@@ -1885,7 +1910,18 @@ if(isset($_REQUEST['action'])) {
                             echo 'selected'; ?>>On</option>
                         </select>
                     </div>
-                    <div class="col-4"></div>
+                    <div class="col-4">
+                        <label for="desired_invoice_preference">Desired Invoice Preference</label>
+                        <select name="desired_invoice_preference" class="form-control desired_invoice_preference">
+                            <option value="" <?= ($desired_invoice_preference ?? '') === '' ? 'selected' : '' ?>>Select Preference</option>
+                            <option value="1" <?= ($desired_invoice_preference ?? '') == 1 ? 'selected' : '' ?>>Statement of Account – Mail</option>
+                            <option value="2" <?= ($desired_invoice_preference ?? '') == 2 ? 'selected' : '' ?>>Invoices Only - Mail</option>
+                            <option value="3" <?= ($desired_invoice_preference ?? '') == 3 ? 'selected' : '' ?>>Statement of Account w/ Invoices – Mail</option>
+                            <option value="4" <?= ($desired_invoice_preference ?? '') == 4 ? 'selected' : '' ?>>Statement of Account – Email</option>
+                            <option value="5" <?= ($desired_invoice_preference ?? '') == 5 ? 'selected' : '' ?>>Invoices Only - Email</option>
+                            <option value="6" <?= ($desired_invoice_preference ?? '') == 6 ? 'selected' : '' ?>>Statement of Account w/ Invoices - Email</option>
+                        </select>
+                    </div>
 
                     <div class="col-12">
                         <div class="container mb-3">
@@ -2130,6 +2166,7 @@ if(isset($_REQUEST['action'])) {
                 $ship_zip ?? ''
             ]);
             $loyalty = $row['loyalty'];
+            $desired_invoice_preference = $row['desired_invoice_preference'];
             }
         ?>
 
@@ -2532,7 +2569,18 @@ if(isset($_REQUEST['action'])) {
                             echo 'selected'; ?>>On</option>
                         </select>
                     </div>
-                    <div class="col-4"></div>
+                    <div class="col-4">
+                        <label for="desired_invoice_preference">Desired Invoice Preference</label>
+                        <select name="desired_invoice_preference" class="form-control desired_invoice_preference">
+                            <option value="" <?= ($desired_invoice_preference ?? '') === '' ? 'selected' : '' ?>>Select Preference</option>
+                            <option value="1" <?= ($desired_invoice_preference ?? '') == 1 ? 'selected' : '' ?>>Statement of Account – Mail</option>
+                            <option value="2" <?= ($desired_invoice_preference ?? '') == 2 ? 'selected' : '' ?>>Invoices Only - Mail</option>
+                            <option value="3" <?= ($desired_invoice_preference ?? '') == 3 ? 'selected' : '' ?>>Statement of Account w/ Invoices – Mail</option>
+                            <option value="4" <?= ($desired_invoice_preference ?? '') == 4 ? 'selected' : '' ?>>Statement of Account – Email</option>
+                            <option value="5" <?= ($desired_invoice_preference ?? '') == 5 ? 'selected' : '' ?>>Invoices Only - Email</option>
+                            <option value="6" <?= ($desired_invoice_preference ?? '') == 6 ? 'selected' : '' ?>>Statement of Account w/ Invoices - Email</option>
+                        </select>
+                    </div>
 
                     <div class="col-12">
                         <div class="container mb-3">

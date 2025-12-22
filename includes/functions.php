@@ -4944,4 +4944,29 @@ function generateProductAbbr(int $product_id) {
 
     return $inserted;
 }
+
+function updateWorkOrderStatus($orderid) {
+    global $conn;
+
+    $orderid = intval($orderid);
+    if (!$orderid) return false;
+
+    $sql = "SELECT COUNT(*) AS pending_count 
+            FROM order_product 
+            WHERE orderid = $orderid 
+              AND status < 2";
+
+    $result = mysqli_query($conn, $sql);
+    if (!$result) return false;
+
+    $row = mysqli_fetch_assoc($result);
+
+    if (intval($row['pending_count']) === 0) {
+        $updateSql = "UPDATE orders SET wo_status = 2 WHERE orderid = $orderid";
+        if (!mysqli_query($conn, $updateSql)) return false;
+        return true;
+    }
+
+    return false;
+}
 ?>

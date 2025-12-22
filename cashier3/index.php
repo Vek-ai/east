@@ -1351,15 +1351,29 @@ $page_key = !empty($_REQUEST['page']) ? $_REQUEST['page'] : 'cashier';
           <?php 
           $query = "
               SELECT 
-                  p.id, 
-                  p.file_name, 
-                  upa.permission
+                  p.id,
+                  p.file_name,
+                  CASE
+                      WHEN upa.permission IS NOT NULL THEN upa.permission
+                      ELSE app.permission
+                  END AS permission
               FROM pages p
-              JOIN user_page_access upa ON upa.page_id = p.id
+              LEFT JOIN user_page_access upa
+                  ON upa.page_id = p.id
+                  AND upa.staff_id = '$user_id'
+                  AND upa.permission IN ('view', 'edit')
+              LEFT JOIN staff s
+                  ON s.staff_id = '$user_id'
+              LEFT JOIN access_profile_pages app
+                  ON app.page_id = p.id
+                  AND app.access_profile_id = s.access_profile_id
+                  AND app.permission IN ('view', 'edit')
               WHERE p.url = '$page_key'
-              AND upa.staff_id = '$user_id'
-              AND upa.permission IN ('view', 'edit')
-              AND p.category_id = '2'
+                  AND p.category_id = '2'
+                  AND (
+                      upa.permission IS NOT NULL
+                      OR app.permission IS NOT NULL
+                  )
               LIMIT 1
           ";
           $result = mysqli_query($conn, $query);

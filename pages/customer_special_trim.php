@@ -10,9 +10,6 @@ error_reporting(E_ERROR | E_PARSE | E_CORE_ERROR | E_CORE_WARNING | E_COMPILE_ER
 require 'includes/dbconn.php';
 require 'includes/functions.php';
 
-$generate_rend_upc = generateRandomUPC();
-$picture_path = "images/product/product.jpg";
-
 $permission = $_SESSION['permission'];
 
 $staff_id = intval($_SESSION['userid']);
@@ -135,6 +132,28 @@ $page_title = "Special Trim";
     </div>
 
     <div class="widget-content searchable-container list">
+    <?php                                                    
+    if ($permission === 'edit') {
+    ?>
+    <div class="card card-body">
+        <div class="row">
+            <div class="col d-flex justify-content-md-end justify-content-center mt-3 mt-md-0 gap-3">
+                <button type="button" id="addProductModalBtn" class="btn btn-primary d-flex align-items-center" data-id="">
+                    <i class="ti ti-plus text-white me-1 fs-5"></i> Add <?= $page_title  ?>
+                </button>
+                <button type="button" id="downloadProductModalBtn" class="btn btn-primary d-flex align-items-center">
+                    <i class="ti ti-download text-white me-1 fs-5"></i> Download <?= $page_title  ?>
+                </button>
+                <button type="button" id="uploadProductModalBtn" class="btn btn-primary d-flex align-items-center">
+                    <i class="ti ti-upload text-white me-1 fs-5"></i> Upload <?= $page_title  ?>
+                </button>
+            </div>
+        </div>
+    </div>
+    <?php
+    }
+    ?>
+
     <div class="modal fade" id="addProductModal" tabindex="-1" aria-labelledby="addProductModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-xl">
             <div class="modal-content">
@@ -156,48 +175,12 @@ $page_title = "Special Trim";
         </div>
     </div>
 
-    <div class="modal fade" id="downloadClassModal" tabindex="-1" aria-labelledby="downloadClassModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-md">
-            <div class="modal-content">
-                <div class="modal-header d-flex align-items-center">
-                    <h4 class="modal-title" id="myLargeModalLabel">
-                        Download Classification
-                    </h4>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <form id="download_class_form" class="form-horizontal">
-                        <label for="select-category" class="form-label fw-semibold">Select Classification</label>
-                        <div class="mb-3">
-                            <select class="form-select select2" id="select-download-class" name="category">
-                                <option value="">All Classifications</option>
-                                <optgroup label="Classifications">
-                                    <option value="category">Category</option>
-                                    <option value="type">Product Type</option> 
-                                    <option value="grade">Product Grade</option> 
-                                    <option value="profile">Product Profile</option>  
-                                    <option value="color">Color</option> 
-                                </optgroup>
-                            </select>
-                        </div>
-
-                        <div class="d-grid">
-                            <button type="submit" class="btn btn-primary fw-semibold">
-                                <i class="fas fa-download me-2"></i> Download Classification
-                            </button>
-                        </div>
-                    </form>
-                </div>
-            </div>
-        </div>
-    </div>
-
     <div class="modal fade" id="uploadProductModal" tabindex="-1" aria-labelledby="uploadProductModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-md">
             <div class="modal-content">
                 <div class="modal-header d-flex align-items-center">
                     <h4 class="modal-title" id="myLargeModalLabel">
-                        Upload Product
+                        Upload Special Trim
                     </h4>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
@@ -232,7 +215,7 @@ $page_title = "Special Trim";
             <div class="modal-content">
                 <div class="modal-header d-flex align-items-center">
                     <h4 class="modal-title" id="myLargeModalLabel">
-                        Uploaded Excel Product
+                        Uploaded Excel
                     </h4>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
@@ -415,6 +398,10 @@ $page_title = "Special Trim";
                 url: 'pages/customer_special_trim_ajax.php',
                 type: 'POST',
                 data: { action: 'fetch_products' },
+                error: function (xhr, status, error) {
+                    console.error("AJAX Error:", status, error);
+                    console.log("Response Text:", xhr.responseText);
+                }
             },
             columns: [
                 { data: 'customer' },
@@ -435,31 +422,51 @@ $page_title = "Special Trim";
 
         $('#productList_filter').hide();
 
-        $(document).on('click', '.remove-image-btn', function(event) {
-            event.preventDefault();
-            let imageId = $(this).data('image-id');
+        function fetchProductDetails() {
+            var productId = $('.product_id_select').val();
+            if (!productId) return;
 
-            if (confirm("Are you sure you want to remove this image?")) {
-                $.ajax({
-                    url: 'pages/product_ajax.php',
-                    type: 'POST',
-                    data: { 
-                        image_id: imageId,
-                        action: "remove_image"
-                    },
-                    success: function(response) {
-                        if(response.trim() == 'success') {
-                            $('button[data-image-id="' + imageId + '"]').closest('.col-md-2').remove();
-                        } else {
-                            alert('Failed to remove image.');
-                        }
-                    },
-                    error: function() {
-                        alert('An error occurred. Please try again.');
+            $.ajax({
+                url: 'pages/customer_special_trim_ajax.php',
+                type: 'POST',
+                data: { action: 'fetch_product_details', product_id: productId },
+                dataType: 'json',
+                success: function(res) {
+                    if (res.success) {
+                        var product = res.data;
+
+                        $('#product_category').text(product.product_category_text);
+                        $('#product_line').text(product.product_line_text);
+                        $('#product_type').text(product.product_type_text);
+                        $('#profile_type').text(product.profile_text);
+                        $('#product_grade').text(product.grade_text);
+                        $('#product_gauge').text(product.gauge_text);
+
+                        $('#color_group').text(product.color_group_text);
+                        $('#color_name').text(product.color_name_text);
+
+                        $('#product_description').text(product.product_item);
+                        $('#abbreviation').text(product.abbreviation);
+                        $('#product_origin').text(product.product_origin_text);
+                        $('#unit_of_measure').text(product.unit_of_measure_text);
+                        $('#weight').text(product.weight);
+
+                        $('#available_lengths').text(product.available_lengths_text);
+                        $('#unit_price').text(product.unit_price);
+                        $('#floor_price').text(product.floor_price);
+
+                        $('#product_comment').text(product.comment);
+                    } else {
+                        alert('Error fetching product details: ' + res.message);
                     }
-                });
-            }
-        });
+                },
+                error: function(xhr) {
+                    console.log('AJAX error: ' + xhr.responseText);
+                }
+            });
+        }
+
+        $(document).on('change', '#product_id', fetchProductDetails);
 
         $('#toggleActive').trigger('change');
 
@@ -490,6 +497,8 @@ $page_title = "Special Trim";
                             dropdownParent: $(this).parent()
                         });
                     });
+
+                    fetchProductDetails();
 
                     $('#addProductModal').modal('show');
                 }
@@ -877,61 +886,6 @@ $page_title = "Special Trim";
 
             filterTable();
         });
-
-        function fetchProductABR() {
-            let category_ids = toIntArray($('#product_category').val());
-            let type_ids     = toIntArray($('#product_type').val());
-            let profile_ids  = toIntArray($('#profile').val());
-            let grade_ids    = toIntArray($('#grade').val());
-            let gauge_ids    = toIntArray($('#gauge').val());
-            let color_ids    = toIntArray($('#color_paint').val());
-            let length_ids   = toIntArray($('#available_lengths').val());
-
-            $.ajax({
-                url: 'pages/customer_special_trim_ajax.php',
-                type: 'POST',
-                data: {
-                    category_ids,
-                    type_ids,
-                    profile_ids,
-                    grade_ids,
-                    gauge_ids,
-                    color_ids,
-                    length_ids,
-                    action: 'get_product_abr'
-                },
-                success: function(response) {
-                    let container = $('#product_ids_abbrev');
-                    container.empty();
-
-                    if (response.trim() !== '') {
-                        let items = response.split(',').map(item => item.trim());
-
-                        let ul = $('<ul></ul>').css({
-                            display: 'grid',
-                            'grid-template-columns': 'repeat(3, 1fr)',
-                            gap: '5px',
-                            padding: '0 20px',
-                            'list-style-position': 'inside'
-                        });
-
-                        items.forEach(function(id) {
-                            ul.append('<li>' + id + '</li>');
-                        });
-
-                        container.append(ul);
-                    } else {
-                        container.text('No product IDs generated.');
-                    }
-                },
-                error: function(xhr, status, error) {
-                    console.log('AJAX Error:', error);
-                    console.log('Response Text:', xhr.responseText);
-                }
-            });
-        }
-
-        $(document).on('click', '#btn_fetch_prod_id', fetchProductABR);
     });
 </script>
 

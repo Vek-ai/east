@@ -194,19 +194,6 @@ if(isset($_REQUEST['action'])) {
                             <input class="form-check-input" type="checkbox" id="has_color" name="has_color" <?= $checked ?>>
                         </div>
                     </div>
-
-                    <?php 
-                    $is_special_trim = $row['is_special_trim'] ?? null;
-                    $checked = (!isset($row['is_special_trim']) || $is_special_trim > 0) ? 'checked' : '';
-                    ?>
-                    <div class="col-4 mb-3 text-center">
-                        <label class="form-check-label fw-bold d-block mb-1" for="is_special_trim">
-                            Is Product Special Trim?
-                        </label>
-                        <div class="form-check d-flex justify-content-center">
-                            <input class="form-check-input" type="checkbox" id="is_special_trim" name="is_special_trim" <?= $checked ?>>
-                        </div>
-                    </div>
                 </div>
             </div>
         </div>
@@ -557,30 +544,6 @@ if(isset($_REQUEST['action'])) {
                 <button type="button" class="btn bg-danger-subtle text-danger  waves-effect text-start" data-bs-dismiss="modal">Close</button>
             </div>
         </div>
-
-        <script>
-        $(document).ready(function () {
-
-            function toggleSpecialTrim() {
-                const isChecked = $('#is_special_trim').is(':checked');
-
-                if (isChecked) {
-                    $('#special_trim_container').removeClass('d-none');
-                    $('#trim_spec_title').text('Special Trim Spec');
-                } else {
-                    $('#special_trim_container').addClass('d-none');
-                    $('#trim_spec_title').text('Trim Spec');
-                }
-            }
-
-            toggleSpecialTrim();
-
-            $(document).on('change', '#is_special_trim', function () {
-                toggleSpecialTrim();
-            });
-
-        });
-        </script>
         <?php
     }
 
