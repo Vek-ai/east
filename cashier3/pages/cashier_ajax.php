@@ -3594,8 +3594,6 @@ if (isset($_POST['fetch_special_trim_details'])) {
 
     if ($result && mysqli_num_rows($result) > 0) {
         $row = mysqli_fetch_assoc($result);
-        $flat_sheet_width = is_array(json_decode($row['flat_sheet_width'], true)) ? json_decode($row['flat_sheet_width'], true)[0] : $row['flat_sheet_width'];
-        $fsw_det = getFlatSheetWidthDetails($flat_sheet_width);
         $width = $fsw_det['width'];
 
         $response = [
@@ -3605,7 +3603,7 @@ if (isset($_POST['fetch_special_trim_details'])) {
             'color' => is_array(json_decode($row['color'], true)) ? json_decode($row['color'], true)[0] : $row['color'],
             'grade' => is_array(json_decode($row['grade'], true)) ? json_decode($row['grade'], true)[0] : $row['grade'],
             'gauge' => is_array(json_decode($row['gauge'], true)) ? json_decode($row['gauge'], true)[0] : $row['gauge'],
-            'flat_sheet_width' => $width,
+            'flat_sheet_width' => $row['flat_sheet_width'],
             'hems' => $row['hems'],
             'bends' => $row['bends'],
             'description' => $row['spec_trim_desc']
