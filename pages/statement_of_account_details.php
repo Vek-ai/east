@@ -674,7 +674,7 @@ $permission = $_SESSION['permission'];
             event.preventDefault(); 
             
             var formData = new FormData(this);
-            formData.append('action', 'payout_receivable');
+            formData.append('action', 'payout_credits');
 
             $.ajax({
                 url: 'pages/statement_of_account_details_ajax.php',
@@ -712,8 +712,8 @@ $permission = $_SESSION['permission'];
                     }
                 },
                 error: function(jqXHR, textStatus, errorThrown) {
-                    console.error("AJAX error:", textStatus, errorThrown, jqXHR.responseText);
-                    alert('Error: ' + textStatus + ' - ' + errorThrown);
+                    console.log("AJAX error:", jqXHR.responseText);
+                    alert('Failed!');
                 }
             });
         });
