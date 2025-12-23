@@ -1218,11 +1218,9 @@ if(isset($_POST['fetch_order'])){
             function distributePaymentAmounts() {
                 const totalWithTax = parseFloat($('#final_payable_amt').val()) || 0;
 
-                console.log('Distributing:', totalWithTax);
-
                 const activeMethods = $('.pay-method:checked');
                 if (activeMethods.length === 0) {
-                    $('.amount-div input').val('');
+                    $('.amount-div input[type="number"]').val('');
                     manuallyEdited = {};
                     return;
                 }
@@ -1231,14 +1229,16 @@ if(isset($_POST['fetch_order'])){
                 activeMethods.each(function () {
                     const method = $(this).val();
                     if (manuallyEdited[method]) {
-                        const val = parseFloat($('#' + method + 'AmountDiv input').val()) || 0;
+                        const val = parseFloat(
+                            $('#' + method + 'AmountDiv input[type="number"]').val()
+                        ) || 0;
                         totalManual += val;
                     }
                 });
 
                 if (totalManual > totalWithTax) {
                     const excess = totalManual - totalWithTax;
-                    const lastInput = $('#' + lastCheckedMethod + 'AmountDiv input');
+                    const lastInput = $('#' + lastCheckedMethod + 'AmountDiv input[type="number"]');
                     if (lastInput.length) {
                         let currentVal = parseFloat(lastInput.val()) || 0;
                         lastInput.val(Math.max(0, currentVal - excess).toFixed(2));
@@ -1268,7 +1268,7 @@ if(isset($_POST['fetch_order'])){
                             distributed += val;
                         }
 
-                        $('#' + method + 'AmountDiv input').val(val.toFixed(2));
+                        $('#' + method + 'AmountDiv input[type="number"]').val(val.toFixed(2));
                     });
                 }
             }
