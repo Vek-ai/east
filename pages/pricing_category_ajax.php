@@ -112,7 +112,7 @@ if(isset($_REQUEST['action'])) {
             <div class="col-md-12">
                 <div class="mb-3">
                     <label class="form-label">Percentage</label>
-                    <input type="number" id="percentage" name="percentage" class="form-control" value="<?= $row['percentage'] ?? '' ?>" />
+                    <input type="number" step="0.001" id="percentage" name="percentage" class="form-control" value="<?= $row['percentage'] ?? '' ?>" />
                 </div>
             </div>
         </div>
