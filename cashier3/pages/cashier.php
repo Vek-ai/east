@@ -1686,6 +1686,8 @@ $editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) :
         var lat2Float = typeof lat2 !== 'undefined' ? parseFloat(lat2) : 0;
         var lng2Float = typeof lng2 !== 'undefined' ? parseFloat(lng2) : 0;
 
+        var base_savings = parseFloat($('#savings_amt').val().replace(/,/g, ''));
+
         var discount_percent = parseFloat($('#discount').val()) || 0;
         var discount_amount_input = parseFloat($('#discount_amount').val()) || 0;
 
@@ -1727,6 +1729,9 @@ $editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) :
         }
 
         const discounted_subtotal = subtotal - discount_value;
+        const total_savings = base_savings + discount_value;
+
+        $('#savingsAmount').text(total_savings.toFixed(2));
 
         const totalBeforeCredit = discounted_subtotal + deliveryAmount;
 
@@ -1777,6 +1782,8 @@ $editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) :
         $('#estimated_points').text('+' + estimated_points);
 
         $('#final_payable_amt').val(total_amt.toFixed(2));
+
+        
     }
 
     function number_format(number, decimals = 2) {

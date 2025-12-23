@@ -202,6 +202,7 @@ if(isset($_POST['fetch_order'])){
         <form id="msform">
             <input type="hidden" id="order_payable_amt" value="<?= $total_customer_price ?>">
             <input type="hidden" id="final_payable_amt" value="0">
+            <input type="hidden" id="savings_amt" value="<?= $customer_savings ?>">
             <input type="hidden" id="store_credit" name="store_credit" value="<?= $store_credit ?>">
             <input type="hidden" id="points_ratio" name="points_ratio" value="<?= $points_ratio ?>">
             <input type="hidden" id="charge_net_30" value="<?= $charge_net_30 ?>">
@@ -723,7 +724,9 @@ if(isset($_POST['fetch_order'])){
                     <hr>
                     <div class="d-flex justify-content-between text-success mb-2">
                         <span>Savings</span>
-                        <span>$<?= number_format(floatval($customer_savings), 2) ?></span>
+                        <span>
+                            $<span id="savingsAmount"><?= number_format(floatval($customer_savings), 2) ?></span>
+                        </span>
                     </div>
                     <div id="storeCreditDisplay" class="d-flex justify-content-between mb-2 d-none text-success">
                         <span>Store Credit:</span>
