@@ -1194,11 +1194,12 @@ if(isset($_POST['fetch_order'])){
 
                 if ($(this).is(':checked')) {
                     div.removeClass('d-none');
-                    div.find('input').focus();
+                    div.find('input[type="number"]').focus();
                     lastCheckedMethod = method;
                 } else {
                     div.addClass('d-none');
-                    div.find('input').val('');
+                    div.find('input[type="number"]').val('');
+
                     delete manuallyEdited[method];
                 }
 
