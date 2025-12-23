@@ -1324,16 +1324,20 @@ function getCustomerTotalAvail($customer_id) {
     global $conn;
 
     $query = "
-        SELECT c.credit_amount AS amount
-        FROM customer_store_credit_history c
-        WHERE c.customer_id = '$customer_id'
+        SELECT credit_amount AS amount
+        FROM customer_store_credit_history
+        WHERE customer_id = '$customer_id'
+          AND credit_type = 'add'
+          AND credit_amount > 0
 
         UNION ALL
 
-        SELECT jd.deposit_remaining AS amount
+        SELECT deposit_remaining AS amount
         FROM job_deposits jd
         JOIN jobs j ON jd.job_id = j.job_id
-        WHERE j.customer_id = '$customer_id' AND jd.deposit_status = '1'
+        WHERE j.customer_id = '$customer_id'
+          AND deposit_status = 1
+          AND deposit_remaining > 0
     ";
 
     $result = mysqli_query($conn, $query);

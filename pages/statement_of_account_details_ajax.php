@@ -371,12 +371,22 @@ if(isset($_REQUEST['action'])) {
         }
 
         $query = "
-            SELECT deposit_id, deposit_remaining
-            FROM job_deposits
-            WHERE deposited_by = '$customer_id'
-            AND deposit_status = 1
-            AND deposit_remaining > 0
-            ORDER BY created_at ASC
+            SELECT 'deposit' AS type, jd.deposit_id AS id, jd.deposit_remaining AS amount, jd.created_at
+            FROM job_deposits jd
+            JOIN jobs j ON jd.job_id = j.job_id
+            WHERE j.customer_id = '$customer_id'
+            AND jd.deposit_status = 1
+            AND jd.deposit_remaining > 0
+
+            UNION ALL
+
+            SELECT 'store' AS type, c.id AS id, c.credit_amount AS amount, c.created_at
+            FROM customer_store_credit_history c
+            WHERE c.customer_id = '$customer_id'
+            AND c.credit_amount > 0
+            AND c.credit_type = 'add'
+
+            ORDER BY CASE WHEN type='deposit' THEN 1 ELSE 2 END ASC, created_at DESC
         ";
 
         $result = mysqli_query($conn, $query);
@@ -396,25 +406,30 @@ if(isset($_REQUEST['action'])) {
 
         try {
             while ($row = mysqli_fetch_assoc($result)) {
-
                 if ($remaining_payout <= 0) break;
 
-                $deposit_id = $row['deposit_id'];
-                $balance    = floatval($row['deposit_remaining']);
-
+                $balance = floatval($row['amount']);
                 if ($balance <= 0) continue;
 
                 $refund = min($balance, $remaining_payout);
 
-                mysqli_query($conn, "
-                    UPDATE job_deposits
-                    SET deposit_remaining = deposit_remaining - $refund,
-                        deposit_status = IF(deposit_remaining - $refund <= 0, 2, 1)
-                    WHERE deposit_id = '$deposit_id'
-                ");
+                if ($row['type'] === 'deposit') {
+                    mysqli_query($conn, "
+                        UPDATE job_deposits
+                        SET deposit_remaining = ROUND(deposit_remaining - $refund, 2),
+                            deposit_status = IF(ROUND(deposit_remaining - $refund, 2) <= 0, 2, 1)
+                        WHERE deposit_id = '{$row['id']}'
+                    ");
+                } else {
+                    mysqli_query($conn, "
+                        UPDATE customer_store_credit_history
+                        SET credit_amount = ROUND(credit_amount - $refund, 2)
+                        WHERE id = '{$row['id']}'
+                    ");
+                }
 
                 if (mysqli_affected_rows($conn) <= 0) {
-                    throw new Exception('Failed updating deposit balance.');
+                    throw new Exception('Failed updating credit/deposit balance.');
                 }
 
                 recordCashOutflow(
