@@ -558,13 +558,16 @@ if(isset($_REQUEST['action'])) {
             for ($i = 1; $i < count($rows); $i++) {
                 $row = $rows[$i];
 
-                if (empty(array_filter($row, fn($v) => trim((string)$v) !== ''))) {
+                if (empty(array_filter($row, fn($v) => $v !== null && trim((string)$v) !== ''))) {
                     continue;
                 }
 
                 $data = [];
                 foreach ($columnMap as $excelIndex => $dbCol) {
-                    $value = trim((string)($row[$excelIndex] ?? ''));
+
+                    $value = $row[$excelIndex] ?? '';
+                    $value = $value === null ? '' : trim((string)$value);
+
                     $data[$dbCol] = mysqli_real_escape_string($conn, $value);
                 }
 
@@ -584,6 +587,7 @@ if(isset($_REQUEST['action'])) {
 
         echo "success";
     }
+
     
     if ($action == "update_test_data") {
         $column_name = $_POST['header_name'];

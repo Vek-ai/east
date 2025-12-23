@@ -428,7 +428,7 @@ $permission = $_SESSION['permission'];
             processData: false,
             contentType: false,
             success: function(response) {
-              
+              $('.modal').modal("hide");
               if (response.trim() === "success_update") {
                   $('#responseHeader').text("Success");
                   $('#responseMsg').text('Pricing category updated successfully.');
