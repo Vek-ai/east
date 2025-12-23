@@ -4900,8 +4900,8 @@ $editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) :
         var customerIdSaved = '';
 
         function updatePrintLinks(orderId) {
-            //const baseUrl = window.location.origin + '/';
-            const baseUrl = window.location.origin + '/temps/east/';
+            const baseUrl = window.location.origin + '/';
+            //const baseUrl = window.location.origin + '/temps/east/';
 
             const links = {
                 print_order: 'print_order_total.php',
