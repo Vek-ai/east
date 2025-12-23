@@ -147,98 +147,17 @@ td.notes,  td.last-edit{
                 <h4 class="card-title d-flex justify-content-between align-items-center"><?= $page_title ?></h4>
                 <div class="datatables">
                     <div class="table-responsive">
-                        <table id="order_list_tbl" class="table table-hover mb-0 text-center">
+                        <table id="cashFlowDailyTable" class="table table-striped table-bordered w-100 text-center align-middle">
                             <thead>
                                 <tr>
                                     <th>Date</th>
-                                    <th>Day of Week</th>
-                                    <th>Business Day Status</th>
+                                    <th>Day</th>
+                                    <th>Business Status</th>
                                     <th>Total Transactions</th>
                                     <th>Daily Status</th>
                                     <th>Action</th>
                                 </tr>
                             </thead>
-                            <tbody>
-                                <?php 
-                                $query = "
-                                    SELECT 
-                                        DATE(`date`) AS transaction_date,
-                                        COUNT(*) AS total_transactions
-                                    FROM cash_flow
-                                    GROUP BY DATE(`date`)
-                                    ORDER BY transaction_date DESC
-                                ";
-                                $result = mysqli_query($conn, $query);
-
-                                if ($result && mysqli_num_rows($result) > 0) {
-                                    while ($row = mysqli_fetch_assoc($result)) {
-                                        $date = $row['transaction_date'];
-                                        $total_transactions = $row['total_transactions'];
-
-                                        $formatted_date = date('M. jS, Y', strtotime($date));
-
-                                        $day_of_week = date('l', strtotime($date));
-
-                                        $day_num = date('N', strtotime($date));
-                                        $business_status = ($day_num >= 1 && $day_num <= 5) ? 'Open' : 'Closed';
-
-                                        $check_summary = "
-                                            SELECT 1 FROM cash_flow_summary 
-                                            WHERE closing_date = '$date'
-                                            LIMIT 1
-                                        ";
-                                        $summary_result = mysqli_query($conn, $check_summary);
-                                        $exists_in_summary = mysqli_num_rows($summary_result) > 0;
-
-                                        if ($exists_in_summary) {
-                                            $daily_status = 'Completed';
-                                        } elseif ($date == date('Y-m-d')) {
-                                            $daily_status = 'Operational';
-                                        } else {
-                                            $daily_status = 'Pending Completion';
-                                        }
-                                        ?>
-                                        <tr 
-                                            data-month="<?= date('m', strtotime($date)) ?>"
-                                            data-year="<?= date('Y', strtotime($date)) ?>"
-                                            data-day="<?= date('d', strtotime($date)) ?>"
-                                            data-business-status="<?= $business_status ?>"
-                                            data-daily-status="<?= $daily_status ?>"
-                                        >
-                                            <td><?= htmlspecialchars($formatted_date) ?></td>
-                                            <td><?= htmlspecialchars($day_of_week) ?></td>
-                                            <td><?= htmlspecialchars($business_status) ?></td>
-                                            <td><?= htmlspecialchars($total_transactions) ?></td>
-                                            <td><?= htmlspecialchars($daily_status) ?></td>
-                                            <td class="text-center">
-                                                <a href="javascript:void(0)" class="text-decoration-none p-0 me-1" id="view_report" data-date="<?= $date ?>" title="View">
-                                                    <iconify-icon icon="solar:eye-outline" width="20"></iconify-icon>
-                                                </a>
-
-                                                <a href="javascript:void(0)" class="text-decoration-none p-0 me-1" id="view_cash_flow" data-date="<?= $date ?>" title="Cash Flow">
-                                                    <iconify-icon icon="solar:wad-of-money-outline" width="20" class="text-warning"></iconify-icon>
-                                                </a>
-
-                                                <a href="javascript:void(0)" class="text-decoration-none p-0 me-1" id="view_daily_sales" data-date="<?= $date ?>" title="Daily Sales">
-                                                    <iconify-icon icon="solar:chart-outline" width="20" class="text-info"></iconify-icon>
-                                                </a>
-
-                                                <a href="javascript:void(0)" class="text-decoration-none p-0 me-1" id="view_receivable" data-date="<?= $date ?>" title="Accounts Receivable">
-                                                    <iconify-icon icon="solar:clipboard-outline" width="20" class="text-primary"></iconify-icon>
-                                                </a>
-
-                                                <a href="javascript:void(0)" class="text-decoration-none p-0 me-1" id="view_print" data-id="<?= $date ?>" title="Print/Download">
-                                                    <iconify-icon icon="solar:printer-outline" width="20" class="text-success"></iconify-icon>
-                                                </a>
-                                            </td>
-                                        </tr>
-                                        <?php
-                                    }
-                                } else {
-                                    echo '<tr><td colspan="6" class="text-center text-muted">No cash flow records found.</td></tr>';
-                                }
-                                ?>
-                            </tbody>
                         </table>
                     </div>
                 </div>
@@ -259,9 +178,6 @@ td.notes,  td.last-edit{
                 <div class="text-center py-3 text-muted">
                 <i class="fa fa-spinner fa-spin me-2"></i> Loading...
                 </div>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Close</button>
             </div>
         </div>
     </div>
@@ -348,12 +264,35 @@ td.notes,  td.last-edit{
   $(document).ready(function() {
     document.title = "<?= $page_title ?>";
 
-    var table = $('#order_list_tbl').DataTable({
-        "order": [],
-        "pageLength": 100
+    var table = $('#cashFlowDailyTable').DataTable({
+        processing: true,
+        serverSide: true,
+        pageLength: 100,
+        order: [[0, 'desc']],
+        ajax: {
+            url: 'pages/financial_report_ajax.php',
+            type: 'POST',
+            data: function(d) {
+                d.action = 'fetch_table';
+                d.month = $('#month_select').val() || [];
+                d.year = $('#year_select').val() || [];
+                d.day = $('#day_select').val() || [];
+                d.business_status = $('#business_status_select').val() || '';
+                d.daily_status = $('#daily_status_select').val() || '';
+            }
+        },
+        columns: [
+            { data: 'formatted_date' },
+            { data: 'day_of_week' },
+            { data: 'business_status' },
+            { data: 'total_transactions' },
+            { data: 'daily_status' },
+            { data: 'action', orderable: false, searchable: false }
+        ]
     });
 
-    $('#order_list_tbl_filter').hide();
+
+    $('#cashFlowDailyTable_filter').hide();
 
     $(".select2").each(function () {
         $(this).select2({
@@ -398,42 +337,11 @@ td.notes,  td.last-edit{
         daySelect.append(`<option value="${d}">${d}</option>`);
     }
 
-    $('#month_select').on('change', function() {
-        const selectedMonths = $(this).val();
-        daySelect.empty();
-
-        if (!selectedMonths || selectedMonths.length === 0) {
-            daySelect.append(`<option value="">All Days</option>`);
-            daySelect.trigger('change');
-            return;
-        }
-
-        if (selectedMonths.length > 1) {
-            for (let d = 1; d <= 31; d++) {
-                daySelect.append(`<option value="${d}">${d}</option>`);
-            }
-            daySelect.trigger('change');
-            return;
-        }
-
-        const month = parseInt(selectedMonths[0]);
-        const year = $('#year_select').val()?.[0]
-            ? parseInt($('#year_select').val()[0])
-            : currentYear;
-
-        const daysInMonth = new Date(year, month, 0).getDate();
-        for (let d = 1; d <= daysInMonth; d++) {
-            daySelect.append(`<option value="${d}">${d}</option>`);
-        }
-
-        daySelect.trigger('change');
-    });
-
     $('#year_select').on('change', function() {
         $('#month_select').trigger('change');
     });
 
-    $(document).on('click', '#view_report', function (e) {
+    $(document).on('click', '.view_report', function (e) {
         e.preventDefault();
         const date = $(this).data('date');
 
@@ -459,7 +367,42 @@ td.notes,  td.last-edit{
         });
     });
 
-    $(document).on('click', '#view_cash_flow', function (e) {
+    $(document).on('click', '#close-btn', function () {
+        const date = $(this).data('date');
+
+        if (!date) {
+            alert('Invalid date.');
+            return;
+        }
+
+        if (!confirm(`Are you sure you want to close the station for ${date}?`)) {
+            return;
+        }
+
+        $.ajax({
+            url: 'pages/financial_report_ajax.php',
+            type: 'POST',
+            data: {
+                action: 'close_station',
+                date: date
+            },
+            dataType: 'json',
+            success: function (res) {
+                if (res.success) {
+                    alert('Station closed successfully.');
+                    location.reload();
+                } else {
+                    alert('Error: ' + (res.message || 'Could not close station.'));
+                }
+            },
+            error: function (xhr, status, error) {
+                console.log('XHR Response:', xhr.responseText);
+                alert('AJAX error. Check console.');
+            }
+        });
+    });
+
+    $(document).on('click', '.view_cash_flow', function (e) {
         e.preventDefault();
         const date = $(this).data('date');
 
@@ -485,7 +428,7 @@ td.notes,  td.last-edit{
         });
     });
 
-    $(document).on('click', '#view_daily_sales', function (e) {
+    $(document).on('click', '.view_daily_sales', function (e) {
         e.preventDefault();
         const date = $(this).data('date');
 
@@ -511,7 +454,7 @@ td.notes,  td.last-edit{
         });
     });
 
-    $(document).on('click', '#view_receivable', function (e) {
+    $(document).on('click', '.view_receivable', function (e) {
         e.preventDefault();
         const date = $(this).data('date');
 
@@ -538,34 +481,7 @@ td.notes,  td.last-edit{
     });
 
     function filterTable() {
-        var textSearch = $('#text-srh').val().toLowerCase();
-
-        $.fn.dataTable.ext.search = [];
-
-        if (textSearch) {
-            $.fn.dataTable.ext.search.push(function(settings, data, dataIndex) {
-                return $(table.row(dataIndex).node()).text().toLowerCase().includes(textSearch);
-            });
-        }
-
-        $.fn.dataTable.ext.search.push(function(settings, data, dataIndex) {
-            var row = $(table.row(dataIndex).node());
-            var match = true;
-
-            $('.filter-selection').each(function() {
-                var filterValue = $(this).val()?.toString() || '';
-                var rowValue = row.data($(this).data('filter'))?.toString() || '';
-
-                if (filterValue && filterValue !== '/' && rowValue !== filterValue) {
-                    match = false;
-                    return false;
-                }
-            });
-
-            return match;
-        });
-
-        table.draw();
+        table.ajax.reload(null, false);
         updateSelectedTags();
     }
 
@@ -612,7 +528,6 @@ td.notes,  td.last-edit{
         });
 
         $('#text-srh').val('');
-
         $('#filter_date').val('');
 
         filterTable();

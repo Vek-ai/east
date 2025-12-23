@@ -1379,7 +1379,7 @@ if (isset($_POST['save_order'])) {
                 VALUES ('$job_id', '$customerid', 'usage', '$amt', '$po_number', '$reference_no', '$description', NULL, '$created_by', NOW(), 'cash')
             ";
             mysqli_query($conn, $sql);
-            recordCashInflow('cash', 'sales_payment', $pay_cash);
+            recordCashInflow('cash', 'sales_payment', $pay_cash, $orderid);
         }
         if ($pay_card > 0) {
             $amt = number_format($pay_card, 2, '.', '');
@@ -1388,7 +1388,7 @@ if (isset($_POST['save_order'])) {
                 VALUES ('$job_id', '$customerid', 'usage', '$amt', '$po_number', '$reference_no', '$description', NULL, '$created_by', NOW(), 'card')
             ";
             mysqli_query($conn, $sql);
-            recordCashInflow('card', 'sales_payment', $pay_card);
+            recordCashInflow('card', 'sales_payment', $pay_card, $orderid);
         }
         if ($pay_check > 0) {
             $amt = number_format($pay_check, 2, '.', '');
@@ -1397,7 +1397,7 @@ if (isset($_POST['save_order'])) {
                 VALUES ('$job_id', '$customerid', 'usage', '$amt', '$po_number', '$reference_no', '$description', $check_number, '$created_by', NOW(), 'check')
             ";
             mysqli_query($conn, $sql);
-            recordCashInflow('check', 'sales_payment', $pay_check);
+            recordCashInflow('check', 'sales_payment', $pay_check, $orderid);
         }
 
         if ($pay_pickup > 0) {
