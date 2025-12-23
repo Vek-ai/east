@@ -724,7 +724,6 @@ function showCol($name) {
                             });
                         });
                         fetchPricingSection();
-                        fetchTrimSpec();
                     }
                 });
             } else {
@@ -1607,40 +1606,6 @@ function showCol($name) {
                 $('#bulk_price, #bulk_starts_at').val('');
             }
         });
-
-        $(document).on('change', '#product_line, #product_type', function () {
-            fetchTrimSpec();
-        });
-
-        function fetchTrimSpec() {
-            const product_line = $('#product_line').val();
-            const product_type = $('#product_type').val();
-
-            $.ajax({
-                url: 'pages/product4_ajax.php',
-                type: 'POST',
-                dataType: 'json',
-                data: {
-                    action: 'fetch_trim_spec',
-                    product_line: product_line,
-                    product_type: product_type
-                },
-                success: function (res) {
-                    if (res.success) {
-                        $('#flat_sheet_width').val(res.data.width);
-                        $('#bends').val(res.data.bends);
-                        $('#hems').val(res.data.hems);
-                    } else {
-                        $('#flat_sheet_width').val('');
-                        $('#bends').val('');
-                        $('#hems').val('');
-                    }
-                },
-                error: function (xhr) {
-                    console.error('AJAX error:', xhr.responseText);
-                }
-            });
-        }
 
     });
 </script>

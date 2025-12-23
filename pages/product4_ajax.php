@@ -1967,54 +1967,6 @@ if(isset($_REQUEST['action'])) {
     <?php
         }
     }
-
-    if ($action == 'fetch_trim_spec') {
-
-        $product_line = mysqli_real_escape_string($conn, trim($_POST['product_line'] ?? ''));
-        $product_type = mysqli_real_escape_string($conn, trim($_POST['product_type'] ?? ''));
-
-        if ($product_line === '' || $product_type === '') {
-            echo json_encode([
-                'success' => false,
-                'message' => 'Missing parameters'
-            ]);
-            exit;
-        }
-
-        $sql = "
-            SELECT width, bends, hems
-            FROM flat_sheet_width
-            WHERE product_line = '$product_line'
-            AND product_type = '$product_type'
-            AND hidden = 0
-            AND status = 1
-            LIMIT 1
-        ";
-
-        $result = mysqli_query($conn, $sql);
-
-        if ($result && mysqli_num_rows($result) > 0) {
-            $row = mysqli_fetch_assoc($result);
-
-            echo json_encode([
-                'success' => true,
-                'data' => [
-                    'width' => $row['width'],
-                    'bends' => $row['bends'],
-                    'hems'  => $row['hems']
-                ]
-            ]);
-        } else {
-            echo json_encode([
-                'success' => false,
-                'message' => 'No matching trim spec found'
-            ]);
-        }
-
-        exit;
-    }
-
-    
     mysqli_close($conn);
 }
 ?>

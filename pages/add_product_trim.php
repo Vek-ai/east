@@ -395,47 +395,9 @@ if(isset($_REQUEST['action'])) {
 
         <div class="card shadow-sm rounded-3 mb-3">
             <div class="card-header bg-light border-bottom">
-                <h5 class="mb-0 fw-bold" id="trim_spec_title">Special Trim Specs</h5>
+                <h5 class="mb-0 fw-bold" id="trim_spec_title">Trim Specs</h5>
             </div>
             <div class="card-body border rounded p-3">
-                <div class="row" id="special_trim_container">
-                    <div class="col-md-4">
-                        <div class="mb-3">
-                            <div class="d-flex justify-content-between align-items-center">
-                                <label class="form-label">Customer</label>
-                                <a href="?page=customer" target="_blank" class="text-decoration-none">Edit</a>
-                            </div>
-                            <select id="customer" class="form-control select2" name="customer">
-                                <option value="" >Select Customer...</option>
-                                <?php
-                                $query_customer = "SELECT * FROM customer WHERE hidden = '0' AND status = '1' ORDER BY `customer_first_name` ASC";
-                                $result_customer = mysqli_query($conn, $query_customer);            
-                                while ($row_customer = mysqli_fetch_array($result_customer)) {
-                                    $selected = ($row_customer['customer_id'] == $row['customer']) ? 'selected' : '';
-                                ?>
-                                    <option value="<?= $row_customer['customer_id'] ?>" <?= $selected ?>><?= get_customer_name($row_customer['customer_id']) ?></option>
-                                <?php   
-                                }
-                                ?>
-                            </select>
-                        </div>
-                    </div>
-                    <div class="col-md-8"></div>
-
-                    <div class="col-md-8">
-                        <div class="mb-3">
-                            <label class="form-label">Special Trim Description</label>
-                            <input type="text" id="spec_trim_desc" name="spec_trim_desc" class="form-control" value="<?= $row['spec_trim_desc']?>" />
-                        </div>
-                    </div>
-                    <div class="col-md-4">
-                        <div class="mb-3">
-                            <label class="form-label">Special Trim #</label>
-                            <input type="text" id="spec_trim_no" name="spec_trim_no" class="form-control" value="<?= $row['spec_trim_no']?>" />
-                        </div>
-                    </div>
-                </div>
-
                 <div class="row">
                     <div class="col-md-4">
                         <div class="mb-3">

@@ -1213,23 +1213,28 @@ $page_key = !empty($_REQUEST['page']) ? $_REQUEST['page'] : 'home';
   function handleTheme() {
     function setThemeAttributes(theme, darkDisplay, lightDisplay, sunDisplay, moonDisplay) {
       $("html").attr("data-bs-theme", theme);
+
+      localStorage.setItem("theme", theme);
+
       const layoutElement = $(`#${theme}-layout`);
       if (layoutElement.length) {
         layoutElement.prop("checked", true);
       }
+
       $(`.${darkDisplay}`).hide();
       $(`.${lightDisplay}`).css("display", "flex");
       $(`.${sunDisplay}`).hide();
       $(`.${moonDisplay}`).css("display", "flex");
     }
 
-    const currentTheme = $("html").attr("data-bs-theme") || "dark";
+    const savedTheme = localStorage.getItem("theme") || "dark";
+
     setThemeAttributes(
-      currentTheme,
-      currentTheme === "dark" ? "dark-logo" : "light-logo",
-      currentTheme === "dark" ? "light-logo" : "dark-logo",
-      currentTheme === "dark" ? "moon" : "sun",
-      currentTheme === "dark" ? "sun" : "moon"
+      savedTheme,
+      savedTheme === "dark" ? "dark-logo" : "light-logo",
+      savedTheme === "dark" ? "light-logo" : "dark-logo",
+      savedTheme === "dark" ? "moon" : "sun",
+      savedTheme === "dark" ? "sun" : "moon"
     );
 
     $(".dark-layout").on("click", function () {

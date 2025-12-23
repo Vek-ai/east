@@ -644,13 +644,15 @@ if(isset($_POST['fetch_order'])){
                                         <div class="d-flex flex-column align-items-center">
                                             <input class="form-check-input pay-method mb-2" type="checkbox" id="payCard" name="payCard" value="card"><br>
                                             <div id="cardAmountDiv" class="amount-div d-none mt-2 w-100">
-                                                <label class="form-label small text-center d-block mb-1">Amount</label>
-                                                <input type="number" class="form-control form-control-sm text-center" id="cardAmount" name="cardAmount" placeholder="0.00">
+                                                <div class="form-group mt-2">
+                                                    <label class="form-label small text-center d-block mb-1">Amount</label>
+                                                    <input type="number" class="form-control form-control-sm text-center" id="cardAmount" name="cardAmount" placeholder="0.00">
+                                                </div>
+                                                <div class="form-group mt-2">
+                                                    <label class="form-label" for="authorization_no">Authorization #</label>
+                                                    <input class="form-control form-control-sm" type="text" id="authorization_no" name="authorization_no" placeholder="Authorization #">
+                                                </div>
                                             </div>
-                                        </div>
-                                        <div class="form-group mt-2">
-                                            <label class="form-label" for="authorization_no">Authorization #</label>
-                                            <input class="form-control form-control-sm" type="text" id="authorization_no" name="authorization_no" placeholder="Authorization #">
                                         </div>
                                     </div>
                                 </div>

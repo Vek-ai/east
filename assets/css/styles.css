@@ -11956,7 +11956,7 @@ progress {
   --bs-table-bg-state: initial;
   --bs-table-color: #000000;
   --bs-table-bg: transparent;
-  --bs-table-border-color: #ebf1f6;
+  --bs-table-border-color: #363636;
   --bs-table-accent-bg: transparent;
   --bs-table-striped-color: #768b9e;
   --bs-table-striped-bg: #e9ecef;
@@ -25799,7 +25799,7 @@ html[data-boxed-layout="boxed"] .container-xxl {
   position: relative;
   padding: 12px 16px;
   text-decoration: none;
-  font-weight: 400;
+  font-weight: 500;
   color: var(--bs-heading-color) !important;
   border-radius: 26px;
   gap: 12px;

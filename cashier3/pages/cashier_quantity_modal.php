@@ -99,15 +99,20 @@ if(isset($_POST['fetch_prompt_quantity'])){
                     case 18: // standing_seam
                         include "panel_layouts/standing_seam.php";
                         break;
+                    case 44;
                     case 19: // snap_lock
                         include "panel_layouts/snap_lock.php";
                         break;
+                    case 45;
                     case 20: // mechanical_seam
                         include "panel_layouts/mechanical_seam.php";
                         break;
+                    case 43;
                     case 21: // board_batten
                         include "panel_layouts/board_batten.php";
                         break;
+                    case 46;
+                    case 47;
                     case 41: // flush_wall
                         include "panel_layouts/flush_wall.php";
                         break;
