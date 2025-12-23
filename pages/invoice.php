@@ -108,7 +108,7 @@ function showCol($name) {
         <div><br>
             <h4 class="font-weight-medium fs-14 mb-0"><?php
             if(isset($customer_details)){
-                echo "Customer " .$customer_details['customer_first_name'] .' ' .$customer_details['customer_last_name'];
+                echo "Customer " .get_customer_name($customer_id);
             }
             ?> <?= $page_title ?></h4>
             <nav aria-label="breadcrumb">
@@ -291,7 +291,14 @@ function showCol($name) {
                                         'net30'    => ['label' => 'Charge Net 30',       'style' => 'color: #fff; background-color: #dc3545;'],
                                     ];
 
-                                    $query = "SELECT * FROM orders WHERE status != 6 ORDER BY order_date DESC";
+                                    $query = "SELECT * FROM orders WHERE status != 6";
+
+                                    if (isset($customer_id) && !empty($customer_id)) {
+                                        $query .= " AND customerid = '$customer_id'";
+                                    }
+
+                                    $query .= " ORDER BY order_date DESC";
+
                                     $result = mysqli_query($conn, $query);
                                 
                                     if ($result && mysqli_num_rows($result) > 0) {

@@ -335,8 +335,8 @@ if ($permission === 'edit') {
                                       style='border-radius: 10%;' data-toggle="tooltip" data-placement="top" title="Estimates"><i
                                         class="fa fa-calculator text-secondary"></i>
                                     </a>
-                                    <a href="?page=order_list&customer_id=<?= $customer_id ?>" class="py-1 pe-1"
-                                      style='border-radius: 10%;' data-toggle="tooltip" data-placement="top" title="Orders"><i
+                                    <a href="?page=invoice&customer_id=<?= $customer_id ?>" class="py-1 pe-1"
+                                      style='border-radius: 10%;' data-toggle="tooltip" data-placement="top" title="Invoices"><i
                                         class="fa fa-cart-shopping text-success"></i>
                                     </a>
                                   <?php } ?>
