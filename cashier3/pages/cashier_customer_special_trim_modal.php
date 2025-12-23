@@ -41,8 +41,8 @@ if(isset($_POST['fetch_modal'])){
                             $response = array();
                             while ($row = mysqli_fetch_assoc($result)) {
                                 $customer_name = get_customer_name($customer_id);
-                                $description = $row['special_trim_desc'];
-                                $trim_no = $row['special_trim_no'];
+                                $description = $row['spec_trim_desc'];
+                                $trim_no = $row['spec_trim_no'];
                                 $last_order = $row['last_order'];
                             ?>
                             <tr>

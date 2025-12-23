@@ -4276,13 +4276,13 @@ $editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) :
                     $('#trim-gauge')
                         .val(response.gauge)
                         .trigger('change');
-                    $('#trim-width')
+                    $('.trim-width')
                         .val(response.flat_sheet_width)
                         .trigger('change');
                     $('.trim-hem').val(response.hems);
                     $('.trim-bend').val(response.bends);
                     $('#trim_no').val(response.trim_no);
-                    $('input[name="description"]').val(response.description);
+                    $('#spec_trim_desc').val(response.description);
 
                     $('#customer_special_trim_modal').modal('hide');
                 }

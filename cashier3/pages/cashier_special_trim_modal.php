@@ -178,7 +178,7 @@ if(isset($_POST['fetch_modal'])){
             <div class="row justify-content-center mb-3">
                 <div class="col-9 text-center">
                     <label class="fs-4 fw-semibold">Special Trim Description</label>
-                    <input type="text" name="description" class="form-control mb-1" placeholder="Enter Description">
+                    <input type="text" id="spec_trim_desc" name="description" class="form-control mb-1" placeholder="Enter Description">
                 </div>
             </div>
 

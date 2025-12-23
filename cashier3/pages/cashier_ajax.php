@@ -3600,7 +3600,7 @@ if (isset($_POST['fetch_special_trim_details'])) {
 
         $response = [
             'success' => true,
-            'trim_no' => $row['special_trim_no'],
+            'trim_no' => $row['spec_trim_no'],
             'unit_price' => $row['unit_price'],
             'color' => is_array(json_decode($row['color'], true)) ? json_decode($row['color'], true)[0] : $row['color'],
             'grade' => is_array(json_decode($row['grade'], true)) ? json_decode($row['grade'], true)[0] : $row['grade'],
@@ -3608,7 +3608,7 @@ if (isset($_POST['fetch_special_trim_details'])) {
             'flat_sheet_width' => $width,
             'hems' => $row['hems'],
             'bends' => $row['bends'],
-            'description' => $row['special_trim_desc']
+            'description' => $row['spec_trim_desc']
         ];
 
         echo json_encode($response);
