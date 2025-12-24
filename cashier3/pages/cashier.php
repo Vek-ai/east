@@ -5005,6 +5005,7 @@ $editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) :
                 $.ajax({
                     url: 'pages/cashier_ajax.php',
                     type: 'POST',
+                    dataType: 'json',
                     data: {
                         cash_amt: cash_amt,
                         credit_amt: credit_amt,

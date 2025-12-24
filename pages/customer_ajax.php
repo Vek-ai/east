@@ -13,53 +13,53 @@ use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 
 $includedColumns = [
-    'customer_id'                => 'Customer ID',
+    'customer_id'                => 'Customer ID #',
     'customer_notes'             => 'Customer Notes',
     'customer_first_name'        => 'First Name',
     'customer_last_name'         => 'Last Name',
-    'customer_business_name'     => 'Business Name',
-    'customer_business_website'  => 'Business Website',
-    'customer_type_id'           => 'Customer Type',
-    'contact_email'              => 'Email',
-    'contact_phone'              => 'Phone',
-    'primary_contact'            => 'Primary Contact',
-    'contact_fax'                => 'Fax',
-    'address'                    => 'Address',
+    'customer_business_name'     => 'Name',
+    'customer_business_website'  => 'Website',
+    'customer_type_id'           => 'Type of Tax Exempt Customer',
+    'contact_email'              => 'Primary Email Address',
+    'contact_phone'              => 'Primary Phone #',
+    'primary_contact'            => 'Primary Contact Name',
+    'contact_fax'                => 'Primary Fax #',
+    'address'                    => 'Billing Address',
     'city'                       => 'City',
     'state'                      => 'State',
-    'zip'                        => 'ZIP Code',
-    'different_ship_address'     => 'Different Shipping Address',
+    'zip'                        => 'Zip',
+    'different_ship_address'     => 'Shipping Address different than Billing Address?',
     'ship_address'               => 'Shipping Address',
     'ship_city'                  => 'Shipping City',
     'ship_state'                 => 'Shipping State',
-    'ship_zip'                   => 'Shipping ZIP',
+    'ship_zip'                   => 'Shipping Zip',
     'secondary_contact_name'     => 'Secondary Contact Name',
-    'secondary_contact_phone'    => 'Secondary Contact Phone',
-    'secondary_contact_email'    => 'Secondary Contact Email',
+    'secondary_contact_phone'    => 'Secondary Phone #',
+    'secondary_contact_email'    => 'Secondary Email Address',
     'tax_status'                 => 'Tax Status',
-    'tax_exempt_number'          => 'Tax Exempt Number',
+    'tax_exempt_number'          => 'Tax Exemption #',
     'is_corporate_parent'        => 'Corporate Parent',
     'corpo_parent_name'          => 'Corporate Parent Name',
     'corpo_phone_no'             => 'Corporate Phone',
     'corpo_address'              => 'Corporate Address',
     'corpo_city'                 => 'Corporate City',
     'corpo_state'                => 'Corporate State',
-    'corpo_zip'                  => 'Corporate ZIP',
+    'corpo_zip'                  => 'Corporate Zip',
     'is_bill_corpo_address'      => 'Bill to Corporate Address',
-    'is_charge_net'              => 'Charge Net',
-    'charge_net_30'              => 'Net 30',
-    'credit_limit'               => 'Credit Limit',
+    'is_charge_net'              => 'Charge Net 30',
+    'charge_net_30'              => 'Charge Net 30',
+    'credit_limit'               => 'Charge Net 30 Limit',
     'loyalty'                    => 'Loyalty',
     'customer_pricing'           => 'Customer Pricing',
-    'is_approved'                => 'Approved',
-    'payment_pickup'             => 'Pickup Payment',
-    'payment_delivery'           => 'Delivery Payment',
-    'payment_cash'               => 'Cash Payment',
-    'payment_check'              => 'Check Payment',
-    'payment_card'               => 'Card Payment',
-    'is_contractor'              => 'Contractor',
-    'username'                   => 'Username',
-    'password'                   => 'Password'
+    'is_approved'                => 'Portal Access',
+    'payment_pickup'             => 'Pay at Pick-Up',
+    'payment_delivery'           => 'Pay at Delivery',
+    'payment_cash'               => 'Cash',
+    'payment_check'              => 'Check',
+    'payment_card'               => 'Credit-Debit',
+    'is_contractor'              => 'Is Customer a Contractor',
+    'username'                   => 'Portal Username',
+    'password'                   => 'Portal Password'
 ];
 
 $table = 'customer';
@@ -537,11 +537,12 @@ if(isset($_REQUEST['action'])) {
         foreach ($spreadsheet->getAllSheets() as $sheet) {
             $rows = $sheet->toArray(null, true, true, false);
 
-            if (count($rows) < 2) {
-                continue;
-            }
+            if (count($rows) < 2) continue;
 
-            $headers = array_map('trim', $rows[0]);
+            $headers = array_map(
+                fn($h) => $h === null ? '' : trim((string)$h),
+                $rows[0]
+            );
 
             $columnMap = [];
             foreach ($includedColumns as $dbCol => $displayTitle) {
@@ -551,9 +552,7 @@ if(isset($_REQUEST['action'])) {
                 }
             }
 
-            if (empty($columnMap)) {
-                continue;
-            }
+            if (empty($columnMap)) continue;
 
             for ($i = 1; $i < count($rows); $i++) {
                 $row = $rows[$i];
@@ -567,6 +566,23 @@ if(isset($_REQUEST['action'])) {
 
                     $value = $row[$excelIndex] ?? '';
                     $value = $value === null ? '' : trim((string)$value);
+                    
+                    if (strcasecmp($value, 'Yes') === 0) {
+                        $value = 1;
+                    } elseif (strcasecmp($value, 'No') === 0) {
+                        $value = 0;
+                    }
+
+                    switch ($dbCol) {
+                        case 'tax_status':
+                            $value = getIdsFromColumnValues("customer_tax", "tax_status_desc", $value);
+                            $value = trim($value, '[]');
+                            break;
+                        case 'customer_pricing':
+                            $value = getIdsFromColumnValues("customer_pricing", "pricing_name", $value);
+                            $value = trim($value, '[]');
+                            break;
+                    }
 
                     $data[$dbCol] = mysqli_real_escape_string($conn, $value);
                 }
@@ -587,7 +603,6 @@ if(isset($_REQUEST['action'])) {
 
         echo "success";
     }
-
     
     if ($action == "update_test_data") {
         $column_name = $_POST['header_name'];

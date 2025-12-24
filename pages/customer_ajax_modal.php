@@ -352,7 +352,7 @@ if(isset($_REQUEST['action'])) {
                                 $selected = (($tax_status ?? 0) == $row_tax_status['taxid']) ? 'selected' : '';
                                 ?>
                                 <option value="<?= $row_tax_status['taxid'] ?>" <?= $selected ?>>
-                                (<?= $row_tax_status['percentage'] ?>%) <?= $row_tax_status['tax_status_desc'] ?></option>
+                                <?= $row_tax_status['tax_status_desc'] ?></option>
                             <?php
                             }
                             ?>
@@ -1156,7 +1156,7 @@ if(isset($_REQUEST['action'])) {
                                 $selected = (($tax_status ?? 0) == $row_tax_status['taxid']) ? 'selected' : '';
                                 ?>
                                 <option value="<?= $row_tax_status['taxid'] ?>" <?= $selected ?>>
-                                (<?= $row_tax_status['percentage'] ?>%) <?= $row_tax_status['tax_status_desc'] ?></option>
+                                <?= $row_tax_status['tax_status_desc'] ?></option>
                             <?php
                             }
                             ?>
@@ -1797,7 +1797,7 @@ if(isset($_REQUEST['action'])) {
                                 $selected = (($tax_status ?? 0) == $row_tax_status['taxid']) ? 'selected' : '';
                                 ?>
                                 <option value="<?= $row_tax_status['taxid'] ?>" <?= $selected ?>>
-                                (<?= $row_tax_status['percentage'] ?>%) <?= $row_tax_status['tax_status_desc'] ?></option>
+                                <?= $row_tax_status['tax_status_desc'] ?></option>
                             <?php
                             }
                             ?>
@@ -2456,7 +2456,7 @@ if(isset($_REQUEST['action'])) {
                                 $selected = (($tax_status ?? 0) == $row_tax_status['taxid']) ? 'selected' : '';
                                 ?>
                                 <option value="<?= $row_tax_status['taxid'] ?>" <?= $selected ?>>
-                                (<?= $row_tax_status['percentage'] ?>%) <?= $row_tax_status['tax_status_desc'] ?></option>
+                                <?= $row_tax_status['tax_status_desc'] ?></option>
                             <?php
                             }
                             ?>

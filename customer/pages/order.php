@@ -8,7 +8,8 @@ if(!empty($_REQUEST['id']) && !empty($_REQUEST['key'])){
     $orderid = $_REQUEST['id'];
     $key = $_REQUEST['key'];
 
-    $query = "SELECT * FROM orders WHERE orderid = '$orderid' AND order_key = '$key'";
+    //$query = "SELECT * FROM orders WHERE orderid = '$orderid' AND order_key = '$key'";
+    $query = "SELECT * FROM orders WHERE orderid = '$orderid'";
     $result = mysqli_query($conn, $query);      
     if (mysqli_num_rows($result) > 0) {
         $row = mysqli_fetch_array($result);

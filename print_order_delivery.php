@@ -233,30 +233,24 @@ if (mysqli_num_rows($result) > 0) {
 
         $lineheight = 6;
 
-        $query_qr = "SELECT * FROM order_estimate WHERE order_estimate_id = '$table_id' AND type = '2'";
+        $query_qr = "SELECT * FROM order_estimate WHERE order_estimate_id = '$table_id'";
         $result_qr = mysqli_query($conn, $query_qr);
         if (mysqli_num_rows($result_qr) > 0) {
             $row_qr = mysqli_fetch_assoc($result_qr);
-            $image_url = 'https://delivery.ilearnsda.com/deliveryqr/qrcode' . $row_qr['id'] . '.png';
 
-            $headers = @get_headers($image_url, 1);
-            if (isset($headers['Content-Type']) && strpos($headers['Content-Type'], 'image/png') !== false) {
-                $image_data = @file_get_contents($image_url);
-                if ($image_data !== false) {
-                    $local_image_path = 'temp_qr_' . $row_qr['id'] . '.png';
-                    file_put_contents($local_image_path, $image_data);
+            $local_image_path = __DIR__ . '/delivery/deliveryqr/qrcode' . $row_qr['id'] . '.png';
 
-                    $info = @getimagesize($local_image_path);
-                    if ($info && $info['mime'] === 'image/png') {
-                        $pdf->SetXY($col1_x, $col_y);
-                        $pdf->Image($local_image_path, $col1_x, $col_y, 60, 60);
-                    }
+            if (file_exists($local_image_path) && mime_content_type($local_image_path) === 'image/png') {
+                
+                $qr_max_height = $box_height - 1;
+                $qr_width = $qr_max_height;
 
-                    unlink($local_image_path);
-                }
+                $qr_x = $box2_x + ($box_width - $qr_width) / 2;
+                $qr_y = $box_y + 6 + (($box_height - $qr_max_height) / 2);
+
+                $pdf->Image($local_image_path, $qr_x, $qr_y, $qr_width, $qr_max_height);
             }
         }
-
         
         $pdf->SetFont('Arial', '', 9);
 
