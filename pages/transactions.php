@@ -161,12 +161,12 @@ td.notes,  td.last-edit{
                     <table id="display_cash_flow" class="table table-striped table-bordered align-middle text-center">
                     <thead>
                         <tr>
-                        <th>Cashier</th>
-                        <th>Payment Method</th>
-                        <th>Movement Type</th>
-                        <th>Cash Flow Type</th>
-                        <th>Date</th>
-                        <th>Amount</th>
+                            <th>Invoice #</th>
+                            <th>Customer</th>
+                            <th>Date</th>
+                            <th>Movement Type</th>
+                            <th>Cash Flow Type</th>
+                            <th>Amount</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -174,8 +174,16 @@ td.notes,  td.last-edit{
                     </tbody>
                     <tfoot>
                         <tr>
-                            <th colspan="5" style="text-align:right">Total:</th>
-                            <th style="text-align:center"></th>
+                            <th colspan="5" class="text-end">Total Inflows</th>
+                            <th id="total_inflows">$0</th>
+                        </tr>
+                        <tr>
+                            <th colspan="5" class="text-end">Total Outflows</th>
+                            <th id="total_outflows">$0</th>
+                        </tr>
+                        <tr>
+                            <th colspan="5" class="text-end fw-bold">Difference</th>
+                            <th id="total_difference" class="fw-bold">$0</th>
                         </tr>
                     </tfoot>
                 </table>
@@ -219,11 +227,11 @@ td.notes,  td.last-edit{
             data: { action: 'fetch_table' }
         },
         columns: [
-            { data: 'cashier' },
-            { data: 'payment_method' },
+            { data: 'orderid' },
+            { data: 'customer_name' },
+            { data: 'date_display' },
             { data: 'movement_type' },
             { data: 'cash_flow_type' },
-            { data: 'date_display' },
             { data: 'amount_display' },
         ],
         createdRow: function(row, data, dataIndex) {
@@ -234,17 +242,26 @@ td.notes,  td.last-edit{
             $(row).attr('data-amount', data.amount);
             $(row).attr('data-movement', data.movement_type);
         },
-        drawCallback: function(settings) {
-            let total = 0;
+        drawCallback: function () {
+            let inflows = 0;
+            let outflows = 0;
 
-            $('#display_cash_flow tbody tr').each(function() {
-                const amt = parseFloat($(this).attr('data-amount')) || 0;
-                total += amt;
+            $('#display_cash_flow tbody tr').each(function () {
+                const amount = parseFloat($(this).attr('data-amount')) || 0;
+                const movement = $(this).attr('data-movement');
+
+                if (movement === 'Cash Inflow') {
+                    inflows += amount;
+                } else if (movement === 'Cash Outflow') {
+                    outflows += amount;
+                }
             });
 
-            $('#display_cash_flow tfoot th:last').html(
-                '$' + total.toLocaleString()
-            );
+            const difference = inflows - outflows;
+
+            $('#total_inflows').html('$' + inflows.toLocaleString(undefined, { minimumFractionDigits: 2 }));
+            $('#total_outflows').html('$' + outflows.toLocaleString(undefined, { minimumFractionDigits: 2 }));
+            $('#total_difference').html('$' + difference.toLocaleString(undefined, { minimumFractionDigits: 2 }));
         }
     });
     

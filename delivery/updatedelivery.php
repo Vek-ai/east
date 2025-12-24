@@ -6,18 +6,14 @@ $order_estimate_id = isset($_GET['id']) ? intval($_GET['id']) : 0;
 $order_estimate = getOrderEstimateDetails($order_estimate_id);
 $invoice_no = $order_estimate['order_estimate_id'];
 
-$successMessage = '';
-$errorMessage = '';
-
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
-    $amount = $_POST['amount'] ?? 0;
-    $amount = ($amount === '' || $amount === null) ? 0 : floatval($amount);
-    $datetime = date('Y-m-d H:i:s');
-
-    $latitude     = $_POST['latitude'] ?? null;
-    $longitude    = $_POST['longitude'] ?? null;
-    $photoAddress = $_POST['photo_address'] ?? '';
+    $latitude       = $_POST['latitude'] ?? null;
+    $longitude      = $_POST['longitude'] ?? null;
+    $photoAddress   = $_POST['photo_address'] ?? '';
+    $amount         = $_POST['amount'] ?? 0;
+    $amount         = ($amount === '' || $amount === null) ? 0 : floatval($amount);
+    $datetime       = date('Y-m-d H:i:s');
 
     if (isset($_FILES['picture']) && $_FILES['picture']['error'] === UPLOAD_ERR_OK) {
 
@@ -44,18 +40,41 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             ";
 
             $stmt = $conn->prepare($sql);
-            $stmt->bind_param(
-                "ssssssi",
-                $newFileName,
-                $latitude,
-                $longitude,
-                $datetime,
-                $photoAddress,
-                $amount,
-                $order_estimate_id
-            );
+            $stmt->bind_param("ssssssi", $newFileName, $latitude, $longitude, $datetime, $photoAddress, $amount, $order_estimate_id);
 
             if ($stmt->execute()) {
+
+                $sqlOrderProduct = "
+                    UPDATE order_product
+                    SET status = 4
+                    WHERE orderid = ?
+                    AND status = 3
+                ";
+
+                $stmtOP = $conn->prepare($sqlOrderProduct);
+                $stmtOP->bind_param("i", $invoice_no);
+                $stmtOP->execute();
+                $stmtOP->close();
+
+                $received_by     = '';
+                $station_id      = '';
+                $movement_type   = 'cash_inflow';
+                $payment_method  = 'cash';
+                $cash_flow_type  = 'delivery_payment';
+                $orderid         = $invoice_no;
+                $date            = date('Y-m-d H:i:s');
+
+                $sqlCash = "
+                    INSERT INTO cash_flow
+                    (orderid, movement_type, payment_method, date, received_by, station_id, cash_flow_type, amount)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                ";
+
+                $stmtCash = $conn->prepare($sqlCash);
+                $stmtCash->bind_param("issssssd", $orderid, $movement_type, $payment_method, $date, $received_by, $station_id, $cash_flow_type, $amount);
+                $stmtCash->execute();
+                $stmtCash->close();
+
                 $successMessage = "Delivery recorded successfully!";
             } else {
                 $errorMessage = "DB Update Error: " . $stmt->error;
@@ -102,7 +121,7 @@ body, html { height: 100%; margin: 0; padding: 0; }
                 <?php if (!empty($errorMessage)): ?>
                     <div class="alert alert-danger"><?= $errorMessage ?></div>
                 <?php endif; ?>
-                <form id="deliveryForm" method="POST" enctype="multipart/form-data">
+                <form method="POST" enctype="multipart/form-data" onsubmit="return getLocation(event)">
                     <div class="mb-3">
                         <label class="form-label">Delivery Amount</label>
                         <input type="number" step="0.001" name="amount" class="form-control" required>
@@ -114,20 +133,17 @@ body, html { height: 100%; margin: 0; padding: 0; }
                     <input type="hidden" name="latitude" id="latitude">
                     <input type="hidden" name="longitude" id="longitude">
                     <input type="hidden" name="photo_address" id="photo_address">
-                    <button class="btn btn-success w-100" type="button" onclick="getLocation()">Submit Delivery</button>
+                    <button class="btn btn-success w-100" type="submit">Submit Delivery</button>
                 </form>
             </div>
         </div>
     </div>
 </div>
-
 <script>
-window.addEventListener('DOMContentLoaded', () => {
-    // Automatically fetch location when page loads
-    getLocation(false); // false = don't auto-submit
-});
+var latitude;
+var longitude;
 
-function getLocation(autoSubmit = true) {
+function getLocation() {
     if (!navigator.geolocation) {
         alert("Geolocation not supported");
         return;
@@ -135,34 +151,29 @@ function getLocation(autoSubmit = true) {
 
     navigator.geolocation.getCurrentPosition(
         pos => {
-            const lat = pos.coords.latitude;
-            const lon = pos.coords.longitude;
-            document.getElementById('latitude').value = lat;
-            document.getElementById('longitude').value = lon;
+            latitude = pos.coords.latitude;
+            longitude = pos.coords.longitude;
 
-            const url = `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json&addressdetails=1`;
+            console.log(latitude);
+            console.log(longitude);
 
-            fetch(url, {
-                headers: {
-                    'User-Agent': 'MetalApp/1.0 (kentuckymetaleast@gmail.com)'
-                }
-            })
-            .then(res => res.json())
-            .then(data => {
-                document.getElementById('photo_address').value = data.display_name || '';
-                if(autoSubmit){
-                    document.getElementById('deliveryForm').submit();
-                }
-            })
-            .catch(() => {
-                if(autoSubmit){
-                    document.getElementById('deliveryForm').submit();
-                }
-            });
+            document.getElementById('latitude').value = latitude;
+            document.getElementById('longitude').value = longitude;
+
+            fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`)
+                .then(res => res.json())
+                .then(data => {
+                    document.getElementById('photo_address').value = data.display_name || '';
+                    document.querySelector('form').submit();
+                })
+                .catch(() => {
+                    document.querySelector('form').submit();
+                });
         }
     );
 }
-</script>
 
+getLocation();
+</script>
 </body>
 </html>

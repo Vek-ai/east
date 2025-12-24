@@ -165,7 +165,21 @@ if(isset($_REQUEST['action'])) {
                                             </td>
                                             <td><?= $row['quantity'] ?></td>
                                             <td>
-                                                <span class="<?= $status_prod['class']; ?> fw-bond"><?= $status_prod['label']; ?></span>
+                                                <?php if ($status_prod_db === 4): ?>
+                                                    <span
+                                                        class="<?= $status_prod['class']; ?> fw-bond view_delivery_proof"
+                                                        role="button"
+                                                        title="View Delivery Proof"
+                                                        data-orderid="<?= $orderid ?>"
+                                                        style="cursor: pointer;"
+                                                    >
+                                                        <?= $status_prod['label']; ?>
+                                                    </span>
+                                                <?php else: ?>
+                                                    <span class="<?= $status_prod['class']; ?> fw-bond">
+                                                        <?= $status_prod['label']; ?>
+                                                    </span>
+                                                <?php endif; ?>
                                             </td>
                                             <td>
                                                 <span class="<?= $payment_prod['class']; ?> fw-bond"><?= $payment_prod['label']; ?></span>
@@ -488,7 +502,6 @@ if(isset($_REQUEST['action'])) {
         echo json_encode($response);
     }
 
-
     if ($action === 'update_delivery_payment') {
         $order_id = mysqli_real_escape_string($conn, $_POST['orderid'] ?? '');
         $delivery_method = mysqli_real_escape_string($conn, $_POST['delivery_method'] ?? '');
@@ -669,6 +682,93 @@ if(isset($_REQUEST['action'])) {
         <div class="modal-footer">
             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
         </div>
+        <?php
+    }
+
+    if ($action === 'fetch_delivery_image') {
+        $order_estimate_id = mysqli_real_escape_string($conn, $_POST['orderid']);
+        ?>
+        <style>
+            .container {
+                position: relative;
+                width: 100%;
+            }
+
+            .image {
+                opacity: 1;
+                display: block;
+                max-width: 100%;
+                height: 80vh;
+                transition: .5s ease;
+                backface-visibility: hidden;
+            } 
+
+            .bottom-info {
+                transition: .5s ease;
+                opacity: 0;
+                width: 100%;
+                position: absolute;
+                top: 100%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                text-align: center;
+                background-color: #C0C0C04D;
+                padding: 30px;
+            }
+
+            .container:hover .image {
+                opacity: 0.3;
+            }
+
+            .container:hover .bottom-info {
+                opacity: 1;
+            }
+        </style>
+        <?php
+        $query = "SELECT * FROM order_estimate WHERE order_estimate_id = '$order_estimate_id'";
+        $result = mysqli_query($conn, $query);
+        
+        if ($result && mysqli_num_rows($result) > 0) {
+            while ($row = mysqli_fetch_assoc($result)) {
+            ?>
+                <div class="container text-center">
+                    <img src="delivery/deliverypictures/<?=$row['image_url']?>" alt="Avatar" class="image d-block mx-auto">
+                    <div class="bottom-info">
+                        <h5 class="fs-5 text-white"><?= $row['photo_address'] ?></h5>
+                        <div class="row">
+                            <div class="col-6">
+                                <div class="mb-2">
+                                    <h5 class="text-white mb-0 text-muted">Latitude</h5>
+                                    <h3 class="text-white"><?= $row['latitude'] ?></h3>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="mb-2">
+                                    <h5 class="text-white mb-0 text-muted">Longitude</h5>
+                                    <h3 class="text-white"><?= $row['longitude'] ?></h3>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="mb-2">
+                                    <h5 class="text-white mb-0 text-muted">Time</h5>
+                                    <h3 class="text-white"><?= date('g:i a', strtotime($row['datetime'])) ?></h3>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="mb-2">
+                                    <h5 class="text-white mb-0 text-muted">Date</h5>
+                                    <h3 class="text-white"><?= date('F j, Y', strtotime($row['datetime'])) ?></h3>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            <?php
+            }
+        }
+        ?>
+        
+
         <?php
     }
 

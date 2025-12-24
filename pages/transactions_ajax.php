@@ -17,14 +17,20 @@ if(isset($_REQUEST['action'])) {
     $action = $_REQUEST['action'];
 
     if ($action == 'fetch_table') {
-        $query = "SELECT * FROM cash_flow ORDER BY date DESC";
+        $query = "SELECT * FROM cash_flow WHERE movement_type IN ('cash_inflow','cash_outflow') ORDER BY date DESC";
         $result = mysqli_query($conn, $query);
 
         $data = [];
         while ($row = mysqli_fetch_assoc($result)) {
             $dateObj = new DateTime($row['date']);
+            $orderid = $row['orderid'];
+            $order = getOrderDetails($orderid);
+            $customer_id = $order['customerid'] ?? '';
+            $customer_name = get_customer_name($customer_id);
             $data[] = [
                 'id'             => $row['id'],
+                'orderid'        => $orderid,
+                'customer_name'  => $customer_name,
                 'cashier'        => get_staff_name($row['received_by']),
                 'station'        => getStationName($row['station_id']),
                 'station_id'     => $row['station_id'],
