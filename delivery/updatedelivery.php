@@ -1,164 +1,162 @@
 <?php
-// Database connection details
-$host = "localhost";
-$username = "benguetf_eastkentucky";                
-$password = "O3K9-T6&{oW[";         
-$dbname = "benguetf_eastkentucky";  
+require_once '../includes/dbconn.php';
+require_once '../includes/functions.php';
 
-// Create connection
-$conn = new mysqli($host, $username, $password, $dbname);
-
-// Check connection
-if ($conn->connect_error) {
-    die("Connection failed: " . $conn->connect_error);
-}
-
-// Get the 'id' from the URL
 $order_estimate_id = isset($_GET['id']) ? intval($_GET['id']) : 0;
+$order_estimate = getOrderEstimateDetails($order_estimate_id);
+$invoice_no = $order_estimate['order_estimate_id'];
+
+$successMessage = '';
+$errorMessage = '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $latitude = isset($_POST['latitude']) ? $_POST['latitude'] : null;
-    $longitude = isset($_POST['longitude']) ? $_POST['longitude'] : null;
-    $datetime = date('Y-m-d H:i:s'); // Current server datetime
-    $photoAddress = isset($_POST['photo_address']) ? $_POST['photo_address'] : '';
 
-    // Check if a file was uploaded
+    $amount = $_POST['amount'] ?? 0;
+    $amount = ($amount === '' || $amount === null) ? 0 : floatval($amount);
+    $datetime = date('Y-m-d H:i:s');
+
+    $latitude     = $_POST['latitude'] ?? null;
+    $longitude    = $_POST['longitude'] ?? null;
+    $photoAddress = $_POST['photo_address'] ?? '';
+
     if (isset($_FILES['picture']) && $_FILES['picture']['error'] === UPLOAD_ERR_OK) {
-        $uploadDir = 'deliverypictures/'; // Directory to save the uploaded files
-        if (!is_dir($uploadDir)) {
-            mkdir($uploadDir, 0755, true);
-        }
 
-        $fileTmpPath = $_FILES['picture']['tmp_name'];
-        $fileName = basename($_FILES['picture']['name']);
-        $fileExtension = pathinfo($fileName, PATHINFO_EXTENSION);
-        $newFileName = 'order_' . $order_estimate_id . '.' . $fileExtension;
-        $uploadPath = $uploadDir . $newFileName;
+        $uploadDir = 'deliverypictures/';
+        if (!is_dir($uploadDir)) mkdir($uploadDir, 0755, true);
 
-        // Move the uploaded file to the server directory
+        $fileTmpPath  = $_FILES['picture']['tmp_name'];
+        $fileExt      = pathinfo($_FILES['picture']['name'], PATHINFO_EXTENSION);
+        $newFileName  = 'order_' . $order_estimate_id . '.' . $fileExt;
+        $uploadPath   = $uploadDir . $newFileName;
+
         if (move_uploaded_file($fileTmpPath, $uploadPath)) {
-            // Update the database with the status, image filename, and location data
-            $sql = "UPDATE order_estimate 
-                    SET status = 3, image_url = ?, latitude = ?, longitude = ?, datetime = ?, photo_address = ? 
-                    WHERE id = ?";
+
+            $sql = "
+                UPDATE order_estimate
+                SET status = 3,
+                    image_url = ?,
+                    latitude = ?,
+                    longitude = ?,
+                    datetime = ?,
+                    photo_address = ?,
+                    amount = ?
+                WHERE id = ?
+            ";
+
             $stmt = $conn->prepare($sql);
-            $stmt->bind_param("sssssi", $newFileName, $latitude, $longitude, $datetime, $photoAddress, $order_estimate_id);
+            $stmt->bind_param(
+                "ssssssi",
+                $newFileName,
+                $latitude,
+                $longitude,
+                $datetime,
+                $photoAddress,
+                $amount,
+                $order_estimate_id
+            );
 
             if ($stmt->execute()) {
-                $successMessage = "Picture and location data uploaded successfully!";
+                $successMessage = "Delivery recorded successfully!";
             } else {
-                $errorMessage = "Error updating database: " . $stmt->error;
+                $errorMessage = "DB Update Error: " . $stmt->error;
             }
 
             $stmt->close();
         } else {
-            $errorMessage = "Failed to save the uploaded file. Please check file permissions.";
+            $errorMessage = "File upload failed.";
         }
     } else {
-        $errorMessage = "No picture uploaded or an error occurred.";
+        $errorMessage = "No picture uploaded.";
     }
 }
 ?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Order Picture Upload</title>
-    <!-- Bootstrap CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+<meta charset="UTF-8">
+<title>Upload Delivery Proof</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+<style>
+body, html { height: 100%; margin: 0; padding: 0; }
+.upload-card { width: 100%; max-width: 500px; }
+@media (max-width: 576px) {
+    .upload-card { width: 100vw; height: 100vh; border-radius: 0; margin: 0; }
+    .card-body { overflow-y: auto; height: calc(100vh - 60px); }
+    .card-header h5 { font-size: 1rem; }
+    .btn { font-size: 0.95rem; }
+}
+</style>
 </head>
 <body>
-<div class="container mt-5">
-    <div class="card shadow">
-        <div class="card-header bg-primary text-white">
-            <h3 class="text-center">Upload Picture for Order Estimate ID: <?php echo htmlspecialchars($order_estimate_id); ?></h3>
-        </div>
-        <div class="card-body">
-            <?php if (!empty($successMessage)): ?>
-                <div class="alert alert-success"><?php echo $successMessage; ?></div>
-            <?php endif; ?>
-            <?php if (!empty($errorMessage)): ?>
-                <div class="alert alert-danger"><?php echo $errorMessage; ?></div>
-            <?php endif; ?>
-            <form action="" method="POST" enctype="multipart/form-data" onsubmit="return getLocation()">
-                <div class="mb-3">
-                    <label for="picture" class="form-label">Upload Picture:</label>
-                    <input type="file" name="picture" id="picture" class="form-control" accept="image/*" capture="camera" required>
-                    <div class="invalid-feedback">Please select a picture to upload.</div>
-                </div>
-                <input type="hidden" name="latitude" id="latitude">
-                <input type="hidden" name="longitude" id="longitude">
-                <input type="hidden" name="photo_address" id="photo_address">
-                <button type="submit" class="btn btn-success w-100">Submit</button>
-            </form>
+<div class="container-fluid d-flex justify-content-center align-items-center min-vh-100">
+    <div class="col-12 col-sm-10 col-md-6 col-lg-4 upload-card">
+        <div class="card shadow-lg h-100">
+            <div class="card-header bg-primary text-white text-center">
+                <h5>Delivery Proof Upload</h5>
+                <small>Order #<?= htmlspecialchars($invoice_no) ?></small>
+            </div>
+            <div class="card-body">
+                <?php if (!empty($successMessage)): ?>
+                    <div class="alert alert-success"><?= $successMessage ?></div>
+                <?php endif; ?>
+                <?php if (!empty($errorMessage)): ?>
+                    <div class="alert alert-danger"><?= $errorMessage ?></div>
+                <?php endif; ?>
+                <form id="deliveryForm" method="POST" enctype="multipart/form-data">
+                    <div class="mb-3">
+                        <label class="form-label">Delivery Amount</label>
+                        <input type="number" step="0.001" name="amount" class="form-control" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Upload Picture</label>
+                        <input type="file" name="picture" class="form-control" accept="image/*" capture="camera" required>
+                    </div>
+                    <input type="hidden" name="latitude" id="latitude">
+                    <input type="hidden" name="longitude" id="longitude">
+                    <input type="hidden" name="photo_address" id="photo_address">
+                    <button class="btn btn-success w-100" type="button" onclick="getLocation()">Submit Delivery</button>
+                </form>
+            </div>
         </div>
     </div>
 </div>
 
-<!-- Bootstrap JS -->
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
 <script>
-// Get location data
 function getLocation() {
-    if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition(position => {
-            const latitude = position.coords.latitude;
-            const longitude = position.coords.longitude;
-
-            // Set latitude and longitude fields
-            document.getElementById('latitude').value = latitude;
-            document.getElementById('longitude').value = longitude;
-
-            // Use a reverse geocoding API to get the address (optional)
-            fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`)
-                .then(response => response.json())
-                .then(data => {
-                    document.getElementById('photo_address').value = data.display_name || '';
-                })
-                .catch(error => console.error('Error fetching address:', error));
-        }, error => {
-            alert('Error getting location: ' + error.message);
-        });
-    } else {
-        alert('Geolocation is not supported by this browser.');
-        return false;
+    if (!navigator.geolocation) {
+        alert("Geolocation not supported");
+        return;
     }
-    return true;
+
+    navigator.geolocation.getCurrentPosition(
+        pos => {
+            const lat = pos.coords.latitude;
+            const lon = pos.coords.longitude;
+            document.getElementById('latitude').value = lat;
+            document.getElementById('longitude').value = lon;
+
+            const formData = new FormData();
+            formData.append('lat', lat);
+            formData.append('lng', lon);
+
+            fetch('get_place_name.php', {
+                method: 'POST',
+                body: formData
+            })
+            .then(res => res.json())
+            .then(data => {
+                document.getElementById('photo_address').value = data.display_name || '';
+                document.getElementById('deliveryForm').submit();
+            })
+            .catch(() => {
+                document.getElementById('deliveryForm').submit();
+            });
+        },
+        err => {
+            alert("Location error: " + (err.message || "Permission denied"));
+        }
+    );
 }
-function getLocation() {
-    if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition(
-            position => {
-                const latitude = position.coords.latitude;
-                const longitude = position.coords.longitude;
-
-                // Debugging messages
-                console.log("Latitude:", latitude);
-                console.log("Longitude:", longitude);
-
-                document.getElementById('latitude').value = latitude;
-                document.getElementById('longitude').value = longitude;
-
-                // Fetch address (optional)
-                fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`)
-                    .then(response => response.json())
-                    .then(data => {
-                        document.getElementById('photo_address').value = data.display_name || '';
-                        console.log("Address:", data.display_name);
-                    })
-                    .catch(error => console.error('Error fetching address:', error));
-            },
-            error => {
-                console.error("Error getting location:", error.message);
-                alert("Error: " + error.message);
-            }
-        );
-    } else {
-        alert("Geolocation is not supported by this browser.");
-    }
-}
-
 </script>
 </body>
 </html>

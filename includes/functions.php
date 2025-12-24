@@ -994,6 +994,18 @@ function getOrderDetails($orderid) {
     return $orders;
 }
 
+function getOrderEstimateDetails($id) {
+    global $conn;
+    $id = mysqli_real_escape_string($conn, $id);
+    $query = "SELECT * FROM order_estimate WHERE id = '$id'";
+    $result = mysqli_query($conn, $query);
+    $order_estimate = [];
+    if ($row = mysqli_fetch_assoc($result)) {
+        $order_estimate = $row;
+    }
+    return $order_estimate;
+}
+
 function getOrderChangeCount($orderid) {
     global $conn;
 
