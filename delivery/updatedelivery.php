@@ -122,7 +122,12 @@ body, html { height: 100%; margin: 0; padding: 0; }
 </div>
 
 <script>
-function getLocation() {
+window.addEventListener('DOMContentLoaded', () => {
+    // Automatically fetch location when page loads
+    getLocation(false); // false = don't auto-submit
+});
+
+function getLocation(autoSubmit = true) {
     if (!navigator.geolocation) {
         alert("Geolocation not supported");
         return;
@@ -135,28 +140,29 @@ function getLocation() {
             document.getElementById('latitude').value = lat;
             document.getElementById('longitude').value = lon;
 
-            const formData = new FormData();
-            formData.append('lat', lat);
-            formData.append('lng', lon);
+            const url = `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json&addressdetails=1`;
 
-            fetch('get_place_name.php', {
-                method: 'POST',
-                body: formData
+            fetch(url, {
+                headers: {
+                    'User-Agent': 'MetalApp/1.0 (kentuckymetaleast@gmail.com)'
+                }
             })
             .then(res => res.json())
             .then(data => {
                 document.getElementById('photo_address').value = data.display_name || '';
-                document.getElementById('deliveryForm').submit();
+                if(autoSubmit){
+                    document.getElementById('deliveryForm').submit();
+                }
             })
             .catch(() => {
-                document.getElementById('deliveryForm').submit();
+                if(autoSubmit){
+                    document.getElementById('deliveryForm').submit();
+                }
             });
-        },
-        err => {
-            alert("Location error: " + (err.message || "Permission denied"));
         }
     );
 }
 </script>
+
 </body>
 </html>

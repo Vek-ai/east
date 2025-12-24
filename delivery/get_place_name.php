@@ -10,15 +10,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     $url = "https://nominatim.openstreetmap.org/reverse?lat=$lat&lon=$lng&format=json&addressdetails=1";
 
-    $opts = [
-        "http" => [
-            "method" => "GET",
-            "header" => "User-Agent: Metal/1.0\r\n"
-        ]
-    ];
+    $ch = curl_init();
+    curl_setopt($ch, CURLOPT_URL, $url);
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    curl_setopt($ch, CURLOPT_USERAGENT, 'MetalApp/1.0 (kentuckymetaleast@gmail.com)');
 
-    $context = stream_context_create($opts);
-    $response = @file_get_contents($url, false, $context);
+    $response = curl_exec($ch);
+    $error = curl_error($ch);
+    curl_close($ch);
 
     header('Content-Type: application/json');
 
@@ -26,7 +25,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $data = json_decode($response, true);
         echo json_encode(['display_name' => $data['display_name'] ?? '']);
     } else {
-        echo json_encode(['display_name' => '']);
+        echo json_encode(['display_name' => '', 'error' => $error]);
     }
     exit;
 }
