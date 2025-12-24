@@ -48,7 +48,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     UPDATE order_product
                     SET status = 4
                     WHERE orderid = ?
-                    AND status = 3
                 ";
 
                 $stmtOP = $conn->prepare($sqlOrderProduct);
