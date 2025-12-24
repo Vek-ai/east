@@ -7,7 +7,7 @@ $protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? "https:
 $domain = $protocol . $_SERVER['HTTP_HOST'];
 
 // URL to be encoded in the QR code
-$website = $domain . "/updatedelivery.php?id=" . urlencode($_GET['prod']);
+$website = $domain . "/delivery/updatedelivery.php?id=" . urlencode($_GET['prod']);
 
 // Message to display when the QR code is scanned
 $message = "Your Everyday Inspiration";
