@@ -171,7 +171,21 @@ if(isset($_REQUEST['action'])) {
                                             </td>
                                             <td><?= $row['quantity'] ?></td>
                                             <td>
-                                                <span class="<?= $status_prod['class']; ?> fw-bond"><?= $status_prod['label']; ?></span>
+                                                <?php if ($status_prod_db === 4): ?>
+                                                    <span
+                                                        class="<?= $status_prod['class']; ?> fw-bond view_delivery_proof"
+                                                        role="button"
+                                                        title="View Delivery Proof"
+                                                        data-orderid="<?= $orderid ?>"
+                                                        style="cursor: pointer;"
+                                                    >
+                                                        <?= $status_prod['label']; ?>
+                                                    </span>
+                                                <?php else: ?>
+                                                    <span class="<?= $status_prod['class']; ?> fw-bond">
+                                                        <?= $status_prod['label']; ?>
+                                                    </span>
+                                                <?php endif; ?>
                                             </td>
                                             <td>
                                                 <span class="<?= $payment_prod['class']; ?> fw-bond"><?= $payment_prod['label']; ?></span>

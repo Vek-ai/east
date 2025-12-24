@@ -230,26 +230,6 @@ function showCol($name) {
         </div>
     </div>
 
-    <div class="modal fade" id="response-modal" tabindex="-1" aria-labelledby="vertical-center-modal" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content">
-            <div id="responseHeaderContainer" class="modal-header align-items-center modal-colored-header">
-                <h4 id="responseHeader" class="m-0"></h4>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                
-                <p id="responseMsg"></p>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn bg-danger-subtle text-danger  waves-effect text-start" data-bs-dismiss="modal">
-                Close
-                </button>
-            </div>
-            </div>
-        </div>
-    </div>
-
     <div class="modal fade" id="shipFormModal" tabindex="-1" aria-labelledby="shipFormModalLabel" aria-hidden="true" style="background-color: rgba(0, 0, 0, 0.5);">
         <div class="modal-dialog modal-md">
             <div class="modal-content">
@@ -880,6 +860,48 @@ function showCol($name) {
       </div>
     </div>
   </div>
+</div>
+
+<div class="modal fade" id="view_deliver_img_modal" style="background-color: rgba(0, 0, 0, 0.5);">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header d-flex align-items-center">
+                <h4 class="modal-title" id="myLargeModalLabel">
+                    View Delivery Proof
+                </h4>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div id="update_product" class="form-horizontal">
+                <div class="modal-body">
+                    <div class="card">
+                        <div id="deliver_img" class="card-body">
+                            
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="response-modal" tabindex="-1" aria-labelledby="vertical-center-modal" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+        <div id="responseHeaderContainer" class="modal-header align-items-center modal-colored-header">
+            <h4 id="responseHeader" class="m-0"></h4>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+            
+            <p id="responseMsg"></p>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn bg-danger-subtle text-danger  waves-effect text-start" data-bs-dismiss="modal">
+            Close
+            </button>
+        </div>
+        </div>
+    </div>
 </div>
 
 
@@ -2129,5 +2151,26 @@ function showCol($name) {
             table.draw();
             updateSelectedTags();
         }
+
+        $(document).on('click', '.view_delivery_proof', function (e) {
+            e.preventDefault();
+            orderid = $(this).data('orderid');
+            $.ajax({
+                url: 'pages/invoice_ajax.php',
+                type: 'POST',
+                data: {
+                    orderid: orderid,
+                    action: 'fetch_delivery_image'
+                },
+                success: function (response) {
+                    $('#deliver_img').html(response);
+                    $('#view_deliver_img_modal').modal('toggle');
+                },
+                error: function (xhr, status, error) {
+                    console.log("AJAX Error:", xhr.responseText);
+                    alert("An error occurred. Please try again.");
+                }
+            });
+        });
     });
 </script>
