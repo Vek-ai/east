@@ -76,6 +76,22 @@ td.notes,  td.last-edit{
 </div>
 
 <div class="card card-body">
+    <div class="row">
+        <div class="col-md-12 col-xl-12 text-end d-flex justify-content-md-end justify-content-center mt-3 mt-md-0 gap-3">
+            <button type="button" id="downloadExcelBtn" class="btn btn-primary d-flex align-items-center">
+                <i class="ti ti-file-spreadsheet text-white me-1 fs-5"></i> Excel Download
+            </button>
+            <button type="button" id="downloadPDFBtn" class="btn btn-primary d-flex align-items-center">
+                <i class="ti ti-file-text text-white me-1 fs-5"></i> PDF Download
+            </button>
+            <button type="button" id="PrintBtn" class="btn btn-primary d-flex align-items-center">
+                <i class="ti ti-printer text-white me-1 fs-5"></i> Print
+            </button>
+        </div>
+    </div>
+</div>
+
+<div class="card card-body">
   <div class="row">
       <div class="col-3" id="filterPanel">
         <h3 class="card-title align-items-center mb-2">
@@ -195,6 +211,32 @@ td.notes,  td.last-edit{
   </div>
 </div>
 
+<div class="modal fade custom-size" id="pdfModal" tabindex="-1" role="dialog">
+  <div class="modal-dialog modal-xl" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Print/View Outputs</h5>
+        <button type="button" class="close" data-bs-dismiss="modal">
+          <span>&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <iframe id="pdfFrame" src="" style="height: 70vh; width: 100%;" class="mb-3 border rounded"></iframe>
+
+        <div class="container mt-3 border rounded p-3" style="width: 100%;">
+
+        <div class="mt-3 text-end">
+            <button id="printBtn" class="btn btn-success me-2">Print</button>
+            <button id="downloadBtn" class="btn btn-primary me-2">Download</button>
+            <button class="btn btn-danger" data-bs-dismiss="modal">Cancel</button>
+        </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
 <div class="modal fade" id="response-modal" tabindex="-1" aria-labelledby="vertical-center-modal" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered">
     <div class="modal-content">
@@ -234,6 +276,7 @@ td.notes,  td.last-edit{
             { data: 'cash_flow_type' },
             { data: 'amount_display' },
         ],
+        order: [],
         createdRow: function(row, data, dataIndex) {
             $(row).attr('data-station', data.station_id);
             $(row).attr('data-date', data.date);
@@ -444,5 +487,66 @@ td.notes,  td.last-edit{
     $('.input-daterange input[name="end"]').val(today);
 
     filterTable();
+
+    function getDateParams() {
+        const start = $('.input-daterange input[name="start"]').val();
+        const end   = $('.input-daterange input[name="end"]').val();
+
+        return `&start_date=${encodeURIComponent(start)}&end_date=${encodeURIComponent(end)}`;
+    }
+
+    $(document).on('click', '#downloadExcelBtn', function () {
+        window.open(
+            'pages/transactions_ajax.php?action=download_excel' + getDateParams(),
+            '_blank'
+        );
+    });
+
+    $(document).on('click', '#downloadPDFBtn', function () {
+        window.open(
+            'pages/transactions_ajax.php?action=download_pdf' + getDateParams(),
+            '_blank'
+        );
+    });
+
+    $(document).on('click', '#PrintBtn', function () {
+        window.open(
+            'pages/transactions_ajax.php?action=print_result' + getDateParams(),
+            '_blank'
+        );
+    });
+
+    $('#printBtn').on('click', function () {
+        if (isPrinting) {
+            return;
+        }
+
+        isPrinting = true;
+        const $iframe = $('#pdfFrame');
+
+        $iframe.off('load').one('load', function () {
+            try {
+                this.contentWindow.focus();
+                this.contentWindow.print();
+            } catch (e) {
+                alert("Failed to print PDF.");
+            }
+            isPrinting = false;
+        });
+
+        $iframe.attr('src', pdfUrl);
+
+        const modal = new bootstrap.Modal(document.getElementById('pdfModal'));
+        modal.show();
+    });
+
+    $('#downloadBtn').on('click', function () {
+        const link = document.createElement('a');
+        link.href = pdfUrl;
+        link.download = '';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    });
 });
 </script>
