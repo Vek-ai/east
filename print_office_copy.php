@@ -860,6 +860,42 @@ if (mysqli_num_rows($result) > 0) {
 
         $pdf->Ln(5);
 
+        $payments = [
+            'Pay at Pickup'    => floatval($row_orders['pay_pickup']),
+            'Pay at Delivery'  => floatval($row_orders['pay_delivery']),
+            'Cash'             => floatval($row_orders['pay_cash']),
+            'Credit/Debit Card'=> floatval($row_orders['pay_card']),
+            'Check'            => floatval($row_orders['pay_check']),
+            'ChargeNet30'      => floatval($row_orders['pay_net30'])
+        ];
+
+        $lineheight = 5;
+        $rectWidth  = 60;
+
+        foreach ($payments as $type => $amt) {
+            if ($amt <= 0) continue;
+
+            $yStart = $pdf->GetY();
+            $rectHeight = $lineheight * 2;
+
+            $pdf->Rect($col2_x, $yStart, $rectWidth, $rectHeight);
+
+            $pdf->SetXY($col2_x, $yStart);
+            $pdf->SetFont('Arial', 'B', 9);
+            $pdf->Cell(30, $lineheight, 'Payment Type:', 0, 0, 'R');
+            $pdf->SetFont('Arial', '', 9);
+            $pdf->Cell(30, $lineheight, $type, 0, 1, 'L');
+
+            
+            $pdf->SetXY($col2_x, $pdf->GetY());
+            $pdf->SetFont('Arial', 'B', 9);
+            $pdf->Cell(30, $lineheight, 'Amount:', 0, 0, 'R');
+            $pdf->SetFont('Arial', '', 9);
+            $pdf->Cell(30, $lineheight, '$' . number_format($amt, 2), 0, 1, 'L');
+
+            $pdf->SetY($pdf->GetY() + 1);
+        }
+
         $pdf->SetTitle('Receipt');
         $pdf->Output('Receipt.pdf', 'I');
             
