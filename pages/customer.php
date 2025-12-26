@@ -686,7 +686,28 @@ if ($permission === 'edit') {
                                     <input type="text" id="job_po" name="job_po" class="form-control" placeholder="Enter Job PO #">
                                 </div>
 
-                                <div class="mb-3">
+                                <div class="mt-3">
+                                    <h6 class="mb-0">Salesperson</h6>
+                                    <div id="salesperson_div">
+                                        <select id="salesperson" class="form-control select2" name="salesperson">
+                                            <option value="">Select Salesperson...</option>
+                                            <?php
+                                            $query_staff = "SELECT staff_id, staff_fname, staff_lname FROM staff WHERE status = 1 ORDER BY staff_fname ASC";
+                                            $result_staff = mysqli_query($conn, $query_staff);
+                                            while ($row_staff = mysqli_fetch_assoc($result_staff)) {
+                                                $selected = ($cashier_id == $row_staff['staff_id']) ? 'selected' : '';
+                                                ?>
+                                                <option value="<?= $row_staff['staff_id'] ?>" <?= $selected ?>>
+                                                    <?= htmlspecialchars($row_staff['staff_fname'] . ' ' . $row_staff['staff_lname']) ?>
+                                                </option>
+                                            <?php
+                                            }
+                                            ?>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div class="mt-3">
                                     <label for="description" class="form-label">Description</label>
                                     <textarea class="form-control" id="description" name="description" rows="3"></textarea>
                                 </div>
