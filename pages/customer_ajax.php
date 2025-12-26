@@ -1073,7 +1073,7 @@ if(isset($_REQUEST['action'])) {
 
             $_GET['prod'] = $token;  
             ob_start();
-            include __DIR__ . '../delivery/receipt.php';
+            include __DIR__ . '/../../delivery/receipt.php';
             ob_end_clean();
 
             $sql_insert = "
