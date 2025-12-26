@@ -1646,7 +1646,7 @@ if (isset($_POST['save_job'])) {
 if (isset($_POST['deposit_job'])) {
     $job_id = intval($_POST['job_id'] ?? 0);
     $deposit_amount = floatval($_POST['deposit_amount'] ?? 0);
-    $deposited_by = $_SESSION['userid'];
+    $deposited_by = $_POST['deposited_by'] ?? 0;
     $reference_no = trim($_POST['reference_no'] ?? '');
     $payment_method = $_POST['type'] ?? 'cash';
     $check_no = $_POST['check_no'] ?? null;

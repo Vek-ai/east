@@ -64,6 +64,10 @@ function showCol($name) {
   .tooltip-inner {
     font-size: calc(0.875rem + 2px) !important;
   }
+
+  .select2-container--default .select2-results__option[aria-disabled=true] {
+      display: none;
+  }
 </style>
 <div class="font-weight-medium shadow-none position-relative overflow-hidden mb-7">
   <div class="card-body px-0">
@@ -339,6 +343,10 @@ if ($permission === 'edit') {
                                       style='border-radius: 10%;' data-toggle="tooltip" data-placement="top" title="Invoices"><i
                                         class="fa fa-cart-shopping text-success"></i>
                                     </a>
+                                    <a href="javascript:void(0)" class="py-1 pe-1" id="depositModalBtn" data-id="<?= $customer_id ?>"
+                                      style='border-radius: 10%;' data-toggle="tooltip" data-placement="top" title="Add Customer Deposit">
+                                        <iconify-icon icon="solar:hand-money-outline" class="text-success fs-6"></iconify-icon>
+                                    </a>
                                   <?php } ?>
                                 </td>
                             <?php endif; ?>
@@ -599,6 +607,128 @@ if ($permission === 'edit') {
           </div>
       </div>
   </div>
+</div>
+
+<div class="modal fade" id="depositModal" tabindex="-1" aria-labelledby="depositModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-md">
+        <div class="modal-content">
+            <div class="modal-header d-flex align-items-center">
+                <h5 class="modal-title">Add Job Deposit</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="depositForm" class="form-horizontal">
+                <div class="modal-body">
+                    <div class="card">
+                        <div class="card-body">
+                            <input type="hidden" id="job_id" name="job_id">
+                            <input type="hidden" id="deposited_by" name="deposited_by">
+
+                            <div class="mb-3">
+                                <label for="type" class="form-label">Deposit Type</label>
+                                <select class="form-select" id="type" name="type" required>
+                                    <option value="">-- Select Type --</option>
+                                    <option value="cash">Cash</option>
+                                    <option value="check">Check</option>
+                                    <option value="card">Credit/Debit Card</option>
+                                    <option value="wire">Wire Transfer</option>
+                                </select>
+                            </div>
+
+                            <div id="deposit_details_group" class="d-none">
+                                <div class="mb-3">
+                                    <label for="deposit_amount" class="form-label">Deposit Amount</label>
+                                    <input type="number" step="0.01" class="form-control" id="deposit_amount" name="deposit_amount" >
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="reference_no" class="form-label">Reference No</label>
+                                    <input type="text" class="form-control" id="reference_no" name="reference_no" required>
+                                </div>
+
+                                <div class="mb-3 d-none" id="check_no_group">
+                                    <label for="check_no" class="form-label">Check No</label>
+                                    <input type="text" class="form-control" id="check_no" name="check_no">
+                                </div>
+
+                                <div class="mb-3 d-none" id="card_group">
+                                    <label for="auth_no" class="form-label">Authorization #</label>
+                                    <input type="text" class="form-control" id="auth_no" name="auth_no">
+                                </div>
+
+                                <div class="mb-3">
+                                    <h6 class="mb-0">Job Name</h6>
+                                    <div id="order_checkout">
+                                        <select id="job_name" class="form-control" name="job_id">
+                                            <option value="">Select Job Name...</option>
+                                            <?php
+                                            $query_job_name = "SELECT * FROM jobs";
+                                            $result_job_name = mysqli_query($conn, $query_job_name);
+                                            while ($row_job_name = mysqli_fetch_array($result_job_name)) {
+                                                $job_id = $row_job_name['job_id'];
+                                                $customer_id_option = $row_job_name['customer_id'];
+                                            ?>
+                                                <option value="<?= $job_id; ?>" 
+                                                        data-customer-id="<?= $customer_id_option; ?>"
+                                                        data-constructor="<?= htmlspecialchars($row_job_name['constructor_name']); ?>" 
+                                                        data-constructor-contact="<?= htmlspecialchars($row_job_name['constructor_contact']); ?>"
+                                                        data-credit="<?= htmlspecialchars(getJobBalance($job_id)); ?>"
+                                                        data-job-id="<?= $job_id ?>">
+                                                    <?= htmlspecialchars($row_job_name['job_name']); ?>
+                                                </option>
+                                            <?php } ?>
+                                            <option value="add_new_job_name">Add new Job Name</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div class="mb-3">
+                                    <h6 class="mb-0">Job PO #</h6>
+                                    <input type="text" id="job_po" name="job_po" class="form-control" placeholder="Enter Job PO #">
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="description" class="form-label">Description</label>
+                                    <textarea class="form-control" id="description" name="description" rows="3"></textarea>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-primary" style="border-radius: 10%;">Save</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="prompt_job_name_modal" tabindex="-1" style="background-color: rgba(0, 0, 0, 0.5);">
+    <div class="modal-dialog" role="document">
+        <form id="job_name_form" class="modal-content modal-content-demo">
+            <input type='hidden' id="selected_customer_id" name="customer_id" value="<?= $customer_id ?>">
+            <div class="modal-header">
+                <h6 class="modal-title">New Job Name</h6>
+                <button aria-label="Close" class="close" data-bs-dismiss="modal" type="button">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div id="job_name_prompt_container">
+                    <div class="job_name_input">
+                        <div class="mb-2">
+                            <label class="fs-5 fw-bold" for="job_name">Job Name</label>
+                            <input id="new_job_name" name="job_name" class="form-control" placeholder="Enter Job Name" autocomplete="off">
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-success ripple btn-secondary" data-bs-dismiss="modal" type="submit">Save</button>
+                <button class="btn btn-danger ripple btn-secondary" data-bs-dismiss="modal" type="button">Close</button>
+            </div>
+        </form>
+        </div>
+    </div>
 </div>
 
 <div class="modal fade" id="response-modal" tabindex="-1" aria-labelledby="vertical-center-modal" aria-hidden="true">
@@ -1340,6 +1470,178 @@ if ($permission === 'edit') {
             $input.attr('type', 'password');
             $icon.removeClass('ti-eye').addClass('ti-eye-off');
         }
+    });
+
+    $(document).on('change', '#type', function () {
+        const type = $(this).val();
+
+        $('#check_no_group').addClass('d-none');
+        $('#card_group').addClass('d-none');
+
+        if (type === 'cash') {
+            $('#deposit_details_group').removeClass('d-none');
+        } else if (type === 'wire') {
+            $('#deposit_details_group').removeClass('d-none');
+        } else if (type === 'check') {
+            $('#deposit_details_group').removeClass('d-none');
+            $('#check_no_group').removeClass('d-none');
+            $('#check_no').attr('required', true);
+        } else if (type === 'card') {
+            $('#deposit_details_group').removeClass('d-none');
+            $('#card_group').removeClass('d-none');
+        } else {
+            $('#deposit_details_group').addClass('d-none');
+        }
+    });
+
+    $(document).on('click', '#depositModalBtn', function () {
+        const customer_id = $(this).data('id');
+
+        $('#deposited_by').val(customer_id);
+        $('#selected_customer_id').val(customer_id);
+
+        $('#job_name option').each(function() {
+            const optionCustomerId = $(this).data('customer-id');
+            if (optionCustomerId !== undefined) {
+                $(this).prop('disabled', optionCustomerId != customer_id);
+            } else {
+                $(this).prop('disabled', false);
+            }
+        });
+
+        $('#job_name').select2('destroy').select2({
+            width: '100%',
+            placeholder: "Select Job Name...",
+            dropdownParent: $('#depositModal')
+        });
+
+        $('#job_name').val('').trigger('change');
+
+        $('#depositModal').modal('show');
+    });
+    
+    $('#job_name').select2({
+        width: '100%',
+        placeholder: "Select Job Name...",
+        dropdownAutoWidth: true,
+        dropdownParent: $('#order_checkout'),
+        templateResult: function (data) {
+            if (data.id === 'add_new_job_name') {
+                return $(
+                    '<div style="border-top: 1px solid #ddd; margin-top: 0px; padding-top: 10px;">' +
+                    '<span style="font-style: italic; color: #ff6b6b;">' + data.text + '</span>' +
+                    '</div>'
+                );
+            }
+            return data.text;
+        },
+        templateSelection: function (data) {
+            return data.text;
+        },
+        matcher: function (params, data) {
+            if (data.id === 'add_new_job_name') {
+                return data;
+            }
+            return $.fn.select2.defaults.defaults.matcher(params, data);
+        }
+    });
+
+    $('#job_name').on('select2:select', function (e) {
+        const selectedValue = e.params.data.id;
+
+        if (selectedValue === 'add_new_job_name') {
+            $('#prompt_job_name_modal').modal('show');
+            $('#job_name').val(null).trigger('change');
+        } 
+    });
+
+    $(document).on('submit', '#job_name_form', function (event) {
+        event.preventDefault();
+        const formData = new FormData(this);
+        formData.append('action', 'add_job_name');
+        const newJobName = $('#new_job_name').val().trim();
+
+        $.ajax({
+            url: 'pages/customer_ajax.php',
+            type: 'POST',
+            data: formData,
+            processData: false,
+            contentType: false,
+            dataType: 'json',
+            success: function (response) {
+                const isSuccess = response.success === true;
+
+                $('#prompt_job_name_modal').modal('hide');
+
+                $('#responseHeader').text(isSuccess ? 'Success' : 'Failed');
+                $('#responseMsg').text(
+                    isSuccess
+                        ? 'Successfully added Job Name.'
+                        : (response.message || 'Something went wrong')
+                );
+                $('#responseHeaderContainer')
+                    .toggleClass('bg-success', isSuccess)
+                    .toggleClass('bg-danger', !isSuccess);
+
+                $('#response-modal').modal('show');
+
+                if (isSuccess && newJobName !== '') {
+                    const jobSelect = $('#job_name');
+                    const addNewOption = jobSelect.find('option[value="add_new_job_name"]').detach();
+
+                    const newOption = new Option(
+                        response.job_name,
+                        response.job_id,
+                        true,
+                        true
+                    );
+                    jobSelect.append(newOption);
+                    jobSelect.append(addNewOption);
+                    jobSelect.trigger('change');
+                }
+            },
+            error: function (xhr) {
+                console.error('Error:', xhr.responseText);
+            }
+        });
+    });
+
+
+    $('#depositForm').on('submit', function(event) {
+        event.preventDefault(); 
+        var formData = new FormData(this);
+        formData.append('action', 'deposit_job');
+        $.ajax({
+            url: 'pages/customer_ajax.php',
+            type: 'POST',
+            data: formData,
+            processData: false,
+            contentType: false,
+            success: function(response) {
+                $('.modal').modal("hide");
+                if (response == "success") {
+                    $('#responseHeader').text("Success");
+                    $('#responseMsg').text("Amount Deposited successfully!");
+                    $('#responseHeaderContainer').removeClass("bg-danger");
+                    $('#responseHeaderContainer').addClass("bg-success");
+                    $('#response-modal').modal("show");
+
+                    $('#response-modal').on('hide.bs.modal', function () {
+                      location.reload();
+                    });
+                } else {
+                    $('#responseHeader').text("Failed");
+                    $('#responseMsg').text("Process Failed");
+                    console.log("Response: "+response);
+                    $('#responseHeaderContainer').removeClass("bg-success");
+                    $('#responseHeaderContainer').addClass("bg-danger");
+                    $('#response-modal').modal("show");
+                }
+            },
+            error: function(jqXHR, textStatus, errorThrown) {
+                alert('Error: ' + textStatus + ' - ' + errorThrown);
+            }
+        });
     });
   });
 </script>

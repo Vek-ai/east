@@ -1346,8 +1346,8 @@ function getCustomerTotalAvail($customer_id) {
 
         SELECT deposit_remaining AS amount
         FROM job_deposits jd
-        JOIN jobs j ON jd.job_id = j.job_id
-        WHERE j.customer_id = '$customer_id'
+        
+        WHERE jd.deposited_by = '$customer_id'
           AND deposit_status = 1
           AND deposit_remaining > 0
     ";

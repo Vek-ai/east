@@ -373,8 +373,7 @@ if(isset($_REQUEST['action'])) {
         $query = "
             SELECT 'deposit' AS type, jd.deposit_id AS id, jd.deposit_remaining AS amount, jd.created_at
             FROM job_deposits jd
-            JOIN jobs j ON jd.job_id = j.job_id
-            WHERE j.customer_id = '$customer_id'
+            WHERE jd.deposited_by = '$customer_id'
             AND jd.deposit_status = 1
             AND jd.deposit_remaining > 0
 

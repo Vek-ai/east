@@ -901,6 +901,155 @@ if(isset($_REQUEST['action'])) {
         unlink($filePath);
         exit;
     }
+
+    if ($action === "add_job_name") {
+        $customer_id = $_POST['customer_id'] ?? 0;
+        $job_name = isset($_POST['job_name']) ? trim($_POST['job_name']) : '';
+
+        if (empty($customer_id)) {
+            echo json_encode([
+                'success' => false,
+                'message' => 'Customer is not set. Please select customer first!'
+            ]);
+            exit;
+        }
+
+        if (empty($job_name)) {
+            echo json_encode([
+                'success' => false,
+                'message' => 'Job name cannot be empty!'
+            ]);
+            exit;
+        }
+
+        $job_name = mysqli_real_escape_string($conn, $job_name);
+
+        $insert_query = "
+            INSERT INTO jobs (customer_id, job_name)
+            VALUES ('$customer_id', '$job_name')
+        ";
+
+        if (mysqli_query($conn, $insert_query)) {
+            echo json_encode([
+                'success' => true,
+                'job_id'  => mysqli_insert_id($conn),
+                'job_name'=> $job_name
+            ]);
+        } else {
+            echo json_encode([
+                'success' => false,
+                'message' => 'Database error: ' . mysqli_error($conn)
+            ]);
+        }
+    }
+
+    if ($action === "deposit_job") {
+        $job_id         = trim($_POST['job_id'] ?? '');
+        $deposit_amount = floatval($_POST['deposit_amount'] ?? 0);
+        $deposited_by   = $_POST['deposited_by'];
+        $reference_no   = trim($_POST['reference_no'] ?? '');
+        $payment_method = $_POST['type'] ?? 'cash';
+        $check_no       = trim($_POST['check_no'] ?? '');
+        $auth_no        = trim($_POST['auth_no'] ?? '');
+        $description    = mysqli_real_escape_string($conn, $_POST['description'] ?? 'Job deposit');
+
+        $job_id   = mysqli_real_escape_string($conn, $job_id);
+        $check_no = $payment_method === 'check'
+            ? mysqli_real_escape_string($conn, $check_no)
+            : '';
+
+        $auth_no = $payment_method === 'card'
+            ? mysqli_real_escape_string($conn, $auth_no)
+            : '';
+
+        $deposit_status = 1;
+        if ($payment_method === 'cash' && $deposit_amount > 10000) {
+            $deposit_status = 0;
+        }
+
+        $insert_ledger = "
+            INSERT INTO job_ledger (
+                job_id,
+                customer_id,
+                entry_type,
+                amount,
+                payment_method,
+                check_number,
+                reference_no,
+                description,
+                created_by
+            ) VALUES (
+                '$job_id',
+                '" . mysqli_real_escape_string($conn, $deposited_by) . "',
+                'deposit',
+                '$deposit_amount',
+                '$payment_method',
+                '$check_no',
+                '" . mysqli_real_escape_string($conn, $reference_no) . "',
+                '$description',
+                '" . mysqli_real_escape_string($conn, $deposited_by) . "'
+            )
+        ";
+
+        if (mysqli_query($conn, $insert_ledger)) {
+            $insert_deposit = "
+                INSERT INTO job_deposits (
+                    job_id,
+                    deposit_amount,
+                    deposit_remaining,
+                    deposit_status,
+                    deposited_by,
+                    reference_no,
+                    type,
+                    check_no,
+                    auth_no
+                ) VALUES (
+                    '$job_id',
+                    '$deposit_amount',
+                    '$deposit_amount',
+                    '$deposit_status',
+                    '" . mysqli_real_escape_string($conn, $deposited_by) . "',
+                    '" . mysqli_real_escape_string($conn, $reference_no) . "',
+                    '$payment_method',
+                    '$check_no',
+                    '$auth_no'
+                )
+            ";
+            mysqli_query($conn, $insert_deposit);
+
+            if ($payment_method === 'cash' && $deposit_amount > 10000) {
+
+                $deposit_id = mysqli_insert_id($conn);
+
+                $actorId   = $_SESSION['userid'];
+                $actorName = get_staff_name($actorId);
+
+                createNotification(
+                    $actorId,
+                    'deposit_approval',
+                    $deposit_id,
+                    'Cash Deposit Approval',
+                    "$actorName has requested cash deposit approval",
+                    'admin',
+                    '?page=job_deposit_approval'
+                );
+            }
+
+            if ($job_id !== '') {
+                mysqli_query($conn, "
+                    UPDATE jobs
+                    SET deposit_amount = deposit_amount + $deposit_amount
+                    WHERE job_id = '$job_id'
+                ");
+            }
+
+            echo 'success';
+
+        } else {
+            echo 'error_insert';
+        }
+    }
+
     mysqli_close($conn);
 }
 ?>
