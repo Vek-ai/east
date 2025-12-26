@@ -984,7 +984,7 @@ if(isset($_REQUEST['action'])) {
                 '" . mysqli_real_escape_string($conn, $deposited_by) . "',
                 'deposit',
                 '$deposit_amount',
-                '$payment_method',
+                'job_deposit',
                 '$check_no',
                 '" . mysqli_real_escape_string($conn, $reference_no) . "',
                 '$description',
@@ -1019,6 +1019,8 @@ if(isset($_REQUEST['action'])) {
                 )
             ";
             mysqli_query($conn, $insert_deposit);
+
+            recordCashInflow($payment_method, 'job_deposit', $deposit_amount);
 
             if ($payment_method === 'cash' && $deposit_amount > 10000) {
 

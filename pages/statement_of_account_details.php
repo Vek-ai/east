@@ -224,7 +224,7 @@ $permission = $_SESSION['permission'];
                                 l.entry_type,
                                 l.reference_no AS orderid,
                                 l.payment_method,
-                                CASE WHEN l.entry_type = 'usage' THEN l.amount ELSE NULL END AS payments,
+                                CASE WHEN l.entry_type = 'deposit' THEN l.amount ELSE NULL END AS payments,
                                 CASE WHEN l.entry_type = 'credit' THEN l.amount ELSE NULL END AS credit
                             FROM job_ledger l
                             LEFT JOIN jobs j ON l.job_id = j.job_id
