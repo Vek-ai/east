@@ -103,13 +103,13 @@ if(isset($_REQUEST['action'])) {
                                         $price = $row['discounted_price'];
 
                                         $product_name = '';
-                                        /* if(!empty($row['product_item'])){
+                                        if(!empty($row['product_item'])){
                                             $product_name = $row['product_item'];
                                         }else{
                                             $product_name = getProductName($row['product_id']);
-                                        } */
+                                        }
 
-                                        $product_name = getProductName($row['productid']);
+                                        //$product_name = getProductName($row['productid']);
 
                                         if($status_prod_db == '2'){
                                             $is_ready = true;
