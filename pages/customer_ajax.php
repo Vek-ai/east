@@ -951,6 +951,7 @@ if(isset($_REQUEST['action'])) {
         $payment_method = $_POST['type'] ?? 'cash';
         $check_no       = trim($_POST['check_no'] ?? '');
         $auth_no        = trim($_POST['auth_no'] ?? '');
+        $job_po        = trim($_POST['job_po'] ?? '');
         $description    = mysqli_real_escape_string($conn, $_POST['description'] ?? 'Job deposit');
 
         $job_id   = mysqli_real_escape_string($conn, $job_id);
@@ -1002,7 +1003,8 @@ if(isset($_REQUEST['action'])) {
                     reference_no,
                     type,
                     check_no,
-                    auth_no
+                    auth_no,
+                    job_po
                 ) VALUES (
                     '$job_id',
                     '$deposit_amount',
@@ -1012,7 +1014,8 @@ if(isset($_REQUEST['action'])) {
                     '" . mysqli_real_escape_string($conn, $reference_no) . "',
                     '$payment_method',
                     '$check_no',
-                    '$auth_no'
+                    '$auth_no',
+                    '$job_po'
                 )
             ";
             mysqli_query($conn, $insert_deposit);
@@ -1041,6 +1044,80 @@ if(isset($_REQUEST['action'])) {
                     SET deposit_amount = deposit_amount + $deposit_amount
                     WHERE job_id = '$job_id'
                 ");
+            }
+
+            $cashierid = $_SESSION['userid'] ?? 0;
+            $job = getJobDetails($job_id);
+            $job_name = $job['job_name'] ?? '';
+
+            $pay_cash = 0;
+            $pay_card = 0;
+            $pay_check = 0;
+            $pay_pickup = 0;
+            $pay_delivery = 0;
+            $pay_net30 = 0;
+
+            if($payment_method == 'cash'){
+                $pay_cash = $deposit_amount;
+            }else if($payment_method == 'card'){
+                $pay_card = $deposit_amount;
+            }else if($payment_method == 'check'){
+                $pay_check = $deposit_amount;
+            }
+
+            $customer_details   = getCustomerDetails($deposited_by);
+            $tax_status = $customer_details['tax_status'];
+            $tax_exempt_number  = $customer_details['tax_exempt_number'] ?? '';
+
+            $token = bin2hex(random_bytes(8));
+
+            $_GET['prod'] = $token;  
+            ob_start();
+            include __DIR__ . '../delivery/receipt.php';
+            ob_end_clean();
+
+            $sql_insert = "
+                INSERT INTO orders (
+                    estimateid, cashier, station, total_price, discounted_price, discount_percent, discount_amount,
+                    order_date, scheduled_date, customerid, originalcustomerid,
+                    cash_amt, credit_amt, job_name, job_po,
+                    deliver_address, deliver_city, deliver_state, deliver_zip,
+                    delivery_amt, deliver_method, deliver_fname, deliver_lname,
+                    pay_type, pay_cash, pay_card, pay_check, pay_pickup, pay_delivery, pay_net30,
+                    tax_status, tax_exempt_number, truck, contractor_id, token
+                ) VALUES (
+                    '', '$cashierid', '', '$deposit_amount', '$deposit_amount', '', '',
+                    NOW(), NOW(), '$deposited_by', '$deposited_by',
+                    '$deposit_amount', '', '$job_name', '$job_po',
+                    '', '', '', '',
+                    '', '', '', '',
+                    '$payment_method',
+                    '$pay_cash', '$pay_card', '$pay_check', '$pay_pickup', '$pay_delivery', '$pay_net30',
+                    '$tax_status', '$tax_exempt_number', '', '', '$token'
+                )
+            ";
+
+            if ($conn->query($sql_insert) === TRUE) {
+                $orderid = $conn->insert_id;
+
+                $query = "INSERT INTO order_product (
+                    orderid, productid, product_item, quantity, custom_width, custom_bend, custom_hem,
+                    custom_length, custom_length2, actual_price, discounted_price, product_category,
+                    custom_color, custom_grade, custom_gauge, custom_profile, current_customer_discount, current_loyalty_discount,
+                    used_discount, stiff_stand_seam, stiff_board_batten, panel_type, panel_style, custom_img_src, bundle_id, note,
+                    product_id_abbrev, screw_length
+                ) VALUES (
+                    '$orderid', '', 'Customer Deposit', '1', '',
+                    '', '', '', '',
+                    '$deposit_amount', '$deposit_amount', '',
+                    '', '', '', '', '', '',
+                    '', '', '', '', '', '', '', '',
+                    '', ''
+                )";
+
+                if ($conn->query($query) !== TRUE) {
+                    die("Error: " . $conn->error);
+                }
             }
 
             echo 'success';

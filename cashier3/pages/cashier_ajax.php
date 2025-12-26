@@ -1282,15 +1282,11 @@ if (isset($_POST['save_order'])) {
     if ($conn->query($sql_insert) === TRUE) {
         $orderid = $conn->insert_id;
 
-        $baseUrl = "https://delivery.ilearnsda.com/receipt.php";
-        $url = $baseUrl . "?prod=" . urlencode($token);
-        $ch = curl_init($url);
-        curl_setopt($ch, CURLOPT_NOBODY, true);
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($ch, CURLOPT_HEADER, false);
-        curl_setopt($ch, CURLOPT_TIMEOUT, 1);
-        curl_exec($ch);
-        curl_close($ch);
+        $_GET['prod'] = $token;  
+
+        ob_start();
+        include __DIR__ . '/../../delivery/receipt.php';
+        ob_end_clean();
 
         //addPoints($customerid, $orderid);
 

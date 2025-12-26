@@ -475,7 +475,11 @@ class PDF extends FPDF {
         $token = $this->token;
         $qrX = $col2_x + $w;
         $qrY = max(0, $maxHeight - 15);
-        $this->Image("https://delivery.ilearnsda.com/receiptqr/receiptqr$token.png", $qrX, $qrY, 20, 20);
+
+        $local_image_path = __DIR__ . '/delivery/receiptqr/receiptqr' . $token . '.png';
+        if (file_exists($local_image_path) && mime_content_type($local_image_path) === 'image/png') {
+            $this->Image($local_image_path, $qrX, $qrY, 20, 20);
+        }
 
         $this->SetY(6 + $maxHeight + 5);
     }
