@@ -1,6 +1,6 @@
 <?php
 // Include the phpqrcode library
-include('qrlib.php');
+include_once('qrlib.php');
 
 // Get the current domain dynamically
 $protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? "https://" : "http://";
