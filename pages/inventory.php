@@ -1159,7 +1159,7 @@ function showCol($name) {
             if (img) {
                 const link = document.createElement('a');
                 link.href = img.src;
-                link.download = currentType + '_' + currentId + '.png';
+                link.download = 'warehouse_qr.png';
                 link.click();
                 return;
             }
@@ -1168,7 +1168,7 @@ function showCol($name) {
             if (canvas) {
                 const link = document.createElement('a');
                 link.href = canvas.toDataURL('image/png');
-                link.download = currentType + '_' + currentId + '.png';
+                link.download = 'warehouse_qr.png';
                 link.click();
                 return;
             }
