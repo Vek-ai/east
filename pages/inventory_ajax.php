@@ -7,10 +7,12 @@ error_reporting(E_ERROR | E_PARSE | E_CORE_ERROR | E_CORE_WARNING | E_COMPILE_ER
 require '../includes/dbconn.php';
 require '../includes/functions.php';
 require '../includes/vendor/autoload.php';
+require '../includes/phpmailer/vendor/autoload.php';
 
 use PhpOffice\PhpSpreadsheet\IOFactory;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
+use Picqer\Barcode\BarcodeGeneratorPNG;
 
 $table = 'inventory';
 $test_table = 'inventory_excel';
@@ -38,6 +40,27 @@ $includedColumns = [
     'r.RowCode'             => 'Row',
     'b.BinCode'             => 'Bin',
 ];
+
+function wrapTextGD($text, $maxCharsPerLine) {
+    $words = explode(' ', $text);
+    $lines = [];
+    $current = '';
+
+    foreach ($words as $word) {
+        if (strlen($current . ' ' . $word) <= $maxCharsPerLine) {
+            $current = trim($current . ' ' . $word);
+        } else {
+            $lines[] = $current;
+            $current = $word;
+        }
+    }
+
+    if ($current !== '') {
+        $lines[] = $current;
+    }
+
+    return $lines;
+}
 
 function cachedColorName($id) {
     static $cache = [];
@@ -715,6 +738,14 @@ if(isset($_REQUEST['action'])) {
                     data-id="'.trim($row['Product_id']).'"
                     data-inv="'.trim($row['Inventory_id']).'">
                         <i class="ti ti-pencil fs-5"></i>
+                </a>
+                <a href="#" id="view_qr_barcode" 
+                    data-id="'.intval($row['Product_id']).'">
+                        <i class="ti ti-qrcode text-warning fs-5"></i>
+                </a>
+                <a href="#" id="view_warehouse_qr" 
+                    data-id="'.intval($row['Warehouse_id']).'">
+                        <i class="ti ti-building-warehouse text-info fs-5"></i>
                 </a>'
             ];
         }
@@ -1372,6 +1403,244 @@ if(isset($_REQUEST['action'])) {
         unlink($filePath);
         exit;
     }
+
+    if ($action === "fetch_qr") {
+        $Product_id = mysqli_real_escape_string($conn, $_POST['id'] ?? '');
+        include_once('../delivery/qrlib.php');
+
+        $product = getProductDetails($Product_id);
+        $product_name = trim($product['product_item'] ?? 'Product');
+
+        $protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? "https://" : "http://";
+        $domain   = $protocol . $_SERVER['HTTP_HOST'];
+
+        $website = $domain . "/?page=product_details&product_id=" . urlencode($Product_id);
+
+        $dir = "../images/productqr";
+        if (!is_dir($dir)) mkdir($dir, 0777, true);
+
+        $final_path = "$dir/prod{$Product_id}.png";
+        $tmp_qr     = "$dir/tmp_qr_{$Product_id}.png";
+
+        if (!file_exists($final_path)) {
+            QRcode::png($website, $tmp_qr, QR_ECLEVEL_L, 10, 1);
+
+            $qr_img = imagecreatefrompng($tmp_qr);
+            $qr_w = imagesx($qr_img);
+            $qr_h = imagesy($qr_img);
+
+            $font_file = __DIR__ . '/../assets/fonts/roboto/Roboto-Bold.ttf'; 
+            $font_size = 15;
+
+            $lines = [];
+            $words = explode(" ", $product_name);
+            $current = "";
+            foreach ($words as $word) {
+                $test = $current ? "$current $word" : $word;
+                $box  = imagettfbbox($font_size, 0, $font_file, $test);
+                $w = $box[2] - $box[0];
+                if ($w < $qr_w - 20) {
+                    $current = $test;
+                } else {
+                    $lines[] = $current;
+                    $current = $word;
+                }
+            }
+            if ($current) $lines[] = $current;
+
+            $line_spacing = 4;
+            $line_height = $font_size + $line_spacing;
+            $text_height = count($lines) * $line_height;
+
+            $padding = 5;
+            $canvas_w = $qr_w + ($padding * 2);
+            $canvas_h = $text_height + $qr_h + ($padding * 2);
+
+            $canvas = imagecreatetruecolor($canvas_w, $canvas_h);
+            $white  = imagecolorallocate($canvas, 255, 255, 255);
+            $black  = imagecolorallocate($canvas, 0, 0, 0);
+            imagefill($canvas, 0, 0, $white);
+
+            $y = $padding;
+            foreach ($lines as $line) {
+                $box = imagettfbbox($font_size, 0, $font_file, $line);
+                $text_w = $box[2] - $box[0];
+                $x = ($canvas_w - $text_w) / 2;
+                imagettftext($canvas, $font_size, 0, $x, $y + $font_size, $black, $font_file, $line);
+                $y += $line_height;
+            }
+
+            imagecopy($canvas, $qr_img, $padding, $y, 0, 0, $qr_w, $qr_h);
+
+            imagepng($canvas, $final_path);
+            imagedestroy($qr_img);
+            imagedestroy($canvas);
+            unlink($tmp_qr);
+        }
+
+        echo ltrim($final_path, '../');
+        exit;
+    }
+
+    if ($action === "fetch_barcode") {
+        $Product_id = mysqli_real_escape_string($conn, $_POST['id'] ?? '');
+
+        $product = getProductDetails($Product_id);
+        $product_name = trim($product['product_item'] ?? 'Product');
+
+        $generator = new Picqer\Barcode\BarcodeGeneratorPNG();
+        $barcode_value = 'P' . str_pad($Product_id, 11, '0', STR_PAD_LEFT);
+
+        $dir = "../images/barcode";
+        if (!is_dir($dir)) mkdir($dir, 0777, true);
+
+        $final_path = "$dir/{$barcode_value}.png";
+
+        if (!file_exists($final_path)) {
+            $width_factor = 2;
+            $height = 80;
+            $barcode_png = $generator->getBarcode($barcode_value, $generator::TYPE_CODE_128, $width_factor, $height);
+
+            $tmp_barcode = "$dir/tmp_barcode_{$Product_id}.png";
+            file_put_contents($tmp_barcode, $barcode_png);
+
+            $barcode_img = imagecreatefrompng($tmp_barcode);
+            $bw = imagesx($barcode_img);
+            $bh = imagesy($barcode_img);
+
+            $font_file = __DIR__ . '/../assets/fonts/roboto/Roboto-Bold.ttf';
+            $font_size = 14;
+
+            $lines = [];
+            $words = explode(" ", $product_name);
+            $current = "";
+            foreach ($words as $word) {
+                $test = $current ? "$current $word" : $word;
+                $box  = imagettfbbox($font_size, 0, $font_file, $test);
+                $w = $box[2] - $box[0];
+                if ($w < $bw - 20) {
+                    $current = $test;
+                } else {
+                    $lines[] = $current;
+                    $current = $word;
+                }
+            }
+            if ($current) $lines[] = $current;
+
+            $line_spacing = 4;
+            $line_height = $font_size + $line_spacing;
+            $text_height = count($lines) * $line_height;
+
+            $padding_x = 10;
+            $padding_y = 10;
+
+            $canvas_w = $bw + ($padding_x * 2);
+            $canvas_h = $bh + $text_height + ($padding_y * 2);
+
+            $canvas = imagecreatetruecolor($canvas_w, $canvas_h);
+            $white = imagecolorallocate($canvas, 255, 255, 255);
+            $black = imagecolorallocate($canvas, 0, 0, 0);
+            imagefill($canvas, 0, 0, $white);
+
+            $y = $padding_y;
+            foreach ($lines as $line) {
+                $box = imagettfbbox($font_size, 0, $font_file, $line);
+                $text_w = $box[2] - $box[0];
+                $x = ($canvas_w - $text_w) / 2;
+                imagettftext($canvas, $font_size, 0, $x, $y + $font_size, $black, $font_file, $line);
+                $y += $line_height;
+            }
+
+            imagecopy($canvas, $barcode_img, $padding_x, $text_height + $padding_y, 0, 0, $bw, $bh);
+
+            imagepng($canvas, $final_path);
+            imagedestroy($barcode_img);
+            imagedestroy($canvas);
+            unlink($tmp_barcode);
+        }
+
+        echo ltrim($final_path, '../');
+        exit;
+    }
+
+    if ($action === "fetch_warehouse_qr") {
+        $warehouse_id = mysqli_real_escape_string($conn, $_POST['id'] ?? '');
+        include_once('../delivery/qrlib.php');
+
+        $warehouse_name = getWarehouseName($warehouse_id);
+
+        $protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? "https://" : "http://";
+        $domain   = $protocol . $_SERVER['HTTP_HOST'];
+
+        $website = $domain . "/?page=warehouse_details&warehouse_id=" . urlencode($warehouse_id);
+
+        $dir = "../images/warehouseqr";
+        if (!is_dir($dir)) mkdir($dir, 0777, true);
+
+        $final_path = "$dir/warehouse{$warehouse_id}.png";
+        $tmp_qr     = "$dir/tmp_qr_{$warehouse_id}.png";
+
+        if (!file_exists($final_path)) {
+            QRcode::png($website, $tmp_qr, QR_ECLEVEL_L, 10, 1);
+
+            $qr_img = imagecreatefrompng($tmp_qr);
+            $qr_w = imagesx($qr_img);
+            $qr_h = imagesy($qr_img);
+
+            $font_file = __DIR__ . '/../assets/fonts/roboto/Roboto-Bold.ttf'; 
+            $font_size = 15;
+
+            $lines = [];
+            $words = explode(" ", $warehouse_name);
+            $current = "";
+            foreach ($words as $word) {
+                $test = $current ? "$current $word" : $word;
+                $box  = imagettfbbox($font_size, 0, $font_file, $test);
+                $w = $box[2] - $box[0];
+                if ($w < $qr_w - 20) {
+                    $current = $test;
+                } else {
+                    $lines[] = $current;
+                    $current = $word;
+                }
+            }
+            if ($current) $lines[] = $current;
+
+            $line_spacing = 4;
+            $line_height = $font_size + $line_spacing;
+            $text_height = count($lines) * $line_height;
+
+            $padding = 5;
+            $canvas_w = $qr_w + ($padding * 2);
+            $canvas_h = $text_height + $qr_h + ($padding * 2);
+
+            $canvas = imagecreatetruecolor($canvas_w, $canvas_h);
+            $white  = imagecolorallocate($canvas, 255, 255, 255);
+            $black  = imagecolorallocate($canvas, 0, 0, 0);
+            imagefill($canvas, 0, 0, $white);
+
+            $y = $padding;
+            foreach ($lines as $line) {
+                $box = imagettfbbox($font_size, 0, $font_file, $line);
+                $text_w = $box[2] - $box[0];
+                $x = ($canvas_w - $text_w) / 2;
+                imagettftext($canvas, $font_size, 0, $x, $y + $font_size, $black, $font_file, $line);
+                $y += $line_height;
+            }
+
+            imagecopy($canvas, $qr_img, $padding, $y, 0, 0, $qr_w, $qr_h);
+
+            imagepng($canvas, $final_path);
+            imagedestroy($qr_img);
+            imagedestroy($canvas);
+            unlink($tmp_qr);
+        }
+
+        echo ltrim($final_path, '../');
+        exit;
+    }
+
+
 
     mysqli_close($conn);
 }

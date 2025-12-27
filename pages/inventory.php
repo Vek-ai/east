@@ -96,6 +96,56 @@ function showCol($name) {
         </div>
     </div>
 
+    <div class="modal fade" id="qrBarcodeModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h4 class="modal-title">Download QR / Barcode</h4>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+
+                <div class="modal-body text-center">
+
+                    <div class="d-flex justify-content-center gap-3 mb-3">
+                        <button class="btn btn-primary" id="btnLoadQR">QR Code</button>
+                        <button class="btn btn-secondary" id="btnLoadBarcode">Barcode</button>
+                    </div>
+
+                    <div id="qrBarcodeBody"></div>
+
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-success" id="btnDownload">Download</button>
+                    <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="warehouseQrModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h4 class="modal-title">Download Warehouse QR</h4>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+
+                <div class="modal-body text-center">
+
+                    <div id="warehouseQrBody"></div>
+
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-success" id="btnWarehouseDownload">Download</button>
+                    <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
     <div class="modal fade" id="inventoryPackModal" tabindex="-1" aria-labelledby="inventoryPackModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered modal-xl" style="max-width: 70%;">
             <div class="modal-content">
@@ -545,6 +595,9 @@ function showCol($name) {
     }
 
     $(document).ready(function() {
+        let currentType = 'qr';
+        let currentId = null;
+
         $(document).on('change', '#supplier_id', function() {
             $('#pack_add').val('').trigger('change');
         });
@@ -988,7 +1041,140 @@ function showCol($name) {
             recalcInventoryPacks();
         });
 
-        
+        $(document).on('click', '#view_warehouse_qr', function(event) {
+            event.preventDefault(); 
+            var id = $(this).data('id');
+
+            if (!id || id === 0 || id === "0") {
+                $('#warehouseQrBody').html(`
+                    <div class="d-flex justify-content-center align-items-center" 
+                        style="width:400px; height:400px; background:#f8f9fa; margin:0 auto; font-weight:bold;">
+                        No warehouse set
+                    </div>
+                `);
+                $('#warehouseQrModal').modal('show');
+                return;
+            }
+
+            $.ajax({
+                url: 'pages/inventory_ajax.php',
+                type: 'POST',
+                data: { 
+                    id: id, 
+                    action: "fetch_warehouse_qr" 
+                },
+                success: function(response) {
+                    $('#warehouseQrBody').html(`
+                        <div class="d-flex justify-content-center align-items-center" 
+                            style="width:400px; height:400px; background:#fff; margin:0 auto;">
+                            <img 
+                                src="${response}?t=${Date.now()}" 
+                                style="max-width:100%; max-height:100%;"
+                            />
+                        </div>
+                    `);
+                    $('#warehouseQrModal').modal('show');
+                },
+                error: function(jqXHR, textStatus, errorThrown) {
+                    alert('Failed!');
+                    console.log(jqXHR.responseText);
+                }
+            });
+        });
+
+
+        function loadQrBarcode(type) {
+            currentType = type;
+
+            $.ajax({
+                url: 'pages/inventory_ajax.php',
+                type: 'POST',
+                data: {
+                    id: currentId,
+                    action: type === 'qr' ? 'fetch_qr' : 'fetch_barcode'
+                },
+                success: function (response) {
+                    $('#qrBarcodeBody').html(`
+                        <div class="d-flex justify-content-center align-items-center" 
+                            style="width:400px; height:400px; background:#fff; margin:0 auto;">
+                            <img 
+                                src="${response}?t=${Date.now()}" 
+                                style="max-width:100%; max-height:100%;"
+                            />
+                        </div>
+                    `);
+
+                    $('#btnLoadQR').toggleClass('btn-primary', type === 'qr')
+                                .toggleClass('btn-secondary', type !== 'qr');
+                    $('#btnLoadBarcode').toggleClass('btn-primary', type === 'barcode')
+                                        .toggleClass('btn-secondary', type !== 'barcode');
+                },
+                error: function () {
+                    alert('Failed to load.');
+                }
+            });
+        }
+
+        $(document).on('click', '#view_qr_barcode', function (e) {
+            e.preventDefault();
+            currentId = $(this).data('id');
+            $('#qrBarcodeModal').modal('show');
+            loadQrBarcode('qr');
+        });
+
+        $('#btnLoadQR').on('click', function () {
+            loadQrBarcode('qr');
+        });
+
+        $('#btnLoadBarcode').on('click', function () {
+            loadQrBarcode('barcode');
+        });
+
+        $('#btnDownload').on('click', function () {
+            let img = $('#qrBarcodeBody').find('img')[0];
+
+            if (img) {
+                const link = document.createElement('a');
+                link.href = img.src;
+                link.download = currentType + '_' + currentId + '.png';
+                link.click();
+                return;
+            }
+
+            let canvas = $('#qrBarcodeBody').find('canvas')[0];
+            if (canvas) {
+                const link = document.createElement('a');
+                link.href = canvas.toDataURL('image/png');
+                link.download = currentType + '_' + currentId + '.png';
+                link.click();
+                return;
+            }
+
+            alert('Nothing to download.');
+        });
+
+        $('#btnWarehouseDownload').on('click', function () {
+            let img = $('#warehouseQrBody').find('img')[0];
+
+            if (img) {
+                const link = document.createElement('a');
+                link.href = img.src;
+                link.download = currentType + '_' + currentId + '.png';
+                link.click();
+                return;
+            }
+
+            let canvas = $('#warehouseQrBody').find('canvas')[0];
+            if (canvas) {
+                const link = document.createElement('a');
+                link.href = canvas.toDataURL('image/png');
+                link.download = currentType + '_' + currentId + '.png';
+                link.click();
+                return;
+            }
+
+            alert('Nothing to download.');
+        });
     });
 </script>
 
