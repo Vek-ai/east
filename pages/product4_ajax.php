@@ -1063,6 +1063,7 @@ if(isset($_REQUEST['action'])) {
         $result = $conn->query("SELECT * FROM $product_excel");
 
         if ($result->num_rows > 0) {
+
             while ($row = $result->fetch_assoc()) {
 
                 unset($row['id']);
@@ -1085,23 +1086,82 @@ if(isset($_REQUEST['action'])) {
                             "UPDATE $table SET " . implode(", ", $updates) . " WHERE $primaryKey = $excelPK"
                         );
 
-                        generateProductAbbr($excelPK);
+                        $product_id = $excelPK;
+                        generateProductAbbr($product_id);
+
+                    } else {
+                        $row[$primaryKey] = $excelPK;
+                        $product_id = $excelPK;
+                    }
+                }
+
+                if (empty($product_id)) {
+
+                    $columns = implode(", ", array_keys($row));
+                    $values  = "'" . implode(
+                        "', '",
+                        array_map([$conn, 'real_escape_string'], array_values($row))
+                    ) . "'";
+
+                    if ($conn->query("INSERT INTO $table ($columns) VALUES ($values)")) {
+                        $product_id = $excelPK ?: $conn->insert_id;
+                        generateProductAbbr($product_id);
+                    } else {
                         continue;
                     }
-
-                    $row[$primaryKey] = $excelPK;
                 }
 
-                $columns = implode(", ", array_keys($row));
-                $values  = "'" . implode(
-                    "', '",
-                    array_map([$conn, 'real_escape_string'], array_values($row))
-                ) . "'";
+                $lines   = json_decode($row['product_line'] ?? '[]', true) ?: [];
+                $types   = json_decode($row['product_type'] ?? '[]', true) ?: [];
+                $grades  = json_decode($row['grade'] ?? '[]', true) ?: [];
+                $gauges  = json_decode($row['gauge'] ?? '[]', true) ?: [];
+                $lengths = json_decode($row['available_lengths'] ?? '[]', true) ?: [];
+                $colors  = json_decode($row['color'] ?? '[]', true) ?: [];
 
-                if ($conn->query("INSERT INTO $table ($columns) VALUES ($values)")) {
-                    $newPK = $excelPK ?: $conn->insert_id;
-                    generateProductAbbr($newPK);
+                $combinations = array_combinations([
+                    'product_line' => $lines,
+                    'product_type' => $types,
+                    'grade'        => $grades,
+                    'gauge'        => $gauges,
+                    'dimension_id' => $lengths,
+                    'color_id'     => $colors
+                ]);
+
+                if (!empty($combinations)) {
+
+                    $insertValues = [];
+
+                    foreach ($combinations as $combo) {
+                        $line  = intval($combo['product_line']);
+                        $type  = intval($combo['product_type']);
+                        $grade = intval($combo['grade']);
+                        $gauge = intval($combo['gauge']);
+                        $dim   = intval($combo['dimension_id']);
+                        $color = intval($combo['color_id']);
+
+                        $insertValues[] = "(
+                            '$product_id',
+                            $line,
+                            $type,
+                            $grade,
+                            $gauge,
+                            $dim,
+                            $color,
+                            0
+                        )";
+                    }
+
+                    if (!empty($insertValues)) {
+                        $insertSql = "
+                            INSERT IGNORE INTO inventory
+                            (Product_id, product_line, product_type, grade, gauge, dimension_id, color_id, quantity_ttl)
+                            VALUES " . implode(',', $insertValues);
+
+                        $conn->query($insertSql);
+                    }
                 }
+
+                unset($product_id);
             }
 
             echo "Data has been successfully saved";
