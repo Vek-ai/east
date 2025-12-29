@@ -1672,14 +1672,15 @@ if(isset($_REQUEST['action'])) {
         $pdf->SetMargins(15, 15);
         $pdf->SetAutoPageBreak(false);
 
-        while ($row = mysqli_fetch_assoc($result)) {
+        $barcode_buffer = [];
 
+        while ($row = mysqli_fetch_assoc($result)) {
             $product_id   = (int)$row['product_id'];
             $product_name = trim($row['product_item']);
 
             if ($type === 'qr') {
-                $img_dir   = "../images/productqr";
-                $img_file  = "$img_dir/prod{$product_id}.png";
+                $img_dir  = "../images/productqr";
+                $img_file = "$img_dir/prod{$product_id}.png";
             } else {
                 $barcode_value = 'P' . str_pad($product_id, 11, '0', STR_PAD_LEFT);
                 $img_dir  = "../images/barcode";
@@ -1687,7 +1688,6 @@ if(isset($_REQUEST['action'])) {
             }
 
             if (!file_exists($img_file)) {
-
                 $product = getProductDetails($product_id);
 
                 if ($type === 'qr') {
@@ -1701,8 +1701,9 @@ if(isset($_REQUEST['action'])) {
                 } else {
                     if (!is_dir($img_dir)) mkdir($img_dir, 0777, true);
                     $generator = new Picqer\Barcode\BarcodeGeneratorPNG();
+                    $upc_code = generateRandomUPC();
                     $barcode_png = $generator->getBarcode(
-                        $barcode_value,
+                        $upc_code,
                         $generator::TYPE_CODE_128,
                         2,
                         80
@@ -1713,38 +1714,81 @@ if(isset($_REQUEST['action'])) {
 
             if (!file_exists($img_file)) continue;
 
-            $pdf->AddPage();
-
-            $title_height = 8;
-            $spacing = 6;
-
             if ($type === 'qr') {
+                $pdf->AddPage();
+
+                $title_height = 12;
+                $spacing = 8;
                 $img_w = 110;
                 $img_h = 110;
+
+                $total_block_height = $title_height + $spacing + $img_h;
+                $start_y = ($pdf->GetPageHeight() - $total_block_height) / 2;
+
+                $pdf->SetY($start_y);
+                $pdf->SetFont('Arial', 'B', 18);
+                $pdf->MultiCell(0, $title_height, $product_name, 0, 'C');
+                $pdf->Ln($spacing);
+
+                $x = ($pdf->GetPageWidth() - $img_w) / 2;
+                $pdf->Image($img_file, $x, $pdf->GetY(), $img_w, $img_h);
+
             } else {
-                $img_w = 150;
-                $img_h = 45;
+                $barcode_buffer[] = [
+                    'name' => $product_name,
+                    'img'  => $img_file
+                ];
+
+                if (count($barcode_buffer) === 2) {
+                    $pdf->AddPage();
+
+                    $img_w = 150;
+                    $img_h = 45;
+                    $title_height = 10;
+                    $spacing = 6;
+
+                    $page_h = $pdf->GetPageHeight();
+                    $half_h = $page_h / 2;
+
+                    foreach ($barcode_buffer as $index => $item) {
+                        $total_block_height = $title_height + $spacing + $img_h;
+                        $start_y = ($half_h - $total_block_height) / 2 + ($index * $half_h);
+
+                        $pdf->SetY($start_y);
+                        $pdf->SetFont('Arial', 'B', 16);
+                        $pdf->MultiCell(0, $title_height, $item['name'], 0, 'C');
+                        $pdf->Ln($spacing);
+
+                        $x = ($pdf->GetPageWidth() - $img_w) / 2;
+                        $pdf->Image($item['img'], $x, $pdf->GetY(), $img_w, $img_h);
+                    }
+
+                    $barcode_buffer = [];
+                }
             }
+        }
 
-            $total_block_height = $title_height + $spacing + $img_h;
+        if ($type === 'barcode' && count($barcode_buffer) === 1) {
+            $pdf->AddPage();
 
-            $page_h = $pdf->GetPageHeight();
-            $start_y = ($page_h - $total_block_height) / 2;
+            $img_w = 150;
+            $img_h = 45;
+            $title_height = 10;
+            $spacing = 6;
+
+            $block_height = $title_height + $spacing + $img_h;
+            $start_y = ($pdf->GetPageHeight() - $block_height) / 2;
 
             $pdf->SetY($start_y);
-
-            $pdf->SetFont('Arial', 'B', 18);
-            $pdf->MultiCell(0, $title_height, $product_name, 0, 'C');
+            $pdf->SetFont('Arial', 'B', 16);
+            $pdf->MultiCell(0, $title_height, $barcode_buffer[0]['name'], 0, 'C');
             $pdf->Ln($spacing);
 
             $x = ($pdf->GetPageWidth() - $img_w) / 2;
-            $y = $pdf->GetY();
-
-            $pdf->Image($img_file, $x, $y, $img_w, $img_h);
+            $pdf->Image($barcode_buffer[0]['img'], $x, $pdf->GetY(), $img_w, $img_h);
         }
 
         $category_names = [];
-
         foreach ($categories as $cat_id) {
             $name = trim(getProductCategoryName((int)$cat_id));
             if ($name) {
@@ -1754,13 +1798,11 @@ if(isset($_REQUEST['action'])) {
 
         $category_part = implode(', ', $category_names);
         $type_part = strtoupper($type);
-
         $filename = $category_part . ' - ' . $type_part . '.pdf';
 
         $pdf->Output('D', $filename);
         exit;
     }
-
 
     mysqli_close($conn);
 }
