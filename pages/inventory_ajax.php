@@ -4,10 +4,11 @@ ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ERROR | E_PARSE | E_CORE_ERROR | E_CORE_WARNING | E_COMPILE_ERROR | E_COMPILE_WARNING);
 
-require '../includes/dbconn.php';
-require '../includes/functions.php';
-require '../includes/vendor/autoload.php';
-require '../includes/phpmailer/vendor/autoload.php';
+require_once '../includes/dbconn.php';
+require_once '../includes/functions.php';
+require_once '../includes/vendor/autoload.php';
+require_once '../includes/phpmailer/vendor/autoload.php';
+require_once '../includes/fpdf/fpdf.php';
 
 use PhpOffice\PhpSpreadsheet\IOFactory;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
@@ -1640,6 +1641,125 @@ if(isset($_REQUEST['action'])) {
         exit;
     }
 
+    if ($action === "batch_download_qr_barcode") {
+        include_once('../delivery/qrlib.php');
+
+        $categories = $_GET['category'] ?? [];
+        $type       = ($_GET['type'] === 'barcode') ? 'barcode' : 'qr';
+
+        if (empty($categories)) {
+            exit('No category selected');
+        }
+
+        $cat_ids = array_map('intval', $categories);
+        $cat_sql = implode(',', $cat_ids);
+
+        $sql = "
+            SELECT 
+                i.product_id,
+                p.product_item
+            FROM inventory i
+            LEFT JOIN product p ON p.product_id = i.product_id
+            WHERE p.product_category IN ($cat_sql)
+            GROUP BY i.product_id
+            ORDER BY p.product_item
+        ";
+
+        $result = mysqli_query($conn, $sql);
+        if (!$result) exit('Query failed');
+
+        $pdf = new FPDF('P', 'mm', 'A4');
+        $pdf->SetMargins(15, 15);
+        $pdf->SetAutoPageBreak(false);
+
+        while ($row = mysqli_fetch_assoc($result)) {
+
+            $product_id   = (int)$row['product_id'];
+            $product_name = trim($row['product_item']);
+
+            if ($type === 'qr') {
+                $img_dir   = "../images/productqr";
+                $img_file  = "$img_dir/prod{$product_id}.png";
+            } else {
+                $barcode_value = 'P' . str_pad($product_id, 11, '0', STR_PAD_LEFT);
+                $img_dir  = "../images/barcode";
+                $img_file = "$img_dir/{$barcode_value}.png";
+            }
+
+            if (!file_exists($img_file)) {
+
+                $product = getProductDetails($product_id);
+
+                if ($type === 'qr') {
+                    $protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? "https://" : "http://";
+                    $domain   = $protocol . $_SERVER['HTTP_HOST'];
+                    $website  = $domain . "/?page=product_details&product_id=" . urlencode($product_id);
+
+                    if (!is_dir($img_dir)) mkdir($img_dir, 0777, true);
+                    QRcode::png($website, $img_file, QR_ECLEVEL_L, 10, 1);
+
+                } else {
+                    if (!is_dir($img_dir)) mkdir($img_dir, 0777, true);
+                    $generator = new Picqer\Barcode\BarcodeGeneratorPNG();
+                    $barcode_png = $generator->getBarcode(
+                        $barcode_value,
+                        $generator::TYPE_CODE_128,
+                        2,
+                        80
+                    );
+                    file_put_contents($img_file, $barcode_png);
+                }
+            }
+
+            if (!file_exists($img_file)) continue;
+
+            $pdf->AddPage();
+
+            $title_height = 8;
+            $spacing = 6;
+
+            if ($type === 'qr') {
+                $img_w = 110;
+                $img_h = 110;
+            } else {
+                $img_w = 150;
+                $img_h = 45;
+            }
+
+            $total_block_height = $title_height + $spacing + $img_h;
+
+            $page_h = $pdf->GetPageHeight();
+            $start_y = ($page_h - $total_block_height) / 2;
+
+            $pdf->SetY($start_y);
+
+            $pdf->SetFont('Arial', 'B', 18);
+            $pdf->MultiCell(0, $title_height, $product_name, 0, 'C');
+            $pdf->Ln($spacing);
+
+            $x = ($pdf->GetPageWidth() - $img_w) / 2;
+            $y = $pdf->GetY();
+
+            $pdf->Image($img_file, $x, $y, $img_w, $img_h);
+        }
+
+        $category_names = [];
+
+        foreach ($categories as $cat_id) {
+            $name = trim(getProductCategoryName((int)$cat_id));
+            if ($name) {
+                $category_names[] = $name;
+            }
+        }
+
+        $category_part = implode(', ', $category_names);
+        $type_part = strtoupper($type);
+
+        $filename = $category_part . ' - ' . $type_part . '.pdf';
+
+        $pdf->Output('D', $filename);
+        exit;
+    }
 
 
     mysqli_close($conn);

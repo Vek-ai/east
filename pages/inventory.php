@@ -69,6 +69,9 @@ function showCol($name) {
                 <button type="button" id="uploadModalBtn" class="btn btn-primary d-flex align-items-center">
                     <i class="ti ti-upload text-white me-1 fs-5"></i> Upload Inventory
                 </button>
+                <button type="button" id="downloadQRBarcodeBtn" class="btn btn-info d-flex align-items-center">
+                    <i class="ti ti-qrcode text-white me-1 fs-5"></i> Download QR/Barcode
+                </button>
             </div>
         </div>
     </div>
@@ -209,6 +212,51 @@ function showCol($name) {
                         <div class="d-grid">
                             <button type="submit" class="btn btn-primary fw-semibold">
                                 <i class="fas fa-download me-2"></i> Download Excel
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="downloadQRBarcodeModal" tabindex="-1" aria-labelledby="downloadQRBarcodeModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-md">
+            <div class="modal-content">
+                <div class="modal-header d-flex align-items-center">
+                    <h4 class="modal-title" id="myLargeModalLabel">
+                        Download QR/Barcode
+                    </h4>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="download_qr_barcode_form" class="form-horizontal">
+                        <label for="select-barcode-category" class="form-label fw-semibold">Select Category</label>
+                        <div class="mb-3">
+                            <select class="form-select select2-filter" id="select-barcode-category" name="category[]" multiple>
+                                <?php
+                                $query_category = "SELECT * FROM product_category WHERE hidden = '0' AND status = '1' ORDER BY `product_category` ASC";
+                                $result_category = mysqli_query($conn, $query_category);
+                                while ($row_category = mysqli_fetch_array($result_category)) {
+                                ?>
+                                    <option value="<?= $row_category['product_category_id'] ?>">
+                                        <?= $row_category['product_category'] ?>
+                                    </option>
+                                <?php } ?>
+                            </select>
+                        </div>
+
+                        <label for="select-download-type" class="form-label fw-semibold">Select Type</label>
+                        <div class="mb-3">
+                            <select class="form-select select2-filter" id="select-download-type" name="type[]">
+                                <option value="qr" selected>QR Code</option>
+                                <option value="barcode">Barcode</option>
+                            </select>
+                        </div>
+
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-primary fw-semibold">
+                                <i class="fas fa-download me-2"></i> Download
                             </button>
                         </div>
                     </form>
@@ -859,6 +907,10 @@ function showCol($name) {
             $('#uploadModal').modal('show');
         });
 
+        $(document).on('click', '#downloadQRBarcodeBtn', function(event) {
+            $('#downloadQRBarcodeModal').modal('show');
+        });
+
         $(document).on('click', '#readUploadProductBtn', function(event) {
             $.ajax({
                 url: 'pages/inventory_ajax.php',
@@ -901,6 +953,28 @@ function showCol($name) {
             window.location.href = "pages/inventory_ajax.php?" + params.toString();
         });
 
+        $("#download_qr_barcode_form").submit(function (e) {
+            e.preventDefault();
+
+            const categories = $("#select-barcode-category").val() || [];
+            const type = $("#select-download-type").val() || '';
+
+            if (categories.length === 0) {
+                alert("Please select a category before downloading.");
+                return;
+            }
+
+            const params = new URLSearchParams();
+            params.append("action", "batch_download_qr_barcode");
+
+            categories.forEach(cat => {
+                if (cat) params.append("category[]", cat);
+            });
+
+            if (type) params.append("type", type);
+
+            window.location.href = "pages/inventory_ajax.php?" + params.toString();
+        });
 
         $("#download_class_form").submit(function (e) {
             e.preventDefault();
