@@ -1067,15 +1067,18 @@ if(isset($_REQUEST['action'])) {
             while ($row = $result->fetch_assoc()) {
 
                 unset($row['id']);
+                $product_id = null;
 
                 $excelPK = !empty($row[$primaryKey]) ? (int)$row[$primaryKey] : null;
 
                 if ($excelPK) {
+
                     $check = $conn->query(
                         "SELECT $primaryKey FROM $table WHERE $primaryKey = $excelPK LIMIT 1"
                     );
 
                     if ($check && $check->num_rows > 0) {
+
                         $updates = [];
                         foreach ($row as $col => $val) {
                             if ($col === $primaryKey) continue;
@@ -1091,7 +1094,6 @@ if(isset($_REQUEST['action'])) {
 
                     } else {
                         $row[$primaryKey] = $excelPK;
-                        $product_id = $excelPK;
                     }
                 }
 
@@ -1132,32 +1134,42 @@ if(isset($_REQUEST['action'])) {
                     $insertValues = [];
 
                     foreach ($combinations as $combo) {
-                        $line  = intval($combo['product_line']);
-                        $type  = intval($combo['product_type']);
-                        $grade = intval($combo['grade']);
-                        $gauge = intval($combo['gauge']);
-                        $dim   = intval($combo['dimension_id']);
-                        $color = intval($combo['color_id']);
 
-                        $insertValues[] = "(
-                            '$product_id',
-                            $line,
-                            $type,
-                            $grade,
-                            $gauge,
-                            $dim,
-                            $color,
-                            0
-                        )";
+                        $insertValues[] = sprintf(
+                            "('%d', %s, %s, %s, %s, %s, %s, 0)",
+                            $product_id,
+                            $combo['product_line'] ?? 'NULL',
+                            $combo['product_type'] ?? 'NULL',
+                            $combo['grade'] ?? 'NULL',
+                            $combo['gauge'] ?? 'NULL',
+                            $combo['dimension_id'] ?? 'NULL',
+                            $combo['color_id'] ?? 'NULL'
+                        );
                     }
 
                     if (!empty($insertValues)) {
-                        $insertSql = "
+                        $conn->query("
                             INSERT IGNORE INTO inventory
-                            (Product_id, product_line, product_type, grade, gauge, dimension_id, color_id, quantity_ttl)
-                            VALUES " . implode(',', $insertValues);
+                            (product_id, product_line, product_type, grade, gauge, dimension_id, color_id, quantity_ttl)
+                            VALUES " . implode(',', $insertValues)
+                        );
+                    }
 
-                        $conn->query($insertSql);
+                }
+                else {
+
+                    $checkInv = $conn->query("
+                        SELECT 1 FROM inventory
+                        WHERE product_id = '$product_id'
+                        LIMIT 1
+                    ");
+
+                    if (!$checkInv || $checkInv->num_rows === 0) {
+                        $conn->query("
+                            INSERT INTO inventory
+                            (product_id, quantity_ttl)
+                            VALUES ('$product_id', 0)
+                        ");
                     }
                 }
 
