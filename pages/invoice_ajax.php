@@ -146,7 +146,7 @@ if(isset($_REQUEST['action'])) {
                                         ?> 
                                         <tr> 
                                             <td class="text-center">
-                                                <?= $is_pickup && $is_ready ? "<input type='checkbox' class='row-checkbox' value='{$row['id']}' data-amount='$price' data-paid='$payment_db'>" : "" ?>
+                                                <?= $is_ready ? "<input type='checkbox' class='row-checkbox' value='{$row['id']}' data-amount='$price' data-paid='$payment_db'>" : "" ?>
                                             </td>
                                             <td class="text-start">
                                                 <?= $product_name ?>
