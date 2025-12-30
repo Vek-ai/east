@@ -34,10 +34,10 @@ function calculateUnitPrice(
 
     $totalLength = $lengthFeet + ($lengthInch / 12);
     if ($totalLength <= 0) $totalLength = 1;
-    if ($width <= 0) $width = 1;
+    if ($width <= 0) $width = 12;
 
     //$baseTotal = ($soldByFeet == 1) ? $basePrice * $totalLength : $basePrice;
-    $baseTotal = $basePrice * $totalLength * $width;
+    $baseTotal = $basePrice * $totalLength * ($width / 12);
 
     $multiplier = getMultiplierValue($color, $grade, $gauge) ?? 1;
     $priceWithMultipliers = $baseTotal * $multiplier;

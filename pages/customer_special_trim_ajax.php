@@ -99,11 +99,16 @@ if(isset($_REQUEST['action'])) {
         $result = mysqli_query($conn, $checkQuery);
         if (mysqli_num_rows($result) > 0) {
             $row = mysqli_fetch_assoc($result);
-            $product_id = $row['product_id'];
+            //$product_id = $row['product_id'];
+
             $product = getProductDetails($product_id);
         }
+
+        //lock to special trim product, 318 id
+        $product_id = 318;
         ?>
         <input type="hidden" id="special_trim_id" name="special_trim_id" value="<?= $row['special_trim_id'] ?>" />
+        <input type="hidden" id="product_id_fixed" name="product_id" value="<?= $product_id ?>" />
 
         <div class="card shadow-sm rounded-3 mb-3">
             <div class="card-header bg-light border-bottom">
@@ -113,21 +118,10 @@ if(isset($_REQUEST['action'])) {
                 <div class="row">
                     <div class="col-md-4">
                         <div class="mb-3">
-                            <div class="d-flex justify-content-between align-items-center">
-                                <label class="form-label">Product</label>
-                                <a href="?page=product4" target="_blank" class="text-decoration-none">Edit</a>
+                            <label class="form-label">Product</label>
+                            <div class="mb-3">
+                                <p id="product"><?= getColumnFromTable("product","product_item",$product_id) ?></p>
                             </div>
-                            <select id="product_id" class="form-control select2 product_id_select" name="product_id">
-                                <option value="" >Select Product...</option>
-                                <?php
-                                $query_product = "SELECT * FROM product WHERE hidden = '0' AND status = '1' AND product_category = '$trim_id' ORDER BY `product_item` ASC";
-                                $result_product = mysqli_query($conn, $query_product);            
-                                while ($row_product = mysqli_fetch_array($result_product)) {
-                                    $selected = ($row_product['product_id'] == $row['product_id']) ? 'selected' : '';
-                                ?>
-                                    <option value="<?= $row_product['product_id'] ?>" <?= $selected ?>><?= $row_product['product_item'] ?></option>
-                                <?php } ?>
-                            </select>
                         </div>
                     </div>
                 </div>

@@ -164,7 +164,6 @@ $page_title = "Special Trim";
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <form id="product_form" class="form-horizontal">
-                    <input type="hidden" id="product_id" name="product_id" class="form-control" />
                     <div class="modal-body">
                         <div class="card">
                             <div id="add-fields" class=""></div>
@@ -423,7 +422,8 @@ $page_title = "Special Trim";
         $('#productList_filter').hide();
 
         function fetchProductDetails() {
-            var productId = $('.product_id_select').val();
+            var productId = $('#product_id_fixed').val();
+            console.log(productId);
             if (!productId) return;
 
             $.ajax({
