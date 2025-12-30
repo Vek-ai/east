@@ -581,6 +581,18 @@ function showCol($name) {
     </div>
 </div>
 
+<div id="globalLoader" class="position-fixed top-0 start-0 w-100 h-100 d-none"
+     style="background: rgba(0,0,0,0.35); z-index: 2000;">
+    <div class="d-flex justify-content-center align-items-center h-100">
+        <div class="text-center text-white">
+            <div class="spinner-border text-light mb-3" role="status" style="width: 3rem; height: 3rem;">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+            <div>Saving...</div>
+        </div>
+    </div>
+</div>
+
 <script src="includes/pricing_data.js"></script>
 
 <script>
@@ -1086,12 +1098,14 @@ function showCol($name) {
         });
 
         $(document).on('submit', '#product_form', function(event) {
-            event.preventDefault(); 
+            event.preventDefault();
 
             $('#color_paint option:disabled').prop('disabled', false);
 
             var formData = new FormData(this);
             formData.append('action', 'add_update');
+
+            $('#globalLoader').removeClass('d-none');
 
             $.ajax({
                 url: 'pages/product4_ajax.php',
@@ -1100,36 +1114,41 @@ function showCol($name) {
                 processData: false,
                 contentType: false,
                 success: function(response) {
+
+                    $('#globalLoader').addClass('d-none');
+
                     $('#addProductModal').modal('hide');
+
                     if (response.trim() === "success_update") {
                         $('#responseHeader').text("Success");
                         $('#responseMsg').text("Product successfully updated.");
-                        $('#responseHeaderContainer').removeClass("bg-danger");
-                        $('#responseHeaderContainer').addClass("bg-success");
+                        $('#responseHeaderContainer').removeClass("bg-danger").addClass("bg-success");
                         $('#response-modal').modal("show");
                         table.ajax.reload(null, false);
+
                     } else if (response.trim() === "success_add") {
                         $('#responseHeader').text("Success");
                         $('#responseMsg').text("New product added successfully.");
-                        $('#responseHeaderContainer').removeClass("bg-danger");
-                        $('#responseHeaderContainer').addClass("bg-success");
+                        $('#responseHeaderContainer').removeClass("bg-danger").addClass("bg-success");
                         $('#response-modal').modal("show");
                         table.ajax.reload(null, false);
+
                     } else {
                         $('#responseHeader').text("Failed");
                         $('#responseMsg').text(response);
-
-                        $('#responseHeaderContainer').removeClass("bg-success");
-                        $('#responseHeaderContainer').addClass("bg-danger");
+                        $('#responseHeaderContainer').removeClass("bg-success").addClass("bg-danger");
                         $('#response-modal').modal("show");
                     }
-                    
                 },
                 error: function(jqXHR, textStatus, errorThrown) {
+
+                    $('#globalLoader').addClass('d-none');
+
                     alert('Error: ' + textStatus + ' - ' + errorThrown);
                 }
             });
         });
+
 
         $(document).on('submit', '#add_inventory', function(event) {
             event.preventDefault(); 

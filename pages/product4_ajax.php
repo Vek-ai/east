@@ -210,7 +210,40 @@ if(isset($_REQUEST['action'])) {
             }
         }
 
-        $lines   = $_POST['profile'] ?? [];
+        $needsInventoryUpdate = false;
+
+        $variantColumns = [
+            'profile',
+            'product_type',
+            'grade',
+            'gauge',
+            'available_lengths',
+            'color'
+        ];
+
+        $oldVariantsRes = mysqli_query(
+            $conn,
+            "SELECT profile, product_type, grade, gauge, available_lengths, color 
+            FROM product WHERE product_id = '$product_id'"
+        );
+
+        if ($oldVariantsRes && mysqli_num_rows($oldVariantsRes) > 0) {
+            $oldVariants = mysqli_fetch_assoc($oldVariantsRes);
+
+            foreach ($variantColumns as $col) {
+                $oldVal = $oldVariants[$col] ?? '';
+                $newVal = json_encode($_POST[$col] ?? []);
+
+                if ($oldVal !== $newVal) {
+                    $needsInventoryUpdate = true;
+                    break;
+                }
+            }
+        } else {
+            $needsInventoryUpdate = true;
+        }
+
+        $lines   = $_POST['product_line'] ?? [];
         $types   = $_POST['product_type'] ?? [];
         $grades  = $_POST['grade'] ?? [];
         $gauges  = $_POST['gauge'] ?? [];
@@ -226,27 +259,39 @@ if(isset($_REQUEST['action'])) {
             'color_id'     => $colors
         ]);
 
-        if (!empty($combinations)) {
-            $insertValues = [];
+        if ($needsInventoryUpdate) {
 
-            foreach ($combinations as $combo) {
-                $line   = intval($combo['product_line']);
-                $type   = intval($combo['product_type']);
-                $grade  = intval($combo['grade']);
-                $gauge  = intval($combo['gauge']);
-                $dim    = intval($combo['dimension_id']);
-                $color  = intval($combo['color_id']);
+            $combinations = array_combinations([
+                'product_line' => $lines,
+                'product_type' => $types,
+                'grade'        => $grades,
+                'gauge'        => $gauges,
+                'dimension_id' => $lengths,
+                'color_id'     => $colors
+            ]);
 
-                $insertValues[] = "('$product_id', $line, $type, $grade, $gauge, $dim, $color, 0)";
-            }
+            if (!empty($combinations)) {
+                $insertValues = [];
 
-            if (!empty($insertValues)) {
-                $insertSql = "
-                    INSERT IGNORE INTO inventory
-                    (Product_id, product_line, product_type, grade, gauge, dimension_id, color_id, quantity_ttl)
-                    VALUES " . implode(',', $insertValues);
+                foreach ($combinations as $combo) {
+                    $line   = intval($combo['product_line']);
+                    $type   = intval($combo['product_type']);
+                    $grade  = intval($combo['grade']);
+                    $gauge  = intval($combo['gauge']);
+                    $dim    = intval($combo['dimension_id']);
+                    $color  = intval($combo['color_id']);
 
-                mysqli_query($conn, $insertSql);
+                    $insertValues[] = "('$product_id', $line, $type, $grade, $gauge, $dim, $color, 0)";
+                }
+
+                if (!empty($insertValues)) {
+                    $insertSql = "
+                        INSERT IGNORE INTO inventory
+                        (Product_id, product_line, product_type, grade, gauge, dimension_id, color_id, quantity_ttl)
+                        VALUES " . implode(',', $insertValues);
+
+                    mysqli_query($conn, $insertSql);
+                }
             }
         }
     }
