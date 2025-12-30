@@ -112,22 +112,6 @@ $permission = $_SESSION['permission'];
                         </optgroup>
                     </select>
                 </div>
-                <div class="position-relative w-100 px-1 mb-2">
-                    <select class="form-control search-category py-0 ps-5 select2 filter-selection" data-filter="pricing" data-filter-name="Customer Pricing" id="select-pricing">
-                        <option value="" data-category="">All Customer Pricing</option>
-                        <optgroup label="Customer Pricing">
-                            <?php
-                            $query_pricing = "SELECT * FROM customer_pricing WHERE hidden = '0' AND status = '1'";
-                            $result_pricing = mysqli_query($conn, $query_pricing);            
-                            while ($row_pricing = mysqli_fetch_array($result_pricing)) {
-                            ?>
-                                <option value="<?= $row_pricing['id'] ?>"><?= $row_pricing['pricing_name'] ?></option>
-                            <?php   
-                            }
-                            ?>
-                        </optgroup>
-                    </select>
-                </div>
             </div>
             <div class="px-3 mb-2"> 
                 <input type="checkbox" id="toggleActive" checked> Show Active Only
@@ -154,151 +138,79 @@ $permission = $_SESSION['permission'];
                   <div class="table-responsive">
                 
                     <table id="display_pricing_category" class="table table-striped table-bordered text-nowrap align-middle">
-                      <thead>
-                        <!-- start row -->
-                        <tr>
-                          <th>Customer Pricing</th>
-                          <th>Product Category</th>
-                          <th>Percentage</th>
-                          <th>Status</th>
-                          <th>Action</th>
-                        </tr>
-                        <!-- end row -->
-                      </thead>
-                      <tbody>
-                        <?php
-                        $no = 1;
-                        $query_pricing_category = "SELECT * FROM pricing_category WHERE hidden=0";
-                        $result_pricing_category = mysqli_query($conn, $query_pricing_category);            
-                        while ($row_pricing_category = mysqli_fetch_array($result_pricing_category)) {
-                            $id = $row_pricing_category['id'];
-                            $product_category_id = $row_pricing_category['product_category_id'];
-                            $customer_pricing_id = $row_pricing_category['customer_pricing_id'];
-                            $db_status = $row_pricing_category['status'];
-                            $percentage = $row_pricing_category['percentage'];
-                          // $last_edit = $row_pricing_category['last_edit'];
-                            $date = new DateTime($row_pricing_category['last_edit']);
-                            $last_edit = $date->format('m-d-Y');
+                        <thead>
+                            <tr>
+                                <th>Product Category</th>
+                                <th>Status</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                    <?php
+                    $no = 1;
 
-                            $added_by = $row_pricing_category['added_by'];
-                            $edited_by = $row_pricing_category['edited_by'];
+                    $query_pricing_category = "
+                        SELECT 
+                            pc.product_category_id,
+                            pcat.product_category,
+                            pc.id AS pricing_category_id,
+                            pc.percentage,
+                            pc.status
+                        FROM pricing_category pc
+                        LEFT JOIN product_category pcat ON pc.product_category_id = pcat.product_category_id
+                        WHERE pc.hidden = 0
+                        GROUP BY pc.product_category_id
+                        ORDER BY pcat.product_category ASC
+                    ";
 
-                            
-                            if($edited_by != "0"){
-                              $last_user_name = get_name($edited_by);
-                            }else if($added_by != "0"){
-                              $last_user_name = get_name($added_by);
-                            }else{
-                              $last_user_name = "";
-                            }
+                    $result_pricing_category = mysqli_query($conn, $query_pricing_category);
 
-                            if ($row_pricing_category['status'] == '0') {
-                                $status = "<a href='#' class='changeStatus' data-no='$no' data-id='$id' data-status='$db_status'><div id='status-alert$no' class='alert alert-danger bg-danger text-white border-0 text-center py-1 px-2 my-0' style='border-radius: 5%;' role='alert'>Inactive</div></a>";
-                            } else {
-                                $status = "<a href='#' class='changeStatus' data-no='$no' data-id='$id' data-status='$db_status'><div id='status-alert$no' class='alert alert-success bg-success text-white border-0 text-center py-1 px-2 my-0' style='border-radius: 5%;' role='alert'>Active</div></a>";
-                            }
-                        ?>
-                        <tr id="product-row-<?= $no ?>" 
-                            data-category="<?=$row_pricing_category['product_category_id']?>"
-                            data-pricing="<?=$row_pricing_category['customer_pricing_id']?>"
-                        >
-                            <td><span class="product<?= $no ?> <?php if ($row_pricing_category['status'] == '0') { echo 'emphasize-strike'; } ?>"><?= getCustomerPricingName($customer_pricing_id) ?></span></td>
-                            <td><span class="product<?= $no ?> <?php if ($row_pricing_category['status'] == '0') { echo 'emphasize-strike'; } ?>"><?= getProductCategoryName($product_category_id) ?></span></td>
-                            <td><?= $percentage ?></td>
+                    $current_category_id = null;
+
+                    while ($row = mysqli_fetch_array($result_pricing_category, MYSQLI_ASSOC)) {
+                        $id = $row['product_category_id'];
+                        $percentage = $row['percentage'];
+                        $status_val = $row['status'];
+
+                        $status = ($status_val == 1)
+                            ? "<a href='#' class='changeStatus' data-no='$no' data-id='$id' data-status='$status_val'>
+                                    <div id='status-alert$no' class='alert alert-success bg-success text-white border-0 text-center py-1 px-2 my-0' style='border-radius:5%' role='alert'>Active</div>
+                            </a>"
+                            : "<a href='#' class='changeStatus' data-no='$no' data-id='$id' data-status='$status_val'>
+                                    <div id='status-alert$no' class='alert alert-danger bg-danger text-white border-0 text-center py-1 px-2 my-0' style='border-radius:5%' role='alert'>Inactive</div>
+                            </a>";
+                    ?>
+                        <tr id="product-row-<?= $no ?>" data-category="<?= $id ?>">
+                            <td><span class="<?php if ($status_val == 0) echo 'emphasize-strike'; ?>"><?= $row['product_category'] ?></span></td>
                             <td><?= $status ?></td>
-                            <td class="text-center " id="action-button-<?= $no ?>">
-                              <div class="d-flex align-items-center justify-content-center">
-                                <?php                                                    
-                                if ($permission === 'edit') {
-                                ?>
-
-                                  <?php if ($row_pricing_category['status'] == '0') { ?>
-                                      <a href="#" title="Archive" class="py-1 text-dark hidePricingCategory text-decoration-none" data-id="<?= $id ?>" data-row="<?= $no ?>">
-                                        <i class="ti ti-trash text-danger fs-7"></i>
-                                      </a>
-                                  <?php } else { ?>
-                                      <a href="#" title="Edit" id="addModalBtn" class="d-flex align-items-center justify-content-center text-decoration-none" data-id="<?= $id ?>" data-type="edit">
-                                        <i class="ti ti-pencil fs-7"></i>
-                                      </a>
-                                  <?php } ?>
-                                <?php                                                    
-                                }
-                                ?>
-                              </div>
+                            <td class="text-center">
+                                <div class="d-flex align-items-center justify-content-center">
+                                <?php if ($permission === 'edit') { 
+                                    if ($status_val == 0) { ?>
+                                        <a href="#" title="Archive" class="py-1 text-dark hidePricingCategory text-decoration-none" data-id="<?= $id ?>" data-row="<?= $no ?>">
+                                            <i class="ti ti-trash text-danger fs-7"></i>
+                                        </a>
+                                    <?php } else { ?>
+                                        <a href="#" title="Edit" 
+                                        id="addModalBtn" 
+                                        class="d-flex align-items-center justify-content-center text-decoration-none" 
+                                        data-id="<?= $id ?>" 
+                                        data-type="edit">
+                                            <i class="ti ti-pencil fs-7"></i>
+                                        </a>
+                                    <?php } 
+                                } ?>
+                                </div>
                             </td>
                         </tr>
-                        <?php
+                    <?php
                         $no++;
-                        }
-                        ?>
+                    }
+                    ?>
                         </tbody>
-                        <script>
-                        $(document).ready(function() {
-                            // Use event delegation for dynamically generated elements
-                            $(document).on('click', '.changeStatus', function(event) {
-                                event.preventDefault(); 
-                                var id = $(this).data('id');
-                                var status = $(this).data('status');
-                                var no = $(this).data('no');
-                                $.ajax({
-                                    url: 'pages/pricing_category_ajax.php',
-                                    type: 'POST',
-                                    data: {
-                                        id: id,
-                                        status: status,
-                                        action: 'change_status'
-                                    },
-                                    success: function(response) {
-                                        if (response == 'success') {
-                                            if (status == 1) {
-                                                $('#status-alert' + no).removeClass().addClass('alert alert-danger bg-danger text-white border-0 text-center py-1 px-2 my-0').text('Inactive');
-                                                $(".changeStatus[data-no='" + no + "']").data('status', "0");
-                                                $('.product' + no).addClass('emphasize-strike'); // Add emphasize-strike class
-                                                $('#action-button-' + no).html('<a href="#" title="Archive" class="btn btn-light py-1 text-dark hidePricingCategory" data-id="' + id + '" data-row="' + no + '" style="border-radius: 10%;">Archive</a>');
-                                                $('#toggleActive').trigger('change');
-                                              } else {
-                                                $('#status-alert' + no).removeClass().addClass('alert alert-success bg-success text-white border-0 text-center py-1 px-2 my-0').text('Active');
-                                                $(".changeStatus[data-no='" + no + "']").data('status', "1");
-                                                $('.product' + no).removeClass('emphasize-strike'); // Remove emphasize-strike class
-                                                $('#action-button-' + no).html('<a href="?page=pricing_category&id=' + id + '" title="Edit" class="btn btn-primary py-1" style="border-radius: 10%;">Edit</a>');
-                                                $('#toggleActive').trigger('change');
-                                              }
-                                        } else {
-                                            alert('Failed to change status.');
-                                        }
-                                    },
-                                    error: function(jqXHR, textStatus, errorThrown) {
-                                        alert('Error: ' + textStatus + ' - ' + errorThrown);
-                                    }
-                                });
-                            });
-
-                            $(document).on('click', '.hidePricingCategory', function(event) {
-                                event.preventDefault();
-                                var id = $(this).data('id');
-                                var rowId = $(this).data('row');
-                                $.ajax({
-                                    url: 'pages/pricing_category_ajax.php',
-                                    type: 'POST',
-                                    data: {
-                                        id: id,
-                                        action: 'hide_pricing_category'
-                                    },
-                                    success: function(response) {
-                                        if (response == 'success') {
-                                            $('#product-row-' + rowId).remove(); // Remove the row from the DOM
-                                        } else {
-                                            alert('Failed to hide category.');
-                                        }
-                                    },
-                                    error: function(jqXHR, textStatus, errorThrown) {
-                                        alert('Error: ' + textStatus + ' - ' + errorThrown);
-                                    }
-                                });
-                            });
-                        });
-                        </script>
                     </table>
+
+
                   </div>
                 </div>
               </div>
@@ -328,7 +240,7 @@ $permission = $_SESSION['permission'];
 </div>
 
 <div class="modal fade" id="addModal" tabindex="-1" aria-labelledby="addModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-xl">
+    <div class="modal-dialog modal-lg">
         <div class="modal-content">
             <div class="modal-header d-flex align-items-center">
                 <h4 class="modal-title" id="add-header">
@@ -385,6 +297,68 @@ $permission = $_SESSION['permission'];
 
     $('#toggleActive').trigger('change');
 
+    $(document).on('click', '.changeStatus', function(event) {
+        event.preventDefault(); 
+        var id = $(this).data('id');
+        var status = $(this).data('status');
+        var no = $(this).data('no');
+        $.ajax({
+            url: 'pages/pricing_category_ajax.php',
+            type: 'POST',
+            data: {
+                id: id,
+                status: status,
+                action: 'change_status'
+            },
+            success: function(response) {
+                if (response == 'success') {
+                    if (status == 1) {
+                        $('#status-alert' + no).removeClass().addClass('alert alert-danger bg-danger text-white border-0 text-center py-1 px-2 my-0').text('Inactive');
+                        $(".changeStatus[data-no='" + no + "']").data('status', "0");
+                        $('.product' + no).addClass('emphasize-strike');
+                        $('#action-button-' + no).html('<a href="#" title="Archive" class="btn btn-light py-1 text-dark hidePricingCategory" data-id="' + id + '" data-row="' + no + '" style="border-radius: 10%;">Archive</a>');
+                        $('#toggleActive').trigger('change');
+                        } else {
+                        $('#status-alert' + no).removeClass().addClass('alert alert-success bg-success text-white border-0 text-center py-1 px-2 my-0').text('Active');
+                        $(".changeStatus[data-no='" + no + "']").data('status', "1");
+                        $('.product' + no).removeClass('emphasize-strike');
+                        $('#action-button-' + no).html('<a href="?page=pricing_category&id=' + id + '" title="Edit" class="btn btn-primary py-1" style="border-radius: 10%;">Edit</a>');
+                        $('#toggleActive').trigger('change');
+                        }
+                } else {
+                    alert('Failed to change status.');
+                }
+            },
+            error: function(jqXHR, textStatus, errorThrown) {
+                alert('Error: ' + textStatus + ' - ' + errorThrown);
+            }
+        });
+    });
+
+    $(document).on('click', '.hidePricingCategory', function(event) {
+        event.preventDefault();
+        var id = $(this).data('id');
+        var rowId = $(this).data('row');
+        $.ajax({
+            url: 'pages/pricing_category_ajax.php',
+            type: 'POST',
+            data: {
+                id: id,
+                action: 'hide_pricing_category'
+            },
+            success: function(response) {
+                if (response == 'success') {
+                    $('#product-row-' + rowId).remove();
+                } else {
+                    alert('Failed to hide category.');
+                }
+            },
+            error: function(jqXHR, textStatus, errorThrown) {
+                alert('Error: ' + textStatus + ' - ' + errorThrown);
+            }
+        });
+    });
+
     function getCookie(name) {
         var nameEQ = name + "=";
         var ca = document.cookie.split(';');
@@ -429,25 +403,15 @@ $permission = $_SESSION['permission'];
             contentType: false,
             success: function(response) {
               $('.modal').modal("hide");
-              if (response.trim() === "success_update") {
+              if (response.trim() === "success") {
                   $('#responseHeader').text("Success");
-                  $('#responseMsg').text('Pricing category updated successfully.');
+                  $('#responseMsg').text('Pricing category successfully saved.');
                   $('#responseHeaderContainer').removeClass("bg-danger");
                   $('#responseHeaderContainer').addClass("bg-success");
                   $('#response-modal').modal("show");
 
                   $('#response-modal').on('hide.bs.modal', function () {
-                    window.location.href = "?page=pricing_category";
-                  });
-              } else if (response.trim() === "success_add") {
-                  $('#responseHeader').text("Success");
-                  $('#responseMsg').text('New pricing category added successfully.');
-                  $('#responseHeaderContainer').removeClass("bg-danger");
-                  $('#responseHeaderContainer').addClass("bg-success");
-                  $('#response-modal').modal("show");
-
-                  $('#response-modal').on('hide.bs.modal', function () {
-                      location.reload();
+                    location.reload();
                   });
               } else {
                   $('#responseHeader').text("Failed");

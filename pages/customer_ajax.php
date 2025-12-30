@@ -575,12 +575,25 @@ if(isset($_REQUEST['action'])) {
 
                     switch ($dbCol) {
                         case 'tax_status':
-                            $value = getIdsFromColumnValues("customer_tax", "tax_status_desc", $value);
-                            $value = trim($value, '[]');
+                            if (!is_numeric($value)) {
+                                $value = getIdsFromColumnValues(
+                                    "customer_tax",
+                                    "tax_status_desc",
+                                    $value
+                                );
+                                $value = trim((string)$value, '[]');
+                            }
                             break;
+
                         case 'customer_pricing':
-                            $value = getIdsFromColumnValues("customer_pricing", "pricing_name", $value);
-                            $value = trim($value, '[]');
+                            if (!is_numeric($value)) {
+                                $value = getIdsFromColumnValues(
+                                    "customer_pricing",
+                                    "pricing_name",
+                                    $value
+                                );
+                                $value = trim((string)$value, '[]');
+                            }
                             break;
                     }
 
