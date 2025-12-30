@@ -13,53 +13,66 @@ use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 
 $includedColumns = [
-    'customer_id'                => 'Customer ID #',
-    'customer_notes'             => 'Customer Notes',
-    'customer_first_name'        => 'First Name',
-    'customer_last_name'         => 'Last Name',
-    'customer_business_name'     => 'Name',
-    'customer_business_website'  => 'Website',
-    'customer_type_id'           => 'Type of Tax Exempt Customer',
-    'contact_email'              => 'Primary Email Address',
-    'contact_phone'              => 'Primary Phone #',
-    'primary_contact'            => 'Primary Contact Name',
-    'contact_fax'                => 'Primary Fax #',
-    'address'                    => 'Billing Address',
-    'city'                       => 'City',
-    'state'                      => 'State',
-    'zip'                        => 'Zip',
-    'different_ship_address'     => 'Shipping Address different than Billing Address?',
-    'ship_address'               => 'Shipping Address',
-    'ship_city'                  => 'Shipping City',
-    'ship_state'                 => 'Shipping State',
-    'ship_zip'                   => 'Shipping Zip',
-    'secondary_contact_name'     => 'Secondary Contact Name',
-    'secondary_contact_phone'    => 'Secondary Phone #',
-    'secondary_contact_email'    => 'Secondary Email Address',
-    'tax_status'                 => 'Tax Status',
-    'tax_exempt_number'          => 'Tax Exemption #',
-    'is_corporate_parent'        => 'Corporate Parent',
-    'corpo_parent_name'          => 'Corporate Parent Name',
-    'corpo_phone_no'             => 'Corporate Phone',
-    'corpo_address'              => 'Corporate Address',
-    'corpo_city'                 => 'Corporate City',
-    'corpo_state'                => 'Corporate State',
-    'corpo_zip'                  => 'Corporate Zip',
-    'is_bill_corpo_address'      => 'Bill to Corporate Address',
-    'is_charge_net'              => 'Charge Net 30',
-    'charge_net_30'              => 'Charge Net 30',
-    'credit_limit'               => 'Charge Net 30 Limit',
-    'loyalty'                    => 'Loyalty',
-    'customer_pricing'           => 'Customer Pricing',
-    'is_approved'                => 'Portal Access',
-    'payment_pickup'             => 'Pay at Pick-Up',
-    'payment_delivery'           => 'Pay at Delivery',
-    'payment_cash'               => 'Cash',
-    'payment_check'              => 'Check',
-    'payment_card'               => 'Credit-Debit',
-    'is_contractor'              => 'Is Customer a Contractor',
-    'username'                   => 'Portal Username',
-    'password'                   => 'Portal Password'
+    'customer_id'             => 'Customer ID #',
+
+    'customer_first_name'     => 'First Name',
+    'customer_last_name'      => 'Last Name',
+    'customer_business_name'  => 'Business/Customer Name',
+
+    'contact_phone'           => 'Phone Number',
+    'contact_email'           => 'Email Address',
+    'contact_fax'             => 'Fax Number',
+    'customer_business_website'=> 'Website',
+
+    'primary_contact'         => 'Primary Contact Name',
+    'contact_phone'           => 'Primary Contact Phone #',
+    'contact_email'           => 'Primary Contact Email',
+
+    'secondary_contact_name'  => 'Secondary Contact Name',
+    'secondary_contact_phone' => 'Secondary Contact Phone #',
+    'secondary_contact_email' => 'Secondary Contact Email',
+
+    'is_contractor'           => 'Is this Customer a Contractor?',
+
+    'is_corporate_parent'     => 'Add Corporate/Parent Company Information',
+    'corpo_parent_name'       => 'Corporate Name/Parent Company Name',
+    'corpo_phone_no'          => 'Primary Contact Phone',
+    'corpo_address'           => 'Address',
+    'corpo_city'              => 'City',
+    'corpo_state'             => 'State',
+    'corpo_zip'               => 'Zip Code',
+
+    'is_bill_corpo_address'   => 'Use Corporate/Parent Company Address for Billing address',
+    'address'                 => 'Billing Address',
+    'city'                    => 'City',
+    'state'                   => 'State',
+    'zip'                     => 'Zip Code',
+
+    'different_ship_address'  => 'Shipping Address different than Billing Address?',
+    'ship_address'            => 'Shipping Address',
+    'ship_city'               => 'City',
+    'ship_state'              => 'State',
+    'ship_zip'                => 'Zip Code',
+
+    'tax_status'              => 'Tax Status',
+    'tax_exempt_number'       => 'Tax Exemption #',
+    'customer_pricing'        => 'Customer Pricing',
+    'loyalty'                 => 'Loyalty Program',
+    'desired_invoice_preference' => 'Desired Invoice Preference',
+
+    'payment_pickup'          => 'Pay at Pick-Up',
+    'payment_delivery'        => 'Pay at Delivery',
+    'payment_cash'            => 'Cash',
+    'payment_check'           => 'Check',
+    'payment_card'            => 'Credit/Debit Card',
+    'is_charge_net'           => 'Charge Net 30',
+    'credit_limit'            => 'Charge Net 30 Limit',
+
+    'is_approved'             => 'Customer Portal Access',
+    'username'                => 'Portal Access Username',
+    'password'                => 'Portal Access Password',
+
+    'customer_notes'          => 'Customer Notes',
 ];
 
 $table = 'customer';
@@ -395,7 +408,7 @@ if(isset($_REQUEST['action'])) {
         $column_txt = implode(', ', array_keys($includedColumns));
 
         $sql = "
-            SELECT $column_txt
+            SELECT $column_txt, customer_type_id
             FROM $table
             WHERE hidden = '0'
             AND status = '1'
@@ -404,8 +417,12 @@ if(isset($_REQUEST['action'])) {
         ";
 
         $result = $conn->query($sql);
+        if (!$result) {
+            echo "Database error: " . $conn->error;
+            exit;
+        }
 
-        $spreadsheet = new Spreadsheet();
+        $spreadsheet = new \PhpOffice\PhpSpreadsheet\Spreadsheet();
         $spreadsheet->removeSheetByIndex(0);
 
         $customerTypeMap = [
@@ -420,8 +437,7 @@ if(isset($_REQUEST['action'])) {
         $columnHasData = [];
 
         while ($data = $result->fetch_assoc()) {
-
-            $customerTypeId = (int) $data['customer_type_id'];
+            $customerTypeId = (int)($data['customer_type_id'] ?? 0);
             if (!isset($customerTypeMap[$customerTypeId])) continue;
 
             $sheetName = sanitizeSheetTitle($customerTypeMap[$customerTypeId]);
@@ -456,7 +472,6 @@ if(isset($_REQUEST['action'])) {
             }
 
             $sheet = $sheets[$sheetName];
-
             $colIndex = 0;
             foreach ($includedColumns as $dbColumn => $displayName) {
                 $colLetter = indexToColumnLetter($colIndex);
@@ -469,6 +484,9 @@ if(isset($_REQUEST['action'])) {
                         $value = '';
                     }
                 }
+
+                if (strcasecmp($value, 'Yes') === 0) $value = 1;
+                elseif (strcasecmp($value, 'No') === 0) $value = 0;
 
                 if ($value !== '' && $value !== null) {
                     $columnHasData[$sheetName][$colLetter] = true;
@@ -494,21 +512,21 @@ if(isset($_REQUEST['action'])) {
                 }
             }
         }
+        if ($spreadsheet->getSheetCount() === 0) {
+            echo "No data to export.";
+            exit;
+        }
 
         $spreadsheet->setActiveSheetIndex(0);
         $name = strtoupper(str_replace('_', ' ', $table));
         $filename = "{$name}.xlsx";
 
-        $writer = new Xlsx($spreadsheet);
-        $writer->save($filename);
-
         header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
         header('Content-Disposition: attachment; filename="' . $filename . '"');
-        header('Content-Length: ' . filesize($filename));
         header('Cache-Control: max-age=0');
 
-        readfile($filename);
-        unlink($filename);
+        $writer = new \PhpOffice\PhpSpreadsheet\Writer\Xlsx($spreadsheet);
+        $writer->save('php://output');
         exit;
     }
 
