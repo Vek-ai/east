@@ -860,22 +860,39 @@ function getSettingAmtPerMile() {
     return $amount_per_mile;
 }
 
-function get_customer_name($customer_id){
+function get_customer_name($customer_id) {
     global $conn;
 
-    $query = "SELECT customer_first_name, customer_last_name, customer_business_name FROM customer WHERE customer_id = '$customer_id'";
+    $customer_id = intval($customer_id);
+
+    $query = "
+        SELECT 
+            customer_first_name,
+            customer_last_name,
+            customer_business_name,
+            customer_farm_name,
+            use_business,
+            use_farm
+        FROM customer
+        WHERE customer_id = '$customer_id'
+        LIMIT 1
+    ";
+
     $result = mysqli_query($conn, $query);
 
-    if ($row = mysqli_fetch_array($result)) {
-        $name = trim($row['customer_first_name'] . ' ' . $row['customer_last_name']);
-        $business = trim($row['customer_business_name']);
+    if ($row = mysqli_fetch_assoc($result)) {
 
-        if (!empty($name) && !empty($business)) {
-            return $name . ' (' . $business . ')';
-        } elseif (!empty($name)) {
+        if ($row['use_business'] == 1 && !empty($row['customer_business_name'])) {
+            return trim($row['customer_business_name']);
+        }
+
+        if ($row['use_farm'] == 1 && !empty($row['customer_farm_name'])) {
+            return trim($row['customer_farm_name']);
+        }
+
+        $name = trim($row['customer_first_name'] . ' ' . $row['customer_last_name']);
+        if (!empty($name)) {
             return $name;
-        } elseif (!empty($business)) {
-            return $business;
         }
     }
 

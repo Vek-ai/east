@@ -20,7 +20,7 @@ $includedColumns = [
     'customer_first_name'     => 'First Name',
     'customer_last_name'      => 'Last Name',
     'customer_business_name'  => 'Business/Customer Name',
-
+    'customer_farm_name'      => 'Farm Name',
     'contact_phone'           => 'Phone Number',
     'contact_email'           => 'Email Address',
     'contact_fax'             => 'Fax Number',
@@ -34,7 +34,9 @@ $includedColumns = [
     'secondary_contact_phone' => 'Secondary Contact Phone #',
     'secondary_contact_email' => 'Secondary Contact Email',
 
-    'is_contractor'           => 'Is this Customer a Contractor?',
+    'is_contractor'           => 'Use Business/Customer Name',
+    'use_business'            => 'Use Farm Name',
+    'use_farm'                => 'Is this Customer a Contractor?',
 
     'is_corporate_parent'     => 'Add Corporate/Parent Company Information',
     'corpo_parent_name'       => 'Corporate Name/Parent Company Name',
@@ -1243,9 +1245,14 @@ if(isset($_REQUEST['action'])) {
                 $actionHtml .= '<a href="javascript:void(0)" class="py-1 pe-1" id="depositModalBtn" data-id="' . $customer_id . '" style="border-radius:10%;" data-toggle="tooltip" data-placement="top" title="Add Customer Deposit"><iconify-icon icon="solar:hand-money-outline" class="text-success fs-6"></iconify-icon></a>';
             }
 
+            $businessName = trim($row['customer_farm_name']);
+            if ($businessName === '') {
+                $businessName = trim($row['customer_business_name']);
+            }
+
             $data[] = [
                 'name' => $row['customer_first_name'].' '.$row['customer_last_name'],
-                'business_name' => $row['customer_business_name'],
+                'business_name' => $businessName,
                 'phone_number' => $row['contact_phone'],
                 'status' => $statusHtml,
                 'action' => $actionHtml,

@@ -37,6 +37,7 @@ if(isset($_REQUEST['action'])) {
         $ship_zip = $row['ship_zip'] ?? '';
         $secondary_contact_name = $row['secondary_contact_name'] ?? '';
         $secondary_contact_phone = $row['secondary_contact_phone'] ?? '';
+        $secondary_contact_email = $row['secondary_contact_email'] ?? '';
         $tax_status = $row['tax_status'] ?? '';
         $tax_exempt_number = $row['tax_exempt_number'] ?? '';
         $customer_notes = $row['customer_notes'] ?? '';
