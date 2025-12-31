@@ -91,6 +91,7 @@ if(isset($_REQUEST['action'])) {
         $customer_first_name = mysqli_real_escape_string($conn, $_POST['customer_first_name'] ?? '');
         $customer_last_name = mysqli_real_escape_string($conn, $_POST['customer_last_name'] ?? '');
         $customer_business_name = mysqli_real_escape_string($conn, $_POST['customer_business_name'] ?? '');
+        $customer_farm_name = mysqli_real_escape_string($conn, $_POST['customer_farm_name'] ?? '');
         $customer_business_website = mysqli_real_escape_string($conn, $_POST['customer_business_website'] ?? '');
         $contact_email = mysqli_real_escape_string($conn, $_POST['contact_email'] ?? '');
         $contact_phone = mysqli_real_escape_string($conn, $_POST['contact_phone'] ?? '');
@@ -115,6 +116,8 @@ if(isset($_REQUEST['action'])) {
         $call_status = mysqli_real_escape_string($conn, $_POST['call_status'] ?? 0);
         $is_charge_net = mysqli_real_escape_string($conn, $_POST['is_charge_net'] ?? 0);
         $is_contractor = mysqli_real_escape_string($conn, $_POST['is_contractor'] ?? 0);
+        $use_business = mysqli_real_escape_string($conn, $_POST['use_business'] ?? 0);
+        $use_farm = mysqli_real_escape_string($conn, $_POST['use_farm'] ?? 0);
         $is_corporate_parent = mysqli_real_escape_string($conn, $_POST['is_corporate_parent'] ?? 0);
         $is_bill_corpo_address = mysqli_real_escape_string($conn, $_POST['is_bill_corpo_address'] ?? 0);
         $corpo_parent_name = mysqli_real_escape_string($conn, $_POST['corpo_parent_name'] ?? '');
@@ -198,6 +201,7 @@ if(isset($_REQUEST['action'])) {
                     customer_first_name = '$customer_first_name', 
                     customer_last_name = '$customer_last_name', 
                     customer_business_name = '$customer_business_name', 
+                    customer_farm_name = '$customer_farm_name',
                     customer_business_website = '$customer_business_website',
                     contact_email = '$contact_email', 
                     contact_phone = '$contact_phone', 
@@ -228,6 +232,8 @@ if(isset($_REQUEST['action'])) {
                     call_status = '$call_status',
                     is_charge_net = '$is_charge_net',
                     is_contractor = '$is_contractor',
+                    use_business = '$use_business',
+                    use_farm = '$use_farm',
                     is_corporate_parent = '$is_corporate_parent',
                     is_bill_corpo_address = '$is_bill_corpo_address',
                     corpo_parent_name = '$corpo_parent_name',
@@ -259,27 +265,27 @@ if(isset($_REQUEST['action'])) {
         } else {
             $insertQuery = "
             INSERT INTO customer (
-                customer_first_name, customer_last_name, customer_business_name, customer_business_website,
+                customer_first_name, customer_last_name, customer_business_name, customer_farm_name, customer_business_website,
                 contact_email, contact_phone, primary_contact, contact_fax,
                 address, city, state, zip, lat, lng,
                 different_ship_address, ship_address, ship_city, ship_state, ship_zip, ship_lat, ship_lng,
                 secondary_contact_name, secondary_contact_phone, secondary_contact_email,
                 ap_contact_name, ap_contact_email, ap_contact_phone,
                 tax_status, tax_exempt_number, customer_notes,
-                customer_type_id, call_status, is_charge_net, is_contractor, is_corporate_parent, is_bill_corpo_address,
+                customer_type_id, call_status, is_charge_net, is_contractor, use_business, use_farm, is_corporate_parent, is_bill_corpo_address,
                 corpo_parent_name, corpo_phone_no, corpo_address, corpo_city, corpo_state, corpo_zip, corpo_lat, corpo_lng,
                 charge_net_30, credit_limit, loyalty, desired_invoice_preference, customer_pricing, is_approved,
                 payment_pickup, payment_delivery, payment_cash, payment_check, payment_card, username,
                 created_at, updated_at
             ) VALUES (
-                '$customer_first_name', '$customer_last_name', '$customer_business_name', '$customer_business_website',
+                '$customer_first_name', '$customer_last_name', '$customer_business_name', '$customer_farm_name', '$customer_business_website',
                 '$contact_email', '$contact_phone', '$primary_contact', '$contact_fax',
                 '$address', '$city', '$state', '$zip', '$lat', '$lng',
                 '$different_ship_address', '$ship_address', '$ship_city', '$ship_state', '$ship_zip', '$ship_lat', '$ship_lng',
                 '$secondary_contact_name', '$secondary_contact_phone', '$secondary_contact_email',
                 '$ap_contact_name', '$ap_contact_email', '$ap_contact_phone',
                 '$tax_status', '$tax_exempt_number', '$customer_notes',
-                '$customer_type_id', '$call_status', '$is_charge_net', '$is_contractor', '$is_corporate_parent', '$is_bill_corpo_address',
+                '$customer_type_id', '$call_status', '$is_charge_net', '$is_contractor', '$use_business', '$use_farm', '$is_corporate_parent', '$is_bill_corpo_address',
                 '$corpo_parent_name', '$corpo_phone_no', '$corpo_address', '$corpo_city', '$corpo_state', '$corpo_zip', '$corpo_lat', '$corpo_lng',
                 '$charge_net_30', '$credit_limit', '$loyalty', '$desired_invoice_preference', '$customer_pricing', '$is_approved',
                 '$payment_pickup', '$payment_delivery', '$payment_cash', '$payment_check', '$payment_card', '$username',
@@ -1245,9 +1251,9 @@ if(isset($_REQUEST['action'])) {
                 $actionHtml .= '<a href="javascript:void(0)" class="py-1 pe-1" id="depositModalBtn" data-id="' . $customer_id . '" style="border-radius:10%;" data-toggle="tooltip" data-placement="top" title="Add Customer Deposit"><iconify-icon icon="solar:hand-money-outline" class="text-success fs-6"></iconify-icon></a>';
             }
 
-            $businessName = trim($row['customer_farm_name']);
+            $businessName = trim($row['customer_farm_name'] ?? '');
             if ($businessName === '') {
-                $businessName = trim($row['customer_business_name']);
+                $businessName = trim($row['customer_business_name'] ?? '');
             }
 
             $data[] = [
