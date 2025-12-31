@@ -811,21 +811,25 @@ if (mysqli_num_rows($result) > 0) {
     if (mysqli_num_rows($result_qr) > 0) {
         $row_qr = mysqli_fetch_assoc($result_qr);
 
-        $local_image_path = __DIR__ . '/delivery/deliveryqr/qrcode' . $row_qr['id'] . '.png';
+        $imageUrl = 'https://delivery.eastkentuckymetal.com/deliveryqr/qrcode' . $row_qr['id'] . '.png';
 
-        if (file_exists($local_image_path) && mime_content_type($local_image_path) === 'image/png') {
-            
+        $headers = @get_headers($imageUrl);
+
+        if ($headers && strpos($headers[0], '200') !== false) {
+
             $qr_max_height = $box_height - 1;
             $qr_width = $qr_max_height;
 
             $qr_x = $box2_x + ($box_width - $qr_width) / 2;
             $qr_y = $box_y + 6 + (($box_height - $qr_max_height) / 2);
 
-            $pdf->Image($local_image_path, $qr_x, $qr_y, $qr_width, $qr_max_height);
+            $pdf->Image($imageUrl, $qr_x, $qr_y, $qr_width, $qr_max_height);
+
         } else {
             $pdf->Cell($box_width, 6, 'QR image not found', 1, 1, 'C');
         }
     }
+
 
     $pdf->SetTitle('Receipt');
     $pdf->Output('Receipt.pdf', 'I');
