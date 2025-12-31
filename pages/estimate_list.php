@@ -725,7 +725,7 @@ function showCol($name) {
 
             if (confirm('Are you sure you want to edit this estimate?')) {
                 localStorage.setItem('editEstimateId', id);
-                window.open('cashier3/?editestimate=' + encodeURIComponent(id), '_blank');
+                window.open('cashier/?editestimate=' + encodeURIComponent(id), '_blank');
             }
         });
 

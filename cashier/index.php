@@ -5,6 +5,12 @@ if (!isset($_SESSION['userid'])) {
     header("Location: login.php?redirect=$redirect_url");
     exit();
 }
+define('APP_SECURE', true);
+include_once '../includes/dbconn.php';
+
+
+$user_id = $_SESSION['userid'];
+$page_key = !empty($_REQUEST['page']) ? $_REQUEST['page'] : 'cashier';
 ?>
 <!DOCTYPE html>
 <html lang="en" dir="ltr" data-bs-theme="dark" data-color-theme="Blue_Theme" data-layout="vertical">
@@ -24,19 +30,40 @@ if (!isset($_SESSION['userid'])) {
 
   <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
   <link rel="stylesheet" href="../assets/libs/datatables.net-bs5/css/dataTables.bootstrap5.min.css" />
+  <link rel="stylesheet" href="../assets/libs/bootstrap/dist/css/bootstrap-multiselect.css">
   <link rel="stylesheet" href="../assets/libs/select2/dist/css/select2.min.css">
   <link rel="stylesheet" href="../assets/libs/owl.carousel/dist/assets/owl.carousel.min.css">
   <link href="https://unpkg.com/dropzone@6.0.0-beta.1/dist/dropzone.css" rel="stylesheet" type="text/css" />
   <link rel="stylesheet" href="https://code.jquery.com/ui/1.13.1/themes/smoothness/jquery-ui.css">
   <link rel="stylesheet" href="https://cdn.datatables.net/responsive/2.4.1/css/responsive.dataTables.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
   
 
   <!-- Core Css -->
   <link rel="stylesheet" href="../assets/css/styles.css" />
   <link rel="stylesheet" href="css/cashier.css" />
 
+  <style>
+      .tooltip {
+          z-index: 9999999 !important;
+      }
 
-  
+      .tooltip-inner {
+          border: 1px solid #ced4da;
+          font-size: 0.875rem;
+          padding: 6px 10px;
+          border-radius: 0.25rem;
+          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+      }
+
+      .tooltip.bs-tooltip-top .tooltip-arrow::before,
+      .tooltip.bs-tooltip-bottom .tooltip-arrow::before,
+      .tooltip.bs-tooltip-start .tooltip-arrow::before,
+      .tooltip.bs-tooltip-end .tooltip-arrow::before {
+          background: #f8f9fa !important;
+          border-color: transparent !important;
+      }
+  </style>
 
   <title>East Kentucky Metal</title>
 
@@ -47,6 +74,28 @@ if (!isset($_SESSION['userid'])) {
   <div class="preloader">
     <img src="../assets/images/logos/logo-icon.svg" alt="loader" class="lds-ripple img-fluid" />
   </div>
+  <div class="modal fade" id="openingBalanceModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-md">
+      <div class="modal-content">
+        <form id="openingBalanceForm">
+          <div class="modal-header">
+            <h5 class="modal-title">Enter Opening Balance</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            <div class="mb-3">
+              <label for="opening_balance" class="form-label">Opening Balance</label>
+              <input type="number" class="form-control" id="opening_balance" name="opening_balance" required>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="submit" class="btn btn-primary">Save</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
   <div id="main-wrapper">
     <div class="page-wrapper">
       <!--  Header Start -->
@@ -64,6 +113,7 @@ if (!isset($_SESSION['userid'])) {
                     
                     <!-- Light Logo icon -->
                     <img src="../assets/images/logo.png" alt="homepage" class="light-logo" />
+                    <img src="../assets/images/logo.png" alt="homepage" class="dark-logo" />
                   </b>
                   <!--End Logo icon -->
                   <!-- Logo text -->
@@ -120,7 +170,6 @@ if (!isset($_SESSION['userid'])) {
                       </div>
                     </a>
                     <div class="dropdown-menu py-0 content-dd  dropdown-menu-animate-up overflow-hidden" aria-labelledby="drop2">
-
                       <div class="py-3 px-4 bg-primary">
                         <div class="mb-0 fs-6 fw-medium text-white">Notifications</div>
                         <div class="mb-0 fs-2 fw-medium text-white">You have 4 Notifications</div>
@@ -319,122 +368,17 @@ if (!isset($_SESSION['userid'])) {
                   </li>
                 </ul>
                 <ul class="navbar-nav gap-2 flex-row ms-auto align-items-center justify-content-center">
-                
-                  <li class="nav-item nav-icon-hover-bg rounded-circle">
-                    <a class="nav-link nav-icon-hover moon dark-layout" href="javascript:void(0)">
-                      <iconify-icon icon="solar:moon-line-duotone" class="moon"></iconify-icon>
-                    </a>
-                    <a class="nav-link nav-icon-hover sun light-layout" href="javascript:void(0)">
-                      <iconify-icon icon="solar:sun-2-line-duotone" class="sun"></iconify-icon>
-                    </a>
-                  </li>
 
                   <li class="nav-item hover-dd dropdown nav-icon-hover-bg rounded-circle d-none d-lg-block">
-                    <a class="nav-link nav-icon-hover waves-effect waves-dark" href="javascript:void(0)" id="drop2" aria-expanded="false">
-                      <iconify-icon icon="solar:bell-bing-line-duotone"></iconify-icon>
-                      <div class="notify">
-                        <span class="heartbit"></span>
-                        <span class="point"></span>
-                      </div>
+                    <a class="nav-link nav-icon-hover waves-effect waves-dark" href="/" aria-expanded="false">
+                      <iconify-icon icon="ic:round-home" class="home-icon iconify-lg"></iconify-icon>
                     </a>
-                    <div class="dropdown-menu py-0 content-dd  dropdown-menu-animate-up overflow-hidden dropdown-menu-end" aria-labelledby="drop2">
-
-                      <div class="py-3 px-4 bg-primary">
-                        <div class="mb-0 fs-6 fw-medium text-white">Notifications</div>
-                        <div class="mb-0 fs-2 fw-medium text-white">You have 4 Notifications</div>
-                      </div>
-                      <div class="message-body" data-simplebar>
-                        <a href="javascript:void(0)" class="p-3 d-flex align-items-center  dropdown-item gap-3   border-bottom">
-                          <span class="flex-shrink-0 bg-primary-subtle rounded-circle round-40 d-flex align-items-center justify-content-center fs-6 text-primary">
-                            <iconify-icon icon="solar:widget-3-line-duotone"></iconify-icon>
-                          </span>
-                          <div class="w-80">
-                            <div class="d-flex align-items-center justify-content-between">
-                              <h6 class="mb-1">Launch Admin</h6>
-                              <span class="fs-2 d-block text-muted ">9:30 AM</span>
-                            </div>
-                            <span class="fs-2 d-block text-truncate text-muted">Just see the my new admin!</span>
-                          </div>
-                        </a>
-                        <a href="javascript:void(0)" class="p-3 d-flex align-items-center dropdown-item gap-3  border-bottom">
-                          <span class="flex-shrink-0 bg-secondary-subtle rounded-circle round-40 d-flex align-items-center justify-content-center fs-6 text-secondary">
-                            <iconify-icon icon="solar:calendar-mark-line-duotone"></iconify-icon>
-                          </span>
-                          <div class="w-80">
-                            <div class="d-flex align-items-center justify-content-between">
-                              <h6 class="mb-1">Event today</h6>
-                              <span class="fs-2 d-block text-muted ">9:10 AM</span>
-                            </div>
-
-                            <span class="fs-2 d-block text-truncate text-muted">Just a reminder that you have event</span>
-                          </div>
-                        </a>
-                        <a href="javascript:void(0)" class="p-3 d-flex align-items-center dropdown-item gap-3  border-bottom">
-                          <span class="flex-shrink-0 bg-danger-subtle rounded-circle round-40 d-flex align-items-center justify-content-center fs-6 text-danger">
-                            <iconify-icon icon="solar:settings-minimalistic-line-duotone"></iconify-icon>
-                          </span>
-                          <div class="w-80">
-                            <div class="d-flex align-items-center justify-content-between">
-                              <h6 class="mb-1">Settings</h6>
-                              <span class="fs-2 d-block text-muted ">9:08 AM</span>
-                            </div>
-                            <span class="fs-2 d-block text-truncate text-muted">You can customize this template as you want</span>
-                          </div>
-                        </a>
-                        <a href="javascript:void(0)" class="p-3 d-flex align-items-center dropdown-item gap-3  border-bottom">
-                          <span class="flex-shrink-0 bg-warning-subtle rounded-circle round-40 d-flex align-items-center justify-content-center fs-6 text-warning">
-                            <iconify-icon icon="solar:link-circle-line-duotone"></iconify-icon>
-                          </span>
-                          <div class="w-80">
-                            <div class="d-flex align-items-center justify-content-between">
-                              <h6 class="mb-1">Luanch Admin</h6>
-                              <span class="fs-2 d-block text-muted ">9:30 AM</span>
-                            </div>
-                            <span class="fs-2 d-block text-truncate text-muted">Just see the my new admin!</span>
-                          </div>
-                        </a>
-                        <a href="javascript:void(0)" class="p-3 d-flex align-items-center dropdown-item gap-3  border-bottom">
-                          <span class="flex-shrink-0 bg-success-subtle rounded-circle round-40 d-flex align-items-center justify-content-center">
-                            <i data-feather="calendar" class="feather-sm fill-white text-success"></i>
-                          </span>
-                          <div class="w-80">
-                            <div class="d-flex align-items-center justify-content-between">
-                              <h6 class="mb-1">Event today</h6>
-                              <span class="fs-2 d-block text-muted ">9:10 AM</span>
-                            </div>
-                            <span class="fs-2 d-block text-truncate text-muted">Just a reminder that you have event</span>
-                          </div>
-                        </a>
-                        <a href="javascript:void(0)" class="p-3 d-flex align-items-center dropdown-item gap-3  border-bottom">
-                          <span class="flex-shrink-0 bg-info-subtle rounded-circle round-40 d-flex align-items-center justify-content-center">
-                            <i data-feather="settings" class="feather-sm fill-white text-info"></i>
-                          </span>
-                          <div class="w-80">
-                            <div class="d-flex align-items-center justify-content-between">
-                              <h6 class="mb-1">Settings</h6>
-                              <span class="fs-2 d-block text-muted ">9:08 AM</span>
-                            </div>
-                            <span class="fs-2 d-block text-truncate text-muted">You can customize this template as you want</span>
-                          </div>
-                        </a>
-                      </div>
-                      <div class="p-3">
-                        <a class="d-flex btn btn-primary  align-items-center justify-content-center gap-2" href="javascript:void(0);">
-                          <span>Check all Notifications</span>
-                          <iconify-icon icon="solar:alt-arrow-right-outline" class="iconify-sm"></iconify-icon>
-                        </a>
-                      </div>
-
-
-
-
-
-                    </div>
                   </li>
 
+                  <!-- 
                   <li class="nav-item hover-dd dropdown  nav-icon-hover-bg rounded-circle d-none d-lg-block">
                     <a class="nav-link nav-icon-hover" href="javascript:void(0)" id="drop2" aria-expanded="false">
-                      <iconify-icon icon="solar:inbox-line-line-duotone"></iconify-icon>
+                      <iconify-icon icon="solar:inbox-line-line-duotone" class="iconify-lg"></iconify-icon>
                       <div class="notify">
                         <span class="heartbit"></span>
                         <span class="point"></span>
@@ -535,15 +479,46 @@ if (!isset($_SESSION['userid'])) {
                       </div>
 
                     </div>
+                  </li> 
+                  -->
+
+                  <!-- 
+                  <li class="nav-item hover-dd dropdown nav-icon-hover-bg rounded-circle d-none d-lg-block">
+                    <a class="nav-link nav-icon-hover waves-effect waves-dark notificationsContainerIcon" href="javascript:void(0)" id="drop2" aria-expanded="false">
+                      <iconify-icon icon="solar:bell-bing-line-duotone" class="iconify-lg"></iconify-icon>
+                      <div class="notify">
+                        <span class="heartbit"></span>
+                        <span class="point"></span>
+                      </div>
+                    </a>
+                    <div class="dropdown-menu py-0 content-dd  dropdown-menu-animate-up overflow-hidden dropdown-menu-end" aria-labelledby="drop2">
+
+                      <div class="py-3 px-4 bg-primary">
+                        <div class="mb-0 fs-6 fw-medium text-white">Notifications</div>
+                        <div class="mb-0 fs-2 fw-medium text-white" id="notifCountLabel">You have 4 Notifications</div>
+                      </div>
+                      <div class="message-body" data-simplebar id="notificationsContainer" style="max-height: 300px; overflow-y: auto;">
+                      </div>
+                      <div class="p-3">
+                        <a class="d-flex btn btn-primary  align-items-center justify-content-center gap-2" href="?page=notifications">
+                          <span>Check all Notifications</span>
+                          <iconify-icon icon="solar:alt-arrow-right-outline" class="iconify-sm"></iconify-icon>
+                        </a>
+                      </div>
+                    </div>
+                  </li> 
+                  -->
+                
+                  <li class="nav-item nav-icon-hover-bg rounded-circle">
+                    <a class="nav-link nav-icon-hover moon dark-layout" href="javascript:void(0)">
+                      <iconify-icon icon="solar:moon-line-duotone" class="moon iconify-lg"></iconify-icon>
+                    </a>
+                    <a class="nav-link nav-icon-hover sun light-layout" href="javascript:void(0)">
+                      <iconify-icon icon="solar:sun-2-line-duotone" class="sun iconify-lg"></iconify-icon>
+                    </a>
                   </li>
 
-                  <!-- ------------------------------- -->
-                  <!-- end notification Dropdown -->
-                  <!-- ------------------------------- -->
-
-                  <!-- ------------------------------- -->
-                  <!-- start profile Dropdown -->
-                  <!-- ------------------------------- -->
+                  <!-- 
                   <li class="nav-item hover-dd dropdown">
                     <a class="nav-link nav-icon-hover" href="javascript:void(0)" id="drop2" aria-expanded="false">
                       <img src="../assets/images/profile/user-1.jpg" alt="user" class="profile-pic rounded-circle round-30" />
@@ -600,6 +575,11 @@ if (!isset($_SESSION['userid'])) {
                               </a>
                             </div>
                             <div class="h6 mb-0 dropdown-item py-8 px-3 rounded-2 link">
+                              <a href="?page=close_station" class=" d-flex  align-items-center  ">
+                                Close Station
+                              </a>
+                            </div>
+                            <div class="h6 mb-0 dropdown-item py-8 px-3 rounded-2 link">
                               <a href="logout.php" class=" d-flex  align-items-center ">
                                 Sign Out
                               </a>
@@ -609,7 +589,82 @@ if (!isset($_SESSION['userid'])) {
 
                       </div>
                     </div>
+                  </li> 
+                  -->
+
+                  
+                  <li class="nav-item hover-dd dropdown nav-icon-hover-bg rounded-circle d-none d-lg-block me-4">
+                    <a class="nav-link nav-icon-hover waves-effect waves-dark" href="javascript:void(0)" aria-expanded="false">
+                      <iconify-icon icon="ic:round-search" class="search-icon iconify-lg"></iconify-icon>
+                    </a>
+                    <div class="dropdown-menu py-0 content-dd  dropdown-menu-animate-up overflow-hidden dropdown-menu-end" aria-labelledby="drop2">
+
+                      <div class="py-3 px-4 bg-primary">
+                        <div class="mb-0 fs-6 fw-medium text-white">Search Customers</div>
+                      </div>
+                      <div class="p-3 d-flex align-items-center border-bottom">
+                        <div class="w-100">
+                          <div class="d-flex align-items-center justify-content-between">
+                            <input type="text" id="customer-search-input" class="form-control" placeholder="Search Customer Name">
+                          </div>
+                        </div>
+                      </div>
+                      <div id="customer-search-list"></div>
+                    </div>
+                  </li> 
+                 
+
+                  <li class="nav-item hover-dd dropdown nav-icon-hover-bg rounded-circle d-none d-lg-block">
+                      <a class="nav-link nav-icon-hover waves-effect waves-dark" href="javascript:void(0)" id="view_cart" aria-expanded="false">
+                        <iconify-icon icon="ic:round-shopping-cart" class="cart-icon iconify-lg"></iconify-icon>
+                        <div class="cart-number">
+                          <span id="cartQty" class="cart-quantity">
+                            <?php
+                              $totalQuantity = 0;
+                              if (!empty($_SESSION["cart"])) {
+                                foreach ($_SESSION["cart"] as $item) {
+                                  $totalQuantity += $item["quantity_cart"];
+                                }
+                              }
+                              echo $totalQuantity;
+                            ?>
+                          </span>
+                        </div>
+                      </a>
+
+                      <div class="dropdown-menu py-0 content-dd dropdown-menu-animate-up dropdown-menu-end" 
+                          aria-labelledby="drop2" style="width: 40vw; max-height: 50vh; overflow-y: auto; padding: 0; margin: 0;">
+                          <div class="py-3 px-4 bg-primary">
+                            <div class="d-flex align-items-center justify-content-between">
+                              <div class="mb-0 fs-6 fw-medium text-white">Cart Contents</div>
+                              <button type="button" class="btn btn-sm mb-2 me-2 " id="clear_cart" style="background-color: #dc3545; color: white;">
+                                  <i class="fa fa-trash fs-4 me-2"></i>
+                                  Clear Cart
+                              </button>
+                              <span id="cartTotal" class="mb-0 fs-6 fw-medium text-white"><?= "$" . number_format($_SESSION["grandtotal"] ?? 0, 2); ?></span>
+                            </div>
+                          </div>
+                          <div class="row bg-light text-secondary py-2 mx-0 text-center">
+                              <div class="col-1">Image</div>
+                              <div class="col-7">Description</div>
+                              <div class="col-2">Color</div>
+                              <div class="col-1">Qty</div>
+                              <div class="col-1"></div>
+                          </div>
+                          <div class="cart-body" data-simplebar>
+                              
+                          </div>
+                      </div>
                   </li>
+
+                  <!-- ------------------------------- -->
+                  <!-- end notification Dropdown -->
+                  <!-- ------------------------------- -->
+
+                  <!-- ------------------------------- -->
+                  <!-- start profile Dropdown -->
+                  <!-- ------------------------------- -->
+                  
 
 
                   <!-- ------------------------------- -->
@@ -833,9 +888,6 @@ if (!isset($_SESSION['userid'])) {
                     </span>
                   </a>
                 </div>
-
-
-
               </li>
 
               <li class="nav-item d-none d-lg-block search-box">
@@ -1297,9 +1349,40 @@ if (!isset($_SESSION['userid'])) {
       <div class="body-wrapper">
         <div class="container-fluid">
           <?php 
-            if (empty($_REQUEST['page'])) {include 'pages/cashier.php';}
-            if ($_REQUEST['page'] == "customer") {include 'pages/customer.php';}
-            if ($_REQUEST['page'] == "cashier2") {include 'pages/cashier2.php';}
+          $query = "
+              SELECT 
+                  p.id,
+                  p.file_name,
+                  CASE
+                      WHEN upa.permission IS NOT NULL THEN upa.permission
+                      ELSE app.permission
+                  END AS permission
+              FROM pages p
+              LEFT JOIN user_page_access upa
+                  ON upa.page_id = p.id
+                  AND upa.staff_id = '$user_id'
+                  AND upa.permission IN ('view', 'edit')
+              LEFT JOIN staff s
+                  ON s.staff_id = '$user_id'
+              LEFT JOIN access_profile_pages app
+                  ON app.page_id = p.id
+                  AND app.access_profile_id = s.access_profile_id
+                  AND app.permission IN ('view', 'edit')
+              WHERE p.url = '$page_key'
+                  AND p.category_id = '2'
+                  AND (
+                      upa.permission IS NOT NULL
+                      OR app.permission IS NOT NULL
+                  )
+              LIMIT 1
+          ";
+          $result = mysqli_query($conn, $query);
+          if ($row = mysqli_fetch_assoc($result)) {
+              $_SESSION['permission'] = $row['permission'];
+              include "pages/" . $row['file_name'];
+          } else {
+              include "not_authorized.php";
+          }
           ?>
         </div>
       </div>
@@ -1324,6 +1407,7 @@ if (!isset($_SESSION['userid'])) {
   <script src="../assets/js/theme/theme.js"></script>
   <script src="../assets/js/theme/app.min.js"></script>
   <script src="../assets/js/theme/feather.min.js"></script>
+  <script src="../assets/libs/bootstrap/dist/js/bootstrap-multiselect.min.js"></script>
 
   <!-- solar icons -->
   <script src="https://cdn.jsdelivr.net/npm/iconify-icon@1.0.8/dist/iconify-icon.min.js"></script>
@@ -1335,9 +1419,320 @@ if (!isset($_SESSION['userid'])) {
   <script src="../assets/libs/owl.carousel/dist/owl.carousel.min.js"></script>
   <script src="https://unpkg.com/dropzone@6.0.0-beta.1/dist/dropzone-min.js"></script>
   <script src="https://cdn.datatables.net/responsive/2.4.1/js/dataTables.responsive.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-easing/1.3/jquery.easing.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+  
   <script>
+  function handleTheme() {
+    function setThemeAttributes(theme, darkDisplay, lightDisplay, sunDisplay, moonDisplay) {
+      $("html").attr("data-bs-theme", theme);
+      const layoutElement = $(`#${theme}-layout`);
+      if (layoutElement.length) {
+        layoutElement.prop("checked", true);
+      }
+      $(`.${darkDisplay}`).hide();
+      $(`.${lightDisplay}`).css("display", "flex");
+      $(`.${sunDisplay}`).hide();
+      $(`.${moonDisplay}`).css("display", "flex");
+    }
+
+    const currentTheme = $("html").attr("data-bs-theme") || "dark";
+    setThemeAttributes(
+      currentTheme,
+      currentTheme === "dark" ? "dark-logo" : "light-logo",
+      currentTheme === "dark" ? "light-logo" : "dark-logo",
+      currentTheme === "dark" ? "moon" : "sun",
+      currentTheme === "dark" ? "sun" : "moon"
+    );
+
+    $(".dark-layout").on("click", function () {
+      setThemeAttributes("dark", "dark-logo", "light-logo", "moon", "sun");
+    });
+
+    $(".light-layout").on("click", function () {
+      setThemeAttributes("light", "light-logo", "dark-logo", "sun", "moon");
+    });
+  }
+
+  handleTheme();
+
+
+  function loadCartItemsHeader() {
+      $.ajax({
+          url: 'pages/index_ajax.php',
+          type: 'GET',
+          data: { fetch_cart: 'fetch_cart' },
+          dataType: 'json',
+          success: function(response) {
+              if (response.cart_items && Array.isArray(response.cart_items)) {
+                  $('.cart-body').empty();
+                  response.cart_items.forEach(function(item) {
+                      const itemRow = `
+                          <div class="row align-items-center text-center py-2 border-bottom mx-0">
+                              <div class="col-1 text-center">
+                                  <span class="d-flex justify-content-center align-items-center bg-primary-subtle rounded-circle text-primary" 
+                                      style="width: 50px; height: 50px;">
+                                      <img src="${item.img_src}" alt="Item Image" style="width: 100%; height: 100%; object-fit: cover;">
+                                  </span>
+                              </div>
+                              <div class="col-7">
+                                  <h6 class="mb-1">${item.item_name}</h6>
+                              </div>
+                              <div class="col-2">
+                                  <span class="rounded-circle d-inline-block" style="background-color: ${item.color_hex}; width: 20px; height: 20px;"></span>
+                              </div>
+                              <div class="col-1">
+                                  <h6 class="mb-1">${item.quantity}</h6>
+                              </div>
+                              <div class="col-1">
+                                  <button class="btn btn-sm" type="button" data-line="${item.line}" data-id="${item.product_id}" onClick="delete_item(this)">
+                                      <i class="fa fa-trash"></i>
+                                  </button>
+                              </div>
+                          </div>
+                      `;
+                      $('.cart-body').append(itemRow);
+                  });
+                  $("#cartQty").load(location.href + " #cartQty");
+                  $("#cartTotal").load(location.href + " #cartTotal");
+              } else {
+                  console.error('Invalid data format: cart_items is not an array.');
+              }
+          },
+          error: function(xhr, status, error) {
+              console.error('Error fetching cart items:', error);
+          }
+    });
+
+  }
+
+  function checkOpeningBalance() {
+      $.ajax({
+          url: 'pages/index_ajax.php',
+          type: 'POST',
+          data: { fetch_opening_bal: 'fetch_opening_bal' },
+          dataType: 'json',
+          success: function (res) {
+              let amount = parseFloat(res.opening_balance || 0).toLocaleString('en-PH', {
+                  minimumFractionDigits: 2,
+                  maximumFractionDigits: 2
+              });
+
+              $('#opening-balance-display').text(amount);
+
+              if (!res.exists) {
+                  $('#openingBalanceModal').modal({
+                      backdrop: 'static',
+                      keyboard: false
+                  }).modal('show');
+              }
+          }
+      });
+  }
+
   $(document).ready(function() {
-    $(".phone-inputmask").inputmask("(999) 999-9999")
+    $(document).on('mouseenter', '[title]', function () {
+        const $el = $(this);
+
+        if ($el.closest('.select2-container').length > 0) return;
+
+        if (!$el.data('bs.tooltip')) {
+            $el.tooltip({
+                trigger: 'hover',
+                placement: 'top'
+            }).tooltip('show');
+        }
+    });
+
+    $(document).on('mouseleave', '[title]', function () {
+        const $el = $(this);
+
+        if ($el.closest('.select2-container').length > 0) return;
+
+        if ($el.data('bs.tooltip')) {
+            $el.tooltip('dispose');
+        }
+    });
+    
+    loadCartItemsHeader();
+
+    $(".phone-inputmask").inputmask("(999) 999-9999");
+
+    $('#customer-search-input').on('input', function() {
+        let customerName = $(this).val();
+        console.log(customerName);
+        if (customerName.length > 0) {
+            $.ajax({
+                url: 'pages/index_ajax.php',
+                type: 'POST',
+                data: { 
+                  customer_name: customerName,
+                  search_customer: 'search_customer'
+                },
+                success: function(response) {
+                    $('#customer-search-list').html(response);
+                },
+                error: function(jqXHR, textStatus, errorThrown) {
+                    console.log('Response Text: ' + jqXHR.responseText);
+                    $('#customer-search-list').html('<p class="list-group-item text-danger text-center">Error fetching results</p>');
+                }
+            });
+        } else {
+            $('#customer-search-list').empty();
+        }
+    });
+
+    let notificationCooldown = false;
+
+    function fetchNotifications() {
+      if (notificationCooldown) return;
+
+      $.ajax({
+        url: 'pages/index_ajax.php',
+        type: 'POST',
+        data: { 
+          fetch_notifications: 'fetch_notifications' 
+        },
+        success: function (response) {
+          try {
+            const data = JSON.parse(response);
+            $('#notifCountLabel').text(`You have ${data.count} Notifications`);
+            $('#notificationsContainer').html(data.html);
+            notificationCooldown = true;
+
+            setTimeout(() => {
+              notificationCooldown = false;
+            }, 60000);
+          } catch (e) {
+            console.error('Invalid JSON response:', response);
+            $('#notificationsContainer').html('<div class="p-3 text-center text-danger">Invalid server response.</div>');
+          }
+        },
+        error: function () {
+          $('#notificationsContainer').html('<div class="p-3 text-center text-danger">Error loading notifications.</div>');
+        }
+      });
+    }
+
+    $(document).on('click', '.notificationsContainerIcon', function () {
+      fetchNotifications();
+    });
+
+    $(document).on('click', '.notification-link', function (e) {
+        e.preventDefault();
+
+        const notifId = $(this).data('id');
+        const targetUrl = $(this).data('url');
+
+        $.ajax({
+            url: 'pages/index_ajax.php',
+            method: 'POST',
+            data: { 
+              notification_id: notifId,
+              read_notification: "read_notification"
+            },
+            success: function () {
+                window.location.href = targetUrl;
+            },
+            error: function (xhr, status, error) {
+                alert('An error occurred while marking the notification as read. See console for details.');
+                console.error('AJAX Error:', {
+                    status: status,
+                    error: error,
+                    response: xhr.responseText
+                });
+            }
+
+        });
+    });
+
+    fetchNotifications();
+
+    checkOpeningBalance();
+
+    $('#openingBalanceForm').on('submit', function (e) {
+        e.preventDefault();
+
+        const bal = $('#opening_balance').val().trim();
+        if (bal === '') {
+            alert('Please enter opening balance');
+            return;
+        }
+
+        $.ajax({
+            url: 'url/pages/index_ajax.php',
+            type: 'POST',
+            data: {
+                action: 'save_opening_bal',
+                opening_balance: bal
+            },
+            success: function () {
+                $('#openingBalanceModal').modal('hide');
+                location.reload();
+            }
+        });
+    });
+
+    $('#openingBalanceForm').on('submit', function (e) {
+        e.preventDefault();
+        const opening_balance = $('#opening_balance').val().trim();
+
+        if (opening_balance == '') {
+            alert('Please enter a valid opening balance.');
+            return;
+        }
+
+        $.ajax({
+            url: 'pages/index_ajax.php',
+            type: 'POST',
+            data: {
+                save_opening_bal: true,
+                opening_balance: opening_balance
+            },
+            dataType: 'json',
+            success: function (res) {
+                if (res.status === 'success') {
+                    $('#openingBalanceModal').modal('hide');
+                    location.reload();
+                } else {
+                    alert(res.message);
+                }
+            }
+        });
+    });
+
+    $('#cashOutflowForm').on('submit', function(e) {
+      e.preventDefault();
+
+      var form = document.getElementById('cashOutflowForm');
+      var formData = new FormData(form);
+      formData.append('record_cash_outflow', 'record_cash_outflow');
+
+      $.ajax({
+          url: 'pages/index_ajax.php',
+          type: 'POST',
+          data: formData,
+          contentType: false,
+          processData: false,
+          dataType: 'json',
+          success: function(res) {
+            console.log(res);
+              if (res.success) {
+                  alert('Cash outflow recorded successfully!');
+                  form.reset();
+                  $('#cashOutflowDropdown').dropdown('hide');
+              } else {
+                  alert('Failed!');
+                  console.log('Error: ' + res.message);
+              }
+          },
+          error: function(xhr, status, error) {
+              console.error('AJAX Error:', status, error);
+              console.log('Raw response:', xhr.responseText);
+          }
+    });
+  });
+
   });
   </script>
 </body>

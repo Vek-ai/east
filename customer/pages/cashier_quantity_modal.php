@@ -83,34 +83,34 @@ if(isset($_POST['fetch_prompt_quantity'])){
 
                 switch ($highestProfile) {
                     case 14: // low-rib
-                        include "../../cashier3/pages/panel_layouts/low_rib.php";
+                        include "../../cashier/pages/panel_layouts/low_rib.php";
                         break;
                     case 15: // hi-rib
-                        include "../../cashier3/pages/panel_layouts/hi_rib.php";
+                        include "../../cashier/pages/panel_layouts/hi_rib.php";
                         break;
                     case 16: // corrugated
-                        include "../../cashier3/pages/panel_layouts/corrugated.php";
+                        include "../../cashier/pages/panel_layouts/corrugated.php";
                         break;
                     case 17: // 5v
-                        include "../../cashier3/pages/panel_layouts/5v.php";
+                        include "../../cashier/pages/panel_layouts/5v.php";
                         break;
                     case 18: // standing_seam
-                        include "../../cashier3/pages/panel_layouts/standing_seam.php";
+                        include "../../cashier/pages/panel_layouts/standing_seam.php";
                         break;
                     case 19: // snap_lock
-                        include "../../cashier3/pages/panel_layouts/snap_lock.php";
+                        include "../../cashier/pages/panel_layouts/snap_lock.php";
                         break;
                     case 20: // mechanical_seam
-                        include "../../cashier3/pages/panel_layouts/mechanical_seam.php";
+                        include "../../cashier/pages/panel_layouts/mechanical_seam.php";
                         break;
                     case 21: // board_batten
-                        include "../../cashier3/pages/panel_layouts/board_batten.php";
+                        include "../../cashier/pages/panel_layouts/board_batten.php";
                         break;
                     case 41: // flush_wall
-                        include "../../cashier3/pages/panel_layouts/flush_wall.php";
+                        include "../../cashier/pages/panel_layouts/flush_wall.php";
                         break;
                     case 42: // plank panel
-                        include "../../cashier3/pages/panel_layouts/plank_panel.php";
+                        include "../../cashier/pages/panel_layouts/plank_panel.php";
                         break;
                     default:
                         echo 'Profile '. $highestProfile .'<h5 class="text-center text-danger pt-3 fs-5 fw-bold">Product Profile is not set.</h5>';

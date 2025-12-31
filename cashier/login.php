@@ -1,36 +1,43 @@
 <?php
 session_start();
-
 include "../includes/dbconn.php";
+include "../includes/functions.php";
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-    $username = $_POST['username'];
-    $password = $_POST['password'];
-    $redirect = isset($_REQUEST['redirect']) ? $_REQUEST['redirect'] : 'index.php';
-    $username = $conn->real_escape_string($username);
 
-    // SQL query to fetch user
-    $sql = "SELECT staff_id, password, role FROM staff WHERE username = '$username'";
-    $result = $conn->query($sql);
+    $username = trim($_POST['username']);
+    $password = trim($_POST['password']);
+    $station  = $_POST['station'] ?? '';
 
-    if ($result->num_rows > 0) {
-        // Fetch the result
-        $row = $result->fetch_assoc();
-        $db_password = $row['password'];
-        $userid = $row['staff_id'];
-
-        // Verify the password
-        if ($db_password == $password) {
-            $_SESSION['userid'] = $staff_id;
-            setcookie("userid", $staff_id, time() + (86400 * 30), "/");
-
-            header("Location: $redirect");
-            exit();
-        } else {
-            $error = 'Invalid password.';
-        }
+    if (empty($username) || empty($password)) {
+        $error = 'Please fill in all required fields.';
     } else {
-        $error = 'Invalid username or password.';
+        $redirect = !empty($_REQUEST['redirect']) ? urldecode($_REQUEST['redirect']) : 'index.php';
+
+        $username = $conn->real_escape_string($username);
+        $sql = "SELECT staff_id, password, role FROM staff WHERE username = '$username'";
+        $result = $conn->query($sql);
+
+        if ($result && $result->num_rows > 0) {
+            $row = $result->fetch_assoc();
+            $db_password = $row['password'];
+            $staff_id = $row['staff_id'];
+
+            if ($db_password === $password) {
+                $_SESSION['userid'] = $staff_id;
+                $_SESSION['station'] = $station;
+                $_SESSION['fullname'] = get_staff_name($staff_id);
+
+                setcookie("userid", $staff_id, time() + (86400 * 30), "/");
+
+                header("Location: $redirect");
+                exit();
+            } else {
+                $error = 'Invalid password.';
+            }
+        } else {
+            $error = 'Invalid username or password.';
+        }
     }
 }
 ?>
@@ -81,6 +88,24 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                     <label for="exampleInputPassword1" class="form-label">Password</label>
                     <input type="password" name="password" class="form-control" id="exampleInputPassword1" required>
                   </div>
+                  <!-- <div class="mb-4">
+                    <label for="stationSelect" class="form-label">Station</label>
+                    <select name="station" class="form-control" id="stationSelect" required>
+                        <option value="" hidden>--Select Station--</option>
+                        <?php
+                        $query = "SELECT * FROM station WHERE status = 1 AND hidden = 0";
+                        $result = mysqli_query($conn, $query);
+
+                        if ($result && mysqli_num_rows($result) > 0) {
+                            while ($row = mysqli_fetch_assoc($result)) {
+                                $station_id = $row['station_id'];
+                                $station_name = htmlspecialchars($row['station_name'], ENT_QUOTES);
+                                echo "<option value=\"$station_id\">$station_name</option>";
+                            }
+                        }
+                        ?>
+                    </select>
+                  </div> -->
                   <div class="d-flex align-items-center justify-content-between mb-4">
                     <div class="form-check">
                       <input class="form-check-input primary" type="checkbox" value="" id="flexCheckChecked" checked>
