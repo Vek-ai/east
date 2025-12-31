@@ -732,7 +732,7 @@ if(isset($_REQUEST['action'])) {
             while ($row = mysqli_fetch_assoc($result)) {
             ?>
                 <div class="container text-center">
-                    <img src="delivery/deliverypictures/<?=$row['image_url']?>" alt="Avatar" class="image d-block mx-auto">
+                    <img src="https://delivery.eastkentuckymetal.com/deliverypictures/<?=$row['image_url']?>" alt="Avatar" class="image d-block mx-auto">
                     <div class="bottom-info">
                         <h5 class="fs-5 text-white"><?= $row['photo_address'] ?></h5>
                         <div class="row">
