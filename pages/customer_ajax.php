@@ -747,117 +747,98 @@ if(isset($_REQUEST['action'])) {
 
     if ($action == "fetch_uploaded_modal") {
         $test_primary = getPrimaryKey($test_table);
-        
+
         $sql = "SELECT * FROM $test_table";
         $result = $conn->query($sql);
-    
+
         if ($result->num_rows > 0) {
-            $columns = [];
-            while ($field = $result->fetch_field()) {
-                $columns[] = $field->name;
-            }
-    
-            $includedColumns = [
-                'customer_id',
-                'customer_notes',
-                'customer_first_name',
-                'customer_last_name',
-                'customer_business_name',
-                'customer_business_website',
-                'customer_type_id',
-                'contact_email',
-                'contact_phone',
-                'primary_contact',
-                'contact_fax',
-                'address',
-                'city',
-                'state',
-                'zip',
-                'different_ship_address',
-                'ship_address',
-                'ship_city',
-                'ship_state',
-                'ship_zip',
-                'secondary_contact_name',
-                'secondary_contact_phone',
-                'secondary_contact_email',
-                'tax_status',
-                'tax_exempt_number',
-                'is_corporate_parent',
-                'corpo_parent_name',
-                'corpo_phone_no',
-                'corpo_address',
-                'corpo_city',
-                'corpo_state',
-                'corpo_zip',
-                'is_bill_corpo_address',
-                'is_charge_net',
-                'charge_net_30',
-                'credit_limit',
-                'loyalty',
-                'customer_pricing',
-                'is_approved',
-                'payment_pickup',
-                'payment_delivery',
-                'payment_cash',
-                'payment_check',
-                'payment_card',
-                'is_contractor',
-                'username',
-                'password'
-            ];
-    
-            $columns = array_filter($columns, function ($col) use ($includedColumns) {
-                return in_array($col, $includedColumns, true);
-            });
-    
+            $columns = array_keys($includedColumns);
+
             $columnsWithData = [];
+
             while ($row = $result->fetch_assoc()) {
                 foreach ($columns as $column) {
-                    if (!empty(trim($row[$column] ?? ''))) {
+                    if (!empty(trim((string)($row[$column] ?? '')))) {
                         $columnsWithData[$column] = true;
                     }
                 }
             }
-    
+
             $result->data_seek(0);
             ?>
-    
-            <div class="card card-body shadow" data-table="<?=$table?>">
+
+            <div class="card card-body shadow" data-table="<?= htmlspecialchars($table) ?>">
                 <form id="tableForm">
-                    <div style="overflow-x: auto; overflow-y: auto; max-height: 80vh; max-width: 100%;">
+                    <div style="overflow-x:auto; overflow-y:auto; max-height:80vh; max-width:100%;">
                         <table class="table table-bordered table-striped text-center">
                             <thead>
                                 <tr>
                                     <?php
                                     foreach ($columns as $column) {
                                         if (isset($columnsWithData[$column])) {
-                                            $formattedColumn = ucwords(str_replace('_', ' ', $column));
-                                            echo "<th class='fs-4'>$formattedColumn</th>";
+                                            echo "<th class='fs-4'>{$includedColumns[$column]}</th>";
                                         }
                                     }
                                     ?>
                                 </tr>
                             </thead>
                             <tbody>
-                            <?php
+                                <?php
+                                $exemptColumns = [
+                                    'customer_id',
+                                    'customer_pricing'
+                                ];
+
                                 while ($row = $result->fetch_assoc()) {
+
                                     $primaryValue = $row[$test_primary] ?? '';
-                                    echo '<tr>';
+
+                                    echo "<tr>";
+
                                     foreach ($columns as $column) {
-                                        if (isset($columnsWithData[$column])) {
-                                            $value = htmlspecialchars($row[$column] ?? '', ENT_QUOTES, 'UTF-8');
-                                            echo "<td contenteditable='true' class='table_data' data-header-name='$column' data-id='$primaryValue'>$value</td>";
+
+                                        if (!isset($columnsWithData[$column])) {
+                                            continue;
                                         }
+
+                                        $rawValue = $row[$column] ?? '';
+
+                                        if (!in_array($column, $exemptColumns, true)) {
+                                            if ($rawValue === '0' || $rawValue === 0) {
+                                                $displayValue = 'No';
+                                            } elseif ($rawValue === '1' || $rawValue === 1) {
+                                                $displayValue = 'Yes';
+                                            } else {
+                                                $displayValue = $rawValue;
+                                            }
+                                        } else {
+                                            $displayValue = $rawValue;
+                                        }
+
+                                        $safeValue = htmlspecialchars((string)$displayValue, ENT_QUOTES, 'UTF-8');
+
+                                        echo "
+                                            <td contenteditable='true'
+                                                class='table_data'
+                                                data-header-name='{$column}'
+                                                data-id='{$primaryValue}'
+                                                data-raw='{$rawValue}'>
+                                                {$safeValue}
+                                            </td>
+                                        ";
                                     }
-                                    echo '</tr>';
+
+                                    echo "</tr>";
                                 }
-                            ?>
+
+                                ?>
                             </tbody>
                         </table>
                     </div>
                     <div class="text-end mt-3">
-                        <button type="button" id="saveTable" class="btn btn-primary mt-3">Save</button>
+                        <button type="button" id="saveTable" class="btn btn-primary mt-3">
+                            Save
+                        </button>
                     </div>
                 </form>
             </div>
@@ -1266,7 +1247,7 @@ if(isset($_REQUEST['action'])) {
                     'data-tax' => $row['tax_status'],
                     'data-loyalty' => $row['loyalty'],
                     'data-pricing' => $row['customer_pricing'],
-                    'data-city' => strtolower($row['city'])
+                    'data-city' => $row['city']
                 ]
             ];
             $no++;
