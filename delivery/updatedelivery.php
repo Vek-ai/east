@@ -1,6 +1,28 @@
 <?php
-require_once '../includes/dbconn.php';
-require_once '../includes/functions.php';
+date_default_timezone_set('America/New_York');
+
+$host = "localhost";
+$user = "benguetf_eastkentucky";                
+$password = "O3K9-T6&{oW[";         
+$dbname = "benguetf_eastkentucky";  
+
+$conn = new mysqli($host, $user, $password, $dbname);
+
+if ($conn->connect_error) {
+    die("Connection failed: " . $mysqli->connect_error);
+}
+
+function getOrderEstimateDetails($id) {
+    global $conn;
+    $id = mysqli_real_escape_string($conn, $id);
+    $query = "SELECT * FROM order_estimate WHERE id = '$id'";
+    $result = mysqli_query($conn, $query);
+    $order_estimate = [];
+    if ($row = mysqli_fetch_assoc($result)) {
+        $order_estimate = $row;
+    }
+    return $order_estimate;
+}
 
 $order_estimate_id = isset($_GET['id']) ? intval($_GET['id']) : 0;
 $order_estimate = getOrderEstimateDetails($order_estimate_id);

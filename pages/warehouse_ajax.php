@@ -183,6 +183,83 @@ if(isset($_REQUEST['action'])) {
             <?php
         }
     } 
+
+    if ($action === "fetch_warehouse_qr") {
+        $warehouse_id = mysqli_real_escape_string($conn, $_POST['id'] ?? '');
+        include_once('../delivery/qrlib.php');
+
+        $warehouse_name = getWarehouseName($warehouse_id);
+
+        $protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? "https://" : "http://";
+        $domain   = $protocol . $_SERVER['HTTP_HOST'];
+
+        $website = $domain . "/?page=warehouse_details&warehouse_id=" . urlencode($warehouse_id);
+
+        $dir = "../images/warehouseqr";
+        if (!is_dir($dir)) mkdir($dir, 0777, true);
+
+        $final_path = "$dir/warehouse{$warehouse_id}.png";
+        $tmp_qr     = "$dir/tmp_qr_{$warehouse_id}.png";
+
+        if (!file_exists($final_path)) {
+            QRcode::png($website, $tmp_qr, QR_ECLEVEL_L, 10, 1);
+
+            $qr_img = imagecreatefrompng($tmp_qr);
+            $qr_w = imagesx($qr_img);
+            $qr_h = imagesy($qr_img);
+
+            $font_file = __DIR__ . '/../assets/fonts/roboto/Roboto-Bold.ttf'; 
+            $font_size = 15;
+
+            $lines = [];
+            $words = explode(" ", $warehouse_name);
+            $current = "";
+            foreach ($words as $word) {
+                $test = $current ? "$current $word" : $word;
+                $box  = imagettfbbox($font_size, 0, $font_file, $test);
+                $w = $box[2] - $box[0];
+                if ($w < $qr_w - 20) {
+                    $current = $test;
+                } else {
+                    $lines[] = $current;
+                    $current = $word;
+                }
+            }
+            if ($current) $lines[] = $current;
+
+            $line_spacing = 4;
+            $line_height = $font_size + $line_spacing;
+            $text_height = count($lines) * $line_height;
+
+            $padding = 5;
+            $canvas_w = $qr_w + ($padding * 2);
+            $canvas_h = $text_height + $qr_h + ($padding * 2);
+
+            $canvas = imagecreatetruecolor($canvas_w, $canvas_h);
+            $white  = imagecolorallocate($canvas, 255, 255, 255);
+            $black  = imagecolorallocate($canvas, 0, 0, 0);
+            imagefill($canvas, 0, 0, $white);
+
+            $y = $padding;
+            foreach ($lines as $line) {
+                $box = imagettfbbox($font_size, 0, $font_file, $line);
+                $text_w = $box[2] - $box[0];
+                $x = ($canvas_w - $text_w) / 2;
+                imagettftext($canvas, $font_size, 0, $x, $y + $font_size, $black, $font_file, $line);
+                $y += $line_height;
+            }
+
+            imagecopy($canvas, $qr_img, $padding, $y, 0, 0, $qr_w, $qr_h);
+
+            imagepng($canvas, $final_path);
+            imagedestroy($qr_img);
+            imagedestroy($canvas);
+            unlink($tmp_qr);
+        }
+
+        echo ltrim($final_path, '../');
+        exit;
+    }
     
     mysqli_close($conn);
 }

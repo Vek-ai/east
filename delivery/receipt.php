@@ -2,14 +2,11 @@
 // Include the phpqrcode library
 include_once('qrlib.php');
 
-$protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? "https://" : "http://";
-$domain = $protocol . $_SERVER['HTTP_HOST'];
-
 // URL to be encoded in the QR code
-$website = $domain . "/print_receipt.php?token=" . urlencode($_GET['prod']);
+$website = "https://metal.ilearnwebtech.com/print_receipt.php?token=" . urlencode($_GET['prod']);
 
 // Message to display when the QR code is scanned
-$message = "Your Everyday Inspiration";
+$message = "Receipt";
 
 // Optionally include message and URL in JSON (not used in QR content here)
 $data = json_encode([

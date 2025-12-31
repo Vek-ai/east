@@ -178,6 +178,28 @@ function showCol($name) {
         
     </div>
 
+    <div class="modal fade" id="warehouseQrModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h4 class="modal-title">Download Warehouse QR</h4>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+
+                <div class="modal-body text-center">
+
+                    <div id="warehouseQrBody"></div>
+
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-success" id="btnWarehouseDownload">Download</button>
+                    <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <div class="modal fade" id="response-modal" tabindex="-1" aria-labelledby="vertical-center-modal" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
@@ -282,6 +304,10 @@ function showCol($name) {
                                         <a href="?page=warehouse_details&warehouse_id=<?= $row_warehouse['WarehouseID'] ?>" title="Edit">
                                             <i class="fa fa-pencil text-warning fs-6"></i>
                                         </a>
+                                        <a href="#" id="view_warehouse_qr" 
+                                            data-id="<?= intval($row_warehouse['WarehouseID']) ?>">
+                                                <i class="ti ti-building-warehouse text-info fs-6"></i>
+                                        </a>
                                         <!-- <a href="javascript:void(0)" class="text-dark delete ms-2" data-id="<?= $row_warehouse['WarehouseID'] ?>">
                                             <i class="ti ti-trash fs-5"></i>
                                         </a> -->
@@ -313,6 +339,47 @@ function showCol($name) {
             dropdownParent: $('#addWarehouseModal .modal-content'),
             placeholder: "Select One...",
             allowClear: true
+        });
+
+        $(document).on('click', '#view_warehouse_qr', function(event) {
+            event.preventDefault(); 
+            var id = $(this).data('id');
+
+            if (!id || id === 0 || id === "0") {
+                $('#warehouseQrBody').html(`
+                    <div class="d-flex justify-content-center align-items-center" 
+                        style="width:400px; height:400px; background:#f8f9fa; margin:0 auto; font-weight:bold;">
+                        No warehouse set
+                    </div>
+                `);
+                $('#warehouseQrModal').modal('show');
+                return;
+            }
+
+            $.ajax({
+                url: 'pages/inventory_ajax.php',
+                type: 'POST',
+                data: { 
+                    id: id, 
+                    action: "fetch_warehouse_qr" 
+                },
+                success: function(response) {
+                    $('#warehouseQrBody').html(`
+                        <div class="d-flex justify-content-center align-items-center" 
+                            style="width:400px; height:400px; background:#fff; margin:0 auto;">
+                            <img 
+                                src="${response}?t=${Date.now()}" 
+                                style="max-width:100%; max-height:100%;"
+                            />
+                        </div>
+                    `);
+                    $('#warehouseQrModal').modal('show');
+                },
+                error: function(jqXHR, textStatus, errorThrown) {
+                    alert('Failed!');
+                    console.log(jqXHR.responseText);
+                }
+            });
         });
 
         $(document).on('click', '.changeStatus', function(event) {

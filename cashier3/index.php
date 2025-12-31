@@ -1520,7 +1520,7 @@ $page_key = !empty($_REQUEST['page']) ? $_REQUEST['page'] : 'cashier';
 
               $('#opening-balance-display').text(amount);
 
-              if (parseFloat(res.opening_balance) === 0) {
+              if (!res.exists) {
                   $('#openingBalanceModal').modal({
                       backdrop: 'static',
                       keyboard: false
@@ -1677,7 +1677,7 @@ $page_key = !empty($_REQUEST['page']) ? $_REQUEST['page'] : 'cashier';
         e.preventDefault();
         const opening_balance = $('#opening_balance').val().trim();
 
-        if (opening_balance === '' || parseFloat(opening_balance) <= 0) {
+        if (opening_balance == '') {
             alert('Please enter a valid opening balance.');
             return;
         }

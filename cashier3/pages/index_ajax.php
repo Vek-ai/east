@@ -177,14 +177,17 @@ if (isset($_POST['fetch_opening_bal'])) {
     $res = mysqli_query($conn, $sql);
 
     $opening_balance = 0;
+    $exists = false;
     if ($res && mysqli_num_rows($res) > 0) {
         $row = mysqli_fetch_assoc($res);
         $opening_balance = floatval($row['amount']);
+        $exists = true;
     }
 
     echo json_encode([
         'status' => 'success',
-        'opening_balance' => $opening_balance
+        'opening_balance' => $opening_balance,
+        'exists' => $exists
     ]);
     exit;
 }

@@ -12,6 +12,8 @@ use PhpOffice\PhpSpreadsheet\IOFactory;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 
+$permission = $_SESSION['permission'];
+
 $includedColumns = [
     'customer_id'             => 'Customer ID #',
 
@@ -1159,6 +1161,113 @@ if(isset($_REQUEST['action'])) {
             echo 'error_insert';
         }
     }
+
+    if ($action === "fetch_table") {
+        $draw = intval($_POST['draw'] ?? 1);
+        $start = intval($_POST['start'] ?? 0);
+        $length = intval($_POST['length'] ?? 10);
+
+        $textSearch = trim($_POST['textSearch'] ?? '');
+        $isActive = isset($_POST['isActive']) ? intval($_POST['isActive']) : 0;
+
+        $tax = $_POST['tax'] ?? '';
+        $loyalty = $_POST['loyalty'] ?? '';
+        $pricing = $_POST['pricing'] ?? '';
+        $city = $_POST['city'] ?? '';
+
+        $where = ["c.hidden = 0"];
+        if ($isActive) $where[] = "c.status NOT IN (0,3)";
+        if ($textSearch !== '') {
+            $textSearchEsc = mysqli_real_escape_string($conn, $textSearch);
+            $where[] = "(CONCAT(c.customer_first_name,' ',c.customer_last_name) LIKE '%$textSearchEsc%' 
+                        OR c.customer_business_name LIKE '%$textSearchEsc%' 
+                        OR c.contact_phone LIKE '%$textSearchEsc%')";
+        }
+        if ($tax !== '') $where[] = "c.tax_status = '".mysqli_real_escape_string($conn, $tax)."'";
+        if ($loyalty !== '') $where[] = "c.loyalty = '".mysqli_real_escape_string($conn, $loyalty)."'";
+        if ($pricing !== '') $where[] = "c.customer_pricing = '".mysqli_real_escape_string($conn, $pricing)."'";
+        if ($city !== '') $where[] = "LOWER(c.city) = '".mysqli_real_escape_string($conn, strtolower($city))."'";
+
+        $whereSql = count($where) ? 'WHERE ' . implode(' AND ', $where) : '';
+
+        $orderColumnIndex = intval($_POST['order'][0]['column'] ?? 0);
+        $orderDir = ($_POST['order'][0]['dir'] ?? 'asc') === 'desc' ? 'DESC' : 'ASC';
+        $columns = ['customer_first_name','customer_business_name','contact_phone','status','customer_id'];
+        $orderColumn = $columns[$orderColumnIndex] ?? 'customer_first_name';
+
+        $totalQuery = mysqli_query($conn, "SELECT COUNT(*) AS total FROM customer c WHERE c.hidden = 0");
+        $totalRecords = mysqli_fetch_assoc($totalQuery)['total'];
+        $filteredQuery = mysqli_query($conn, "SELECT COUNT(*) AS total FROM customer c $whereSql");
+        $filteredRecords = mysqli_fetch_assoc($filteredQuery)['total'];
+
+        $query = "
+            SELECT c.*, ct.customer_type_name,
+                (SELECT COUNT(o.customerid) FROM orders o WHERE o.customerid = c.customer_id) AS order_count,
+                lp.accumulated_total_orders, lp.loyalty_program_name
+            FROM customer c
+            LEFT JOIN customer_types ct ON c.customer_type_id = ct.customer_type_id
+            LEFT JOIN loyalty_program lp ON c.loyalty = 1 
+                AND (SELECT COUNT(o.customerid) FROM orders o WHERE o.customerid = c.customer_id) >= lp.accumulated_total_orders
+            $whereSql
+            ORDER BY $orderColumn $orderDir
+            LIMIT $start, $length
+        ";
+        $result = mysqli_query($conn, $query);
+
+        $data = [];
+        $no = $start + 1;
+        while ($row = mysqli_fetch_assoc($result)) {
+            $customer_id = $row['customer_id'];
+            $type = $row['customer_type_id'];
+            $db_status = $row['status'];
+
+            $db_status = $row['status'];
+
+            if ($db_status == '0' || $db_status == '3') {
+                $statusHtml = "<a href='#' class='changeStatus' data-no='$no' data-id='$customer_id' data-status='$db_status'><div id='status-alert$no' class='alert alert-danger bg-danger text-white border-0 text-center py-1 px-2 my-0' style='border-radius: 5%;' role='alert'>Inactive</div></a>";
+            } else {
+                $statusHtml = "<a href='#' class='changeStatus' data-no='$no' data-id='$customer_id' data-status='$db_status'><div id='status-alert$no' class='alert alert-success bg-success text-white border-0 text-center py-1 px-2 my-0' style='border-radius: 5%;' role='alert'>Active</div></a>";
+            }
+
+            if ($db_status == '0') {
+                $actionHtml = '<a href="?page=customer&customer_id=' . $customer_id . '&t=e" class="py-1 text-dark hideCustomer" data-id="' . $customer_id . '" data-row="' . $no . '" style="border-radius:10%;" data-toggle="tooltip" data-placement="top" title="Archive"><i class="fa fa-box-archive text-danger"></i></a>';
+            } else {
+                $actionHtml = '';
+                $actionHtml .= '<a href="javascript:void(0)" data-id="' . $customer_id . '" data-type="' . $type . '" class="py-1 pe-1 viewCustomerBtn" title="View"><i class="fa fa-eye text-light"></i></a>';
+                if ($permission === 'edit') {
+                    $actionHtml .= '<a href="javascript:void(0)" data-id="' . $customer_id . '" data-type="' . $type . '" data-type="e" class="py-1 pe-1 editCustomerBtn" data-toggle="tooltip" data-placement="top" title="Edit"><i class="fa fa-pencil text-warning"></i></a>';
+                }
+                $actionHtml .= '<a href="?page=customer-dashboard&id=' . $customer_id . '" class="py-1 pe-1" style="border-radius:10%;" data-toggle="tooltip" data-placement="top" title="Dashboard"><i class="fa fa-chart-bar text-primary"></i></a>';
+                $actionHtml .= '<a href="?page=estimate_list&customer_id=' . $customer_id . '" class="py-1 pe-1" style="border-radius:10%;" data-toggle="tooltip" data-placement="top" title="Estimates"><i class="fa fa-calculator text-secondary"></i></a>';
+                $actionHtml .= '<a href="?page=invoice&customer_id=' . $customer_id . '" class="py-1 pe-1" style="border-radius:10%;" data-toggle="tooltip" data-placement="top" title="Invoices"><i class="fa fa-cart-shopping text-success"></i></a>';
+                $actionHtml .= '<a href="javascript:void(0)" class="py-1 pe-1" id="depositModalBtn" data-id="' . $customer_id . '" style="border-radius:10%;" data-toggle="tooltip" data-placement="top" title="Add Customer Deposit"><iconify-icon icon="solar:hand-money-outline" class="text-success fs-6"></iconify-icon></a>';
+            }
+
+            $data[] = [
+                'name' => $row['customer_first_name'].' '.$row['customer_last_name'],
+                'business_name' => $row['customer_business_name'],
+                'phone_number' => $row['contact_phone'],
+                'status' => $statusHtml,
+                'action' => $actionHtml,
+                'DT_RowAttr' => [
+                    'data-tax' => $row['tax_status'],
+                    'data-loyalty' => $row['loyalty'],
+                    'data-pricing' => $row['customer_pricing'],
+                    'data-city' => strtolower($row['city'])
+                ]
+            ];
+            $no++;
+        }
+
+        echo json_encode([
+            "draw" => $draw,
+            "recordsTotal" => intval($totalRecords),
+            "recordsFiltered" => intval($filteredRecords),
+            "data" => $data
+        ]);
+        exit;
+    }
+
 
     mysqli_close($conn);
 }

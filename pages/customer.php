@@ -209,223 +209,16 @@ if ($permission === 'edit') {
                     <table id="display_customer" class="table table-bordered align-middle table-hover mb-0 text-md-nowrap">
                       <thead>
                         <tr>
-                            <?php if (showCol('name')): ?>
-                                <th>Name</th>
-                            <?php endif; ?>
-
-                            <?php if (showCol('business_name')): ?>
-                                <th>Business Name</th>
-                            <?php endif; ?>
-
-                            <?php if (showCol('phone_number')): ?>
-                                <th>Phone Number</th>
-                            <?php endif; ?>
-
-                            <?php if (showCol('status')): ?>
-                                <th>Status</th>
-                            <?php endif; ?>
-
-                            <?php if (showCol('action')): ?>
-                                <th>Action</th>
-                            <?php endif; ?>
+                            <th>Name</th>
+                            <th>Business Name</th>
+                            <th>Phone Number</th>
+                            <th>Status</th>
+                            <th>Action</th>
                         </tr>
                       </thead>
                       <tbody>
-                        <?php
-                        $no = 1;
-                        $query_customer = "
-                          SELECT c.*, ct.customer_type_name, 
-                          (SELECT COUNT(o.customerid) FROM orders o WHERE o.customerid = c.customer_id) AS order_count,
-                          lp.accumulated_total_orders, lp.loyalty_program_name
-                          FROM customer c
-                          LEFT JOIN customer_types ct ON c.customer_type_id = ct.customer_type_id 
-                          LEFT JOIN loyalty_program lp ON c.loyalty = 1 AND 
-                          (SELECT COUNT(o.customerid) FROM orders o WHERE o.customerid = c.customer_id) >= lp.accumulated_total_orders
-                          WHERE c.hidden = 0";
-
-                        $result_customer = mysqli_query($conn, $query_customer);
-                        while ($row_customer = mysqli_fetch_array($result_customer)) {
-                          $customer_id = $row_customer['customer_id'];
-                          $name = $row_customer['customer_first_name'] . " " . $row_customer['customer_last_name'];
-                          $business_name = $row_customer['customer_business_name'];
-                          $email = $row_customer['contact_email'];
-                          $phone = $row_customer['contact_phone'];
-                          $fax = $row_customer['contact_fax'];
-                          $address = $row_customer['address'];
-                          $customer_type_name = $row_customer['customer_type_name'];
-                          $type = $row_customer['customer_type_id'];
-                          $db_status = $row_customer['status'];
-                          $order_count = $row_customer['order_count'];
                         
-                          if ($row_customer['loyalty'] == '1') {
-                            if ($order_count >= $row_customer['accumulated_total_orders']) {
-                              $loyalty = $row_customer['loyalty_program_name'];
-                            } else {
-                              $loyalty = "No Loyalty Level";
-                            }
-                          } else {
-                            $loyalty = "Off";
-                          }
-
-                          if ($row_customer['status'] == '0' || $row_customer['status'] == '3') {
-                            $status = "<a href='#' class='changeStatus' data-no='$no' data-id='$customer_id' data-status='$db_status'><div id='status-alert$no' class='alert alert-danger bg-danger text-white border-0 text-center py-1 px-2 my-0' style='border-radius: 5%;' role='alert'>Inactive</div></a>";
-                          } else {
-                            $status = "<a href='#' class='changeStatus' data-no='$no' data-id='$customer_id' data-status='$db_status'><div id='status-alert$no' class='alert alert-success bg-success text-white border-0 text-center py-1 px-2 my-0' style='border-radius: 5%;' role='alert'>Active</div></a>";
-                          }
-                          ?>
-                          <tr id="product-row-<?= $no ?>"
-                              data-tax="<?= $row_customer['tax_status'] ?>"
-                              data-loyalty="<?= $row_customer['loyalty'] ?>"
-                              data-city="<?= strtolower($row_customer['city']) ?>"
-                              data-pricing="<?= $row_customer['customer_pricing'] ?>"
-                          >
-                            <?php if (showCol('name')): ?>
-                                <td>
-                                  <a href="javascript:void(0)" class="text-decoration-none">
-                                    <span class="customer<?= $no ?><?php if ($row_customer['status'] == '0' || $row_customer['status'] == '3') {echo 'emphasize-strike';} ?>">
-                                      <?php 
-                                      if($row_customer['status'] == '3'){
-                                        $merge_details = getCustomerDetails($customer_id);
-                                        $merge_id = $merge_details['merge_from'];
-                                        $current_details = getCustomerDetails($merge_id);
-                                        echo "$name - Merge to " .$current_details['customer_first_name'] . " " . $current_details['customer_last_name'];
-                                      }else{
-                                        echo $name;
-                                      }
-                                      ?>
-                                    </span>
-                                  </a>
-                                </td>
-                            <?php endif; ?>
-
-                            <?php if (showCol('business_name')): ?>
-                                <td><?= $business_name ?></td>
-                            <?php endif; ?>
-
-                            <?php if (showCol('phone_number')): ?>
-                                <td><?= $phone ?></td>
-                            <?php endif; ?>
-
-                            <?php if (showCol('status')): ?>
-                                <td><?= $status ?></td>
-                            <?php endif; ?>
-
-                            <?php if (showCol('action')): ?>
-                                <td class="text-center fs-5" id="action-button-<?= $no ?>">
-                                  <?php if ($row_customer['status'] == '0') { ?>
-                                    <a href="?page=customer&customer_id=<?= $customer_id ?>&t=e" class="py-1 text-dark hideCustomer" data-id="<?= $customer_id ?>" data-row="<?= $no ?>"
-                                      style='border-radius: 10%;' data-toggle="tooltip" data-placement="top" title="Archive"><i
-                                        class="fa fa-box-archive text-danger"></i></a>
-                                  <?php } else { ?>
-                                    <a href="javascript:void(0)" data-id="<?= $customer_id ?>" data-type="v" class="py-1 pe-1 viewCustomerBtn"
-                                      title="View">
-                                      <i class="fa fa-eye text-light"></i>
-                                    </a>
-                                    <?php                                                    
-                                    if ($permission === 'edit') {
-                                    ?>
-                                    <a href="javascript:void(0)" data-id="<?= $customer_id ?>" data-type="<?= $type ?>" data-type="e" class="py-1 pe-1 editCustomerBtn"
-                                      data-toggle="tooltip" data-placement="top" title="Edit">
-                                      <i class="fa fa-pencil text-warning"></i>
-                                    </a>
-                                    <?php
-                                    }
-                                    ?>
-                                    <a href="?page=customer-dashboard&id=<?= $customer_id ?>" class="py-1 pe-1" style='border-radius: 10%;'
-                                      data-toggle="tooltip" data-placement="top" title="Dashboard"><i
-                                        class="fa fa-chart-bar text-primary"></i>
-                                    </a>
-                                    <a href="?page=estimate_list&customer_id=<?= $customer_id ?>" class="py-1 pe-1"
-                                      style='border-radius: 10%;' data-toggle="tooltip" data-placement="top" title="Estimates"><i
-                                        class="fa fa-calculator text-secondary"></i>
-                                    </a>
-                                    <a href="?page=invoice&customer_id=<?= $customer_id ?>" class="py-1 pe-1"
-                                      style='border-radius: 10%;' data-toggle="tooltip" data-placement="top" title="Invoices"><i
-                                        class="fa fa-cart-shopping text-success"></i>
-                                    </a>
-                                    <a href="javascript:void(0)" class="py-1 pe-1" id="depositModalBtn" data-id="<?= $customer_id ?>"
-                                      style='border-radius: 10%;' data-toggle="tooltip" data-placement="top" title="Add Customer Deposit">
-                                        <iconify-icon icon="solar:hand-money-outline" class="text-success fs-6"></iconify-icon>
-                                    </a>
-                                  <?php } ?>
-                                </td>
-                            <?php endif; ?>
-                          </tr>
-                          <?php
-                          $no++;
-                        }
-                        ?>
                       </tbody>
-
-
-                      <script>
-                        $(document).ready(function () {
-                          $('[data-toggle="tooltip"]').tooltip();
-                          // Use event delegation for dynamically generated elements
-                          $(document).on('click', '.changeStatus', function (event) {
-                            event.preventDefault();
-                            var customer_id = $(this).data('id');
-                            var status = $(this).data('status');
-                            var no = $(this).data('no');
-                            $.ajax({
-                              url: 'pages/customer_ajax.php',
-                              type: 'POST',
-                              data: {
-                                customer_id: customer_id,
-                                status: status,
-                                action: 'change_status'
-                              },
-                              success: function (response) {
-                                if (response == 'success') {
-                                  if (status == 1) {
-                                    $('#status-alert' + no).removeClass().addClass('alert alert-danger bg-danger text-white border-0 text-center py-1 px-2 my-0').text('Inactive');
-                                    $(".changeStatus[data-no='" + no + "']").data('status', "0");
-                                    $('.product' + no).addClass('emphasize-strike'); // Add emphasize-strike class
-                                    $('#action-button-' + no).html('<a href="javascript:void(0)" class="py-1 text-dark hideCustomer" data-id="' + customer_id + '" data-row="' + no + '"><i class="fa fa-trash text-light"></i></a>');
-                                    $('#toggleActive').trigger('change');
-                                  } else {
-                                    $('#status-alert' + no).removeClass().addClass('alert alert-success bg-success text-white border-0 text-center py-1 px-2 my-0').text('Active');
-                                    $(".changeStatus[data-no='" + no + "']").data('status', "1");
-                                    $('.product' + no).removeClass('emphasize-strike'); // Remove emphasize-strike class
-                                    $('#action-button-' + no).html('<a href="javascript:void(0)" data-id=' + customer_id + ' data-type="e" class="py-1"><i class="fa fa-pencil text-light"></i></a>');
-                                    $('#toggleActive').trigger('change');
-                                  }
-                                } else {
-                                  alert('Failed to change status.');
-                                }
-                              },
-                              error: function (jqXHR, textStatus, errorThrown) {
-                                alert('Error: ' + textStatus + ' - ' + errorThrown);
-                              }
-                            });
-                          });
-
-                          $(document).on('click', '.hideCustomer', function (event) {
-                            event.preventDefault();
-                            var customer_id = $(this).data('id');
-                            var rowId = $(this).data('row');
-                            $.ajax({
-                              url: 'pages/customer_ajax.php',
-                              type: 'POST',
-                              data: {
-                                customer_id: customer_id,
-                                action: 'hide_customer'
-                              },
-                              success: function (response) {
-                                if (response == 'success') {
-                                  $('#product-row-' + rowId).remove(); // Remove the row from the DOM
-                                } else {
-                                  alert('Failed to hide customer.');
-                                }
-                              },
-                              error: function (jqXHR, textStatus, errorThrown) {
-                                alert('Error: ' + textStatus + ' - ' + errorThrown);
-                              }
-                            });
-                          });
-                        });
-                      </script>
-
                     </table>
                   </div>
                 </div>
@@ -955,10 +748,87 @@ if ($permission === 'edit') {
     document.title = "<?= $page_title ?>";
 
     var table = $('#display_customer').DataTable({
-        pageLength: 100
+        serverSide: true,
+        processing: true,
+        ajax: {
+            url: 'pages/customer_ajax.php',
+            type: 'POST',
+            data: function(d) {
+                d.action = 'fetch_table';
+                d.textSearch = $('#text-srh').val();
+                d.isActive = $('#toggleActive').is(':checked') ? 1 : 0;
+                // manual filters
+                d.tax = $('#select-tax').val();
+                d.loyalty = $('#select-loyalty').val();
+                d.pricing = $('#select-pricing').val();
+                d.city = $('#select-city').val();
+            },
+            error: function (xhr, error, thrown) {
+                console.log('AJAX Error: ', xhr.responseText);
+            }
+        },
+        pageLength: 100,
+        lengthMenu: [10, 25, 50, 100],
+        columns: [
+            { data: 'name' },
+            { data: 'business_name' },
+            { data: 'phone_number' },
+            { data: 'status', orderable: false },
+            { data: 'action', orderable: false },
+        ]
     });
 
     $('#display_customer_filter').hide();
+
+    $(document).on('click', '.changeStatus', function (event) {
+        event.preventDefault();
+        var customer_id = $(this).data('id');
+        var status = $(this).data('status');
+        var no = $(this).data('no');
+        $.ajax({
+            url: 'pages/customer_ajax.php',
+            type: 'POST',
+            data: {
+                customer_id: customer_id,
+            status: status,
+            action: 'change_status'
+            },
+            success: function (response) {
+            if (response == 'success') {
+                filterTable();
+            } else {
+                alert('Failed to change status.');
+            }
+            },
+            error: function (jqXHR, textStatus, errorThrown) {
+            alert('Error: ' + textStatus + ' - ' + errorThrown);
+            }
+        });
+    });
+
+    $(document).on('click', '.hideCustomer', function (event) {
+        event.preventDefault();
+        var customer_id = $(this).data('id');
+        var rowId = $(this).data('row');
+        $.ajax({
+            url: 'pages/customer_ajax.php',
+            type: 'POST',
+            data: {
+            customer_id: customer_id,
+            action: 'hide_customer'
+            },
+            success: function (response) {
+            if (response == 'success') {
+                filterTable();
+            } else {
+                alert('Failed to hide customer.');
+            }
+            },
+            error: function (jqXHR, textStatus, errorThrown) {
+            alert('Error: ' + textStatus + ' - ' + errorThrown);
+            }
+        });
+    });
 
     $(".select2").each(function () {
         $(this).select2({
@@ -1335,41 +1205,7 @@ if ($permission === 'edit') {
     });
 
     function filterTable() {
-        var textSearch = $('#text-srh').val().toLowerCase();
-        var isActive = $('#toggleActive').is(':checked');
-
-        $.fn.dataTable.ext.search = [];
-
-        if (textSearch) {
-            $.fn.dataTable.ext.search.push(function(settings, data, dataIndex) {
-                return $(table.row(dataIndex).node()).text().toLowerCase().includes(textSearch);
-            });
-        }
-
-        if (isActive) {
-            $.fn.dataTable.ext.search.push(function(settings, data, dataIndex) {
-                return $(table.row(dataIndex).node()).find('a .alert').text().trim() === 'Active';
-            });
-        }
-
-        $.fn.dataTable.ext.search.push(function(settings, data, dataIndex) {
-            var row = $(table.row(dataIndex).node());
-            var match = true;
-
-            $('.filter-selection').each(function() {
-                var filterValue = $(this).val()?.toString() || '';
-                var rowValue = row.data($(this).data('filter'))?.toString() || '';
-
-                if (filterValue && filterValue !== '/' && rowValue !== filterValue) {
-                    match = false;
-                    return false; // Exit loop early if mismatch is found
-                }
-            });
-
-            return match;
-        });
-
-        table.draw();
+        table.ajax.reload();
         updateSelectedTags();
     }
 
@@ -1386,7 +1222,7 @@ if ($permission === 'edit') {
         $('.filter-selection').each(function() {
             var selectedOption = $(this).find('option:selected');
             var selectedText = selectedOption.text().trim();
-            var filterName = $(this).data('filter-name'); // Custom attribute for display
+            var filterName = $(this).data('filter-name');
 
             if ($(this).val()) {
                 displayDiv.append(`
@@ -1411,7 +1247,7 @@ if ($permission === 'edit') {
 
     $(document).on('click', '.reset_filters', function () {
         $('.filter-selection').each(function () {
-            $(this).val(null).trigger('change.select2');
+            $(this).val(null);
         });
 
         $('#text-srh').val('');
