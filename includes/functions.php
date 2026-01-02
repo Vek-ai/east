@@ -4965,7 +4965,7 @@ function generateProductAbbr(int $product_id) {
     }
 
     foreach (array_chunk($batch, 500) as $chunk) {
-        $sql = "INSERT INTO product_abr
+        $sql = "INSERT IGNORE INTO product_abr
             (product_id, category, profile, grade, gauge, type, color, length)
             VALUES " . implode(',', $chunk);
         $conn->query($sql);
