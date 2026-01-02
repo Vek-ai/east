@@ -137,9 +137,7 @@ if(isset($_REQUEST['action'])) {
                 }
             }
 
-            if (!empty($product_type) || !empty($profile) || !empty($grade) || !empty($gauge) || !empty($color_paint) || !empty($available_lengths)) {
-                generateProductAbr([$category], $profile, $grade, $gauge, $product_type, $color_paint, $available_lengths, $product_id);
-            }
+            generateProductAbbr($product_id);
 
             $dimension_ids = $_POST['dimension_ids'] ?? [];
             $unit_prices   = $_POST['unit_price'] ?? [];
@@ -1775,10 +1773,6 @@ if(isset($_REQUEST['action'])) {
             'data' => $data
         ]);
     }
-
-
-
-
 
     if ($action == 'fetch_details_modal') {
         $product_id = mysqli_real_escape_string($conn, $_POST['id']);
