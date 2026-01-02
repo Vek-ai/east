@@ -147,48 +147,6 @@ if ($permission === 'edit') {
                         </optgroup>
                     </select>
                 </div>
-                <div class="position-relative w-100 px-1 mb-2">
-                    <select class="form-control search-category py-0 ps-5 select2 filter-selection" data-filter="loyalty" data-filter-name="Loyalty" id="select-loyalty">
-                        <option value="">All Loyalty Options</option>
-                        <option value="1">ON</option>
-                        <option value="0">OFF</option>
-                    </select>
-                </div>
-                <div class="position-relative w-100 px-1 mb-2">
-                    <select class="form-control search-category py-0 ps-5 select2 filter-selection" data-filter="pricing" data-filter-name="Pricing Category" id="select-pricing">
-                        <option value="" data-category="">All Pricing Category</option>
-                        <optgroup label="Pricing Category">
-                            <?php
-                            $query_pricing = "SELECT * FROM customer_pricing WHERE hidden = '0' AND status = '1'";
-                            $result_pricing = mysqli_query($conn, $query_pricing);            
-                            while ($row_pricing = mysqli_fetch_array($result_pricing)) {
-                            ?>
-                                <option value="<?= $row_pricing['id'] ?>"><?= $row_pricing['pricing_name'] ?></option>
-                            <?php   
-                            }
-                            ?>
-                        </optgroup>
-                    </select>
-                </div>
-                <div class="position-relative w-100 px-1 mb-2">
-                    <select class="form-control search-category py-0 ps-5 select2 filter-selection" data-filter="city" data-filter-name="City" id="select-city">
-                        <option value="">All Cities</option>
-                        <optgroup label="Cities">
-                            <?php
-                            $query_city = "SELECT DISTINCT LOWER(city) AS city_lower 
-                                              FROM customer 
-                                              WHERE city IS NOT NULL AND city <> '' AND status = '1' and hidden = '0'
-                                              ORDER BY city_lower;";
-                            $result_city = mysqli_query($conn, $query_city);            
-                            while ($row_city = mysqli_fetch_array($result_city)) {
-                            ?>
-                                <option value="<?= $row_city['city_lower'] ?>"><?= ucwords($row_city['city_lower']) ?></option>
-                            <?php   
-                            }
-                            ?>
-                        </optgroup>
-                    </select>
-                </div>
             </div>
             <div class="px-3 mb-2"> 
                 <input type="checkbox" id="toggleActive" checked> Show Active Only
@@ -209,9 +167,12 @@ if ($permission === 'edit') {
                     <table id="display_customer" class="table table-bordered align-middle table-hover mb-0 text-md-nowrap">
                       <thead>
                         <tr>
-                            <th>Name</th>
-                            <th>Business Name</th>
-                            <th>Phone Number</th>
+                            <th>First Name</th>
+                            <th>Last Name</th>
+                            <th>Business/ Customer Name</th>
+                            <th>Farm Name</th>
+                            <th>Phone</th>
+                            <th>Tax Status</th>
                             <th>Status</th>
                             <th>Action</th>
                         </tr>
@@ -763,6 +724,10 @@ if ($permission === 'edit') {
                 d.pricing = $('#select-pricing').val();
                 d.city = $('#select-city').val();
             },
+            dataSrc: function (json) {
+                console.log(json);
+                return json.data;
+            },
             error: function (xhr, error, thrown) {
                 console.log('AJAX Error: ', xhr.responseText);
             }
@@ -770,9 +735,12 @@ if ($permission === 'edit') {
         pageLength: 100,
         lengthMenu: [10, 25, 50, 100],
         columns: [
-            { data: 'name' },
+            { data: 'fname' },
+            { data: 'lname' },
             { data: 'business_name' },
+            { data: 'farm_name' },
             { data: 'phone_number' },
+            { data: 'tax_status' },
             { data: 'status', orderable: false },
             { data: 'action', orderable: false },
         ]
@@ -837,17 +805,18 @@ if ($permission === 'edit') {
         });
     });
 
-    $(document).on("click", ".addCustomerBtn", function() {
+    /* $(document).on("click", ".addCustomerBtn", function() {
         $("#addCustomerModal").modal("show");
-    });
+    }); */
 
-    $(document).on("click", "#saveCustomerTypeBtn", function() {
-        let type = $("#customerType").val();
-        if (!type) {
+    $(document).on("click", ".addCustomerBtn", function() {
+        //let type = $("#customerType").val();
+
+        /* if (!type) {
             alert("Please select a customer type.");
             return;
-        }
-
+        } */
+        let type = 0;
         if(type == '1'){
             action = 'customer_personal_modal';
         }else if(type == '2'){
@@ -868,6 +837,7 @@ if ($permission === 'edit') {
               action: action
             },
             success: function (response) {
+                console.log(response);
                 $(".form_body").html(response);
                 toggleFormEditable("lineForm", true, false);
                 $("#addCustomerModal").modal("hide");

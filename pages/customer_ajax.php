@@ -1232,21 +1232,23 @@ if(isset($_REQUEST['action'])) {
                 $actionHtml .= '<a href="javascript:void(0)" class="py-1 pe-1" id="depositModalBtn" data-id="' . $customer_id . '" style="border-radius:10%;" data-toggle="tooltip" data-placement="top" title="Add Customer Deposit"><iconify-icon icon="solar:hand-money-outline" class="text-success fs-6"></iconify-icon></a>';
             }
 
-            $businessName = trim($row['customer_farm_name'] ?? '');
-            if ($businessName === '') {
-                $businessName = trim($row['customer_business_name'] ?? '');
-            }
-
+            $business_name = trim($row['customer_business_name'] ?? '');
+            $farm_name = trim($row['customer_farm_name'] ?? '');
+            $tax_status_id = $row['tax_status'];
+            $tax_status = getCustomerTaxName($tax_status_id);
+            
             $data[] = [
-                'name' => $row['customer_first_name'].' '.$row['customer_last_name'],
-                'business_name' => $businessName,
+                'fname' => $row['customer_first_name'],
+                'lname' => $row['customer_last_name'],
+                'business_name' => $business_name,
+                'farm_name' => $farm_name,
                 'phone_number' => $row['contact_phone'],
+                'tax_status' => $tax_status,
                 'status' => $statusHtml,
                 'action' => $actionHtml,
                 'DT_RowAttr' => [
                     'data-tax' => $row['tax_status'],
                     'data-loyalty' => $row['loyalty'],
-                    'data-pricing' => $row['customer_pricing'],
                     'data-city' => $row['city']
                 ]
             ];

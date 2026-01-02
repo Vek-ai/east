@@ -1648,7 +1648,7 @@ $page_key = !empty($_REQUEST['page']) ? $_REQUEST['page'] : 'cashier';
 
     fetchNotifications();
 
-    checkOpeningBalance();
+    //checkOpeningBalance();
 
     $('#openingBalanceForm').on('submit', function (e) {
         e.preventDefault();

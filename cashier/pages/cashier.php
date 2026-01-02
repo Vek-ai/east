@@ -374,9 +374,9 @@ $editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) :
                             <select id="rowsPerPage" class="form-select w-auto ms-0 ms-sm-2 me-8 me-sm-4 py-1 pe-7 ps-2 border-0" aria-label="Rows per page">
                                 <option value="5">5</option>
                                 <option value="10">10</option>
-                                <option value="25">25</option>
+                                <option value="25" selected>25</option>
                                 <option value="50">50</option>
-                                <option value="100" selected>100</option>
+                                <option value="100">100</option>
                             </select>
                             <p id="paginationInfo" class="mb-0 fs-2"></p>
                             <nav aria-label="...">
@@ -4118,95 +4118,90 @@ $editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) :
         });
 
         var currentPage = 1,
-            rowsPerPage = parseInt($('#rowsPerPage').val()),
-            totalRows = 0,
-            totalPages = 0,
-            maxPageButtons = 5,
-            stepSize = 5;
+            rowsPerPage = parseInt($('#rowsPerPage').val()) || 100,
+            totalPages = 0;
 
-        function updateTable() {
-            var $rows = $('#productTableBody tr');
-            totalRows = $rows.length;
-            totalPages = Math.ceil(totalRows / rowsPerPage);
+        function performSearch() {
+            var query = $('#text-srh').val() || '';
 
-            var start = (currentPage - 1) * rowsPerPage,
-                end = Math.min(currentPage * rowsPerPage, totalRows);
+            rowsPerPage = parseInt($('#rowsPerPage').val()) || 100;
+            var start = (currentPage - 1) * rowsPerPage;
 
-            $rows.hide().slice(start, end).show();
+            var data = {
+                query: query,
+                start: start,
+                length: rowsPerPage,
+                color_id: $('#select-color').val(),
+                grade: $('#select-grade').val(),
+                gauge_id: $('#select-gauge').val(),
+                category_id: $('#select-category').val(),
+                profile_id: $('#select-profile').val(),
+                type_id: $('#select-type').val(),
+                onlyInStock: $('#toggleActive').prop('checked'),
+                onlyPromotions: $('#onlyPromotions').prop('checked'),
+                onlyOnSale: $('#onlyOnSale').prop('checked'),
+                action: 'fetch_products'
+            };
 
-            $('#paginationControls').html(generatePagination());
-            $('#paginationInfo').text(`${start + 1}–${end} of ${totalRows}`);
-
-            $('#paginationControls').find('a').click(function(e) {
-                e.preventDefault();
-                if ($(this).hasClass('page-link-next')) {
-                    currentPage = Math.min(currentPage + stepSize, totalPages);
-                } else if ($(this).hasClass('page-link-prev')) {
-                    currentPage = Math.max(currentPage - stepSize, 1);
-                } else {
-                    currentPage = parseInt($(this).text());
-                }
-                updateTable();
-            });
-        }
-
-        function generatePagination() {
-            var pagination = '';
-            var startPage = Math.max(1, currentPage - Math.floor(maxPageButtons / 2));
-            var endPage = Math.min(totalPages, startPage + maxPageButtons - 1);
-
-            if (currentPage > 1) {
-                pagination += `<li class="page-item p-1"><a class="page-link border-0 rounded-circle text-dark fs-6 round-32 d-flex align-items-center justify-content-center page-link-prev" href="#">‹</a></li>`;
-            }
-
-            for (var i = startPage; i <= endPage; i++) {
-                pagination += `<li class="page-item p-1 ${i === currentPage ? 'active' : ''}"><a class="page-link border-0 rounded-circle text-dark fs-6 round-32 d-flex align-items-center justify-content-center" href="#">${i}</a></li>`;
-            }
-
-            if (currentPage < totalPages) {
-                pagination += `<li class="page-item p-1"><a class="page-link border-0 rounded-circle text-dark fs-6 round-32 d-flex align-items-center justify-content-center page-link-next" href="#">›</a></li>`;
-            }
-
-            return pagination;
-        }
-
-        function performSearch(query) {
-            var color_id = $('#select-color').find('option:selected').val();
-            var grade = $('#select-grade').find('option:selected').val();
-            var gauge_id = $('#select-gauge').find('option:selected').val();
-            var category_id = $('#select-category').find('option:selected').val();
-            var profile_id = $('#select-profile').find('option:selected').val();
-            var type_id = $('#select-type').find('option:selected').val();
-            var onlyInStock = $('#toggleActive').prop('checked');
-            var onlyPromotions = $('#onlyPromotions').prop('checked');
-            var onlyOnSale = $('#onlyOnSale').prop('checked');
             $.ajax({
                 url: 'pages/cashier_ajax.php',
                 type: 'POST',
-                data: {
-                    query: query,
-                    color_id: color_id,
-                    grade: grade,
-                    gauge_id: gauge_id,
-                    category_id: category_id,
-                    profile_id: profile_id,
-                    type_id: type_id,
-                    onlyInStock: onlyInStock,
-                    onlyPromotions: onlyPromotions,
-                    onlyOnSale: onlyOnSale
-                },
+                data: data,
                 success: function(response) {
-                    $('#productTableBody').html(response);
-                    currentPage = 1;
-                    updateTable();
-                    updateSelectedTags();
+                    var res = JSON.parse(response);
+                    $('#productTableBody').html(res.data_html);
+                    totalPages = res.totalPages;
+                    $('#paginationInfo').text(`Page ${currentPage} of ${totalPages}`);
 
+                    updatePaginationUI();
                 },
                 error: function(jqXHR, textStatus, errorThrown) {
                     alert('Error: ' + textStatus + ' - ' + errorThrown);
                 }
             });
         }
+
+        function updatePaginationUI() {
+            var pagination = '';
+            var maxPageButtons = 5;
+            var startPage = Math.max(1, currentPage - Math.floor(maxPageButtons / 2));
+            var endPage = Math.min(totalPages, startPage + maxPageButtons - 1);
+
+            if (currentPage > 1) {
+                pagination += `<li class="page-item">
+                    <a class="page-link page-link-prev" href="#" data-page="${currentPage - 1}">‹</a>
+                </li>`;
+            }
+
+            for (var i = startPage; i <= endPage; i++) {
+                pagination += `<li class="page-item ${i === currentPage ? 'active' : ''}">
+                    <a class="page-link" href="#" data-page="${i}">${i}</a>
+                </li>`;
+            }
+
+            if (currentPage < totalPages) {
+                pagination += `<li class="page-item">
+                    <a class="page-link page-link-next" href="#" data-page="${currentPage + 1}">›</a>
+                </li>`;
+            }
+
+            $('#paginationControls').html(pagination);
+
+            $('#paginationControls a').off('click').on('click', function(e) {
+                e.preventDefault();
+                var page = parseInt($(this).data('page'));
+                if (!isNaN(page) && page >= 1 && page <= totalPages) {
+                    currentPage = page;
+                    performSearch();
+                }
+            });
+        }
+
+        $('#rowsPerPage').change(function() {
+            rowsPerPage = parseInt($(this).val());
+            currentPage = 1;
+            performSearch();
+        });
 
         $(document).on("click", "#add-to-cart-custom-truss-btn", function() {
             var id = $(this).data('id');
@@ -5798,13 +5793,6 @@ $editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) :
             });
         });
 
-
-        $('#rowsPerPage').change(function() {
-            rowsPerPage = parseInt($(this).val());
-            currentPage = 1;
-            updateTable();
-        });
-
         function updateSelectedTags() {
             var displayDiv = $('#selected-tags');
             displayDiv.empty();
@@ -5911,7 +5899,15 @@ $editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) :
             });
         });
 
-        $(document).on('input change', '#text-srh, #select-color, #select-grade, #select-gauge, #select-category, #select-profile, #select-type, #toggleActive, #onlyOnSale, #onlyPromotions', function() {
+        let searchTimer;
+
+        $(document).on('input', '#text-srh', function() {
+            clearTimeout(searchTimer);
+            const value = $(this).val();
+            searchTimer = setTimeout(() => performSearch(value), 500);
+        });
+
+        $(document).on('change', '#select-color, #select-grade, #select-gauge, #select-category, #select-profile, #select-type, #toggleActive, #onlyOnSale, #onlyPromotions', function() {
             performSearch($('#text-srh').val());
         });
 

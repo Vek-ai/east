@@ -54,245 +54,143 @@ if(isset($_REQUEST['action'])) {
     $action = $_REQUEST['action'];
 
     if ($action == "add_update") {
-        $product_id = mysqli_real_escape_string($conn, $_POST['product_id']);
-        $category = mysqli_real_escape_string($conn, $_POST['product_category']);
+        mysqli_begin_transaction($conn);
+        try {
+            $product_id = intval($_POST['product_id']);
+            $category   = intval($_POST['product_category']);
 
-        $product_type      = isset($_POST['product_type']) ? array_filter(array_map('intval', (array)$_POST['product_type'])) : [];
-        $profile           = isset($_POST['profile']) ? array_filter(array_map('intval', (array)$_POST['profile'])) : [];
-        $grade             = isset($_POST['grade']) ? array_filter(array_map('intval', (array)$_POST['grade'])) : [];
-        $gauge             = isset($_POST['gauge']) ? array_filter(array_map('intval', (array)$_POST['gauge'])) : [];
-        $color_paint       = isset($_POST['color_paint']) ? array_filter(array_map('intval', (array)$_POST['color_paint'])) : [];
-        $available_lengths = isset($_POST['available_lengths']) ? array_filter(array_map('intval', (array)$_POST['available_lengths'])) : [];
-
-        $fields = [];
-        foreach ($_POST as $key => $value) {
-            if (is_array($value)) {
-                $allNumeric = array_reduce($value, fn($carry, $item) => $carry && is_numeric($item), true);
-                if ($allNumeric) $value = array_map('intval', $value);
-                $value = json_encode($value);
+            function post_array($key) {
+                if (!isset($_POST[$key])) return [];
+                $v = $_POST[$key];
+                if (!is_array($v)) $v = [$v];
+                return array_values(array_unique(array_filter(array_map('intval', $v))));
             }
-            $escapedValue = mysqli_real_escape_string($conn, $value);
-            if ($key != 'product_id') $fields[$key] = $escapedValue;
-            if ($key == 'color_paint') $fields['color'] = $escapedValue;
-        }
 
-        $has_color = isset($_POST['has_color']) ? 1 : 0;
-        $is_special_trim = isset($_POST['is_special_trim']) ? 1 : 0;
-        $standing_seam = ($_POST['panel_type'] ?? '') === 'standing_seam' ? 1 : 0;
-        $board_batten  = ($_POST['panel_type'] ?? '') === 'board_batten' ? 1 : 0;
-        $fields['has_color'] = $has_color;
-        $fields['is_special_trim'] = $is_special_trim;
-        $fields['standing_seam'] = $standing_seam;
-        $fields['board_batten']  = $board_batten;
+            $product_type      = post_array('product_type');
+            $profile           = post_array('profile');
+            $grade             = post_array('grade');
+            $gauge             = post_array('gauge');
+            $color_paint       = post_array('color_paint');
+            $available_lengths = post_array('available_lengths');
+            $product_line      = post_array('product_line');
 
-        $checkQuery = "SELECT * FROM product WHERE product_id = '$product_id'";
-        $result = mysqli_query($conn, $checkQuery);
+            $productColumns = [];
+            $res = mysqli_query($conn, "SHOW COLUMNS FROM product");
+            while ($c = mysqli_fetch_assoc($res)) $productColumns[$c['Field']] = true;
 
-        if (mysqli_num_rows($result) > 0) {
-            $updateQuery = "UPDATE product SET ";
-            foreach ($fields as $column => $value) {
-                $columnExists = mysqli_query($conn, "SHOW COLUMNS FROM product LIKE '$column'");
-                if (mysqli_num_rows($columnExists) > 0) {
-                    $updateQuery .= "$column = '$value', ";
+            $fields = [];
+            foreach ($_POST as $key => $value) {
+                if ($key === 'product_id') continue;
+                if (!isset($productColumns[$key])) continue;
+                if (is_array($value)) $value = json_encode($value);
+                $fields[$key] = mysqli_real_escape_string($conn, $value);
+                if ($key === 'color_paint') $fields['color'] = $fields[$key];
+            }
+
+            $fields['has_color'] = isset($_POST['has_color']) ? 1 : 0;
+            $fields['is_special_trim'] = isset($_POST['is_special_trim']) ? 1 : 0;
+            $fields['standing_seam'] = ($_POST['panel_type'] ?? '') === 'standing_seam' ? 1 : 0;
+            $fields['board_batten'] = ($_POST['panel_type'] ?? '') === 'board_batten' ? 1 : 0;
+
+            $variantHash = md5(json_encode([$product_line,$product_type,$profile,$grade,$gauge,$available_lengths,$color_paint]));
+            $fields['variant_hash'] = $variantHash;
+
+            $exists = mysqli_query($conn, "SELECT 1 FROM product WHERE product_id='$product_id'");
+            if (mysqli_num_rows($exists)) {
+                $sets = [];
+                foreach ($fields as $col => $val) $sets[] = "$col='$val'";
+                mysqli_query($conn, "UPDATE product SET " . implode(',', $sets) . " WHERE product_id='$product_id'");
+                echo "success_update";
+            } else {
+                $cols = array_keys($fields);
+                $vals = array_map(fn($v) => "'$v'", array_values($fields));
+                mysqli_query($conn, "INSERT INTO product (product_id," . implode(',', $cols) . ") VALUES ('$product_id'," . implode(',', $vals) . ")");
+                $product_id = $conn->insert_id;
+                $conn->query("UPDATE product SET main_image='images/product/product.jpg' WHERE product_id='$product_id'");
+                echo "success_add";
+            }
+
+            if ($color_paint) {
+                $existing = [];
+                $res = mysqli_query($conn, "SELECT color_id FROM product_color_assign WHERE product_id='$product_id'");
+                while ($r = mysqli_fetch_assoc($res)) $existing[] = (int)$r['color_id'];
+                $toAdd    = array_diff($color_paint, $existing);
+                $toDelete = array_diff($existing, $color_paint);
+                if ($toDelete) mysqli_query($conn, "DELETE FROM product_color_assign WHERE product_id='$product_id' AND color_id IN (" . implode(',', $toDelete) . ")");
+                foreach ($toAdd as $cid) mysqli_query($conn, "INSERT IGNORE INTO product_color_assign (product_id,color_id,`date`,`time`,assigned_by) VALUES ($product_id,$cid,CURDATE(),CURTIME(),{$_SESSION['userid']})");
+                mysqli_query($conn, "UPDATE product SET color='" . json_encode(array_values($color_paint)) . "' WHERE product_id='$product_id'");
+            }
+
+            if (!empty($_FILES['picture_path']['name'][0])) {
+                $uploadFileDir = '../images/product/';
+                for ($i = 0; $i < count($_FILES['picture_path']['name']); $i++) {
+                    $fileTmpPath = $_FILES['picture_path']['tmp_name'][$i];
+                    $fileName = $_FILES['picture_path']['name'][$i];
+                    if (empty($fileName)) continue;
+                    $fileExtension = strtolower(pathinfo($fileName, PATHINFO_EXTENSION));
+                    $newFileName = md5(time() . $fileName) . '.' . $fileExtension;
+                    $dest_path = $uploadFileDir . $newFileName;
+                    if (move_uploaded_file($fileTmpPath, $dest_path)) {
+                        if ($i == 0) $conn->query("UPDATE product SET main_image='images/product/$newFileName' WHERE product_id='$product_id'");
+                        $conn->query("INSERT INTO product_images (productid, image_url) VALUES ('$product_id', 'images/product/$newFileName')");
+                    }
                 }
             }
-            $updateQuery = rtrim($updateQuery, ", ") . " WHERE product_id = '$product_id'";
-            if (!mysqli_query($conn, $updateQuery)) {
-                echo "Error updating product: " . mysqli_error($conn);
-                exit;
+
+            if (!empty($product_type) || !empty($profile) || !empty($grade) || !empty($gauge) || !empty($color_paint) || !empty($available_lengths)) {
+                generateProductAbr([$category], $profile, $grade, $gauge, $product_type, $color_paint, $available_lengths, $product_id);
             }
-            echo "success_update";
-        } else {
-            $columns = $values = [];
-            foreach ($fields as $column => $value) {
-                $columnExists = mysqli_query($conn, "SHOW COLUMNS FROM product LIKE '$column'");
-                if (mysqli_num_rows($columnExists) > 0) {
-                    $columns[] = $column;
-                    $values[] = "'$value'";
+
+            $dimension_ids = $_POST['dimension_ids'] ?? [];
+            $unit_prices   = $_POST['unit_price'] ?? [];
+            $floor_prices  = $_POST['floor_price'] ?? [];
+            $bulk_prices   = $_POST['bulk_price'] ?? [];
+
+            foreach ($dimension_ids as $i => $dim_id) {
+                $dim_id = intval($dim_id);
+                if ($dim_id <= 0) continue;
+                $unit_price  = isset($unit_prices[$i]) ? floatval($unit_prices[$i]) : 0;
+                $floor_price = isset($floor_prices[$i]) ? floatval($floor_prices[$i]) : 0;
+                $bulk_price  = isset($bulk_prices[$i]) ? floatval($bulk_prices[$i]) : 0;
+                if($category == $screw_id){
+                    $res = mysqli_query($conn, "SELECT id FROM product_screw_lengths WHERE product_id='$product_id' AND dimension_id='$dim_id'");
+                    if (mysqli_num_rows($res) > 0) mysqli_query($conn, "UPDATE product_screw_lengths SET unit_price='$unit_price', floor_price='$floor_price', bulk_price='$bulk_price' WHERE product_id='$product_id' AND dimension_id='$dim_id'");
+                    else mysqli_query($conn, "INSERT INTO product_screw_lengths (product_id,dimension_id,unit_price,floor_price,bulk_price) VALUES ('$product_id','$dim_id','$unit_price','$floor_price','$bulk_price')");
+                } else if($category == $lumber_id){
+                    $res = mysqli_query($conn, "SELECT id FROM product_lumber_lengths WHERE product_id='$product_id' AND dimension_id='$dim_id'");
+                    if (mysqli_num_rows($res) > 0) mysqli_query($conn, "UPDATE product_lumber_lengths SET unit_price='$unit_price', floor_price='$floor_price', bulk_price='$bulk_price' WHERE product_id='$product_id' AND dimension_id='$dim_id'");
+                    else mysqli_query($conn, "INSERT INTO product_lumber_lengths (product_id,dimension_id,unit_price,floor_price,bulk_price) VALUES ('$product_id','$dim_id','$unit_price','$floor_price','$bulk_price')");
                 }
             }
-            $columnsStr = implode(", ", $columns);
-            $valuesStr = implode(", ", $values);
-            $insertQuery = "INSERT INTO product (product_id, $columnsStr) VALUES ('$product_id', $valuesStr)";
-            if (!mysqli_query($conn, $insertQuery)) {
-                echo "Error adding product: " . mysqli_error($conn);
-                exit;
-            }
-            $product_id = $conn->insert_id;
-            $conn->query("UPDATE product SET main_image='images/product/product.jpg' WHERE product_id='$product_id'");
-            echo "success_add";
-        }
 
-        if (!empty($color_paint)) {
-            $assignedBy = $_SESSION['userid'];
-            $date = date('Y-m-d');
-            $time = date('H:i:s');
+            $res = mysqli_query($conn, "SELECT variant_hash FROM product WHERE product_id='$product_id'");
+            $oldHash = mysqli_fetch_assoc($res)['variant_hash'] ?? '';
 
-            $existingColors = [];
-            $res = mysqli_query($conn, "SELECT color_id FROM product_color_assign WHERE product_id = '$product_id'");
-            while ($row = mysqli_fetch_assoc($res)) $existingColors[] = intval($row['color_id']);
+            if ($oldHash !== $variantHash) {
+                $combinations = array_combinations([
+                    'product_line' => $product_line,
+                    'product_type' => $product_type,
+                    'grade'        => $grade,
+                    'gauge'        => $gauge,
+                    'dimension_id' => $available_lengths,
+                    'color_id'     => $color_paint
+                ]);
 
-            $toAdd = array_diff($color_paint, $existingColors);
-            $toDelete = array_diff($existingColors, $color_paint);
-
-            if (!empty($toDelete)) {
-                mysqli_query($conn, "DELETE FROM product_color_assign WHERE product_id = '$product_id' AND color_id IN (".implode(',', $toDelete).")");
-            }
-
-            foreach ($toAdd as $colorId) {
-                mysqli_query($conn, "INSERT INTO product_color_assign (product_id, color_id, `date`, `time`, assigned_by) 
-                                    VALUES ($product_id, $colorId, '$date', '$time', $assignedBy)");
-            }
-
-            $allColors = array_unique(array_merge($color_paint, $existingColors));
-            mysqli_query($conn, "UPDATE product SET color = '".json_encode($allColors)."' WHERE product_id = '$product_id'");
-        }
-
-        if (!empty($_FILES['picture_path']['name'][0])) {
-            $uploadFileDir = '../images/product/';
-            for ($i = 0; $i < count($_FILES['picture_path']['name']); $i++) {
-                $fileTmpPath = $_FILES['picture_path']['tmp_name'][$i];
-                $fileName = $_FILES['picture_path']['name'][$i];
-                if (empty($fileName)) continue;
-                $fileExtension = strtolower(pathinfo($fileName, PATHINFO_EXTENSION));
-                $newFileName = md5(time() . $fileName) . '.' . $fileExtension;
-                $dest_path = $uploadFileDir . $newFileName;
-                if (move_uploaded_file($fileTmpPath, $dest_path)) {
-                    if ($i == 0) $conn->query("UPDATE product SET main_image='images/product/$newFileName' WHERE product_id='$product_id'");
-                    $conn->query("INSERT INTO product_images (productid, image_url) VALUES ('$product_id', 'images/product/$newFileName')");
+                if ($combinations) {
+                    $rows = [];
+                    foreach ($combinations as $c) {
+                        $rows[] = "($product_id,{$c['product_line']},{$c['product_type']},{$c['grade']},{$c['gauge']},{$c['dimension_id']},{$c['color_id']},0)";
+                    }
+                    foreach (array_chunk($rows, 500) as $chunk) {
+                        mysqli_query($conn, "INSERT IGNORE INTO inventory (Product_id,product_line,product_type,grade,gauge,dimension_id,color_id,quantity_ttl) VALUES " . implode(',', $chunk));
+                    }
                 }
             }
-        }
 
-        if (!empty($product_type) || !empty($profile) || !empty($grade) || !empty($gauge) || !empty($color_paint) || !empty($available_lengths)) {
-            generateProductAbr([$product_category], $profile, $grade, $gauge, $product_type, $color_paint, $available_lengths, $product_id);
-        }
-
-        $dimension_ids = $_POST['dimension_ids'] ?? [];
-        $unit_prices   = $_POST['unit_price'] ?? [];
-        $floor_prices  = $_POST['floor_price'] ?? [];
-        $bulk_prices   = $_POST['bulk_price'] ?? [];
-
-        foreach ($dimension_ids as $i => $dim_id) {
-            $dim_id = intval($dim_id);
-            if ($dim_id <= 0) continue;
-
-            $unit_price  = isset($unit_prices[$i]) ? floatval($unit_prices[$i]) : 0;
-            $floor_price = isset($floor_prices[$i]) ? floatval($floor_prices[$i]) : 0;
-            $bulk_price  = isset($bulk_prices[$i]) ? floatval($bulk_prices[$i]) : 0;
-
-            if($category == $screw_id){
-                $res = mysqli_query($conn, "SELECT id FROM product_screw_lengths WHERE product_id = '$product_id' AND dimension_id = '$dim_id'");
-                if (mysqli_num_rows($res) > 0) {
-                    mysqli_query($conn, "UPDATE product_screw_lengths SET 
-                        unit_price = '$unit_price', 
-                        floor_price = '$floor_price', 
-                        bulk_price = '$bulk_price'
-                        WHERE product_id = '$product_id' AND dimension_id = '$dim_id'");
-                } else {
-                    mysqli_query($conn, "INSERT INTO product_screw_lengths 
-                        (product_id, dimension_id, unit_price, floor_price, bulk_price) 
-                        VALUES ('$product_id', '$dim_id', '$unit_price', '$floor_price', '$bulk_price')");
-                }
-            }else if($category == $lumber_id){
-                $res = mysqli_query($conn, "SELECT id FROM product_lumber_lengths WHERE product_id = '$product_id' AND dimension_id = '$dim_id'");
-                if (mysqli_num_rows($res) > 0) {
-                    mysqli_query($conn, "UPDATE product_lumber_lengths SET 
-                        unit_price = '$unit_price', 
-                        floor_price = '$floor_price', 
-                        bulk_price = '$bulk_price'
-                        WHERE product_id = '$product_id' AND dimension_id = '$dim_id'");
-                } else {
-                    mysqli_query($conn, "INSERT INTO product_lumber_lengths 
-                        (product_id, dimension_id, unit_price, floor_price, bulk_price) 
-                        VALUES ('$product_id', '$dim_id', '$unit_price', '$floor_price', '$bulk_price')");
-                }
-            }
-        }
-
-        $needsInventoryUpdate = false;
-
-        $variantColumns = [
-            'profile',
-            'product_type',
-            'grade',
-            'gauge',
-            'available_lengths',
-            'color'
-        ];
-
-        $oldVariantsRes = mysqli_query(
-            $conn,
-            "SELECT profile, product_type, grade, gauge, available_lengths, color 
-            FROM product WHERE product_id = '$product_id'"
-        );
-
-        if ($oldVariantsRes && mysqli_num_rows($oldVariantsRes) > 0) {
-            $oldVariants = mysqli_fetch_assoc($oldVariantsRes);
-
-            foreach ($variantColumns as $col) {
-                $oldVal = $oldVariants[$col] ?? '';
-                $newVal = json_encode($_POST[$col] ?? []);
-
-                if ($oldVal !== $newVal) {
-                    $needsInventoryUpdate = true;
-                    break;
-                }
-            }
-        } else {
-            $needsInventoryUpdate = true;
-        }
-
-        $lines   = $_POST['product_line'] ?? [];
-        $types   = $_POST['product_type'] ?? [];
-        $grades  = $_POST['grade'] ?? [];
-        $gauges  = $_POST['gauge'] ?? [];
-        $lengths = $_POST['available_lengths'] ?? [];
-        $colors  = $_POST['color_paint'] ?? [];
-
-        $combinations = array_combinations([
-            'product_line' => $lines,
-            'product_type' => $types,
-            'grade'        => $grades,
-            'gauge'        => $gauges,
-            'dimension_id' => $lengths,
-            'color_id'     => $colors
-        ]);
-
-        if ($needsInventoryUpdate) {
-
-            $combinations = array_combinations([
-                'product_line' => $lines,
-                'product_type' => $types,
-                'grade'        => $grades,
-                'gauge'        => $gauges,
-                'dimension_id' => $lengths,
-                'color_id'     => $colors
-            ]);
-
-            if (!empty($combinations)) {
-                $insertValues = [];
-
-                foreach ($combinations as $combo) {
-                    $line   = intval($combo['product_line']);
-                    $type   = intval($combo['product_type']);
-                    $grade  = intval($combo['grade']);
-                    $gauge  = intval($combo['gauge']);
-                    $dim    = intval($combo['dimension_id']);
-                    $color  = intval($combo['color_id']);
-
-                    $insertValues[] = "('$product_id', $line, $type, $grade, $gauge, $dim, $color, 0)";
-                }
-
-                if (!empty($insertValues)) {
-                    $insertSql = "
-                        INSERT IGNORE INTO inventory
-                        (Product_id, product_line, product_type, grade, gauge, dimension_id, color_id, quantity_ttl)
-                        VALUES " . implode(',', $insertValues);
-
-                    mysqli_query($conn, $insertSql);
-                }
-            }
+            mysqli_commit($conn);
+        } catch (Throwable $e) {
+            mysqli_rollback($conn);
+            echo "error: " . $e->getMessage();
         }
     }
 
@@ -1721,43 +1619,97 @@ if(isset($_REQUEST['action'])) {
         }
     }
     
-    if ($action == 'fetch_products') {
-        $permission = $_SESSION['permission'];
-        $data = [];
+    if ($_POST['action'] === 'fetch_products') {
+        $start = intval($_POST['start'] ?? 0);
+        $length = intval($_POST['length'] ?? 100);
+        $order_column_index = intval($_POST['order'][0]['column'] ?? 1);
+        $order_dir = $_POST['order'][0]['dir'] ?? 'asc';
+
+        $columns = ['product_name_html', 'product_category', 'product_line', 'product_type', 'status_html', 'action_html'];
+        $order_column = $columns[$order_column_index] ?? 'product_category';
+
+        $where = ["p.hidden = 0"];
+
+        if (!empty($_POST['text_search'])) {
+            $search = mysqli_real_escape_string($conn, $_POST['text_search']);
+            $where[] = "(p.product_item LIKE '%$search%')";
+        }
+
+        if (!empty($_POST['active_only'])) {
+            $where[] = "p.status = 1";
+        }
+
+        $filters = [
+            'category' => 'product_category',
+            'type'     => 'product_type',
+            'profile'  => 'profile',
+            'color'    => 'color',
+            'grade'    => 'grade',
+            'gauge'    => 'gauge'
+        ];
+        foreach ($filters as $key => $col) {
+            if (!empty($_POST[$key])) {
+                $val = intval($_POST[$key]);
+                $where[] = "p.$col = $val";
+            }
+        }
+
+        $where_sql = implode(' AND ', $where);
+
+        $instock_only = !empty($_POST['instock_only']);
+        $total_quantity_expr = $instock_only
+            ? "CASE 
+                WHEN EXISTS (
+                    SELECT 1 
+                    FROM inventory i
+                    WHERE i.product_id = p.product_id
+                    AND i.product_line = p.product_line
+                    AND i.product_type = p.product_type
+                    AND i.color_id = p.color
+                    AND i.grade = p.grade
+                    AND i.gauge = p.gauge
+                    AND i.quantity_ttl > 0
+                    LIMIT 1
+                ) THEN 1 
+                ELSE 0 
+            END AS total_quantity"
+            : "0 AS total_quantity";
+
+        $recordsFilteredRes = mysqli_query($conn, "SELECT COUNT(*) AS cnt FROM product p WHERE $where_sql");
+        $recordsFiltered = mysqli_fetch_assoc($recordsFilteredRes)['cnt'];
+
         $query = "
-            SELECT 
-                p.*, 
-                COALESCE(SUM(i.quantity_ttl), 0) AS total_quantity 
-            FROM product AS p 
-            LEFT JOIN inventory AS i ON p.product_id = i.product_id 
-            WHERE p.hidden = 0 
-            GROUP BY p.product_id
+            SELECT p.*, $total_quantity_expr
+            FROM product p
+            WHERE $where_sql
+            ORDER BY $order_column $order_dir
+            LIMIT $start, $length
         ";
+
         $result = mysqli_query($conn, $query);
-        $no = 1;
-    
+
+        $data = [];
+        $no = $start + 1;
+        $permission = $_SESSION['permission'];
+
         while ($row = mysqli_fetch_assoc($result)) {
             $product_id = $row['product_id'];
             $status = $row['status'];
-            $instock = $row['total_quantity'] > 1 ? 1 : 0;
-            $category_id = $row['product_category'];
-    
+            $instock = $row['total_quantity'] > 0 ? 1 : 0;
+            if ($instock_only && !$instock) continue;
+
             $status_html = $status == 1
                 ? "<a href='#'><div id='status-alert$no' class='changeStatus alert alert-success bg-success text-white border-0 text-center py-1 px-2 my-0' data-no='$no' data-id='$product_id' data-status='1' style='border-radius: 5%;'>Active</div></a>"
                 : "<a href='#'><div id='status-alert$no' class='changeStatus alert alert-danger bg-danger text-white border-0 text-center py-1 px-2 my-0' data-no='$no' data-id='$product_id' data-status='0' style='border-radius: 5%;'>Inactive</div></a>";
     
-            $picture_path = !empty($row['main_image']) ? $row['main_image'] : "images/product/product.jpg";
-    
-            $product_name_html = "
-                <a href='javascrip:void(0)' id='view_product_details' data-id='{$product_id}'>
-                    <div class='d-flex align-items-center'>
-                        <img src='{$picture_path}' class='rounded-circle' width='56' height='56'>
-                        <div class='ms-3'>
-                            <h6 class='fw-semibold mb-0 fs-4'>{$row['product_item']}</h6>
-                        </div>
+            $product_name_html = "<a href='javascript:void(0)' id='view_product_details' data-id='{$product_id}'>
+                <div class='d-flex align-items-center'>
+                    <div class='ms-3'>
+                        <h6 class='fw-semibold mb-0 fs-4'>{$row['product_item']}</h6>
                     </div>
-                </a>";
-    
+                </div>
+            </a>";
+
             $action_html = '';
             if ($permission === 'edit') {
                 $action_html = "
@@ -1791,31 +1743,42 @@ if(isset($_REQUEST['action'])) {
                     </div>";
 
             }
-    
+
             $data[] = [
-                'product_name_html'   => $product_name_html,
-                'product_category'    => getProductCategoryName($row['product_category']),
-                'product_system'      => getColumnFromTable("product_system", "product_system", $row['product_system']),
-                'product_gauge'       => getColumnFromTable("product_gauge", "product_gauge", $row['gauge']),
-                'product_line'       => getColumnFromTable("product_line", "product_line", $row['product_line']),
-                'product_type'        => getColumnFromTable("product_type", "product_type", $row['product_type']),
-                'profile'             => getColumnFromTable("profile_type", "profile_type", $row['profile']),
-                'color'               => getColorName($row['color']),
-                'grade'               => $row['grade'],
-                'gauge'               => $row['gauge'],
-                'type'                => $row['product_type'],
-                'line'                => $row['product_line'],
-                'active'              => $status,
-                'instock'             => $instock,
-                'status_html'         => $status_html,
-                'action_html'         => $action_html
+                'product_name_html' => $product_name_html,
+                'product_category'  => getProductCategoryName($row['product_category']),
+                'product_system'    => getColumnFromTable("product_system", "product_system", $row['product_system']),
+                'product_gauge'     => getColumnFromTable("product_gauge", "product_gauge", $row['gauge']),
+                'product_line'      => getColumnFromTable("product_line", "product_line", $row['product_line']),
+                'product_type'      => getColumnFromTable("product_type", "product_type", $row['product_type']),
+                'profile'           => getColumnFromTable("profile_type", "profile_type", $row['profile']),
+                'color'             => getColorName($row['color']),
+                'grade'             => $row['grade'],
+                'gauge'             => $row['gauge'],
+                'type'              => $row['product_type'],
+                'line'              => $row['product_line'],
+                'active'            => $status,
+                'instock'           => $instock,
+                'status_html'       => $status_html,
+                'action_html'       => $action_html
             ];
-    
+
             $no++;
         }
-    
-        echo json_encode(['data' => $data]);
+
+        $recordsTotal = mysqli_fetch_assoc(mysqli_query($conn, "SELECT COUNT(*) AS cnt FROM product WHERE hidden = 0"))['cnt'];
+
+        echo json_encode([
+            'draw' => intval($_POST['draw']),
+            'recordsTotal' => $recordsTotal,
+            'recordsFiltered' => $recordsFiltered,
+            'data' => $data
+        ]);
     }
+
+
+
+
 
     if ($action == 'fetch_details_modal') {
         $product_id = mysqli_real_escape_string($conn, $_POST['id']);

@@ -4907,15 +4907,11 @@ function cartesian(array $input) {
 function generateProductAbbr(int $product_id) {
     global $conn;
 
-    $sql = "SELECT * FROM product WHERE product_id = $product_id LIMIT 1";
-    $res = $conn->query($sql);
-
-    if (!$res || $res->num_rows === 0) {
-        return false;
-    }
+    $res = $conn->query("SELECT * FROM product WHERE product_id = $product_id LIMIT 1");
+    if (!$res || $res->num_rows === 0) return false;
 
     $row = $res->fetch_assoc();
-    $category_id = (int)$row['product_category'];
+    $category_id = (int)($row['product_category'] ?? 0);
 
     $relatedSets = [
         'profile' => normalizeIds($row['profile'] ?? null),
@@ -4927,15 +4923,22 @@ function generateProductAbbr(int $product_id) {
         'length'  => normalizeIds($row['available_lengths'] ?? null)
     ];
 
-    foreach ($relatedSets as $k => $v) {
-        if (empty($v)) unset($relatedSets[$k]);
-    }
+    foreach ($relatedSets as $k => $v) if (empty($v)) unset($relatedSets[$k]);
+
+    if (empty($relatedSets)) return 0;
 
     $combinations = cartesian($relatedSets);
+
+    $existing = [];
+    $checkRes = $conn->query("SELECT product_id FROM product_abr");
+    if ($checkRes) {
+        while ($r = $checkRes->fetch_assoc()) $existing[$r['product_id']] = true;
+    }
+
     $inserted = 0;
+    $batch = [];
 
     foreach ($combinations as $c) {
-
         $abbr = getProdID([
             'category' => $category_id,
             'profile'  => $c['profile'] ?? null,
@@ -4947,33 +4950,26 @@ function generateProductAbbr(int $product_id) {
             'length'   => $c['length'] ?? null
         ]);
 
-        if (!$abbr) continue;
+        if (!$abbr || isset($existing[$abbr])) continue;
 
+        $existing[$abbr] = true;
         $abbr_escaped = $conn->real_escape_string($abbr);
 
-        $check = $conn->query(
-            "SELECT 1 FROM product_abr WHERE product_id='$abbr_escaped' LIMIT 1"
-        );
+        $batch[] = "('$abbr_escaped', $category_id, "
+                 . ($c['profile'] ?? 'NULL') . ", "
+                 . ($c['grade'] ?? 'NULL') . ", "
+                 . ($c['gauge'] ?? 'NULL') . ", "
+                 . ($c['type'] ?? 'NULL') . ", "
+                 . ($c['color'] ?? 'NULL') . ", "
+                 . ($c['length'] ?? 'NULL') . ")";
+    }
 
-        if ($check && $check->num_rows > 0) continue;
-
-        $sql = sprintf(
-            "INSERT INTO product_abr
+    foreach (array_chunk($batch, 500) as $chunk) {
+        $sql = "INSERT INTO product_abr
             (product_id, category, profile, grade, gauge, type, color, length)
-            VALUES ('%s', %s, %s, %s, %s, %s, %s, %s)",
-            $abbr_escaped,
-            $category_id ?: 'NULL',
-            $c['profile'] ?? 'NULL',
-            $c['grade'] ?? 'NULL',
-            $c['gauge'] ?? 'NULL',
-            $c['type'] ?? 'NULL',
-            $c['color'] ?? 'NULL',
-            $c['length'] ?? 'NULL'
-        );
-
-        if ($conn->query($sql)) {
-            $inserted += $conn->affected_rows;
-        }
+            VALUES " . implode(',', $chunk);
+        $conn->query($sql);
+        $inserted += $conn->affected_rows;
     }
 
     return $inserted;
@@ -5002,5 +4998,41 @@ function updateWorkOrderStatus($orderid) {
     }
 
     return false;
+}
+
+function fetchInventoryQuantity($params = []) {
+    global $conn;
+
+    $product_id   = intval($params['product_id'] ?? 0);
+    $product_line = isset($params['product_line']) ? intval($params['product_line']) : null;
+    $product_type = isset($params['product_type']) ? intval($params['product_type']) : null;
+    $color_id     = isset($params['color_id']) ? intval($params['color_id']) : null;
+    $grade        = isset($params['grade']) ? intval($params['grade']) : null;
+    $gauge        = isset($params['gauge']) ? intval($params['gauge']) : null;
+
+    if (!$product_id) return 0;
+
+    $where = ["product_id = $product_id"];
+
+    if ($product_line !== null) $where[] = "product_line = $product_line";
+    if ($product_type !== null) $where[] = "product_type = $product_type";
+    if ($color_id !== null) $where[] = "color_id = $color_id";
+    if ($grade !== null) $where[] = "grade = $grade";
+    if ($gauge !== null) $where[] = "gauge = $gauge";
+
+    $where_sql = implode(' AND ', $where);
+
+    $sql = "SELECT COALESCE(SUM(quantity_ttl),0) AS total_quantity
+            FROM inventory
+            WHERE $where_sql";
+
+    $result = mysqli_query($conn, $sql);
+
+    if (!$result) {
+        return 0;
+    }
+
+    $row = mysqli_fetch_assoc($result);
+    return intval($row['total_quantity']);
 }
 ?>

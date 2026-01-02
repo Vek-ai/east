@@ -535,39 +535,21 @@ function showCol($name) {
                     </button>
                 </div>
             </div>
-            <div class="col-9">
-                <h3 class="card-title mb-2">
-                    Products List 
-                </h3>
+            <div class="col-9 position-relative">
+                <h3 class="card-title mb-2">Products List</h3>
                 <div id="selected-tags" class="mb-2"></div>
+
                 <div class="datatables">
                     <div class="table-responsive">
                         <table id="productList" class="table search-table align-middle text-wrap">
                             <thead class="header-item">
                                 <tr>
-                                    <?php if (showCol('product_name')): ?>
-                                        <th>Product Name</th>
-                                    <?php endif; ?>
-
-                                    <?php if (showCol('product_category')): ?>
-                                        <th>Product Category</th>
-                                    <?php endif; ?>
-
-                                    <?php if (showCol('product_line')): ?>
-                                        <th>Product Line</th>
-                                    <?php endif; ?>
-
-                                    <?php if (showCol('product_type')): ?>
-                                        <th>Product Type</th>
-                                    <?php endif; ?>
-
-                                    <?php if (showCol('status')): ?>
-                                        <th>Status</th>
-                                    <?php endif; ?>
-
-                                    <?php if (showCol('action')): ?>
-                                        <th>Action</th>
-                                    <?php endif; ?>
+                                    <th>Product Name</th>
+                                    <th>Product Category</th>
+                                    <th>Product Line</th>
+                                    <th>Product Type</th>
+                                    <th>Status</th>
+                                    <th>Action</th>
                                 </tr>
                             </thead>
                             <tbody></tbody>
@@ -582,7 +564,7 @@ function showCol($name) {
 </div>
 
 <div id="globalLoader" class="position-fixed top-0 start-0 w-100 h-100 d-none"
-     style="background: rgba(0,0,0,0.35); z-index: 2000;">
+     style="z-index: 2000;">
     <div class="d-flex justify-content-center align-items-center h-100">
         <div class="text-center text-white">
             <div class="spinner-border text-light mb-3" role="status" style="width: 3rem; height: 3rem;">
@@ -600,51 +582,40 @@ function showCol($name) {
         var selectedCategory = '';
 
         var table = $('#productList').DataTable({
+            serverSide: true,
+            processing: true,
             order: [[1, "asc"]],
             pageLength: 100,
             ajax: {
                 url: 'pages/product4_ajax.php',
                 type: 'POST',
-                data: { action: 'fetch_products' },
+                data: function(d) {
+                    d.action = 'fetch_products';
+                    d.text_search = $('#text-srh').val();
+                    d.active_only = $('#toggleActive').is(':checked') ? 1 : 0;
+                    d.instock_only = $('#onlyInStock').is(':checked') ? 1 : 0;
+                    $('.filter-selection').each(function() {
+                        d[$(this).data('filter')] = $(this).val();
+                    });
+                },
+                dataSrc: function(json) {
+                    console.log("Server response:", json);
+                    return json.data;
+                },
+                error: function(xhr, status, error) {
+                    console.error("AJAX Error:", status, error);
+                    console.error("Response Text:", xhr.responseText);
+                }
             },
             columns: [
-                <?php if (showCol('product_name')): ?>
-                    { data: 'product_name_html' },
-                <?php endif; ?>
-
-                <?php if (showCol('product_category')): ?>
-                    { data: 'product_category' },
-                <?php endif; ?>
-
-                <?php if (showCol('product_line')): ?>
-                    { data: 'product_line' },
-                <?php endif; ?>
-
-                <?php if (showCol('product_type')): ?>
-                    { data: 'product_type' },
-                <?php endif; ?>
-
-                <?php if (showCol('status')): ?>
-                    { data: 'status_html' },
-                <?php endif; ?>
-
-                <?php if (showCol('action')): ?>
-                    { data: 'action_html' }
-                <?php endif; ?>
+                { data: 'product_name_html', orderable: false, searchable: false },
+                { data: 'product_category' },
+                { data: 'product_line' },
+                { data: 'product_type' },
+                { data: 'status_html', orderable: false, searchable: false },
+                { data: 'action_html', orderable: false, searchable: false }
             ],
-            createdRow: function (row, data, dataIndex) {
-                $(row).attr('data-category', data.product_category);
-                $(row).attr('data-system', data.product_system);
-                $(row).attr('data-line', data.product_line);
-                $(row).attr('data-type', data.type);
-                $(row).attr('data-profile', data.profile);
-                $(row).attr('data-color', data.color);
-                $(row).attr('data-grade', data.grade);
-                $(row).attr('data-gauge', data.gauge);
-                $(row).attr('data-active', data.active);
-                $(row).attr('data-instock', data.instock);
-            },
-            "dom": 'lftp'
+            dom: 'lftp'
         });
 
         $('#productList_filter').hide();
@@ -1282,30 +1253,7 @@ function showCol($name) {
             let cost = color_multiplier * stock_multi;
             $("#cost").val(cost.toFixed(3));
 
-            /* let descriptionParts = [];
-            let gradeVal = $('#grade').val();
-            let gradeText = $('#grade option:selected').text().trim();
-
-            if (gradeVal && gradeText) {
-                descriptionParts.push(gradeText);
-            }
-
-            if (selectedSystem) {
-                descriptionParts.push($("#product_system option:selected").text().trim());
-            }
-
-            let gaugeAbbrev = $('#gauge option:selected').data('abbrev');
-            if (gaugeAbbrev) {
-                let lastIndex = descriptionParts.length - 1;
-                if (lastIndex >= 0) {
-                    descriptionParts[lastIndex] = descriptionParts[lastIndex] + " (" + gaugeAbbrev + ")";
-                } else {
-                    descriptionParts.push("(" + gaugeAbbrev + ")");
-                }
-            }
-
-            let descriptionString = descriptionParts.join(" ");
-            $("#product_item").val(descriptionString); */
+            
         });
         
         $(document).on('mousedown', '.readonly', function() {
@@ -1313,70 +1261,7 @@ function showCol($name) {
         });
 
         function filterTable() {
-            var textSearch = $('#text-srh').val().toLowerCase();
-            var isActive = $('#toggleActive').is(':checked');
-
-            $.fn.dataTable.ext.search = [];
-
-            if (textSearch) {
-                $.fn.dataTable.ext.search.push(function(settings, data, dataIndex) {
-                    return $(table.row(dataIndex).node()).text().toLowerCase().includes(textSearch);
-                });
-            }
-
-            if (isActive) {
-                $.fn.dataTable.ext.search.push(function(settings, data, dataIndex) {
-                    return $(table.row(dataIndex).node()).find('a .alert').text() === 'Active';
-                });
-            }
-
-            $.fn.dataTable.ext.search.push(function(settings, data, dataIndex) {
-                var row = $(table.row(dataIndex).node());
-                var match = true;
-
-                $('.filter-selection').each(function() {
-                    const normalize = str => str
-                        ?.toString()
-                        .trim()
-                        .replace(/\s+/g, ' ')
-                        .toLowerCase() || '';
-
-                    var filterKey   = $(this).data('filter');
-                    var filterValue = $(this).val();
-
-                    var rowNode = row[0];
-                    var rawAttr = $(rowNode).data(filterKey);
-
-                    var rowValue = rawAttr;
-
-                    if (typeof rawAttr === 'string' && rawAttr.startsWith('[')) {
-                        try {
-                            rowValue = JSON.parse(rawAttr);
-                        } catch (e) {
-                            rowValue = rawAttr;
-                        }
-                    }
-
-                    if (Array.isArray(rowValue)) {
-                        if (filterValue && !rowValue.includes(parseInt(filterValue))) {
-                            match = false;
-                            return false;
-                        }
-                    } else {
-                        var normalizedFilter = normalize(filterValue);
-                        var normalizedRow    = normalize(rowValue);
-                        if (normalizedFilter && normalizedFilter !== '/' && !normalizedRow.includes(normalizedFilter)) {
-                            match = false;
-                            return false;
-                        }
-                    }
-                });
-
-                return match;
-            });
-
-
-            table.draw();
+            table.ajax.reload();
             updateSelectedTags();
         }
 
@@ -1451,7 +1336,7 @@ function showCol($name) {
 
         $(document).on('click', '.reset_filters', function () {
             $('.filter-selection').each(function () {
-                $(this).val(null).trigger('change.select2');
+                $(this).val(null);
             });
 
             $('#text-srh').val('');
@@ -1552,8 +1437,6 @@ function showCol($name) {
         }
 
         $(document).on('change', '#screw_type, #lumber_type', fetchPricingSection);
-
-        filterTable();
 
         function toIntArray(val) {
             if (!val) return [];

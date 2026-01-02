@@ -156,43 +156,43 @@ if (isset($_POST['deleteproduct'])) {
 }
 
 if (isset($_REQUEST['query'])) {
-    $searchQuery = isset($_REQUEST['query']) ? mysqli_real_escape_string($conn, $_REQUEST['query']) : '';
-    $color_id   = (int) ($_REQUEST['color_id'] ?? 0);
-    $grade      = (int) ($_REQUEST['grade'] ?? 0);
-    $gauge_id   = (int) ($_REQUEST['gauge_id'] ?? 0);
-    $type_id    = (int) ($_REQUEST['type_id'] ?? 0);
-    $profile_id = (int) ($_REQUEST['profile_id'] ?? 0);
+    $searchQuery = mysqli_real_escape_string($conn, $_REQUEST['query'] ?? '');
+    $color_id    = (int) ($_REQUEST['color_id'] ?? 0);
+    $grade       = (int) ($_REQUEST['grade'] ?? 0);
+    $gauge_id    = (int) ($_REQUEST['gauge_id'] ?? 0);
+    $type_id     = (int) ($_REQUEST['type_id'] ?? 0);
+    $profile_id  = (int) ($_REQUEST['profile_id'] ?? 0);
     $category_id = (int) ($_REQUEST['category_id'] ?? 0);
-    $onlyInStock = isset($_REQUEST['onlyInStock']) ? filter_var($_REQUEST['onlyInStock'], FILTER_VALIDATE_BOOLEAN) : false;
-    $onlyPromotions = isset($_REQUEST['onlyPromotions']) ? filter_var($_REQUEST['onlyPromotions'], FILTER_VALIDATE_BOOLEAN) : false;
-    $onlyOnSale = isset($_REQUEST['onlyOnSale']) ? filter_var($_REQUEST['onlyOnSale'], FILTER_VALIDATE_BOOLEAN) : false;
+    $onlyInStock = filter_var($_REQUEST['onlyInStock'] ?? false, FILTER_VALIDATE_BOOLEAN);
+    $onlyPromotions = filter_var($_REQUEST['onlyPromotions'] ?? false, FILTER_VALIDATE_BOOLEAN);
+    $onlyOnSale = filter_var($_REQUEST['onlyOnSale'] ?? false, FILTER_VALIDATE_BOOLEAN);
+    $start = (int) ($_REQUEST['start'] ?? 0);
+    $length = (int) ($_REQUEST['length'] ?? 100);
 
     $query_product = "
         SELECT 
             p.*,
-            COALESCE(
-                CASE 
-                    WHEN p.product_category IN (3,4) THEN 1  -- treat as always in stock
-                    ELSE SUM(i.quantity_ttl)
-                END, 0
-            ) AS total_quantity,
-            pt.profile_type as profile_type_name,
-            pg.product_grade as product_grade_name
-        FROM 
-            product AS p
-        LEFT JOIN 
-            inventory AS i ON p.product_id = i.product_id
-        LEFT JOIN 
-            profile_type AS pt ON p.profile = pt.profile_type_id
-        LEFT JOIN 
-            product_grade AS pg ON p.grade = pg.product_grade_id
-        WHERE 
-            p.hidden = '0' and p.status = '1'
+            pt.profile_type AS profile_type_name,
+            pg.product_grade AS product_grade_name,
+            -- Check if the product has any inventory with quantity_ttl > 0
+            CASE 
+                WHEN p.product_category IN (3,4) THEN 1  -- always in stock for category 3 or 4
+                WHEN i.Product_id IS NOT NULL THEN 1     -- inventory exists with quantity > 0
+                ELSE 0
+            END AS in_stock
+        FROM product AS p
+        LEFT JOIN profile_type AS pt ON p.profile = pt.profile_type_id
+        LEFT JOIN product_grade AS pg ON p.grade = pg.product_grade_id
+        LEFT JOIN (
+            SELECT DISTINCT Product_id
+            FROM inventory
+            WHERE quantity_ttl > 0
+        ) AS i ON i.Product_id = p.product_id
+        WHERE p.hidden = '0' AND p.status = '1'
     ";
 
     if (!empty($searchQuery)) {
         $attrs = getProductAttributes($searchQuery);
-
         if (!empty($attrs) && array_filter($attrs)) {
             if (!empty($attrs['color']))     $color_id    = (int) $attrs['color'];
             if (!empty($attrs['grade']))     $grade       = (int) $attrs['grade'];
@@ -205,76 +205,41 @@ if (isset($_REQUEST['query'])) {
         }
     }
 
-    if (!empty($color_id)) {
-        $query_product .= " AND JSON_VALID(p.color_paint) 
-                            AND (
-                                JSON_CONTAINS(p.color_paint, '\"" . intval($color_id) . "\"') 
-                                OR JSON_CONTAINS(p.color_paint, '" . intval($color_id) . "')
-                            )";
+    $jsonFilters = [
+        'color' => $color_id,
+        'grade' => $grade,
+        'gauge' => $gauge_id,
+        'product_type' => $type_id,
+        'profile' => $profile_id
+    ];
+
+    foreach ($jsonFilters as $col => $val) {
+        if (!empty($val)) {
+            $query_product .= " AND JSON_VALID(p.$col) AND (
+                                    JSON_CONTAINS(p.$col, '\"$val\"') 
+                                    OR JSON_CONTAINS(p.$col, '$val')
+                                )";
+        }
     }
 
-    if (!empty($grade)) {
-        $query_product .= " AND JSON_VALID(p.grade) 
-                            AND (
-                                JSON_CONTAINS(p.grade, '\"" . intval($grade) . "\"') 
-                                OR JSON_CONTAINS(p.grade, '" . intval($grade) . "')
-                            )";
-    }
-
-    if (!empty($gauge_id)) {
-        $query_product .= " AND JSON_VALID(p.gauge) 
-                            AND (
-                                JSON_CONTAINS(p.gauge, '\"" . intval($gauge_id) . "\"') 
-                                OR JSON_CONTAINS(p.gauge, '" . intval($gauge_id) . "')
-                            )";
-    }
-
-    if (!empty($type_id)) {
-        $query_product .= " AND JSON_VALID(p.product_type) 
-                            AND (
-                                JSON_CONTAINS(p.product_type, '\"" . intval($type_id) . "\"') 
-                                OR JSON_CONTAINS(p.product_type, '" . intval($type_id) . "')
-                            )";
-    }
-
-    if (!empty($profile_id)) {
-        $query_product .= " AND JSON_VALID(p.profile) 
-                            AND (
-                                JSON_CONTAINS(p.profile, '\"" . intval($profile_id) . "\"') 
-                                OR JSON_CONTAINS(p.profile, '" . intval($profile_id) . "')
-                            )";
-    }
-
-    if (!empty($category_id)) {
-        $query_product .= " AND p.product_category = '$category_id'";
-    }
-
-    if ($onlyPromotions) {
-        $query_product .= " AND p.on_promotion = '1'";
-    }
-
+    if (!empty($category_id)) $query_product .= " AND p.product_category = '$category_id'";
+    if ($onlyPromotions) $query_product .= " AND p.on_promotion = '1'";
     if ($onlyOnSale) {
-        $query_product .= " 
-            AND EXISTS (
-                SELECT 1
-                FROM sales_discounts sd
-                WHERE sd.product_id = p.product_id
-                AND (
-                    sd.date_started = '0000-00-00 00:00:00' OR sd.date_started <= NOW()
-                )
-                AND (
-                    sd.date_finished = '0000-00-00 00:00:00' OR sd.date_finished >= NOW()
-                )
-            )
-        ";
+        $query_product .= " AND EXISTS (
+                                SELECT 1 FROM sales_discounts sd
+                                WHERE sd.product_id = p.product_id
+                                  AND (sd.date_started = '0000-00-00 00:00:00' OR sd.date_started <= NOW())
+                                  AND (sd.date_finished = '0000-00-00 00:00:00' OR sd.date_finished >= NOW())
+                            )";
     }
 
     $query_product .= " GROUP BY p.product_id";
+    if ($onlyInStock) $query_product .= " HAVING in_stock = 1";
 
-    if ($onlyInStock) {
-        $query_product .= " HAVING total_quantity > 0";
-    }
+    $resCount = mysqli_query($conn, "SELECT COUNT(*) AS cnt FROM ($query_product) AS temp");
+    $totalFiltered = mysqli_fetch_assoc($resCount)['cnt'];
 
+    $query_product .= " LIMIT $start, $length";
     $result_product = mysqli_query($conn, $query_product);
 
     $tableHTML = "";
@@ -312,7 +277,7 @@ if (isset($_REQUEST['query'])) {
                 }
             }
 
-            if ($row_product['total_quantity'] > 0) {
+            if ($row_product['in_stock'] > 0) {
                 $stock_text = '
                     <a href="javascript:void(0);" id="view_in_stock" data-id="' . $row_product['product_id'] . '" class="d-flex justify-content-center align-items-center">
                         <span class="text-bg-success p-1 rounded-circle"></span>
@@ -485,9 +450,13 @@ if (isset($_REQUEST['query'])) {
     } else {
         $tableHTML .= '<tr><td colspan="8" class="text-center">No products found</td></tr>';
     }
-    
-    echo $tableHTML;
-    //echo $query_product;
+
+    echo json_encode([
+        'data_html' => $tableHTML,
+        'totalPages' => ceil($totalFiltered / $length),
+        'totalRecords' => $totalFiltered
+    ]);
+    exit;
 }
 
 if (isset($_POST['set_usage'])) {
