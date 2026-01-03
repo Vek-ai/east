@@ -5,12 +5,68 @@ if (!isset($_SESSION['userid'])) {
     header("Location: login.php?redirect=$redirect_url");
     exit();
 }
+
 include_once 'includes/dbconn.php';
 define('APP_SECURE', true);
 
 $user_id = $_SESSION['userid'];
 $page_key = !empty($_REQUEST['page']) ? $_REQUEST['page'] : 'home';
+
+$query = "SELECT value FROM settings WHERE setting_name = 'admin_password'";
+$result = mysqli_query($conn, $query);
+if ($row = mysqli_fetch_assoc($result)) {
+    $adminPassword = trim($row['value']);
+}
+
+if (isset($_POST['ajax_password']) && isset($_POST['page_key'])) {
+    $pageKeyAjax = $_POST['page_key'];
+    if ($_POST['ajax_password'] === $adminPassword) {
+        $_SESSION['page_access'][$pageKeyAjax] = true;
+        echo json_encode(['success' => true]);
+    } else {
+        echo json_encode(['success' => false, 'message' => 'Wrong password']);
+    }
+    exit;
+}
+
+$pageQuery = "
+    SELECT 
+        p.id, 
+        p.file_name, 
+        p.is_password_required,
+        CASE
+            WHEN upa.permission IS NOT NULL THEN upa.permission
+            ELSE app.permission
+        END AS permission
+    FROM pages p
+    LEFT JOIN user_page_access upa
+        ON upa.page_id = p.id
+        AND upa.staff_id = '$user_id'
+        AND upa.permission IN ('view', 'edit')
+    LEFT JOIN staff s
+        ON s.staff_id = '$user_id'
+    LEFT JOIN access_profile_pages app
+        ON app.page_id = p.id
+        AND app.access_profile_id = s.access_profile_id
+        AND app.permission IN ('view', 'edit')
+    WHERE p.url = '$page_key'
+        AND p.category_id = '1'
+        AND (upa.permission IS NOT NULL OR app.permission IS NOT NULL)
+    LIMIT 1
+";
+$result = mysqli_query($conn, $pageQuery);
+$page = mysqli_fetch_assoc($result);
+
+
+$isPasswordRequired = ($page['is_password_required'] ?? 0) == 1;
+$fileName = $page['file_name'] ?? 'not_authorized.php';
+$showPasswordModal = $isPasswordRequired && empty($_SESSION['page_access'][$page_key]);
+
+if ($page) {
+    $_SESSION['permission'] = $page['permission'];
+}
 ?>
+
 <!DOCTYPE html>
 <html lang="en" dir="ltr" data-bs-theme="dark" data-color-theme="Blue_Theme" data-layout="vertical">
 
@@ -1042,45 +1098,65 @@ $page_key = !empty($_REQUEST['page']) ? $_REQUEST['page'] : 'home';
      
 
       <div class="body-wrapper">
-        <div class="container-fluid pt-3">
-          <?php 
-          $query = "
-                    SELECT 
-                        p.id, 
-                        p.file_name, 
-                        CASE
-                            WHEN upa.permission IS NOT NULL THEN upa.permission
-                            ELSE app.permission
-                        END AS permission
-                    FROM pages p
-                    LEFT JOIN user_page_access upa
-                        ON upa.page_id = p.id
-                        AND upa.staff_id = '$user_id'
-                        AND upa.permission IN ('view', 'edit')
-                    LEFT JOIN staff s
-                        ON s.staff_id = '$user_id'
-                    LEFT JOIN access_profile_pages app
-                        ON app.page_id = p.id
-                        AND app.access_profile_id = s.access_profile_id
-                        AND app.permission IN ('view', 'edit')
-                    WHERE p.url = '$page_key'
-                        AND p.category_id = '1'
-                        AND (
-                            upa.permission IS NOT NULL
-                            OR app.permission IS NOT NULL
-                      )
-                    LIMIT 1
-                ";
-          $result = mysqli_query($conn, $query);
-          if ($row = mysqli_fetch_assoc($result)) {
-              $_SESSION['permission'] = $row['permission'];
-              include "pages/" . $row['file_name'];
-          } else {
-              include "not_authorized.php";
-              //include "pages/user_page_access.php";
-          }
-          ?>
-        </div>
+          <div class="container-fluid pt-3">
+              <?php if ($showPasswordModal): ?>
+                <div class="modal" id="passwordModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
+                  <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content">
+                      <div class="modal-header">
+                        <h5 class="modal-title">Password Required</h5>
+                      </div>
+                      <div class="modal-body">
+                        <div class="alert alert-danger d-none" id="passwordError"></div>
+                        <div class="mb-3">
+                          <label for="admin_password">Enter Password</label>
+                          <input type="password" id="admin_password" class="form-control" required>
+                        </div>
+                      </div>
+                      <div class="modal-footer">
+                        <button id="submitPassword" class="btn btn-primary">Submit</button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <script>
+                $(document).ready(function() {
+                    var modal = new bootstrap.Modal(document.getElementById('passwordModal'));
+                    modal.show();
+
+                    $('#submitPassword').on('click', function() {
+                        var password = $('#admin_password').val().trim();
+                        if (!password) return;
+
+                        $.post(window.location.href, {
+                            ajax_password: password,
+                            page_key: "<?php echo $page_key; ?>"
+                        }, function(response) {
+                            if (response.success) {
+                                modal.hide();
+                                location.reload();
+                            } else {
+                                $('#passwordError').text(response.message).removeClass('d-none');
+                            }
+                        }, 'json');
+                    });
+
+                    $('#admin_password').on('keypress', function(e) {
+                        if (e.which === 13) $('#submitPassword').click();
+                    });
+                });
+                </script>
+              <?php endif; ?>
+
+              <?php
+              if (!$isPasswordRequired || !empty($_SESSION['page_access'][$page_key])) {
+                  include "pages/" . $fileName;
+              } else {
+                  include "not_authorized.php";
+              }
+              ?>
+          </div>
       </div>
 
       <div class="modal" id="color_chart_modal">

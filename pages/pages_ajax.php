@@ -15,6 +15,7 @@ if(isset($_REQUEST['action'])) {
         $menu_category = mysqli_real_escape_string($conn, $_POST['menu_category']);
         $menu_icon = mysqli_real_escape_string($conn, $_POST['menu_icon']);
         $visibility = mysqli_real_escape_string($conn, $_POST['visibility'] ?? 0);
+        $is_password_required = mysqli_real_escape_string($conn, $_POST['is_password_required'] ?? 0);
         $category_id = !empty($_POST['category_id']) ? mysqli_real_escape_string($conn, $_POST['category_id']) : 'NULL';
         $sort_order = mysqli_real_escape_string($conn, $_POST['sort_order']);
         
@@ -32,6 +33,7 @@ if(isset($_REQUEST['action'])) {
                                 menu_icon = '$menu_icon', 
                                 visibility = '$visibility', 
                                 sort_order = '$sort_order', 
+                                is_password_required = '$is_password_required', 
                                 category_id = $category_id 
                             WHERE id = '$id'";
             if (mysqli_query($conn, $updateQuery)) {
@@ -40,8 +42,8 @@ if(isset($_REQUEST['action'])) {
                 echo "Error updating page: " . mysqli_error($conn);
             }
         } else {
-            $insertQuery = "INSERT INTO pages (page_name, file_name, url, category_id, menu_name, menu_category, menu_icon, sort_order, visibility) 
-                            VALUES ('$page_name', '$file_name', '$url', '$category_id', '$menu_name', '$menu_category', '$menu_icon', '$sort_order', '$visibility')";
+            $insertQuery = "INSERT INTO pages (page_name, file_name, url, category_id, menu_name, menu_category, menu_icon, sort_order, visibility, is_password_required) 
+                            VALUES ('$page_name', '$file_name', '$url', '$category_id', '$menu_name', '$menu_category', '$menu_icon', '$sort_order', '$visibility', '$is_password_required')";
             if (mysqli_query($conn, $insertQuery)) {
                 echo "success_add";
             } else {
@@ -140,6 +142,15 @@ if(isset($_REQUEST['action'])) {
                 </div>
             </div>
 
+            <div class="col-md-6">
+                <div class="mb-3">
+                    <label for="is_password_required" class="form-label">Require Password to Access Page</label>
+                    <select id="is_password_required" name="is_password_required" class="form-select">
+                        <option value="0" <?= (!isset($row['is_password_required']) || $row['is_password_required'] == 0) ? 'selected' : '' ?>>No</option>
+                        <option value="1" <?= (!empty($row['is_password_required']) && $row['is_password_required'] == 1) ? 'selected' : '' ?>>Yes</option>
+                    </select>
+                </div>
+            </div>
         </div>
 
         <input type="hidden" id="id" name="id" class="form-control" value="<?= $id ?>"/>
