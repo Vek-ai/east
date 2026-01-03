@@ -141,72 +141,87 @@ $permission = $_SESSION['permission'];
                         <thead>
                             <tr>
                                 <th>Product Category</th>
+                                <th>Product Items</th>
                                 <th>Status</th>
                                 <th>Action</th>
                             </tr>
                         </thead>
                         <tbody>
-                    <?php
-                    $no = 1;
+                            <?php
+                            $no = 1;
 
-                    $query_pricing_category = "
-                        SELECT 
-                            pc.product_category_id,
-                            pcat.product_category,
-                            pc.id AS pricing_category_id,
-                            pc.percentage,
-                            pc.status
-                        FROM pricing_category pc
-                        LEFT JOIN product_category pcat ON pc.product_category_id = pcat.product_category_id
-                        WHERE pc.hidden = 0
-                        GROUP BY pc.product_category_id
-                        ORDER BY pcat.product_category ASC
-                    ";
+                            $query_pricing_category = "
+                                SELECT 
+                                    pc.id,
+                                    pc.product_category_id,
+                                    pc.product_items,
+                                    pcat.product_category,
+                                    pc.percentage,
+                                    pc.status
+                                FROM pricing_category pc
+                                LEFT JOIN product_category pcat 
+                                    ON pc.product_category_id = pcat.product_category_id
+                                WHERE pc.hidden = 0
+                                GROUP BY pc.product_category_id, pc.product_items
+                                ORDER BY pcat.product_category ASC, pc.product_items ASC
+                            ";
 
-                    $result_pricing_category = mysqli_query($conn, $query_pricing_category);
+                            $result_pricing_category = mysqli_query($conn, $query_pricing_category);
 
-                    $current_category_id = null;
+                            $current_category_id = null;
 
-                    while ($row = mysqli_fetch_array($result_pricing_category, MYSQLI_ASSOC)) {
-                        $id = $row['product_category_id'];
-                        $percentage = $row['percentage'];
-                        $status_val = $row['status'];
+                            while ($row = mysqli_fetch_array($result_pricing_category, MYSQLI_ASSOC)) {
+                                $id = $row['id'];
+                                $category_id = $row['product_category_id'];
+                                $percentage = $row['percentage'];
+                                $status_val = $row['status'];
 
-                        $status = ($status_val == 1)
-                            ? "<a href='#' class='changeStatus' data-no='$no' data-id='$id' data-status='$status_val'>
-                                    <div id='status-alert$no' class='alert alert-success bg-success text-white border-0 text-center py-1 px-2 my-0' style='border-radius:5%' role='alert'>Active</div>
-                            </a>"
-                            : "<a href='#' class='changeStatus' data-no='$no' data-id='$id' data-status='$status_val'>
-                                    <div id='status-alert$no' class='alert alert-danger bg-danger text-white border-0 text-center py-1 px-2 my-0' style='border-radius:5%' role='alert'>Inactive</div>
-                            </a>";
-                    ?>
-                        <tr id="product-row-<?= $no ?>" data-category="<?= $id ?>">
-                            <td><span class="<?php if ($status_val == 0) echo 'emphasize-strike'; ?>"><?= $row['product_category'] ?></span></td>
-                            <td><?= $status ?></td>
-                            <td class="text-center">
-                                <div class="d-flex align-items-center justify-content-center">
-                                <?php if ($permission === 'edit') { 
-                                    if ($status_val == 0) { ?>
-                                        <a href="#" title="Archive" class="py-1 text-dark hidePricingCategory text-decoration-none" data-id="<?= $id ?>" data-row="<?= $no ?>">
-                                            <i class="ti ti-trash text-danger fs-7"></i>
-                                        </a>
-                                    <?php } else { ?>
-                                        <a href="#" title="Edit" 
-                                        id="addModalBtn" 
-                                        class="d-flex align-items-center justify-content-center text-decoration-none" 
-                                        data-id="<?= $id ?>" 
-                                        data-type="edit">
-                                            <i class="ti ti-pencil fs-7"></i>
-                                        </a>
-                                    <?php } 
-                                } ?>
-                                </div>
-                            </td>
-                        </tr>
-                    <?php
-                        $no++;
-                    }
-                    ?>
+                                $status = ($status_val == 1)
+                                    ? "<a href='#' class='changeStatus' data-no='$no' data-id='$category_id' data-status='$status_val'>
+                                            <div id='status-alert$no' class='alert alert-success bg-success text-white border-0 text-center py-1 px-2 my-0' style='border-radius:5%' role='alert'>Active</div>
+                                    </a>"
+                                    : "<a href='#' class='changeStatus' data-no='$no' data-id='$category_id' data-status='$status_val'>
+                                            <div id='status-alert$no' class='alert alert-danger bg-danger text-white border-0 text-center py-1 px-2 my-0' style='border-radius:5%' role='alert'>Inactive</div>
+                                    </a>";
+
+                                $items = array_filter(array_map('trim', explode(',', $row['product_items'])));
+
+                                $names = [];
+                                foreach ($items as $product_id) {
+                                    $names[] = getProductName((int)$product_id);
+                                }
+
+                                $item_names = implode(', ', $names);
+                                
+                                ?>
+                                <tr id="product-row-<?= $no ?>" data-category="<?= $category_id ?>">
+                                    <td><span class="<?php if ($status_val == 0) echo 'emphasize-strike'; ?>"><?= $row['product_category'] ?></span></td>
+                                    <td><span class="<?php if ($status_val == 0) echo 'emphasize-strike'; ?>"><?= $item_names ?></span></td>
+                                    <td><?= $status ?></td>
+                                    <td class="text-center">
+                                        <div class="d-flex align-items-center justify-content-center">
+                                        <?php if ($permission === 'edit') { 
+                                            if ($status_val == 0) { ?>
+                                                <a href="#" title="Archive" class="py-1 text-dark hidePricingCategory text-decoration-none" data-id="<?= $id ?>" data-row="<?= $no ?>">
+                                                    <i class="ti ti-trash text-danger fs-7"></i>
+                                                </a>
+                                            <?php } else { ?>
+                                                <a href="#" title="Edit" 
+                                                id="addModalBtn" 
+                                                class="d-flex align-items-center justify-content-center text-decoration-none" 
+                                                data-id="<?= $id ?>" 
+                                                data-type="edit">
+                                                    <i class="ti ti-pencil fs-7"></i>
+                                                </a>
+                                            <?php } 
+                                        } ?>
+                                        </div>
+                                    </td>
+                                </tr>
+                            <?php
+                                $no++;
+                            }
+                            ?>
                         </tbody>
                     </table>
 

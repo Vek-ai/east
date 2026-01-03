@@ -21,24 +21,36 @@ if(isset($_REQUEST['action'])) {
             $customer_pricing_id = mysqli_real_escape_string($conn, $customer_pricing_id);
             $percentage = mysqli_real_escape_string($conn, floatval($percentage));
 
-            $checkQuery = "SELECT id FROM pricing_category 
-                        WHERE product_category_id = '$product_category_id' 
-                        AND customer_pricing_id = '$customer_pricing_id' 
-                        AND hidden = 0";
+            $checkQuery = "
+                SELECT id 
+                FROM pricing_category
+                WHERE product_category_id = '$product_category_id'
+                AND product_items = '$product_items_str'
+                AND customer_pricing_id = '$customer_pricing_id'
+                AND hidden = 0
+            ";
             $result = mysqli_query($conn, $checkQuery);
 
             if (mysqli_num_rows($result) > 0) {
                 $row = mysqli_fetch_assoc($result);
                 $id = $row['id'];
-                $updateQuery = "UPDATE pricing_category 
-                                SET percentage = '$percentage', product_items = '$product_items_str', 
-                                    last_edit = NOW(), edited_by = '$userid' 
-                                WHERE id = '$id'";
+
+                $updateQuery = "
+                    UPDATE pricing_category
+                    SET percentage = '$percentage',
+                        last_edit = NOW(),
+                        edited_by = '$userid'
+                    WHERE id = '$id'
+                ";
                 mysqli_query($conn, $updateQuery);
+
             } else {
-                $insertQuery = "INSERT INTO pricing_category 
-                                (product_category_id, customer_pricing_id, percentage, product_items, added_date, added_by) 
-                                VALUES ('$product_category_id', '$customer_pricing_id', '$percentage', '$product_items_str', NOW(), '$userid')";
+                $insertQuery = "
+                    INSERT INTO pricing_category
+                        (product_category_id, customer_pricing_id, percentage, product_items, added_date, added_by)
+                    VALUES
+                        ('$product_category_id', '$customer_pricing_id', '$percentage', '$product_items_str', NOW(), '$userid')
+                ";
                 mysqli_query($conn, $insertQuery);
             }
         }
@@ -69,24 +81,41 @@ if(isset($_REQUEST['action'])) {
     }
 
     if ($action == 'fetch_modal_content') {
-        $product_category_id = mysqli_real_escape_string($conn, $_POST['id']);
+        $id = mysqli_real_escape_string($conn, $_POST['id']);
 
-        $query = "SELECT * FROM pricing_category WHERE product_category_id = '$product_category_id' AND hidden = 0";
+        $query = "SELECT * FROM pricing_category WHERE id = '$id' AND hidden = 0";
         $result = mysqli_query($conn, $query);
 
         $pricing_percentages = [];
         $selected_items = [];
-        while ($row = mysqli_fetch_array($result, MYSQLI_ASSOC)) {
-            $pricing_id = $row['customer_pricing_id'];
-            if ($pricing_id) {
-                $pricing_percentages[$pricing_id] = $row['percentage'];
+        $product_category_id = '';
+
+        if ($row = mysqli_fetch_array($result, MYSQLI_ASSOC)) {
+            $product_category_id = $row['product_category_id'];
+            $product_items_str = $row['product_items'];
+
+            $query_group = "SELECT * FROM pricing_category 
+                            WHERE product_category_id = '$product_category_id' 
+                            AND product_items = '".mysqli_real_escape_string($conn, $product_items_str)."' 
+                            AND hidden = 0";
+            $result_group = mysqli_query($conn, $query_group);
+
+            while ($row_group = mysqli_fetch_array($result_group, MYSQLI_ASSOC)) {
+                $customer_pricing_id = $row_group['customer_pricing_id'] ?? null;
+                $percentage = $row_group['percentage'] ?? null;
+
+                if ($customer_pricing_id !== null) {
+                    $pricing_percentages[$customer_pricing_id] = $percentage;
+                }
+
+                $items = array_filter(explode(',', $row_group['product_items'] ?? ''));
+                $selected_items = array_merge($selected_items, $items);
             }
-            $items = array_filter(explode(',', $row['product_items'] ?? ''));
-            $selected_items = array_merge($selected_items, $items);
+
+            $selected_items = array_unique($selected_items);
         }
-        $selected_items = array_unique($selected_items);
         ?>
-        <input type="hidden" id="product_category_id" name="product_category_id" value="<?= $product_category_id ?>"/>
+        <input type="hidden" id="id" name="id" value="<?= $id ?>"/>
 
         <div class="row pt-3">
             <label class="form-label">Product Category</label>
@@ -100,7 +129,7 @@ if(isset($_REQUEST['action'])) {
                         $selected = ($product_category_id == $row_category['product_category_id']) ? 'selected' : '';
                         ?>
                         <option value="<?= $row_category['product_category_id'] ?>" <?= $selected ?>>
-                            <?= $row_category['product_category'] ?>
+                            <?= htmlspecialchars($row_category['product_category']) ?>
                         </option>
                         <?php
                     }
@@ -119,7 +148,7 @@ if(isset($_REQUEST['action'])) {
                             $selected = in_array($row_products['product_id'], $selected_items) ? 'selected' : '';
                             ?>
                             <option value="<?= $row_products['product_id'] ?>" <?= $selected ?>>
-                                <?= !empty($row_products['product_item']) ? $row_products['product_item'] : $row_products['description'] ?>
+                                <?= !empty($row_products['product_item']) ? htmlspecialchars($row_products['product_item']) : htmlspecialchars($row_products['description']) ?>
                             </option>
                             <?php
                         }
@@ -144,7 +173,7 @@ if(isset($_REQUEST['action'])) {
                     <div class="row mb-2 align-items-center">
                         <div class="col-6 text-center">
                             <label for="customer_pricing_<?= $pricing_id ?>" class="form-label mb-0">
-                                <?= $row_pricing['pricing_name'] ?>
+                                <?= htmlspecialchars($row_pricing['pricing_name']) ?>
                             </label>
                         </div>
                         <div class="col-6 text-center">
@@ -153,7 +182,7 @@ if(isset($_REQUEST['action'])) {
                                 id="customer_pricing_<?= $pricing_id ?>"
                                 name="customer_pricing_percentages[<?= $pricing_id ?>]"
                                 class="form-control"
-                                value="<?= $percentage_val ?>"
+                                value="<?= htmlspecialchars($percentage_val) ?>"
                                 placeholder="%"
                             />
                         </div>
@@ -176,7 +205,6 @@ if(isset($_REQUEST['action'])) {
         </script>
         <?php
     }
-
 
 
     mysqli_close($conn);

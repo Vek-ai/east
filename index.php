@@ -30,6 +30,7 @@ $page_key = !empty($_REQUEST['page']) ? $_REQUEST['page'] : 'home';
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
   <link href="https://unpkg.com/dropzone@6.0.0-beta.1/dist/dropzone.css" rel="stylesheet" type="text/css">
   <link rel="stylesheet" href="https://code.jquery.com/ui/1.13.1/themes/smoothness/jquery-ui.css">
+  <link rel="stylesheet" href="https://cdn.datatables.net/rowgroup/1.4.1/css/rowGroup.dataTables.min.css">
 
   <link rel="stylesheet" href="assets/libs/owl.carousel/dist/assets/owl.carousel.min.css">
 
@@ -1208,6 +1209,7 @@ $page_key = !empty($_REQUEST['page']) ? $_REQUEST['page'] : 'home';
   <script src="assets/libs/owl.carousel/dist/owl.carousel.min.js"></script>
   <script src="assets/libs/bootstrap-datepicker/dist/js/bootstrap-datepicker.min.js"></script>
   <script src="https://unpkg.com/dropzone@6.0.0-beta.1/dist/dropzone-min.js"></script>
+  <script src="https://cdn.datatables.net/rowgroup/1.4.1/js/dataTables.rowGroup.min.js"></script>
   
   <script>
   function handleTheme() {
