@@ -1553,7 +1553,7 @@ if (isset($_POST['save_order'])) {
             $response['order_id'] = $orderid;
             $response['customer_id'] = $_SESSION['customer_id'];
 
-            unset($_SESSION['cart']);
+            //unset($_SESSION['cart']);
         } else {
             $response['message'] = "Error inserting order estimate records: " . $conn->error;
         }

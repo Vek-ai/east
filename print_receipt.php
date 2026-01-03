@@ -121,7 +121,7 @@ function renderPanelCategory($pdf, $product, $conn) {
     $product_abbrev = $product['product_id_abbrev'] ?? '';
     $color = getColorName($product['custom_color']);
 
-    $unit_price = $quantity > 0 ? $disc_price / $quantity : 0;
+    $unit_price = getProductPrice($productid);
 
     $summaryRow = [
         $product_abbrev,
@@ -182,7 +182,7 @@ function renderTrimCategory($pdf, $product, $conn) {
     $product_abbrev = $product['product_id_abbrev'] ?? '';
     $color = getColorName($product['custom_color']);
 
-    $unit_price = $quantity > 0 ? $disc_price / $quantity : 0;
+    $unit_price = getProductPrice($productid);
 
     $summaryRow = [
         $product_abbrev,
@@ -240,7 +240,9 @@ function renderScrewCategory($pdf, $product, $conn) {
     $product_abbrev = $product['product_id_abbrev'] ?? '';
     $color = getColorName($product['custom_color']);
 
-    $unit_price = $quantity > 0 ? $disc_price / $quantity : 0;
+    $dimension_name = $product['screw_length'] ?? '';
+    $dimension_id = getScrewDimensionID($dimension_name);
+    $unit_price = getScrewPrice($productid, $dimension_id);
 
     $summaryRow = [
         $product_abbrev,
@@ -250,6 +252,63 @@ function renderScrewCategory($pdf, $product, $conn) {
         $screw_type,
         $quantity,
         $length_display,
+        '',
+        '',
+        '$ ' . number_format($unit_price, 2),
+        '$ ' . number_format($disc_price, 2),
+    ];
+
+    $pdf->renderRow($columns, $summaryRow);
+
+    if (!empty($note)) {
+        $pdf->SetFont('Arial', 'I', 7);
+        $pdf->Cell(0, 4, 'Note: ' . $note, 0, 1, 'L');
+        $pdf->SetFont('Arial', '', 7);
+    }
+
+    $totalQty    = $quantity;
+    $totalPrice  = $disc_price;
+    $totalActual = $act_price;
+
+    return [$totalPrice, $totalQty, $totalActual];
+}
+
+function renderLumberCategory($pdf, $product, $conn) {
+    global $columns;
+
+    $productid = $product['productid'];
+    $product_details = getProductDetails($productid);
+    $grade_details   = getGradeDetails($product['custom_grade']);
+    $gauge_details   = getGaugeDetails($product['custom_gauge']);
+
+    $quantity   = floatval($product['quantity'] ?? 0);
+    $act_price  = floatval($product['actual_price'] ?? 0);
+    $disc_price = floatval($product['discounted_price'] ?? 0);
+    $note       = trim($product['note'] ?? '');
+
+    $panel_type  = !empty($product['panel_type']) ? ucwords(str_replace('_', ' ', $product['panel_type'])) : '';
+    $panel_style = !empty($product['panel_style']) ? ucwords(str_replace('_', ' ', $product['panel_style'])) : '';
+
+    $ft = floor(floatval($product['custom_length'] ?? 0));
+    $in_decimal = floatval($product['custom_length2'] ?? 0);
+    $total_length = $ft + ($in_decimal / 12);
+
+    $ft_only = floor($total_length);
+    $inch_only = round(($total_length - $ft_only) * 12);
+
+    $product_abbrev = $product['product_id_abbrev'] ?? '';
+    $color = getColorName($product['custom_color']);
+
+    $unit_price = getProductPrice($productid);
+
+    $summaryRow = [
+        $product_abbrev,
+        $product['product_item'],
+        $color,
+        '',
+        '',
+        $quantity,
+        '',
         '',
         '',
         '$ ' . number_format($unit_price, 2),
@@ -297,7 +356,7 @@ function renderDefaultCategory($pdf, $product, $conn) {
     $product_abbrev = $product['product_id_abbrev'] ?? '';
     $color = getColorName($product['custom_color']);
 
-    $unit_price = $quantity > 0 ? $disc_price / $quantity : 0;
+    $unit_price = getProductPrice($productid);
 
     $summaryRow = [
         $product_abbrev,
@@ -655,10 +714,21 @@ if (mysqli_num_rows($result) > 0) {
 
         $leftText = get_customer_name($row_orders['customerid']) . "\n";
         $addressParts = [];
-        if (!empty($customerDetails['address'])) $addressParts[] = $customerDetails['address'];
-        if (!empty($customerDetails['city'])) $addressParts[] = $customerDetails['city'];
-        if (!empty($customerDetails['state'])) $addressParts[] = $customerDetails['state'];
-        if (!empty($customerDetails['zip'])) $addressParts[] = $customerDetails['zip'];
+        $address = $customerDetails['address'];
+        $city = $customerDetails['city'];
+        $state = $customerDetails['state'];
+        $zip = $customerDetails['zip'];
+        if(!empty($customerDetails['different_ship_address'])){
+            $address = $customerDetails['ship_address'];
+            $city = $customerDetails['ship_city'];
+            $state = $customerDetails['ship_state'];
+            $zip = $customerDetails['ship_zip'];
+        }
+        
+        if (!empty($address)) $addressParts[] = $address;
+        if (!empty($city)) $addressParts[] = $city;
+        if (!empty($state)) $addressParts[] = $state;
+        if (!empty($zip)) $addressParts[] = $zip;
         if (!empty($addressParts)) $leftText .= implode(', ', $addressParts) . "\n";
         if (!empty($customerDetails['tax_exempt_number'])) $leftText .= 'Tax Exempt #: ' . $customerDetails['tax_exempt_number'] . "\n";
         if (!empty($customerDetails['contact_phone'])) $leftText .= $customerDetails['contact_phone'] . "\n";
@@ -752,6 +822,8 @@ if (mysqli_num_rows($result) > 0) {
                     [$catTotal, $catQty, $catActual] = renderPanelCategory($pdf, $row_product, $conn);
                 } elseif ($categoryId == $trim_id) {
                     [$catTotal, $catQty, $catActual] = renderTrimCategory($pdf, $row_product, $conn);
+                } elseif ($categoryId == $lumber_id) {
+                    [$catTotal, $catQty, $catActual] = renderLumberCategory($pdf, $row_product, $conn);
                 } elseif ($categoryId == $screw_id) {
                     [$catTotal, $catQty, $catActual] = renderScrewCategory($pdf, $row_product, $conn);
                 } else {

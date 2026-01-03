@@ -379,11 +379,23 @@ function renderInvoiceHeader($pdf, $row_orders, $type) {
 
     $leftText = get_customer_name($row_orders['customerid']) . "\n";
 
+    if (!empty($customerDetails['different_ship_address'])) {
+        $address = $customerDetails['ship_address'] ?? '';
+        $city    = $customerDetails['ship_city'] ?? '';
+        $state   = $customerDetails['ship_state'] ?? '';
+        $zip     = $customerDetails['ship_zip'] ?? '';
+    } else {
+        $address = $customerDetails['address'] ?? '';
+        $city    = $customerDetails['city'] ?? '';
+        $state   = $customerDetails['state'] ?? '';
+        $zip     = $customerDetails['zip'] ?? '';
+    }
+
     $addressParts = [];
-    if (!empty($customerDetails['address'])) $addressParts[] = $customerDetails['address'];
-    if (!empty($customerDetails['city']))    $addressParts[] = $customerDetails['city'];
-    if (!empty($customerDetails['state']))   $addressParts[] = $customerDetails['state'];
-    if (!empty($customerDetails['zip']))     $addressParts[] = $customerDetails['zip'];
+    if (!empty($address)) $addressParts[] = $address;
+    if (!empty($city))    $addressParts[] = $city;
+    if (!empty($state))   $addressParts[] = $state;
+    if (!empty($zip))     $addressParts[] = $zip;
 
     if (!empty($addressParts)) {
         $leftText .= implode(', ', $addressParts) . "\n";

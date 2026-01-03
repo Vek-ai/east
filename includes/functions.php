@@ -417,6 +417,34 @@ function getDimensionID($dimension){
     return '';
 }
 
+function getScrewDimensionID($dimension){
+    global $conn;
+    $screw_id = 16;
+    $query = "SELECT dimension_id FROM dimensions WHERE dimension = '$dimension' AND dimension_category = '$screw_id'";
+    $result = mysqli_query($conn, $query);
+
+    if ($result && mysqli_num_rows($result) > 0) {
+        $row = mysqli_fetch_assoc($result);
+        return $row['dimension_id'];
+    }
+
+    return '';
+}
+
+function getLumberDimensionID($dimension){
+    global $conn;
+    $lumber_id = 1;
+    $query = "SELECT dimension_id FROM dimensions WHERE dimension = '$dimension' AND dimension_category = '$lumber_id'";
+    $result = mysqli_query($conn, $query);
+
+    if ($result && mysqli_num_rows($result) > 0) {
+        $row = mysqli_fetch_assoc($result);
+        return $row['dimension_id'];
+    }
+
+    return '';
+}
+
 function getProductSystemName($id){
     global $conn;
     $query = "SELECT product_system FROM product_system WHERE product_system_id = '$id'";
@@ -3599,6 +3627,62 @@ function calculateCartItem($values) {
         "unique_prod_id"    => $unique_prod_id,
         "pack"    => $pack,
     ];
+}
+
+function getScrewPrice(int $product_id, int $dimension_id)
+{
+    global $conn;
+
+    if ($product_id <= 0 || $dimension_id <= 0) return 0;
+
+    $product_id   = mysqli_real_escape_string($conn, $product_id);
+    $dimension_id = mysqli_real_escape_string($conn, $dimension_id);
+
+    $sql = "
+        SELECT unit_price
+        FROM product_screw_lengths
+        WHERE product_id = '{$product_id}'
+        AND dimension_id = '{$dimension_id}'
+        LIMIT 1
+    ";
+
+    $res = mysqli_query($conn, $sql);
+    if (!$res) return 0;
+
+    $row = mysqli_fetch_assoc($res);
+    return (float)($row['unit_price'] ?? 0);
+}
+
+function getLumberPrice(int $product_id, int $dimension_id)
+{
+    global $conn;
+
+    if ($product_id <= 0 || $dimension_id <= 0) return 0;
+
+    $product_id   = mysqli_real_escape_string($conn, $product_id);
+    $dimension_id = mysqli_real_escape_string($conn, $dimension_id);
+
+    $sql = "
+        SELECT unit_price
+        FROM product_lumber_lengths
+        WHERE product_id = '{$product_id}'
+        AND dimension_id = '{$dimension_id}'
+        LIMIT 1
+    ";
+
+    $res = mysqli_query($conn, $sql);
+    if (!$res) return 0;
+
+    $row = mysqli_fetch_assoc($res);
+    return (float)($row['unit_price'] ?? 0);
+}
+
+function getProductPrice(int $product_id)
+{
+    if ($product_id <= 0) return 0;
+
+    $product = getProductDetails($product_id);
+    return (float)($product['unit_price'] ?? 0);
 }
 
 function createNet30Approval($customerid, $cashierid, $pay_type, $charge_net_30, $job_info = [], $delivery_info = [], $tax_rate = 0.0, $discount_default = 0.0) {

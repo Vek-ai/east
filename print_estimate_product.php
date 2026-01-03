@@ -662,10 +662,21 @@ if (mysqli_num_rows($result) > 0) {
 
         $leftText = get_customer_name($row_estimates['customerid']) . "\n";
         $addressParts = [];
-        if (!empty($customerDetails['address'])) $addressParts[] = $customerDetails['address'];
-        if (!empty($customerDetails['city'])) $addressParts[] = $customerDetails['city'];
-        if (!empty($customerDetails['state'])) $addressParts[] = $customerDetails['state'];
-        if (!empty($customerDetails['zip'])) $addressParts[] = $customerDetails['zip'];
+        $address = $customerDetails['address'];
+        $city = $customerDetails['city'];
+        $state = $customerDetails['state'];
+        $zip = $customerDetails['zip'];
+        if(!empty($customerDetails['different_ship_address'])){
+            $address = $customerDetails['ship_address'];
+            $city = $customerDetails['ship_city'];
+            $state = $customerDetails['ship_state'];
+            $zip = $customerDetails['ship_zip'];
+        }
+        
+        if (!empty($address)) $addressParts[] = $address;
+        if (!empty($city)) $addressParts[] = $city;
+        if (!empty($state)) $addressParts[] = $state;
+        if (!empty($zip)) $addressParts[] = $zip;
         if (!empty($addressParts)) $leftText .= implode(', ', $addressParts) . "\n";
         if (!empty($customerDetails['tax_exempt_number'])) $leftText .= 'Tax Exempt #: ' . $customerDetails['tax_exempt_number'] . "\n";
         if (!empty($customerDetails['contact_phone'])) $leftText .= $customerDetails['contact_phone'] . "\n";

@@ -20,7 +20,7 @@ function calculateUnitPrice(
     $soldByFeet = ($soldByFeet == 1) ? 1 : 0;
     $bends      = is_numeric($bends) ? intval($bends) : 0;
     $hems       = is_numeric($hems) ? intval($hems) : 0;
-    $width      = is_numeric($width) ? intval($width) : 1;
+    $width      = is_numeric($width) ? intval($width) : 12;
 
     $pricePerBend = floatval(getPaymentSetting('price_per_bend') ?? 0);
     $pricePerHem  = floatval(getPaymentSetting('price_per_hem') ?? 0);

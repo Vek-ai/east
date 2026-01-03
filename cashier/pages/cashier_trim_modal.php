@@ -62,6 +62,11 @@ if(isset($_POST['fetch_modal'])){
             $default_grade_id = $gr_no_1;
             $default_gauge_id = $ga_26;
             break;
+        case 264: // band board
+            $default_color_id = '';
+            $default_grade_id = $gr_no_1;
+            $default_gauge_id = $ga_26;
+            break;
         case 398: // Corrugated
             $default_color_id = '';
             $default_grade_id = $gr_no_1;
@@ -302,10 +307,6 @@ if(isset($_POST['fetch_modal'])){
                     const color = parseInt($('#trim-color').val()) || 0;
                     const grade = parseInt($('#trim-grade').val()) || 0;
                     const gauge = parseInt($('#trim-gauge').val()) || 0;
-
-                    console.log(color);
-                    console.log(grade);
-                    console.log(gauge);
 
                     $.ajax({
                         url: 'pages/cashier_trim_modal.php',

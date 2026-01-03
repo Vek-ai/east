@@ -413,15 +413,28 @@ function renderInvoiceHeader($pdf, $row_orders) {
     $name = get_customer_name($row_orders['customerid']);
     $pdf->MultiCell($wHalf, 5, $name, 1, 'L');
 
+    if (!empty($customerDetails['different_ship_address'])) {
+        $address = $customerDetails['ship_address'] ?? '';
+        $city    = $customerDetails['ship_city'] ?? '';
+        $state   = $customerDetails['ship_state'] ?? '';
+        $zip     = $customerDetails['ship_zip'] ?? '';
+    } else {
+        $address = $customerDetails['address'] ?? '';
+        $city    = $customerDetails['city'] ?? '';
+        $state   = $customerDetails['state'] ?? '';
+        $zip     = $customerDetails['zip'] ?? '';
+    }
+
     $addressParts = [];
-    if (!empty($customerDetails['address'])) $addressParts[] = $customerDetails['address'];
-    if (!empty($customerDetails['city']))    $addressParts[] = $customerDetails['city'];
-    if (!empty($customerDetails['state']))   $addressParts[] = $customerDetails['state'];
-    if (!empty($customerDetails['zip']))     $addressParts[] = $customerDetails['zip'];
-    $address = implode(', ', $addressParts);
+    if (!empty($address)) $addressParts[] = $address;
+    if (!empty($city))    $addressParts[] = $city;
+    if (!empty($state))   $addressParts[] = $state;
+    if (!empty($zip))     $addressParts[] = $zip;
+
+    $fullAddress = implode(', ', $addressParts);
 
     $pdf->SetX($col1_x);
-    $pdf->MultiCell($wHalf, 5, $address, 1, 'L');
+    $pdf->MultiCell($wHalf, 5, $fullAddress, 1, 'L');
 
     $pdf->SetFont('Arial', 'B', 9);
     $pdf->SetX($col1_x);
