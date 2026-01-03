@@ -137,7 +137,7 @@ function renderPanelCategory($pdf, $product, $conn) {
         '$ ' . number_format($disc_price, 2),
     ];
 
-    $pdf->renderRow($columns, $summaryRow);
+    $pdf->renderRow($columns, $summaryRow, false, $note);
 
     if (!empty($note)) {
         $pdf->SetFont('Arial', 'I', 7);
@@ -198,7 +198,7 @@ function renderTrimCategory($pdf, $product, $conn) {
         '$ ' . number_format($disc_price, 2),
     ];
 
-    $pdf->renderRow($columns, $summaryRow);
+    $pdf->renderRow($columns, $summaryRow, false, $note);
 
     if (!empty($note)) {
         $pdf->SetFont('Arial', 'I', 7);
@@ -258,7 +258,7 @@ function renderScrewCategory($pdf, $product, $conn) {
         '$ ' . number_format($disc_price, 2),
     ];
 
-    $pdf->renderRow($columns, $summaryRow);
+    $pdf->renderRow($columns, $summaryRow, false, $note);
 
     if (!empty($note)) {
         $pdf->SetFont('Arial', 'I', 7);
@@ -315,7 +315,7 @@ function renderLumberCategory($pdf, $product, $conn) {
         '$ ' . number_format($disc_price, 2),
     ];
 
-    $pdf->renderRow($columns, $summaryRow);
+    $pdf->renderRow($columns, $summaryRow, false, $note);
 
     if (!empty($note)) {
         $pdf->SetFont('Arial', 'I', 7);
@@ -372,7 +372,7 @@ function renderDefaultCategory($pdf, $product, $conn) {
         '$ ' . number_format($disc_price, 2),
     ];
 
-    $pdf->renderRow($columns, $summaryRow);
+    $pdf->renderRow($columns, $summaryRow, false, $note);
 
     if (!empty($note)) {
         $pdf->SetFont('Arial', 'I', 7);
@@ -411,9 +411,8 @@ class PDF extends FPDF {
         return $fontSize;
     }
 
-    public function renderRow($columns, $row, $bold = false) {
+    public function renderRow($columns, $row, $bold = false, $note = '') {
         $lineHeight = 5;
-
         $xStart = $this->GetX();
         $yStart = $this->GetY();
 
@@ -421,69 +420,90 @@ class PDF extends FPDF {
 
         $heights = [];
         $cellTexts = [];
+        $cellStyles = [];
 
         foreach ($columns as $i => $col) {
             $w = $col['width'];
             $fontSize = $col['fontsize'] ?? 9;
 
-            $this->SetFont('Arial', $bold ? 'B' : '', $fontSize);
+            $cellBold = $bold;
+            $cellItalic = false;
+            $cellUnderline = false;
+
+            if ($i === 4) {
+                if ($row[$i] === '26ga') $cellBold = true;
+                elseif ($row[$i] === '24ga') { $cellBold = true; $cellItalic = true; $cellUnderline = true; }
+            } elseif ($i === 7 && stripos($row[$i], 'Vented') !== false) {
+                $cellBold = true;
+            } elseif ($i === 8) {
+                if (stripos($row[$i], 'Reversed') !== false) { $cellBold = true; $cellUnderline = true; }
+                elseif (stripos($row[$i], 'Minor Rib') !== false) $cellBold = true;
+                elseif (stripos($row[$i], 'Pencil Ribs') !== false) $cellUnderline = true;
+            }
+
+            $style = '';
+            if ($cellBold) $style .= 'B';
+            if ($cellItalic) $style .= 'I';
+            if ($cellUnderline) $style .= 'U';
+            $cellStyles[$i] = $style;
 
             if ($i === 6 && strpos($row[$i], 'ft') !== false && strpos($row[$i], 'in') !== false) {
                 preg_match('/(\d+)ft\s*(\d+)in/', $row[$i], $m);
                 $cellTexts[$i] = $m ? $m[1] . "ft\n" . $m[2] . "in" : $row[$i];
-            } elseif ($i === 0) {
-                $fit = $this->fitTextToWidth($row[$i], $w, $fontSize, 'Arial', $bold ? 'B' : '');
-                $this->SetFont('Arial', $bold ? 'B' : '', $fit);
-                $cellTexts[$i] = $row[$i];
             } else {
                 $cellTexts[$i] = $row[$i];
             }
 
+            $this->SetFont('Arial', $style, $fontSize);
             $heights[$i] = $this->GetMultiCellHeight($w, $lineHeight, $cellTexts[$i]);
         }
 
-        $rowHeight = max($heights);
+        $noteHeight = 0;
+        if (!empty($note)) {
+            $totalWidth = array_sum(array_column($columns, 'width'));
+            $this->SetFont('Arial', '', 9);
+            $noteHeight = $this->GetMultiCellHeight($totalWidth, $lineHeight, $note);
+        }
 
-        // Page break check
-        $bottom = $this->h - $this->bMargin;
-        if ($yStart + $rowHeight > $bottom) {
+        $rowHeight = max($heights) + $noteHeight;
+
+        if ($yStart + $rowHeight > $this->h - $this->bMargin) {
             $this->AddPage();
             $xStart = $this->GetX();
             $yStart = $this->GetY();
         }
 
         $x = $xStart;
-
-        // Draw the outer border for the row
         $totalWidth = array_sum(array_column($columns, 'width'));
+
         $this->Rect($xStart, $yStart, $totalWidth, $rowHeight);
 
-        // Print each cell's content
         foreach ($columns as $i => $col) {
             $w = $col['width'];
             $fontSize = $col['fontsize'] ?? 9;
 
-            $this->SetFont('Arial', $bold ? 'B' : '', $fontSize);
+            $this->SetFont('Arial', $cellStyles[$i], $fontSize);
 
             $saveX = $x;
             $saveY = $yStart;
             $this->SetXY($saveX, $saveY);
 
-            if ($i === 6 && strpos($cellTexts[$i], "\n") !== false) {
-                list($ft, $inch) = explode("\n", $cellTexts[$i]);
-                $this->Cell($w, $lineHeight, $ft, 0, 0, 'L');
-                $this->SetXY($saveX, $saveY);
-                $this->Cell($w, $lineHeight, $inch, 0, 0, 'R');
+            if ($i === 6) {
+                $this->Cell($w, $lineHeight, str_replace(["\r","\n"], ' ', $cellTexts[$i]), 0, 0, $col['align']);
             } else {
                 $this->MultiCell($w, $lineHeight, $cellTexts[$i], 0, $col['align']);
             }
 
-            // Move to the right for next column
             $x += $w;
             $this->SetXY($x, $saveY);
         }
 
-        // Move cursor to next row
+        if (!empty($note)) {
+            $this->SetXY($xStart, $yStart + max($heights));
+            $this->SetFont('Arial', '', 9);
+            $this->MultiCell($totalWidth, $lineHeight, 'Note: ' .$note, 0, 'L');
+        }
+
         $this->SetXY($xStart, $yStart + $rowHeight);
     }
 

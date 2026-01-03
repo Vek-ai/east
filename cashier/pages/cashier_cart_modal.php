@@ -425,7 +425,7 @@ if(isset($_POST['fetch_cart'])){
 
                                             <td class="align-middle">
                                                 <a href="javascript:void(0);" data-id="<?= $product_id ?>" class="d-flex align-items-center view_product_details">
-                                                    <h6 class="fw-semibold mb-0 fs-4"><?= $product['product_item'] ?></h6>
+                                                    <h6 class="fw-semibold mb-0 fs-4"><?= $values['product_item'] ?></h6>
                                                 </a>
                                                 <?php if (!empty($values["note"])): ?>
                                                     <span class="text-muted small" style="flex-grow: 1; overflow: hidden;">
@@ -698,7 +698,7 @@ if(isset($_POST['fetch_cart'])){
                                             </td>
                                             <td class="align-middle">
                                                 <a href="javascript:void(0);" data-id="<?= $product_id ?>" class="d-flex align-items-center view_product_details">
-                                                    <h6 class="fw-semibold mb-0 fs-4"><?= $product['product_item'] ?></h6>
+                                                    <h6 class="fw-semibold mb-0 fs-4"><?= $values['product_item'] ?></h6>
                                                 </a>
                                                 <?php if (!empty($values["note"])): ?>
                                                     <span class="text-muted small" style="flex-grow: 1; overflow: hidden;">
@@ -1070,7 +1070,7 @@ if(isset($_POST['fetch_cart'])){
 
                                             <td class="align-middle">
                                                 <a href="javascript:void(0);" data-id="<?= $product_id ?>" class="d-flex align-items-center view_product_details">
-                                                    <h6 class="fw-semibold mb-0 fs-4"><?= $product['product_item'] ?></h6>
+                                                    <h6 class="fw-semibold mb-0 fs-4"><?= $values['product_item'] ?></h6>
                                                 </a>
                                                 <?php if (!empty($values["note"])): ?>
                                                     <span class="text-muted small" style="flex-grow: 1; overflow: hidden;">

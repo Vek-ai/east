@@ -1826,10 +1826,6 @@ if (isset($_POST['save_trim'])) {
         $length_id = intval($length_ids[$i] ?? 0);
         $note      = trim($notes[$i] ?? '');
 
-        if(!empty($description)){
-            $note = $description .', ' .$note;
-        }
-
         if ($quantity <= 0) continue;
 
         $feet   = intval(floor($length));
@@ -1861,7 +1857,7 @@ if (isset($_POST['save_trim'])) {
             $newLine = empty($_SESSION['cart']) ? 1 : (max(array_keys($_SESSION['cart'])) + 1);
             $_SESSION["cart"][$newLine] = [
                 'product_id'            => $row['product_id'],
-                'product_item'          => $row['product_item'],
+                'product_item'          => !empty($description) ? $description : $row['product_item'],
                 'unit_price'            => $price,
                 'line'                  => $newLine,
                 'quantity_cart'         => $quantity,

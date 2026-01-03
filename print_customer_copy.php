@@ -143,13 +143,7 @@ function renderPanelCategory($pdf, $product, $conn) {
         '$ ' . number_format($disc_price, 2),
     ];
 
-    $pdf->renderRow($columns, $summaryRow);
-
-    if (!empty($note)) {
-        $pdf->SetFont('Arial', 'I', 7);
-        $pdf->Cell(0, 4, 'Note: ' . $note, 0, 1, 'L');
-        $pdf->SetFont('Arial', '', 7);
-    }
+    $pdf->renderRow($columns, $summaryRow, false, $note);
 
     $totalQty    = $quantity;
     $totalPrice  = $disc_price;
@@ -204,13 +198,7 @@ function renderTrimCategory($pdf, $product, $conn) {
         '$ ' . number_format($disc_price, 2),
     ];
 
-    $pdf->renderRow($columns, $summaryRow);
-
-    if (!empty($note)) {
-        $pdf->SetFont('Arial', 'I', 7);
-        $pdf->Cell(0, 4, 'Note: ' . $note, 0, 1, 'L');
-        $pdf->SetFont('Arial', '', 7);
-    }
+    $pdf->renderRow($columns, $summaryRow, false, $note);
 
     $totalQty    = $quantity;
     $totalPrice  = $disc_price;
@@ -264,13 +252,7 @@ function renderScrewCategory($pdf, $product, $conn) {
         '$ ' . number_format($disc_price, 2),
     ];
 
-    $pdf->renderRow($columns, $summaryRow);
-
-    if (!empty($note)) {
-        $pdf->SetFont('Arial', 'I', 7);
-        $pdf->Cell(0, 4, 'Note: ' . $note, 0, 1, 'L');
-        $pdf->SetFont('Arial', '', 7);
-    }
+    $pdf->renderRow($columns, $summaryRow, false, $note);
 
     $totalQty    = $quantity;
     $totalPrice  = $disc_price;
@@ -321,13 +303,7 @@ function renderLumberCategory($pdf, $product, $conn) {
         '$ ' . number_format($disc_price, 2),
     ];
 
-    $pdf->renderRow($columns, $summaryRow);
-
-    if (!empty($note)) {
-        $pdf->SetFont('Arial', 'I', 7);
-        $pdf->Cell(0, 4, 'Note: ' . $note, 0, 1, 'L');
-        $pdf->SetFont('Arial', '', 7);
-    }
+    $pdf->renderRow($columns, $summaryRow, false, $note);
 
     $totalQty    = $quantity;
     $totalPrice  = $disc_price;
@@ -378,13 +354,7 @@ function renderDefaultCategory($pdf, $product, $conn) {
         '$ ' . number_format($disc_price, 2),
     ];
 
-    $pdf->renderRow($columns, $summaryRow);
-
-    if (!empty($note)) {
-        $pdf->SetFont('Arial', 'I', 7);
-        $pdf->Cell(0, 4, 'Note: ' . $note, 0, 1, 'L');
-        $pdf->SetFont('Arial', '', 7);
-    }
+    $pdf->renderRow($columns, $summaryRow, false, $note);
 
     $totalQty    = $quantity;
     $totalPrice  = $disc_price;
@@ -417,7 +387,7 @@ class PDF extends FPDF {
         return $fontSize;
     }
 
-    public function renderRow($columns, $row, $bold = false) {
+    public function renderRow($columns, $row, $bold = false, $note = '') {
         $lineHeight = 5;
         $xStart = $this->GetX();
         $yStart = $this->GetY();
@@ -451,16 +421,11 @@ class PDF extends FPDF {
             if ($cellBold) $style .= 'B';
             if ($cellItalic) $style .= 'I';
             if ($cellUnderline) $style .= 'U';
-
             $cellStyles[$i] = $style;
 
             if ($i === 6 && strpos($row[$i], 'ft') !== false && strpos($row[$i], 'in') !== false) {
                 preg_match('/(\d+)ft\s*(\d+)in/', $row[$i], $m);
                 $cellTexts[$i] = $m ? $m[1] . "ft\n" . $m[2] . "in" : $row[$i];
-            } elseif ($i === 0) {
-                $fit = $this->fitTextToWidth($row[$i], $w, $fontSize, 'Arial', $style);
-                $this->SetFont('Arial', $style, $fit);
-                $cellTexts[$i] = $row[$i];
             } else {
                 $cellTexts[$i] = $row[$i];
             }
@@ -469,7 +434,14 @@ class PDF extends FPDF {
             $heights[$i] = $this->GetMultiCellHeight($w, $lineHeight, $cellTexts[$i]);
         }
 
-        $rowHeight = max($heights);
+        $noteHeight = 0;
+        if (!empty($note)) {
+            $totalWidth = array_sum(array_column($columns, 'width'));
+            $this->SetFont('Arial', '', 9);
+            $noteHeight = $this->GetMultiCellHeight($totalWidth, $lineHeight, $note);
+        }
+
+        $rowHeight = max($heights) + $noteHeight;
 
         if ($yStart + $rowHeight > $this->h - $this->bMargin) {
             $this->AddPage();
@@ -478,8 +450,8 @@ class PDF extends FPDF {
         }
 
         $x = $xStart;
-
         $totalWidth = array_sum(array_column($columns, 'width'));
+
         $this->Rect($xStart, $yStart, $totalWidth, $rowHeight);
 
         foreach ($columns as $i => $col) {
@@ -492,11 +464,8 @@ class PDF extends FPDF {
             $saveY = $yStart;
             $this->SetXY($saveX, $saveY);
 
-            if ($i === 6 && strpos($cellTexts[$i], "\n") !== false) {
-                list($ft, $inch) = explode("\n", $cellTexts[$i]);
-                $this->Cell($w, $lineHeight, $ft, 0, 0, 'L');
-                $this->SetXY($saveX, $saveY);
-                $this->Cell($w, $lineHeight, $inch, 0, 0, 'R');
+            if ($i === 6) {
+                $this->Cell($w, $lineHeight, str_replace(["\r","\n"], ' ', $cellTexts[$i]), 0, 0, $col['align']);
             } else {
                 $this->MultiCell($w, $lineHeight, $cellTexts[$i], 0, $col['align']);
             }
@@ -505,10 +474,14 @@ class PDF extends FPDF {
             $this->SetXY($x, $saveY);
         }
 
+        if (!empty($note)) {
+            $this->SetXY($xStart, $yStart + max($heights));
+            $this->SetFont('Arial', '', 9);
+            $this->MultiCell($totalWidth, $lineHeight, 'Note: ' .$note, 0, 'L');
+        }
+
         $this->SetXY($xStart, $yStart + $rowHeight);
     }
-
-
 
     function Header() {
         $this->SetFont('Arial', '', 9);

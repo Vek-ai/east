@@ -265,9 +265,7 @@ function renderScrewCategory($pdf, $product, $conn) {
     $product_abbrev = $product['product_id_abbrev'] ?? '';
     $color = getColorName($product['custom_color']);
 
-    $dimension_name = $product['screw_length'] ?? '';
-    $dimension_id = getScrewDimensionID($dimension_name);
-    $unit_price = getScrewPrice($productid, $dimension_id);
+    $unit_price = getProductPrice($productid);
 
     $summaryRow = [
         $product_abbrev,
