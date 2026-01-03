@@ -103,6 +103,9 @@ if(isset($_REQUEST['action'])) {
         $zip = mysqli_real_escape_string($conn, $_POST['zip'] ?? '');
         $lat = mysqli_real_escape_string($conn, $_POST['lat'] ?? '');
         $lng = mysqli_real_escape_string($conn, $_POST['lng'] ?? '');
+        $primary_contact_name = mysqli_real_escape_string($conn, $_POST['primary_contact_name'] ?? '');
+        $primary_contact_phone = mysqli_real_escape_string($conn, $_POST['primary_contact_phone'] ?? '');
+        $primary_contact_email = mysqli_real_escape_string($conn, $_POST['primary_contact_email'] ?? '');
         $secondary_contact_name = mysqli_real_escape_string($conn, $_POST['secondary_contact_name'] ?? '');
         $secondary_contact_phone = mysqli_real_escape_string($conn, $_POST['secondary_contact_phone'] ?? '');
         $secondary_contact_email = mysqli_real_escape_string($conn, $_POST['secondary_contact_email'] ?? '');
@@ -220,6 +223,9 @@ if(isset($_REQUEST['action'])) {
                     ship_zip = '$ship_zip',
                     ship_lat = '$ship_lat',
                     ship_lng = '$ship_lng',
+                    primary_contact_name = '$primary_contact_name',
+                    primary_contact_phone = '$primary_contact_phone',
+                    primary_contact_email = '$primary_contact_email',
                     secondary_contact_name = '$secondary_contact_name',
                     secondary_contact_phone = '$secondary_contact_phone',
                     secondary_contact_email = '$secondary_contact_email',
@@ -269,6 +275,7 @@ if(isset($_REQUEST['action'])) {
                 contact_email, contact_phone, primary_contact, contact_fax,
                 address, city, state, zip, lat, lng,
                 different_ship_address, ship_address, ship_city, ship_state, ship_zip, ship_lat, ship_lng,
+                primary_contact_name, primary_contact_phone, primary_contact_email,
                 secondary_contact_name, secondary_contact_phone, secondary_contact_email,
                 ap_contact_name, ap_contact_email, ap_contact_phone,
                 tax_status, tax_exempt_number, customer_notes,
@@ -282,6 +289,7 @@ if(isset($_REQUEST['action'])) {
                 '$contact_email', '$contact_phone', '$primary_contact', '$contact_fax',
                 '$address', '$city', '$state', '$zip', '$lat', '$lng',
                 '$different_ship_address', '$ship_address', '$ship_city', '$ship_state', '$ship_zip', '$ship_lat', '$ship_lng',
+                '$primary_contact_name', '$primary_contact_phone', '$primary_contact_email',
                 '$secondary_contact_name', '$secondary_contact_phone', '$secondary_contact_email',
                 '$ap_contact_name', '$ap_contact_email', '$ap_contact_phone',
                 '$tax_status', '$tax_exempt_number', '$customer_notes',

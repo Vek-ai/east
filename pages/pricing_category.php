@@ -177,10 +177,10 @@ $permission = $_SESSION['permission'];
                                 $status_val = $row['status'];
 
                                 $status = ($status_val == 1)
-                                    ? "<a href='#' class='changeStatus' data-no='$no' data-id='$category_id' data-status='$status_val'>
+                                    ? "<a href='#' class='changeStatus' data-no='$no' data-id='$id' data-status='$status_val'>
                                             <div id='status-alert$no' class='alert alert-success bg-success text-white border-0 text-center py-1 px-2 my-0' style='border-radius:5%' role='alert'>Active</div>
                                     </a>"
-                                    : "<a href='#' class='changeStatus' data-no='$no' data-id='$category_id' data-status='$status_val'>
+                                    : "<a href='#' class='changeStatus' data-no='$no' data-id='$id' data-status='$status_val'>
                                             <div id='status-alert$no' class='alert alert-danger bg-danger text-white border-0 text-center py-1 px-2 my-0' style='border-radius:5%' role='alert'>Inactive</div>
                                     </a>";
 

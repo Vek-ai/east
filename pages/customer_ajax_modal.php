@@ -30,6 +30,9 @@ while ($row = mysqli_fetch_array($result)) {
     $ship_city = $row['ship_city'] ?? '';
     $ship_state = $row['ship_state'] ?? '';
     $ship_zip = $row['ship_zip'] ?? '';
+    $primary_contact_name = $row['primary_contact_name'] ?? '';
+    $primary_contact_phone = $row['primary_contact_phone'] ?? '';
+    $primary_contact_email = $row['primary_contact_email'] ?? '';
     $secondary_contact_name = $row['secondary_contact_name'] ?? '';
     $secondary_contact_phone = $row['secondary_contact_phone'] ?? '';
     $secondary_contact_email = $row['secondary_contact_email'] ?? '';
@@ -274,22 +277,22 @@ while ($row = mysqli_fetch_array($result)) {
             <div class="col-md-3">
                 <div class="mb-3">
                 <label class="form-label">Primary Contact Name</label>
-                <input type="text" id="customer_first_name" name="customer_first_name" class="form-control"
-                    value="<?= $customer_first_name ?? '' ?>" />
+                <input type="text" id="primary_contact_name" name="primary_contact_name" class="form-control"
+                    value="<?= $primary_contact_name ?? '' ?>" />
                 </div>
             </div>
             <div class="col-md-3">
                 <div class="mb-3">
                 <label class="form-label">Primary Contact Phone</label>
-                <input type="text" id="contact_phone" name="contact_phone" class="form-control"
-                    value="<?= $contact_phone ?? '' ?>" />
+                <input type="text" id="primary_contact_phone" name="primary_contact_phone" class="form-control"
+                    value="<?= $primary_contact_phone ?? '' ?>" />
                 </div>
             </div>
             <div class="col-md-3">
                 <div class="mb-3">
                 <label class="form-label">Primary Contact Email</label>
-                <input type="text" id="contact_email" name="contact_email" class="form-control"
-                    value="<?= $contact_email ?? '' ?>" />
+                <input type="text" id="primary_contact_email" name="primary_contact_email" class="form-control"
+                    value="<?= $primary_contact_email ?? '' ?>" />
                 </div>
             </div>
 

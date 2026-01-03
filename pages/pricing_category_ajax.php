@@ -63,20 +63,57 @@ if(isset($_REQUEST['action'])) {
         $status = mysqli_real_escape_string($conn, $_POST['status']);
         $new_status = ($status == '0') ? '1' : '0';
 
-        $statusQuery = "UPDATE pricing_category SET status = '$new_status' WHERE id = '$id'";
-        if (mysqli_query($conn, $statusQuery)) {
-            echo "success";
+        $rowQuery = "SELECT product_category_id, product_items FROM pricing_category WHERE id = '$id' AND hidden = 0";
+        $rowResult = mysqli_query($conn, $rowQuery);
+
+        if ($rowResult && mysqli_num_rows($rowResult) > 0) {
+            $rowData = mysqli_fetch_assoc($rowResult);
+            $product_category_id = $rowData['product_category_id'];
+            $product_items = $rowData['product_items'];
+
+            $updateQuery = "
+                UPDATE pricing_category
+                SET status = '$new_status'
+                WHERE product_category_id = '$product_category_id'
+                AND product_items = '$product_items'
+                AND hidden = 0
+            ";
+
+            if (mysqli_query($conn, $updateQuery)) {
+                echo "success";
+            } else {
+                echo "Error updating status: " . mysqli_error($conn);
+            }
         } else {
-            echo "Error updating status: " . mysqli_error($conn);
+            echo "Row not found.";
         }
     }
+
     if ($action == 'hide_pricing_category') {
         $id = mysqli_real_escape_string($conn, $_POST['id']);
-        $query = "UPDATE pricing_category SET hidden='1' WHERE id='$id'";
-        if (mysqli_query($conn, $query)) {
-            echo 'success';
+
+        $rowQuery = "SELECT product_category_id, product_items FROM pricing_category WHERE id = '$id'";
+        $rowResult = mysqli_query($conn, $rowQuery);
+
+        if ($rowResult && mysqli_num_rows($rowResult) > 0) {
+            $rowData = mysqli_fetch_assoc($rowResult);
+            $product_category_id = $rowData['product_category_id'];
+            $product_items = $rowData['product_items'];
+
+            $updateQuery = "
+                UPDATE pricing_category
+                SET hidden = 1
+                WHERE product_category_id = '$product_category_id'
+                AND product_items = '$product_items'
+            ";
+
+            if (mysqli_query($conn, $updateQuery)) {
+                echo 'success';
+            } else {
+                echo 'Error hiding rows: ' . mysqli_error($conn);
+            }
         } else {
-            echo 'error';
+            echo "Row not found.";
         }
     }
 
