@@ -427,7 +427,7 @@ function showCol($name) {
                 </div>
                 <div class="align-items-center">
                     <div class="position-relative w-100 px-1 mb-2">
-                        <select class="form-control py-0 ps-5 select2 filter-selection" id="select-category" data-filter="category" data-filter-name="Product Category">
+                        <select class="form-control py-0 ps-5 select2 filter-selection" id="select-category" data-filter="product_category" data-filter-name="Product Category">
                             <option value="" data-category="">All Categories</option>
                             <optgroup label="Category">
                                 <?php
@@ -435,7 +435,7 @@ function showCol($name) {
                                 $result_category = mysqli_query($conn, $query_category);
                                 while ($row_category = mysqli_fetch_array($result_category)) {
                                 ?>
-                                    <option value="<?= $row_category['product_category'] ?>" data-category="<?= $row_category['product_category'] ?>" <?= $selected ?>><?= $row_category['product_category'] ?></option>
+                                    <option value="<?= $row_category['product_category_id'] ?>" data-category="<?= $row_category['product_category'] ?>" <?= $selected ?>><?= $row_category['product_category'] ?></option>
                                 <?php
                                 }
                                 ?>
@@ -443,7 +443,7 @@ function showCol($name) {
                         </select>
                     </div>
                     <div class="position-relative w-100 px-1 mb-2">
-                        <select class="form-control search-category py-0 ps-5 select2 filter-selection" id="select-type" data-filter="type" data-filter-name="Product Type">
+                        <select class="form-control search-category py-0 ps-5 select2 filter-selection" id="select-type" data-filter="product_type" data-filter-name="Product Type">
                             <option value="" data-category="">All Product Types</option>
                             <optgroup label="Product Type">
                                 <?php
@@ -591,12 +591,16 @@ function showCol($name) {
                 type: 'POST',
                 data: function(d) {
                     d.action = 'fetch_products';
-                    d.text_search = $('#text-srh').val();
-                    d.active_only = $('#toggleActive').is(':checked') ? 1 : 0;
+                    d.text_search  = $('#text-srh').val();
+                    d.active_only  = $('#toggleActive').is(':checked') ? 1 : 0;
                     d.instock_only = $('#onlyInStock').is(':checked') ? 1 : 0;
-                    $('.filter-selection').each(function() {
-                        d[$(this).data('filter')] = $(this).val();
-                    });
+
+                    d.product_category = $('#select-category').val();
+                    d.product_type     = $('#select-type').val();
+                    d.profile          = $('#select-profile').val();
+                    d.color            = $('#select-color').val();
+                    d.grade            = $('#select-grade').val();
+                    d.gauge            = $('#select-gauge').val();
                 },
                 dataSrc: function(json) {
                     console.log("Server response:", json);

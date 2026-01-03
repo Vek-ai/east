@@ -59,7 +59,7 @@ $page = mysqli_fetch_assoc($result);
 
 
 $isPasswordRequired = ($page['is_password_required'] ?? 0) == 1;
-$fileName = $page['file_name'] ?? 'not_authorized.php';
+$fileName = $page['file_name'] ?? '';
 $showPasswordModal = $isPasswordRequired && empty($_SESSION['page_access'][$page_key]);
 
 if ($page) {

@@ -1632,24 +1632,74 @@ if(isset($_REQUEST['action'])) {
             $search = mysqli_real_escape_string($conn, $_POST['text_search']);
             $where[] = "(p.product_item LIKE '%$search%')";
         }
-
         if (!empty($_POST['active_only'])) {
             $where[] = "p.status = 1";
         }
 
-        $filters = [
-            'category' => 'product_category',
-            'type'     => 'product_type',
-            'profile'  => 'profile',
-            'color'    => 'color',
-            'grade'    => 'grade',
-            'gauge'    => 'gauge'
-        ];
-        foreach ($filters as $key => $col) {
-            if (!empty($_POST[$key])) {
-                $val = intval($_POST[$key]);
-                $where[] = "p.$col = $val";
+        if (!empty($_POST['product_category'])) {
+            $vals = $_POST['product_category'];
+            if (is_string($vals)) {
+                $vals = str_replace(['[', ']'], '', $vals);
+                $vals = explode(',', $vals);
             }
+            $vals = array_map('intval', $vals);
+            $orClauses = array_map(fn($v) => "p.product_category = '$v' OR FIND_IN_SET('$v', REPLACE(REPLACE(p.product_category,'[',''),']',''))", $vals);
+            $where[] = '(' . implode(' OR ', $orClauses) . ')';
+        }
+
+        if (!empty($_POST['product_type'])) {
+            $vals = $_POST['product_type'];
+            if (is_string($vals)) {
+                $vals = str_replace(['[', ']'], '', $vals);
+                $vals = explode(',', $vals);
+            }
+            $vals = array_map('intval', $vals);
+            $orClauses = array_map(fn($v) => "p.product_type = '$v' OR FIND_IN_SET('$v', REPLACE(REPLACE(p.product_type,'[',''),']',''))", $vals);
+            $where[] = '(' . implode(' OR ', $orClauses) . ')';
+        }
+
+        if (!empty($_POST['profile'])) {
+            $vals = $_POST['profile'];
+            if (is_string($vals)) {
+                $vals = str_replace(['[', ']'], '', $vals);
+                $vals = explode(',', $vals);
+            }
+            $vals = array_map('intval', $vals);
+            $orClauses = array_map(fn($v) => "p.profile = '$v' OR FIND_IN_SET('$v', REPLACE(REPLACE(p.profile,'[',''),']',''))", $vals);
+            $where[] = '(' . implode(' OR ', $orClauses) . ')';
+        }
+
+        if (!empty($_POST['color'])) {
+            $vals = $_POST['color'];
+            if (is_string($vals)) {
+                $vals = str_replace(['[', ']'], '', $vals);
+                $vals = explode(',', $vals);
+            }
+            $vals = array_map('intval', $vals);
+            $orClauses = array_map(fn($v) => "p.color = '$v' OR FIND_IN_SET('$v', REPLACE(REPLACE(p.color,'[',''),']',''))", $vals);
+            $where[] = '(' . implode(' OR ', $orClauses) . ')';
+        }
+
+        if (!empty($_POST['grade'])) {
+            $vals = $_POST['grade'];
+            if (is_string($vals)) {
+                $vals = str_replace(['[', ']'], '', $vals);
+                $vals = explode(',', $vals);
+            }
+            $vals = array_map('intval', $vals);
+            $orClauses = array_map(fn($v) => "p.grade = '$v' OR FIND_IN_SET('$v', REPLACE(REPLACE(p.grade,'[',''),']',''))", $vals);
+            $where[] = '(' . implode(' OR ', $orClauses) . ')';
+        }
+
+        if (!empty($_POST['gauge'])) {
+            $vals = $_POST['gauge'];
+            if (is_string($vals)) {
+                $vals = str_replace(['[', ']'], '', $vals);
+                $vals = explode(',', $vals);
+            }
+            $vals = array_map('intval', $vals);
+            $orClauses = array_map(fn($v) => "p.gauge = '$v' OR FIND_IN_SET('$v', REPLACE(REPLACE(p.gauge,'[',''),']',''))", $vals);
+            $where[] = '(' . implode(' OR ', $orClauses) . ')';
         }
 
         $where_sql = implode(' AND ', $where);
@@ -1770,7 +1820,8 @@ if(isset($_REQUEST['action'])) {
             'draw' => intval($_POST['draw']),
             'recordsTotal' => $recordsTotal,
             'recordsFiltered' => $recordsFiltered,
-            'data' => $data
+            'data' => $data,
+            'where' => $where_sql
         ]);
     }
 

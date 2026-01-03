@@ -11,18 +11,26 @@ if (isset($_POST['search_customer'])) {
     $search = mysqli_real_escape_string($conn, $_POST['search_customer']);
 
     $query = "
-        SELECT 
-            customer_id AS value, 
-            CONCAT(customer_first_name, ' ', customer_last_name) AS label
-        FROM 
-            customer
-        WHERE 
-            (customer_first_name LIKE '%$search%' 
-            OR 
-            customer_last_name LIKE '%$search%')
-            AND status != '3'
-        LIMIT 15
-    ";
+            SELECT 
+                customer_id AS value, 
+                COALESCE(
+                    NULLIF(customer_business_name, ''),
+                    NULLIF(customer_farm_name, ''),
+                    CONCAT(customer_first_name, ' ', customer_last_name)
+                ) AS label
+            FROM 
+                customer
+            WHERE 
+                (
+                    customer_first_name LIKE '%$search%' OR
+                    customer_last_name LIKE '%$search%' OR
+                    customer_business_name LIKE '%$search%' OR
+                    customer_farm_name LIKE '%$search%'
+                )
+                AND status != '3'
+            LIMIT 15
+        ";
+
 
     $result = mysqli_query($conn, $query);
 
@@ -72,14 +80,27 @@ if (isset($_POST['search_orders'])) {
     ];
 
     $query = "
-        SELECT o.*, CONCAT(c.customer_first_name, ' ', c.customer_last_name) AS customer_name, customer_pricing
+        SELECT 
+            o.*, 
+            COALESCE(
+                NULLIF(c.customer_business_name, ''),
+                NULLIF(c.customer_farm_name, ''),
+                CONCAT(c.customer_first_name, ' ', c.customer_last_name)
+            ) AS customer_name,
+            c.customer_pricing
         FROM orders AS o
         LEFT JOIN customer AS c ON c.customer_id = o.originalcustomerid
         WHERE o.status != 6
     ";
 
     if (!empty($customer_name) && $customer_name != 'All Customers') {
-        $query .= " AND CONCAT(c.customer_first_name, ' ', c.customer_last_name) LIKE '%$customer_name%' ";
+        $customer_name_esc = mysqli_real_escape_string($conn, $customer_name);
+        $query .= " AND (
+            c.customer_first_name LIKE '%$customer_name_esc%' OR
+            c.customer_last_name LIKE '%$customer_name_esc%' OR
+            c.customer_business_name LIKE '%$customer_name_esc%' OR
+            c.customer_farm_name LIKE '%$customer_name_esc%'
+        )";
     }
 
     if (!empty($date_from) && !empty($date_to)) {

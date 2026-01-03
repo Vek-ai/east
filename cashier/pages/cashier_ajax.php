@@ -1553,7 +1553,7 @@ if (isset($_POST['save_order'])) {
             $response['order_id'] = $orderid;
             $response['customer_id'] = $_SESSION['customer_id'];
 
-            //unset($_SESSION['cart']);
+            unset($_SESSION['cart']);
         } else {
             $response['message'] = "Error inserting order estimate records: " . $conn->error;
         }
@@ -2252,6 +2252,7 @@ if (isset($_POST['return_product'])) {
     if ($result && mysqli_num_rows($result) > 0) {
         $order = mysqli_fetch_assoc($result);
         $available_quantity = floatval($order['quantity']);
+        $original_quantity = $available_quantity + $quantity;
         $productid = $order['productid'];
         $product_details = getProductDetails($productid);
         $product_origin = intval($product_details['product_origin']);
@@ -2264,9 +2265,11 @@ if (isset($_POST['return_product'])) {
         }
 
         $status = $product_origin === 1 ? 1 : 0;
+        $unit_actual_price = floatval($order['actual_price']) / $original_quantity;
+        $unit_discounted_price = floatval($order['discounted_price']) / $original_quantity;
 
         $insert_query = "INSERT INTO product_returns 
-                         (orderid, productid, status, quantity, custom_color, custom_width, custom_height, custom_bend, custom_hem, custom_length, custom_length2, actual_price, discounted_price, product_category, usageid, stock_fee)
+                         (orderid, productid, status, quantity, custom_color, custom_width, custom_height, custom_bend, custom_hem, custom_length, custom_length2, actual_price, discounted_price, product_category, usageid, stock_fee, pay_method)
                          VALUES 
                          (
                             '{$order['orderid']}', 
@@ -2280,53 +2283,27 @@ if (isset($_POST['return_product'])) {
                             '{$order['custom_hem']}', 
                             '{$order['custom_length']}', 
                             '{$order['custom_length2']}', 
-                            '{$order['actual_price']}', 
-                            '{$order['discounted_price']}', 
+                            '$unit_actual_price', 
+                            '$unit_discounted_price', 
                             '{$order['product_category']}', 
                             '{$order['usageid']}', 
-                            '$stock_fee_percent'
+                            '$stock_fee_percent',
+                            '$pay_method'
                          )";
 
         if (mysqli_query($conn, $insert_query)) {
             $return_id = mysqli_insert_id($conn);
-
             $new_quantity = max(0, $available_quantity - $quantity);
-            $update_order_product = "UPDATE order_product SET quantity = '$new_quantity' WHERE id = '$id'";
-            mysqli_query($conn, $update_order_product);
+            mysqli_query($conn, "UPDATE order_product SET quantity = '$new_quantity' WHERE id = '$id'");
 
-            $amount = $quantity * floatval($order['discounted_price']);
-            $stock_fee = $amount * $stock_fee_percent;
-            $amount_returned = $amount - $stock_fee;
+            $amount_actual = $quantity * $unit_actual_price;
+            $amount_discounted = $quantity * $unit_discounted_price;
+            $stock_fee = $amount_discounted * $stock_fee_percent;
+            $amount_returned = $amount_discounted - $stock_fee;
 
             if ($pay_method === 'store_credit') {
-                $credit_update = "
-                    UPDATE customer 
-                    SET store_credit = store_credit + $amount_returned
-                    WHERE customer_id = '$customer_id'
-                ";
-                mysqli_query($conn, $credit_update);
-
-                $credit_history = "
-                    INSERT INTO customer_store_credit_history (
-                        customer_id,
-                        credit_amount,
-                        credit_type,
-                        reference_type,
-                        reference_id,
-                        description,
-                        created_at
-                    ) VALUES (
-                        '$customer_id',
-                        $amount_returned,
-                        'add',
-                        'product_return',
-                        $return_id,
-                        'Refund via store credit (return)',
-                        NOW()
-                    )
-                ";
-                mysqli_query($conn, $credit_history);
-
+                mysqli_query($conn, "UPDATE customer SET store_credit = store_credit + $amount_returned WHERE customer_id = '$customer_id'");
+                mysqli_query($conn, "INSERT INTO customer_store_credit_history (customer_id, credit_amount, credit_type, reference_type, reference_id, description, created_at) VALUES ('$customer_id', $amount_returned, 'add', 'product_return', $return_id, 'Refund via store credit (return)', NOW())");
             } else {
                 recordCashOutflow($pay_method, 'product_return', $amount_returned);
             }
@@ -2343,23 +2320,10 @@ if (isset($_POST['return_product'])) {
             $new_json = mysqli_real_escape_string($conn, json_encode($changes));
             $user = mysqli_real_escape_string($conn, $_SESSION['userid'] ?? 'System');
 
-            $log_sql = "
-                INSERT INTO order_history 
-                (orderid, action_type, old_value, new_value, updated_by)
-                VALUES 
-                (
-                    '{$order['orderid']}',
-                    'product_return',
-                    '$old_json',
-                    '$new_json',
-                    '$user'
-                )
-            ";
-            mysqli_query($conn, $log_sql);
+            mysqli_query($conn, "INSERT INTO order_history (orderid, action_type, old_value, new_value, updated_by) VALUES ('{$order['orderid']}', 'product_return', '$old_json', '$new_json', '$user')");
 
             if ($status === 0) {
                 $actorId = $_SESSION['userid'];
-                $actor_name = get_staff_name($actorId);
                 $actionType = 'return_manufactured';
                 $targetId = $return_id;
                 $targetType = 'Return Approval';
