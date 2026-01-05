@@ -779,6 +779,13 @@ $editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) :
                     id="print_order_category">
                     <i class="fa fa-print"></i> Print
                 </a>
+                <a href="javascript:void(0)" 
+                    class="btn btn-warning" 
+                    style="color: #000 !important;"
+                    type="button" 
+                    id="print_estimate">
+                    <i class="fa fa-print"></i> Print
+                </a>
             </div>
         </div>
     </div>
@@ -1449,7 +1456,7 @@ $editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) :
             -->
 
             <div class="container-fluid border rounded p-3">
-                <div class="d-flex flex-wrap justify-content-center gap-2 p-2">
+                <div class="d-flex flex-wrap justify-content-center gap-2 p-2 order_print_div">
                     <a id="print_office_copy" class="btn btn-warning btn-sm btn-show-pdf">Office Copy</a>
                     <a id="print_customer_copy" class="btn btn-primary btn-sm btn-show-pdf">Customer Copy</a>
                     <a id="print_summary_customer" class="btn btn-primary btn-sm btn-show-pdf">Summary Cost Breakdown </a>
@@ -4806,8 +4813,14 @@ $editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) :
                     success: function (response) {
                         if (response.success) {
                             alert("Estimate successfully saved.");
-                            $('#print_estimate_category').attr('href', '/print_estimate_product.php?id=' + response.estimate_id).removeClass('d-none');
-                            $('#print_estimate').attr('href', '/print_estimate_total.php?id=' + response.estimate_id).removeClass('d-none');
+
+                            $('#btnApprovalModal, #save_order, #save_order_alt, #save_estimate, #prev_page_order').addClass('d-none');
+
+                            $('.order_print_div').addClass('d-none');
+
+                            $('#print_estimate')
+                                .attr('href', '/print_estimate_product.php?id=' + response.estimate_id)
+                                .removeClass('d-none');
                         } else if (response.error) {
                             alert("Error: " + response.error);
                         }
@@ -5093,7 +5106,7 @@ $editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) :
                         orderIdSaved = response.order_id;
                         customerIdSaved = response.customer_id;
 
-                        $('#print_order_category, #print_order, #print_deliver').removeClass('d-none');
+                        $('#print_order_category').removeClass('d-none');
                         updatePrintLinks(orderIdSaved);
 
                         $('#btnApprovalModal, #save_order, #save_order_alt, #save_estimate, #prev_page_order').addClass('d-none');
@@ -5458,6 +5471,7 @@ $editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) :
             $('#prev_page_order').addClass("d-none");
             $('#save_order').addClass("d-none");
             $('#print_order_category').addClass('d-none');
+            $('#print_estimate').addClass('d-none');
             $('#print_order').addClass('d-none');
             $('#print_deliver').addClass('d-none');
             $('#cashmodal').modal('show');
@@ -5473,6 +5487,22 @@ $editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) :
 
             pdfUrl = $baseBtn.attr('href');
             order_url = pdfUrl;
+
+            $('#pdfFrame').attr('src', pdfUrl);
+            $('#pdfModal').modal('show');
+        });
+
+        $(document).on('click', '#print_estimate', function (e) {
+            e.preventDefault();
+
+            $('.btn-show-pdf').removeClass('btn-warning').addClass('btn-primary');
+
+            pdfUrl = $(this).attr('href');
+            order_url = pdfUrl;
+            if (!pdfUrl) {
+                alert('PDF URL not set.');
+                return;
+            }
 
             $('#pdfFrame').attr('src', pdfUrl);
             $('#pdfModal').modal('show');
