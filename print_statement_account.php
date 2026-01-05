@@ -59,7 +59,7 @@ class PDF extends FPDF {
         $this->SetXY($marginLeft + 2 * $colWidth + 17, $this->GetY());
         $this->Cell($colWidth, 5, 'EastKentuckyMetal.com', 0, 0, 'L');
 
-        $yStart = $this->GetY() - 35;
+        /* $yStart = $this->GetY() - 35;
         $this->SetFont('Arial', '', 10);
         $this->SetXY($marginLeft, $yStart);
         $this->MultiCell($colWidthRight, 5,
@@ -67,7 +67,7 @@ class PDF extends FPDF {
 
         $qrX = 20;
         $qrY = $this->GetY();
-        $this->Image('assets/images/qr_rickroll.png', $qrX, $qrY, 25, 25);
+        $this->Image('assets/images/qr_rickroll.png', $qrX, $qrY, 25, 25); */
     }
 }
 

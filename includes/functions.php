@@ -3335,6 +3335,7 @@ function calculateCartItem($values) {
     $trim_id  = 4;
     $screw_id = 16;
     $lumber_id = 1;
+    $service_chrg_id = 27;
 
     $customer_id = $_SESSION['customer_id'];
     $customer_details = getCustomerDetails($customer_id);
@@ -3553,14 +3554,14 @@ function calculateCartItem($values) {
         $base_price  = floatval($row['unit_price'] ?? 0);
         $bulk_price  = floatval($row['bulk_price'] ?? 0);
 
-        if ($bulk_price > 0 && $bulk_starts_at > 0 && $quantity >= $bulk_starts_at) {
+        if ($bulk_price > 0 && $bulk_starts_at > 0 && $quantity >= $bulk_starts_at && $bulk_starts_at > 0) {
             $base_price = $bulk_price;
         }
 
         $unit_price = calculateUnitPrice(
             $base_price,
-            $estimate_length,
-            $estimate_length_inch,
+            1,
+            '',
             '',
             '',
             '',
@@ -3569,6 +3570,9 @@ function calculateCartItem($values) {
             '',
             ''
         );
+    }else if($category_id == $service_chrg_id){
+        $base_price = $values["unit_price"];
+        $unit_price = $values["unit_price"];
     }
 
     $linear_price = $base_price;

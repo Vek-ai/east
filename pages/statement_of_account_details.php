@@ -19,6 +19,29 @@ $permission = $_SESSION['permission'];
         position: fixed;
         bottom: 20px;
     }
+
+    .modal.custom-size .modal-dialog {
+        width: 80%;
+        max-width: none;
+        margin: 0 auto;
+        height: 100vh;
+    }
+
+    .modal.custom-size .modal-content {
+        height: 100%;
+        border-radius: 0;
+    }
+
+    .modal.custom-size .modal-body {
+        height: calc(100% - 56px);
+        overflow: hidden;
+    }
+
+    .modal.custom-size iframe {
+        width: 100%;
+        height: 80%;
+        border: none;
+    }
 </style>
 <div class="container-fluid">
     <div class="font-weight-medium shadow-none position-relative overflow-hidden mb-7">
@@ -373,6 +396,9 @@ $permission = $_SESSION['permission'];
                                                     <a id="paymentHistoryBtn" title="Payment History" role="button" class="py-1" data-id="<?= $ledger_id ?>">
                                                         <i class="fas fa-history text-primary fs-5"></i>
                                                     </a>
+                                                    <a href="print_order_product.php?id=<?= $order_id ?>" data-type="<?= $customer_details['customer_pricing'] ?>" class="btn-show-pdf btn btn-danger-gradient btn-sm me-1 py-1 px-0" type="button" data-id="<?= $order_id ?>" title="Print/Download">
+                                                        <i class="text-success fa fa-print fs-5"></i>
+                                                    </a>
                                                 </div>
                                                 <?php
                                             }
@@ -457,6 +483,34 @@ $permission = $_SESSION['permission'];
             </form>
         </div>
     </div>
+</div>
+
+<div class="modal fade custom-size" id="pdfModal" tabindex="-1" role="dialog">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Print/View Outputs</h5>
+        <button type="button" class="close" data-bs-dismiss="modal">
+          <span>&times;</span>
+        </button>
+      </div>
+        <div class="modal-body" style="overflow: auto;">
+            <iframe id="pdfFrame" src="" style="height: 70vh; width: 100%;" class="mb-3 border rounded"></iframe>
+
+            <div class="container-fluid border rounded p-3">
+                <div class="mt-3 d-flex flex-wrap justify-content-end align-items-center gap-2">
+                    <div class="d-flex flex-wrap gap-2">
+                        <button id="printBtn" class="btn btn-success">Print</button>
+                        <button id="downloadBtn" class="btn btn-primary">Download</button>
+                        <button class="btn btn-danger" data-bs-dismiss="modal">Cancel</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
 </div>
 
 <div class="modal fade" id="response-modal" tabindex="-1" aria-labelledby="vertical-center-modal" aria-hidden="true">
@@ -823,6 +877,60 @@ $permission = $_SESSION['permission'];
             $('#text-srh').val('');
 
             filterTable();
+        });
+
+        $(document).on('click', '.btn-show-pdf', function (e) {
+            e.preventDefault();
+
+            print_order_id = $(this).data('id');
+
+            pdfUrl = $(this).attr('href');
+            document.getElementById('pdfFrame').src = pdfUrl;
+            const modal = new bootstrap.Modal(document.getElementById('pdfModal'));
+            modal.show();
+
+            const type = $(this).data('type');
+            $('.pricing-btn').addClass('d-none');
+            $('.pricing-btn[data-id="1"]').removeClass('d-none');
+
+            if (type && type != 1) {
+                $(`.pricing-btn[data-id="${type}"]`).removeClass('d-none');
+            }
+        });
+
+        var isPrinting = false;
+
+        $('#printBtn').on('click', function () {
+            if (isPrinting) {
+                return;
+            }
+
+            isPrinting = true;
+            const $iframe = $('#pdfFrame');
+
+            $iframe.off('load').one('load', function () {
+                try {
+                    this.contentWindow.focus();
+                    this.contentWindow.print();
+                } catch (e) {
+                    alert("Failed to print PDF.");
+                }
+                isPrinting = false;
+            });
+
+            $iframe.attr('src', pdfUrl);
+
+            const modal = new bootstrap.Modal(document.getElementById('pdfModal'));
+            modal.show();
+        });
+
+        $('#downloadBtn').on('click', function () {
+            const link = document.createElement('a');
+            link.href = pdfUrl;
+            link.download = '';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
         });
     });
 </script>

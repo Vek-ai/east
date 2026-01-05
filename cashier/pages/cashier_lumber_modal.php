@@ -188,20 +188,14 @@ if (isset($_POST['fetch_price'])) {
             $unit_price  = floatval($row['unit_price'] ?? $product['unit_price'] ?? 0);
             $bulk_price  = floatval($row['bulk_price'] ?? 0);
 
-            if ($bulk_price > 0 && $qty >= $bulk_starts_at) {
+            if ($bulk_price > 0 && $qty >= $bulk_starts_at && $bulk_starts_at > 0) {
                 $unit_price = $bulk_price;
             }
 
-            $res = mysqli_query($conn, "SELECT * FROM dimensions WHERE dimension_id = '$dim_id' LIMIT 1");
-            $row = mysqli_fetch_assoc($res);
-
-            $feet  = floatval($row['dimension_feet'] ?? 0);
-            $inch  = floatval($row['dimension_inches'] ?? 0);
-
             $unitPrice = calculateUnitPrice(
                 $unit_price,
-                $feet,
-                $inch,
+                1,
+                '',
                 '',
                 '',
                 '', 

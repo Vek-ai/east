@@ -248,7 +248,7 @@ function showCol($name) {
 
     <div class="card card-body">
         <div class="row">
-            <div class="col-3">
+            <div class="col-3 d-none">
                 <h3 class="card-title align-items-center mb-2">
                     Filter <?= $page_title ?>
                 </h3>
@@ -305,28 +305,62 @@ function showCol($name) {
                     </button>
                 </div>
             </div>
-            <div class="col-9">
+            <div class="col-12">
                 <div id="selected-tags" class="mb-2"></div>
                 <div class="datatables">
                     <div class="product-details table-responsive text-wrap">
                         <?php
-                        $sql = "SELECT 
-                                    c.customer_id, 
-                                    COALESCE(SUM(CASE WHEN l.entry_type = 'credit' THEN l.amount ELSE 0 END), 0) AS total_credit,
-                                    COALESCE(SUM(CASE WHEN l.entry_type = 'usage' THEN l.amount ELSE 0 END), 0) AS total_payments,
-                                    MIN(CASE WHEN l.entry_type = 'credit' THEN l.created_at ELSE NULL END) AS first_credit_date,
-                                    (
-                                        SELECT MAX(jp.created_at)
-                                        FROM jobs j2
-                                        LEFT JOIN job_ledger jl ON jl.job_id = j2.job_id
-                                        LEFT JOIN job_payment jp ON jp.ledger_id = jl.ledger_id
-                                        WHERE j2.customer_id = c.customer_id AND jp.status = '1'
-                                    ) AS last_payment_date
+                        $sql = "SELECT
+                                    c.customer_id,
+
+                                    COALESCE(sc.total_store_credit, 0)
+                                    + COALESCE(dp.total_deposits, 0) AS available_balance,
+
+                                    COALESCE(cr.total_credit, 0)
+                                    - COALESCE(py.total_paid, 0) AS outstanding_credit,
+
+                                    cr.first_credit_date,
+                                    py.last_payment_date
+
                                 FROM customer c
-                                LEFT JOIN job_ledger l ON l.customer_id = c.customer_id
+
+                                LEFT JOIN (
+                                    SELECT customer_id, SUM(credit_amount) AS total_store_credit
+                                    FROM customer_store_credit_history
+                                    WHERE credit_type = 'add' AND credit_amount > 0
+                                    GROUP BY customer_id
+                                ) sc ON sc.customer_id = c.customer_id
+
+                                LEFT JOIN (
+                                    SELECT deposited_by AS customer_id, SUM(deposit_remaining) AS total_deposits
+                                    FROM job_deposits
+                                    WHERE deposit_status = 1 AND deposit_remaining > 0
+                                    GROUP BY deposited_by
+                                ) dp ON dp.customer_id = c.customer_id
+
+                                LEFT JOIN (
+                                    SELECT
+                                        customer_id,
+                                        SUM(amount) AS total_credit,
+                                        MIN(created_at) AS first_credit_date
+                                    FROM job_ledger
+                                    WHERE entry_type = 'credit'
+                                    GROUP BY customer_id
+                                ) cr ON cr.customer_id = c.customer_id
+
+                                LEFT JOIN (
+                                    SELECT
+                                        jl.customer_id,
+                                        SUM(jp.amount) AS total_paid,
+                                        MAX(jp.created_at) AS last_payment_date
+                                    FROM job_payment jp
+                                    INNER JOIN job_ledger jl ON jl.ledger_id = jp.ledger_id
+                                    WHERE jp.status = 1
+                                    GROUP BY jl.customer_id
+                                ) py ON py.customer_id = c.customer_id
+
                                 WHERE c.status = 1
-                                GROUP BY c.customer_id
-                                HAVING total_credit > 0 OR total_payments > 0";
+                                HAVING available_balance > 0 OR outstanding_credit > 0;";
                         $result = $conn->query($sql);
                         ?>
 
@@ -389,13 +423,13 @@ function showCol($name) {
 
                                         <?php if (showCol('available_credit', $visibleColumns)) : ?>
                                             <td style="color:green !important;">
-                                                $<?= number_format(getCustomerTotalAvail($customer_id), 2) ?>
+                                                $<?= number_format($row['available_balance'], 2) ?>
                                             </td>
                                         <?php endif; ?>
 
                                         <?php if (showCol('balance_due', $visibleColumns)) : ?>
                                             <td style="color:rgb(255, 21, 21) !important;">
-                                                $<?= number_format(getCustomerCreditTotal($customer_id), 2) ?>
+                                                $<?= number_format($row['outstanding_credit'], 2) ?>
                                             </td>
                                         <?php endif; ?>
 

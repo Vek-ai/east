@@ -248,8 +248,8 @@ function renderScrewCategory($pdf, $product, $conn) {
         $length_display,
         '',
         '',
-        '$ ' . number_format($unit_price, 2),
-        '$ ' . number_format($disc_price, 2),
+        '$ ' . number_format($unit_price, 3),
+        '$ ' . number_format($disc_price, 3),
     ];
 
     $pdf->renderRow($columns, $summaryRow, false, $note);
@@ -363,7 +363,62 @@ function renderDefaultCategory($pdf, $product, $conn) {
     return [$totalPrice, $totalQty, $totalActual];
 }
 
+function renderServiceChargeCategory($pdf, $product, $conn) {
+    global $columns;
 
+    $productid = $product['productid'];
+    $product_details = getProductDetails($productid);
+    $grade_details   = getGradeDetails($product['custom_grade']);
+    $gauge_details   = getGaugeDetails($product['custom_gauge']);
+
+    $quantity   = floatval($product['quantity'] ?? 0);
+    $act_price  = floatval($product['actual_price'] ?? 0);
+    $disc_price = floatval($product['discounted_price'] ?? 0);
+    $note       = trim($product['note'] ?? '');
+
+    $panel_type  = !empty($product['panel_type']) ? ucwords(str_replace('_', ' ', $product['panel_type'])) : '';
+    $panel_style = !empty($product['panel_style']) ? ucwords(str_replace('_', ' ', $product['panel_style'])) : '';
+
+    $ft = floor(floatval($product['custom_length'] ?? 0));
+    $in_decimal = floatval($product['custom_length2'] ?? 0);
+    $total_length = $ft + ($in_decimal / 12);
+
+    $ft_only = floor($total_length);
+    $inch_only = round(($total_length - $ft_only) * 12);
+
+    $product_abbrev = $product['product_id_abbrev'] ?? '';
+    $color = getColorName($product['custom_color']);
+
+    $unit_price = getProductPrice($productid);
+
+    $summaryRow = [
+        $product_abbrev,
+        $product['product_item'],
+        $color,
+        '',
+        '',
+        $quantity,
+        '',
+        '',
+        '',
+        '$ ' . number_format($act_price, 2),
+        '$ ' . number_format($disc_price, 2),
+    ];
+
+    $pdf->renderRow($columns, $summaryRow, false, $note);
+
+    if (!empty($note)) {
+        $pdf->SetFont('Arial', 'I', 7);
+        $pdf->Cell(0, 4, 'Note: ' . $note, 0, 1, 'L');
+        $pdf->SetFont('Arial', '', 7);
+    }
+
+    $totalQty    = $quantity;
+    $totalPrice  = $disc_price;
+    $totalActual = $act_price;
+
+    return [$totalPrice, $totalQty, $totalActual];
+}
 
 class PDF extends FPDF {
     public $orderid;
@@ -512,7 +567,10 @@ class PDF extends FPDF {
         $imageUrl = 'https://delivery.eastkentuckymetal.com/receiptqr/receiptqr' . $token . '.png';
         $headers = @get_headers($imageUrl);
         if ($headers && strpos($headers[0], '200') !== false) {
-            $this->Image($imageUrl, $qrX, $qrY, 20, 20);
+            try {
+                $this->Image($imageUrl, $qrX, $qrY, 20, 20);
+            } catch (Exception $e) {
+            }
         }
 
         $this->SetY(6 + $maxHeight + 5);
@@ -638,6 +696,7 @@ $col1_x = 10;
 $col2_x = 140;
 $lumber_id = 1;
 $screw_id = 16;
+$service_chrg_id = 27;
 $panel_id = 3;
 $trim_id = 4;
 
@@ -829,6 +888,8 @@ if (mysqli_num_rows($result) > 0) {
                     [$catTotal, $catQty, $catActual] = renderScrewCategory($pdf, $row_product, $conn);
                 } elseif ($categoryId == $lumber_id) {
                     [$catTotal, $catQty, $catActual] = renderLumberCategory($pdf, $row_product, $conn);
+                } elseif ($categoryId == $service_chrg_id) {
+                    [$catTotal, $catQty, $catActual] = renderServiceChargeCategory($pdf, $row_product, $conn);
                 } else {
                     [$catTotal, $catQty, $catActual] = renderDefaultCategory($pdf, $row_product, $conn);
                 }
@@ -854,6 +915,8 @@ if (mysqli_num_rows($result) > 0) {
                 [$catTotal, $catQty, $catActual] = renderScrewCategory($pdf, $row_product, $conn);
             } elseif ($categoryId == $lumber_id) {
                 [$catTotal, $catQty, $catActual] = renderLumberCategory($pdf, $row_product, $conn);
+            } elseif ($categoryId == $service_chrg_id) {
+                [$catTotal, $catQty, $catActual] = renderServiceChargeCategory($pdf, $row_product, $conn);
             } else {
                 [$catTotal, $catQty, $catActual] = renderDefaultCategory($pdf, $row_product, $conn);
             }

@@ -260,8 +260,8 @@ function renderScrewCategory($pdf, $product, $conn) {
         $length_display,
         '',
         '',
-        '$ ' . number_format($unit_price, 2),
-        '$ ' . number_format($disc_price, 2),
+        '$ ' . number_format($unit_price, 3),
+        '$ ' . number_format($disc_price, 3),
     ];
 
     $pdf->renderRow($columns, $summaryRow);

@@ -50,7 +50,7 @@ function calculateUnitPrice(
     $totalPrice = $priceWithMultipliers + $panelExtraCost + $bendCost + $hemCost;
 
     //return round($totalPrice, 2);
-    return round($totalPrice, 2);
+    return round($totalPrice, 3);
 }
 
 ?>

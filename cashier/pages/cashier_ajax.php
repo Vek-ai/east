@@ -15,6 +15,7 @@ $emailSender = new EmailTemplates();
 $lumber_id = 1;
 $trim_id = 4;
 $panel_id = 3;
+$service_chrg_id = 27;
 $custom_truss_id = 47;
 $special_trim_id = 66;
 $screw_id = 16;
@@ -320,10 +321,13 @@ if (isset($_REQUEST['query'])) {
             $is_special_trim = ($is_trim && $row_product['is_special_trim'] == 1);
 
             $is_screw = $row_product['product_category'] == $screw_id ? true : false;
+
+            $is_serv_chrg = $row_product['product_category'] == $service_chrg_id;
+
             $is_custom_truss = $row_product['product_id'] == $custom_truss_id ? true : false;
             $is_custom_length = $row_product['is_custom_length'] == 1 ? true : false;
 
-            $qty_input = !$is_panel && !$is_custom_truss && !$is_special_trim && !$is_trim && !$is_custom_length && !$is_screw && !$is_lumber
+            $qty_input = !$is_panel && !$is_custom_truss && !$is_special_trim && !$is_trim && !$is_custom_length && !$is_screw && !$is_lumber && !$is_serv_chrg
                 ? ' <div class="input-group input-group-sm d-flex justify-content-center">
                         <button class="btn btn-outline-primary btn-minus" type="button" data-id="' . $row_product['product_id'] . '">-</button>
                         <input class="form-control p-1 text-center" type="number" id="qty' . $row_product['product_id'] . '" value="1" min="1" style="max-width:70px;">
@@ -344,6 +348,8 @@ if (isset($_REQUEST['query'])) {
                 $btn_id = 'add-to-cart-screw-btn';
             }else if($is_lumber){
                 $btn_id = 'add-to-cart-lumber-btn';
+            }else if($is_serv_chrg){
+                $btn_id = 'add-to-cart-service-charge-btn';
             }else if($is_custom_length){
                 $btn_id = 'add-to-cart-custom-length-btn';
             }else{
@@ -575,7 +581,7 @@ if (isset($_POST['set_color'])) {
     $line = mysqli_real_escape_string($conn, $_POST['line']);
     $color_id = mysqli_real_escape_string($conn, $_POST['color_id']);
 
-    $key = $line;
+    $key = findCartKey($_SESSION["cart"], $product_id, $line);
     if ($key !== false && isset($_SESSION["cart"][$key])) {
         $_SESSION["cart"][$key]['custom_color'] = !empty($color_id) ? $color_id : "";
     }
@@ -2136,7 +2142,9 @@ if (isset($_POST['save_lumber'])) {
             $unit_price  = floatval($row_length['unit_price'] ?? 0);
             $bulk_price  = floatval($row_length['bulk_price'] ?? 0);
 
-            if ($bulk_price > 0 && $qty >= $bulk_starts) {
+            $bulk_starts_at = isset($row["bulk_starts_at"]) ? floatval($row["bulk_starts_at"]) : 0;
+
+            if ($bulk_price > 0 && $qty >= $bulk_starts && $bulk_starts_at > 0) {
                 $unit_price = $bulk_price;
             }
 
@@ -2195,6 +2203,82 @@ if (isset($_POST['save_lumber'])) {
                     'custom_gauge'        => '',
                     'note'                => $note,
                     'pack'                => $pack
+                );
+
+                $_SESSION["cart"][] = $item_array;
+            }
+        }
+    } else {
+        echo json_encode(['error' => "Trim Product not available"]);
+        exit;
+    }
+
+    echo json_encode(['success' => print_r($_SESSION["cart"])]);
+}
+
+if (isset($_POST['save_service_charge'])) {
+    $id   = mysqli_real_escape_string($conn, $_POST['id']);
+    $line = mysqli_real_escape_string($conn, $_POST['line'] ?? 1);
+
+    $quantities  = $_POST['quantity'] ?? [];
+    $prices      = $_POST['price'] ?? [];
+    $notes       = $_POST['description'] ?? [];
+
+    if (!isset($_SESSION["cart"])) {
+        $_SESSION["cart"] = array();
+    }
+
+    $query = "SELECT * FROM product WHERE product_id = '$id'";
+    $result = mysqli_query($conn, $query);
+
+    if (mysqli_num_rows($result) > 0) {
+        $row = mysqli_fetch_assoc($result);
+
+        foreach ($quantities as $idx => $qty) {
+            $quantity           = floatval($qty);
+            $price              = floatval($prices[$idx] ?? 0);
+            $note               = $notes[$idx] ?? '';
+            
+            if ($quantity <= 0) continue;
+
+            $found = false;
+            foreach ($_SESSION["cart"] as &$item) {
+                if (
+                    $item['product_id'] == $id
+                ) {
+                    $item['quantity_cart'] += $quantity;
+                    $found = true;
+                    break;
+                }
+            }
+            unset($item);
+
+            if (!$found) {
+                $line_to_use = (count($_SESSION["cart"]) > 0) ? max(array_column($_SESSION["cart"], 'line')) + 1 : 1;
+
+                $item_array = array(
+                    'product_id'          => $row['product_id'],
+                    'product_item'        => $row['product_item'],
+                    'unit_price'          => $price,
+                    'line'                => $line_to_use,
+                    'quantity_ttl'        => 1,
+                    'quantity_in_stock'   => 0,
+                    'quantity_cart'       => $quantity,
+                    'estimate_width'      => 0,
+                    'estimate_length'     => '',
+                    'estimate_length_inch'=> '',
+                    'usage'               => 0,
+                    'custom_color'        => '',
+                    'dimension_id'        => '',
+                    'screw_length'        => '',
+                    'screw_type'          => '',
+                    'weight'              => 0,
+                    'supplier_id'         => '',
+                    'custom_grade'        => '',
+                    'custom_profile'      => '',
+                    'custom_gauge'        => '',
+                    'note'                => $note,
+                    'pack'                => ''
                 );
 
                 $_SESSION["cart"][] = $item_array;

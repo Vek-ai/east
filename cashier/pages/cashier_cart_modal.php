@@ -11,6 +11,7 @@ $lumber_id = 1;
 $trim_id   = 4;
 $panel_id  = 3;
 $screw_id  = 16;
+$service_chrg_id = 27;
 
 $staff_id = $_SESSION['userid'] ?? 0;
 $show_prod_id_abbrev = 0;
@@ -909,7 +910,7 @@ if(isset($_POST['fetch_cart'])){
                                                 <select id="color_cart<?= $line ?>" class="form-control color-cart" 
                                                         name="color" onchange="updateColor(this)" 
                                                         data-line="<?= $line ?>" data-id="<?= $product_id ?>">
-                                                    <option value="">Select Color...</option>
+                                                    <option value="">Select Color <?= $custom_color ?>...</option>
                                                     <?php
                                                     $assigned_colors = getAssignedProductColors($product_id);
 
@@ -1009,15 +1010,153 @@ if(isset($_POST['fetch_cart'])){
 
                                             <td class="text-center align-middle">
                                                 <span class="<?= $show_screw_per_pack ? '' : 'd-none text-nowrap' ?>">
-                                                    Per Each $ <?= number_format($panel_price, 2) ?>
+                                                    Per Each $ <?= number_format($panel_price, 3) ?>
                                                 </span>
                                             </td>
 
                                             <td class="text-center align-middle">
                                                 <span class="<?= $show_screw_per_each ? '' : 'd-none text-nowrap' ?>">
-                                                    Retail per Screw $ <?= number_format($linear_price, 2) ?>
+                                                    Retail per Screw $ <?= number_format($linear_price, 3) ?>
                                                 </span>
                                             </td>
+
+                                            <td class="text-center align-middle"><?= $stock_text ?></td>
+
+                                            <td class="text-end align-middle">
+                                                <?php
+                                                echo '$ ' .number_format($unit_price, 3);
+                                                ?>
+                                            </td>
+
+                                            <td class="text-end align-middle">
+                                                <span class="<?= $show_retail_price ? '' : 'd-none' ?>">
+                                                    $ <?= number_format($total_price_actual,3) ?>
+                                                </span>
+                                            </td>
+                                            <td class="text-end<?= $show_total_price ? '' : 'd-none' ?> align-middle">
+                                                $ <?= number_format($total_customer_price,3) ?>
+                                            </td>
+                                            <td class="text-center align-middle">
+                                                <a href="javascript:void(0)" data-id="<?= $product_id ?>" data-line="<?= $line ?>" onClick="delete_product(this)"><i class="fa fs-6 fa-trash"></i></a>
+                                                <a href="javascript:void(0)" class="text-decoration-none btn-sm duplicate-item-btn" data-line="<?= $line; ?>" data-id="<?= $product_id; ?>" onClick="duplicate_item(this)">
+                                                    <i class="fa fa-plus fs-6"></i>
+                                                </a>
+                                            </td>
+                                        </tr>
+                                        <?php
+                                    } else if($category_id == $service_chrg_id) {
+                                        ?>
+                                        <tr class="thick-border" data-line="<?= $line ?>" data-bundle="<?= $bundle_name ?>" data-mult="<?= $multiplier ?>"> 
+                                            <td class="text-center align-middle">
+                                                <i class="fa fa-bars fa-lg drag-handle <?= $show_drag_handle ? '' : 'd-none' ?>" 
+                                                style="cursor: move; flex-shrink: 0;"></i><br>
+
+                                                <div class="bundle-checkbox-cart d-none d-flex justify-content-center align-items-center flex-shrink-0">
+                                                    <div class="form-check m-0 d-flex justify-content-center align-items-center">
+                                                        <input class="form-check-input" 
+                                                            type="checkbox" 
+                                                            data-line="<?= $line; ?>" 
+                                                            data-id="<?= $product_id; ?>" 
+                                                            value="<?= $line; ?>">
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td class="align-middle">
+                                                <div class="d-flex align-items-center justify-content-start gap-1 flex-wrap" style="overflow: hidden;">
+                                                    <span class="<?= $show_unique_product_id ? '' : 'd-none' ?>" style="flex-grow: 1; overflow: hidden;">
+                                                        <?= htmlspecialchars($unique_prod_id) ?>
+                                                    </span>
+                                                </div>
+                                            </td>
+
+                                            <td class="align-middle">
+                                                <a href="javascript:void(0);" data-id="<?= $product_id ?>" class="d-flex align-items-center view_product_details">
+                                                    <h6 class="fw-semibold mb-0 fs-4"><?= $values['product_item'] ?></h6>
+                                                </a>
+                                                <?php if (!empty($values["note"])): ?>
+                                                    <span class="text-muted small" style="flex-grow: 1; overflow: hidden;">
+                                                        Notes: <?= htmlspecialchars($values["note"]) ?>
+                                                    </span>
+                                                <?php endif; ?>
+                                            </td>
+
+                                            <td class="text-center align-middle">
+                                                <?php
+                                                if($product_details['has_color'] > 0){
+                                                ?>
+                                                <select id="color_cart<?= $line ?>" class="form-control color-cart" 
+                                                        name="color" onchange="updateColor(this)" 
+                                                        data-line="<?= $line ?>" data-id="<?= $product_id ?>">
+                                                    <option value="">Select Color...</option>
+                                                    <?php
+                                                    $assigned_colors = getAssignedProductColors($product_id);
+
+                                                    if (!empty($custom_color)) {
+                                                        $custom_color_id = intval($custom_color);
+                                                        if (!in_array($custom_color_id, $assigned_colors)) {
+                                                            $assigned_colors[] = $custom_color_id;
+                                                        }
+                                                    }
+
+                                                    foreach ($assigned_colors as $color_id) {
+                                                        $colorDetails = getColorDetails($color_id);
+                                                        $colorHex = getColorHexFromColorID($color_id);
+                                                        $colorName = $colorDetails['color_name'] ?? '';
+                                                        $selected = ($custom_color == $color_id) ? 'selected' : '';
+                                                        echo "<option value='{$color_id}' data-color='{$colorHex}' data-grade='{$product['grade']}' {$selected}>{$colorName}</option>";
+                                                    }
+                                                    ?>
+                                                </select>
+                                                <?php
+                                                }
+                                                ?>
+                                            </td>
+
+                                            <td class="text-center align-middle"></td>
+
+                                            <td class="text-center align-middle"></td>
+
+                                            <td class="text-center align-middle">
+                                                <span class="<?= $show_profile ? '' : 'd-none' ?>">
+                                                    <?= getProfileTypeName($custom_profile) ?>
+                                                </span>
+                                            </td>
+
+                                            <td class="text-center align-middle">
+                                                <div class="input-group d-inline-flex align-items-center flex-nowrap w-auto">
+                                                    <button class="btn btn-primary btn-sm p-1" type="button"
+                                                        data-line="<?php echo $line; ?>" 
+                                                        data-id="<?php echo $product_id; ?>" 
+                                                        onClick="deductquantity(this)">
+                                                        <i class="fa fa-minus"></i>
+                                                    </button>
+
+                                                    <input class="form-control form-control-sm text-center mx-0"
+                                                        type="text"
+                                                        value="<?php echo $values['quantity_cart']; ?>"
+                                                        onchange="updatequantity(this)"
+                                                        data-line="<?php echo $line; ?>"
+                                                        data-id="<?php echo $product_id; ?>"
+                                                        id="item_quantity<?php echo $product_id;?>"
+                                                        >
+
+                                                    <button class="btn btn-primary btn-sm p-1" type="button"
+                                                        data-line="<?php echo $line; ?>" 
+                                                        data-id="<?php echo $product_id; ?>" 
+                                                        onClick="addquantity(this)">
+                                                        <i class="fa fa-plus"></i>
+                                                    </button>
+                                                </div>
+                                            </td>
+
+                                            <?php 
+                                            $inventoryItems = getAvailableInventory($product_id);
+                                            ?>
+                                            <td class="text-center align-middle"></td>
+
+                                            <td class="text-center align-middle"></td>
+
+                                            <td class="text-center align-middle"></td>
 
                                             <td class="text-center align-middle"><?= $stock_text ?></td>
 

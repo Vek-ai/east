@@ -316,7 +316,7 @@ if (isset($_POST['fetch_price'])) {
         }
     }
 
-    echo number_format($totalPrice, 2);
+    echo number_format($totalPrice, 3);
     exit;
 }
 
