@@ -192,6 +192,11 @@ $permission = $_SESSION['permission'];
                                 }
 
                                 $item_names = implode(', ', $names);
+
+                                if (mb_strlen($item_names) > 50) {
+                                    $item_names = mb_substr($item_names, 0, 50);
+                                    $item_names = preg_replace('/\s+\S*$/u', '', $item_names) . '...';
+                                }
                                 
                                 ?>
                                 <tr id="product-row-<?= $no ?>" data-category="<?= $category_id ?>">
