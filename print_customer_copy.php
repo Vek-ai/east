@@ -565,12 +565,18 @@ class PDF extends FPDF {
         $qrX = $col2_x + $w;
         $qrY = max(0, $maxHeight - 15);
         $imageUrl = 'https://delivery.eastkentuckymetal.com/receiptqr/receiptqr' . $token . '.png';
-        $headers = @get_headers($imageUrl);
-        if ($headers && strpos($headers[0], '200') !== false) {
-            try {
-                $this->Image($imageUrl, $qrX, $qrY, 20, 20);
-            } catch (Exception $e) {
-            }
+
+        $headers = @get_headers($imageUrl, 1);
+
+        if (
+            $headers &&
+            strpos($headers[0], '200') !== false &&
+            isset($headers['Content-Type']) &&
+            (is_array($headers['Content-Type'])
+                ? in_array('image/png', $headers['Content-Type'])
+                : strpos($headers['Content-Type'], 'image/png') !== false)
+        ) {
+            @$this->Image($imageUrl, $qrX, $qrY, 20, 20);
         }
 
         $this->SetY(6 + $maxHeight + 5);
@@ -1018,7 +1024,7 @@ if (mysqli_num_rows($result) > 0) {
             'Cash'             => floatval($row_orders['pay_cash']),
             'Credit/Debit Card'=> floatval($row_orders['pay_card']),
             'Check'            => floatval($row_orders['pay_check']),
-            'ChargeNet30'      => floatval($row_orders['pay_net30'])
+            'Charge Net 30'      => floatval($row_orders['pay_net30'])
         ];
 
         $lineheight = 5;

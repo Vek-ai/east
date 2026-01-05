@@ -15,8 +15,9 @@ $fastener_id = 5;
 $stiffening_rib_id = 7;
 if(isset($_POST['fetch_prompt_quantity'])){
     $id = mysqli_real_escape_string($conn, $_POST['id']);
-    $grade = mysqli_real_escape_string($conn, $_POST['grade'] ?? '');
-    $gauge = mysqli_real_escape_string($conn, $_POST['gauge'] ?? '');
+    $color_id = mysqli_real_escape_string($conn, $_POST['color_id'] ?? '');
+    $grade_id = mysqli_real_escape_string($conn, $_POST['grade_id'] ?? '');
+    $gauge_id = mysqli_real_escape_string($conn, $_POST['gauge_id'] ?? '');
     $product_details = getProductDetails($id);
     $type_details = getProductTypeDetails($product_details['product_type']);
     $is_special = $type_details['special'];

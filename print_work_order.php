@@ -45,6 +45,55 @@ $trim_columns = [
     ['label' => 'COIL #',        'width' => 18, 'align' => 'C', 'fontsize' => 9],
 ];
 
+function buildTotalsByCustom(array $products) {
+    global $conn;
+    $totals_by_custom = [];
+
+    foreach ($products as $row) {
+        $custom_profile = (int)$row['custom_profile'];
+        $custom_grade   = (int)$row['custom_grade'];
+        $custom_gauge   = (int)$row['custom_gauge'];
+        $custom_color   = (int)$row['custom_color'];
+
+        $length   = (float)$row['custom_length'];
+        $quantity = (float)$row['quantity'];
+
+        if ($length <= 0 || $quantity <= 0) {
+            continue;
+        }
+
+        $group_key = $custom_profile . '|' . $custom_grade . '|' . $custom_gauge . '|' . $custom_color;
+
+        if (!isset($totals_by_custom[$group_key])) {
+
+            $nameParts = [];
+
+            $profileAbbr = $custom_profile ? getAbbr('profile_type', 'profile_type', $custom_profile) : null;
+            $gradeAbbr   = $custom_grade   ? getAbbr('product_grade', 'product_grade', $custom_grade) : null;
+            $gaugeAbbr   = $custom_gauge   ? getAbbr('product_gauge', 'product_gauge', $custom_gauge) : null;
+            $colorAbbr   = $custom_color   ? getAbbr('paint_colors', 'color_name', $custom_color) : null;
+
+            if ($profileAbbr) $nameParts[] = $profileAbbr;
+            if ($gradeAbbr)   $nameParts[] = $gradeAbbr;
+            if ($gaugeAbbr)   $nameParts[] = $gaugeAbbr;
+            if ($colorAbbr)   $nameParts[] = $colorAbbr;
+
+            $totals_by_custom[$group_key] = [
+                'profile'      => $custom_profile,
+                'grade'        => $custom_grade,
+                'gauge'        => $custom_gauge,
+                'color'        => $custom_color,
+                'name'         => implode(' - ', $nameParts),
+                'total_length' => 0
+            ];
+        }
+
+        $totals_by_custom[$group_key]['total_length'] += ($length * $quantity);
+    }
+
+    return $totals_by_custom;
+}
+
 function decimalToFractionInch($decimal, $precision = 16) {
     $inch = round($decimal * $precision);
     $whole = floor($inch / $precision);
@@ -317,14 +366,14 @@ function renderRow($pdf, $columns, $row, $bold = false) {
     $pdf->SetXY($xStart, $yStart + $maxHeight);
 }
 
-function renderInvoiceHeader($pdf, $row_orders, $type) {
-    $current_user_id = $_SESSION['userid'];
+function renderInvoiceHeader($pdf, $row_orders, $type, array $totals_by_custom = []) {
+    $salesperson = $row_orders["cashier"];
 
     $delivery_price = floatval($row_orders['delivery_amt']);
     $discount = floatval($row_orders['discount_percent']) / 100;
     $orderid = $row_orders['orderid'];
     $customer_id = $row_orders['customerid'];
-    $salesperson = get_staff_name($current_user_id);
+    $salesperson = get_staff_name($salesperson);
     $customerDetails = getCustomerDetails($customer_id);
     $tax = floatval(getCustomerTax($customer_id)) / 100;
     $delivery_method = 'Deliver';
@@ -428,6 +477,32 @@ function renderInvoiceHeader($pdf, $row_orders, $type) {
     $pdf->Rect($col3_x, $startY, $mailToWidth - 5, $blockHeight);
 
     $pdf->SetY($startY + $blockHeight + 3);
+
+    if (!empty($totals_by_custom)) {
+        $lineH = 6;
+        $summaryY = $startY + $blockHeight;
+
+        $pdf->SetXY($col3_x, $summaryY);
+        $pdf->SetFont('Arial', 'B', 9);
+        $pdf->SetFillColor(211, 211, 211);
+        $pdf->Cell($mailToWidth - 5, 7, 'Linear Footage', 1, 2, 'L', true);
+
+        $pdf->SetFont('Arial', '', 9);
+
+        foreach ($totals_by_custom as $info) {
+            if (empty($info['name'])) continue;
+
+            $text = $info['name'] . ': ' .
+                    number_format((float)$info['total_length'], 2) . ' ft';
+
+            $pdf->SetX($col3_x);
+            $pdf->Cell($mailToWidth - 5, $lineH, $text, 1, 2, 'L');
+        }
+
+        $pdf->SetY($summaryY + 7 + (count($totals_by_custom) * $lineH));
+    }
+
+    $pdf->ln(5);
 }
 
 class PDF extends FPDF {
@@ -545,10 +620,13 @@ if (mysqli_num_rows($result) > 0) {
         }
     }
 
+    $panelTotals = buildTotalsByCustom($panelProducts, $conn);
+    $trimTotals  = buildTotalsByCustom($trimProducts, $conn);
+
     if ($type === 'panel' || $type === '') {
         if (!empty($panelProducts)) {
             $pdf->AddPage();
-            renderInvoiceHeader($pdf, $row_orders, 'panel');
+            renderInvoiceHeader($pdf, $row_orders, 'trim', $panelTotals);
             renderTableHeader($pdf, $columns);
 
             foreach ($panelProducts as $row_product) {
@@ -560,7 +638,7 @@ if (mysqli_num_rows($result) > 0) {
     if ($type === 'trim' || $type === '') {
         if (!empty($trimProducts)) {
             $pdf->AddPage();
-            renderInvoiceHeader($pdf, $row_orders, 'trim');
+            renderInvoiceHeader($pdf, $row_orders, 'trim', $trimTotals);
             renderTableHeader($pdf, $trim_columns);
 
             foreach ($trimProducts as $row_product) {

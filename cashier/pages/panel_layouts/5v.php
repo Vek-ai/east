@@ -10,15 +10,15 @@ $ga_29 = 3;
 
 $galvalume_id = 14;
 
-$default_color_id = $galvalume_id;
-$default_grade_id = $gr_no_2;
-$default_gauge_id = $ga_29; 
+$default_color_id = !empty($color_id) ? $color_id : $galvalume_id;
+$default_grade_id = !empty($grade_id) ? $grade_id : $gr_no_2;
+$default_gauge_id = !empty($gauge_id) ? $gauge_id : $ga_29; 
 ?>
 
 <div class="row justify-content-center mb-2">
     <!-- Colors -->
     <div class="col-3">
-        <select class="form-control qty_select2" id="qty-color" name="color">
+        <select class="form-control qty_select2 qty-color" id="qty-color" name="color">
             <option value="" data-category="">All Colors</option>
             <optgroup label="Assigned Colors">
                 <?php
@@ -52,7 +52,7 @@ $default_gauge_id = $ga_29;
     </div>
 
     <div class="col-3">
-        <select class="form-control qty_select2" id="qty-grade" name="grade">
+        <select class="form-control qty_select2 qty-grade" id="qty-grade" name="grade">
             <option value="" data-category="">All Grades</option>
             <optgroup label="Product Grades">
                 <?php
@@ -85,7 +85,7 @@ $default_gauge_id = $ga_29;
     </div>
 
     <div class="col-3">
-        <select class="form-control qty_select2" id="qty-gauge" name="gauge">
+        <select class="form-control qty_select2 qty-gauge" id="qty-gauge" name="gauge">
             <option value="" data-category="">All Gauges</option>
             <optgroup label="Product Gauges">
                 <?php

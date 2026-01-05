@@ -314,7 +314,7 @@ function showCol($name) {
                                         ?>
                                         <tr
                                             data-by="<?= htmlspecialchars($row['order_from']) ?>"
-                                            data-tax="<?= htmlspecialchars($customer_details['tax_status']) ?>"
+                                            data-tax="<?= htmlspecialchars($customer_details['tax_status'] ?? '') ?>"
                                             data-month="<?= date('m', strtotime($row['order_date'])) ?>"
                                             data-year="<?= date('Y', strtotime($row['order_date'])) ?>"
                                             data-payment="<?= htmlspecialchars($row['pay_type']) ?>"
@@ -492,23 +492,12 @@ function showCol($name) {
             <iframe id="pdfFrame" src="" style="height: 70vh; width: 100%;" class="mb-3 border rounded"></iframe>
 
             <div class="container-fluid border rounded p-3">
-                <?php
-                $sql = "SELECT id, pricing_name FROM customer_pricing WHERE status = 1 AND hidden = 0 ORDER BY pricing_name ASC";
-                $result = $conn->query($sql);
-
-                if ($result && $result->num_rows > 0) {
-                    echo '<div class="mt-3 text-center">';
-                    echo '<div class="d-flex flex-wrap justify-content-center">';
-                    while ($row = $result->fetch_assoc()) {
-                        echo '<button type="button" class="btn btn-secondary btn-sm mx-1 my-1 pricing-btn" style="color:#000;" id="view_customer_pricing" data-id="' . $row['id'] . '">'
-                            . htmlspecialchars($row['pricing_name']) .
-                            '</button>';
-                    }
-                    echo '</div></div>';
-                } else {
-                    echo '<p>No active pricing types found.</p>';
-                }
-                ?>
+                <div class="mt-3 text-center">
+                    <div class="d-flex flex-wrap justify-content-center">
+                        <button type="button" class="btn btn-secondary btn-sm mx-1 my-1" id="view_office_copy">Office Copy</button>
+                        <button type="button" class="btn btn-secondary btn-sm mx-1 my-1" id="view_customer_copy">Customer Copy</button>
+                    </div>
+                </div>
 
                 <div class="mt-3 d-flex flex-wrap justify-content-between align-items-center gap-2">
                     <div class="d-flex flex-wrap gap-2">
@@ -1386,16 +1375,29 @@ function showCol($name) {
             }
         });
 
-        $(document).on('click', '#view_customer_pricing', function(e) {
+        $(document).on('click', '#view_office_copy', function(e) {
             e.preventDefault();
 
             const pricing_id = $(this).data('id');
             const $iframe = $('#pdfFrame');
 
-            const baseUrl = 'print_order_product.php';
+            const baseUrl = 'print_office_copy.php';
             const params = new URLSearchParams();
             params.set('id', print_order_id);
-            params.set('pricing_id', pricing_id);
+
+            const newSrc = baseUrl + '?' + params.toString();
+            $iframe.attr('src', newSrc);
+        });
+
+        $(document).on('click', '#view_customer_copy', function(e) {
+            e.preventDefault();
+
+            const pricing_id = $(this).data('id');
+            const $iframe = $('#pdfFrame');
+
+            const baseUrl = 'print_customer_copy.php';
+            const params = new URLSearchParams();
+            params.set('id', print_order_id);
 
             const newSrc = baseUrl + '?' + params.toString();
             $iframe.attr('src', newSrc);

@@ -38,6 +38,9 @@ $galvalume_id = 14;
 
 if(isset($_POST['fetch_modal'])){
     $id = mysqli_real_escape_string($conn, $_POST['id']);
+    $color_id = mysqli_real_escape_string($conn, $_POST['color_id'] ?? '');
+    $grade_id = mysqli_real_escape_string($conn, $_POST['grade_id'] ?? '');
+    $gauge_id = mysqli_real_escape_string($conn, $_POST['gauge_id'] ?? '');
     $product_details = getProductDetails($id);
     $type_details = getProductTypeDetails($product_details['product_type']);
     $custom_multiplier = getCustomMultiplier($product_details['product_category']);
@@ -77,6 +80,10 @@ if(isset($_POST['fetch_modal'])){
             $default_grade_id = $gr_no_1;
             $default_gauge_id = $ga_29;
     }
+
+    $default_color_id = !empty($color_id) ? $color_id : $default_color_id;
+    $default_grade_id = !empty($grade_id) ? $grade_id : $default_grade_id;
+    $default_gauge_id = !empty($gauge_id) ? $gauge_id : $default_gauge_id;
     ?>
     <?php
         if (!empty($product_details)) {

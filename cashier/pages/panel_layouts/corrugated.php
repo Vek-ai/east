@@ -10,9 +10,9 @@ $ga_29 = 3;
 
 $galvalume_id = 14;
 
-$default_color_id = $galvalume_id;
-$default_grade_id = $gr_no_2;
-$default_gauge_id = $ga_29; 
+$default_color_id = !empty($color_id) ? $color_id : $galvalume_id;
+$default_grade_id = !empty($grade_id) ? $grade_id : $gr_no_2;
+$default_gauge_id = !empty($gauge_id) ? $gauge_id : $ga_29; 
 ?>
 <div class="row justify-content-center mb-2">
     <!-- Colors -->

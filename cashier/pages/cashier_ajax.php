@@ -1735,29 +1735,31 @@ if (isset($_POST['search_customer'])) {
             customer_first_name, 
             customer_last_name, 
             customer_business_name,
+            customer_farm_name,
+            use_business,
+            use_farm,
             contact_phone
-        FROM 
-            customer
-        WHERE 
-            (
+        FROM customer
+        WHERE (
                 customer_first_name LIKE '%$search%' 
-                OR customer_last_name LIKE '%$search%'
-                OR customer_business_name LIKE '%$search%'
-            )
-            AND status NOT IN ('0', '3')
+                OR customer_last_name LIKE '%$search%' 
+                OR customer_business_name LIKE '%$search%' 
+                OR customer_farm_name LIKE '%$search%'
+              )
+          AND status NOT IN ('0', '3')
         LIMIT 15
     ";
 
     $result = mysqli_query($conn, $query);
 
+    $response = [];
+
     if ($result) {
-        $response = array();
         while ($row = mysqli_fetch_assoc($result)) {
-            $fullName = $row['customer_first_name'] . ' ' . $row['customer_last_name'];
             $label = get_customer_name($row['customer_id']);
 
             if (!empty($row['contact_phone'])) {
-                $label .= ' (' . $row['contact_phone'] . ')';
+                $label .= ' (' . htmlspecialchars($row['contact_phone']) . ')';
             }
 
             $response[] = [
@@ -1765,12 +1767,11 @@ if (isset($_POST['search_customer'])) {
                 'label' => $label
             ];
         }
-        echo json_encode($response);
-    } else {
-        echo json_encode(['error' => 'Query failed']);
     }
-}
 
+    echo json_encode($response);
+    exit;
+}
 
 if (isset($_POST['change_customer'])) {
     if (isset($_POST['customer_id'])) {

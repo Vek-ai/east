@@ -918,9 +918,17 @@ function get_customer_name($customer_id) {
             return trim($row['customer_farm_name']);
         }
 
-        $name = trim($row['customer_first_name'] . ' ' . $row['customer_last_name']);
-        if (!empty($name)) {
-            return $name;
+        if (!empty($row['customer_business_name'])) {
+            return trim($row['customer_business_name']);
+        }
+
+        if (!empty($row['customer_farm_name'])) {
+            return trim($row['customer_farm_name']);
+        }
+
+        $fullName = trim($row['customer_first_name'] . ' ' . $row['customer_last_name']);
+        if (!empty($fullName)) {
+            return $fullName;
         }
     }
 

@@ -874,7 +874,7 @@ if(isset($_POST['fetch_order'])){
         $(document).ready(function() {
             const today = new Date();
             const minSelectableDate = new Date(today);
-            minSelectableDate.setDate(today.getDate() + 2);
+            minSelectableDate.setDate(today.getDate());
 
             const year = today.getFullYear();
 

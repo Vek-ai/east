@@ -1755,160 +1755,42 @@ if(isset($_POST['fetch_cart'])){
                 initAutocomplete();
             });
 
-            $(document).on('change', '#customer_select_cart', function(event) {
-                var customer_id = $('#customer_id_cart').val();
-                $.ajax({
-                    url: 'pages/cashier_ajax.php',
-                    type: 'POST',
-                    data: {
-                        customer_id: customer_id,
-                        change_customer: "change_customer"
-                    },
-                    success: function(response) {
-                        if (response.trim() == 'success') {
-                            loadCart();
-                        }
-                    },
-                    error: function(jqXHR, textStatus, errorThrown) {
-                        alert('Error: ' + textStatus + ' - ' + errorThrown);
+            const selectConfigs = [
+                { class: 'color-cart', noResults: 'No paint color', templateResult: formatOption },
+                { class: 'pack-cart', noResults: 'No Packs Assigned', templateResult: formatOption },
+                { class: 'grade-cart' },
+                { class: 'gauge-cart' },
+                { class: 'panel_type_cart' },
+                { class: 'panel_style_cart' },
+                { class: 'screw_type_cart' },
+                { class: 'screw_length_cart' }
+            ];
+
+            selectConfigs.forEach(config => {
+                $("." + config.class).each(function() {
+                    const $select = $(this);
+
+                    if (config.class === 'color-cart') {
+                        const options = $select.find("option").toArray().sort((a, b) =>
+                            $(a).text().localeCompare($(b).text())
+                        );
+                        $select.empty().append(options);
                     }
-                });
-            });
 
-            $(document).on('click', '#customer_change_cart', function(event) {
-                $.ajax({
-                    url: 'pages/cashier_ajax.php',
-                    type: 'POST',
-                    data: {
-                        unset_customer: "unset_customer"
-                    },
-                    success: function(response) { 
-                        loadCart();
-                    },
-                    error: function(jqXHR, textStatus, errorThrown) {
-                        alert('Error: ' + textStatus + ' - ' + errorThrown);
+                    if (!$select.data("select2")) {
+                        $select.select2({
+                            width: '300px',
+                            placeholder: "Select...",
+                            dropdownAutoWidth: true,
+                            dropdownParent: $('.modal.show'),
+                            templateResult: config.templateResult || null,
+                            language: {
+                                noResults: function() {
+                                    return config.noResults || "No results";
+                                }
+                            }
+                        });
                     }
-                });
-            });
-
-            $(".color-cart").each(function () {
-                var select = $(this);
-                var options = select.find("option").toArray().sort(function (a, b) {
-                    return $(a).text().localeCompare($(b).text());
-                });
-
-                select.empty().append(options);
-                if (select.data("select2")) {
-                    select.select2("destroy");
-                }
-                select.select2({
-                    width: '300px',
-                    placeholder: "Select...",
-                    dropdownAutoWidth: true,
-                    dropdownParent: $('.modal.show'),
-                    templateResult: formatOption,
-                    language: {
-                        noResults: function () {
-                            return "No paint color";
-                        }
-                    }
-                });
-            });
-
-            $(".pack-cart").each(function() {
-                if ($(this).data('select2')) {
-                    $(this).select2('destroy');
-                }
-
-                $(this).select2({
-                    width: '300px',
-                    placeholder: "Select...",
-                    dropdownAutoWidth: true,
-                    dropdownParent: $('.modal.show'),
-                    templateResult: formatOption,
-                    language: {
-                        noResults: function() {
-                            return "No Packs Assigned";
-                        }
-                    }
-                });
-            });
-
-            $(".grade-cart").each(function() {
-                if ($(this).data('select2')) {
-                    $(this).select2('destroy');
-                }
-
-                $(this).select2({
-                    width: '300px',
-                    placeholder: "Select...",
-                    dropdownAutoWidth: true,
-                    dropdownParent: $('.modal.show')
-                });
-            });
-
-            $(".gauge-cart").each(function() {
-                if ($(this).data('select2')) {
-                    $(this).select2('destroy');
-                }
-
-                $(this).select2({
-                    width: '300px',
-                    placeholder: "Select...",
-                    dropdownAutoWidth: true,
-                    dropdownParent: $('.modal.show')
-                });
-            });
-
-            $(".panel_type_cart").each(function() {
-                if ($(this).data('select2')) {
-                    $(this).select2('destroy');
-                }
-
-                $(this).select2({
-                    width: '300px',
-                    placeholder: "Select...",
-                    dropdownAutoWidth: true,
-                    dropdownParent: $('.modal.show')
-                });
-            });
-
-            $(".panel_style_cart").each(function() {
-                if ($(this).data('select2')) {
-                    $(this).select2('destroy');
-                }
-
-                $(this).select2({
-                    width: '300px',
-                    placeholder: "Select...",
-                    dropdownAutoWidth: true,
-                    dropdownParent: $('.modal.show')
-                });
-            });
-
-            $(".screw_type_cart").each(function() {
-                if ($(this).data('select2')) {
-                    $(this).select2('destroy');
-                }
-
-                $(this).select2({
-                    width: '300px',
-                    placeholder: "Select...",
-                    dropdownAutoWidth: true,
-                    dropdownParent: $('.modal.show')
-                });
-            });
-
-            $(".screw_length_cart").each(function() {
-                if ($(this).data('select2')) {
-                    $(this).select2('destroy');
-                }
-
-                $(this).select2({
-                    width: '300px',
-                    placeholder: "Select...",
-                    dropdownAutoWidth: true,
-                    dropdownParent: $('.modal.show')
                 });
             });
 

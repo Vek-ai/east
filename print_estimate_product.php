@@ -340,7 +340,6 @@ class PDF extends FPDF {
     public $estimateid;
     public $estimated_date;
     public $delivery_method;
-    public $scheduled_date;
     public $salesperson;
     public $token;
 
@@ -445,10 +444,10 @@ class PDF extends FPDF {
         $w = 60;
         $lineH = 5;
 
-        $blockText  = "Invoice #: " . $this->estimateid . "\n";
-        $blockText .= "Order Date: " . $this->estimated_date . "\n";
+        $blockText  = "Estimate #: " . $this->estimateid . "\n";
+        $blockText .= "Estimate Date: " . $this->estimated_date . "\n";
         $blockText .= "Pick-up or Delivery: " . $this->delivery_method . "\n";
-        $blockText .= "Scheduled Date: " . $this->scheduled_date . "\n";
+        $blockText .= "\n";
         $blockText .= "Salesperson: " . $this->salesperson;
 
         $maxHeight = $this->NbLines($w, $blockText) * $lineH;
@@ -615,10 +614,7 @@ if (mysqli_num_rows($result) > 0) {
             $estimated_date = date("m/d/Y || g:i A", strtotime($row_estimates['estimated_date']));
         }
 
-        $scheduled_date = '';
-        if (!empty($row_estimates["scheduled_date"]) && $row_estimates["delivered_date"] !== '0000-00-00 00:00:00') {
-            $scheduled_date = date("m/d/Y || g:i A", strtotime($row_estimates["scheduled_date"]));
-        }
+        
         if($delivery_price == 0){
             $delivery_method = 'Pickup';
         }
@@ -628,7 +624,6 @@ if (mysqli_num_rows($result) > 0) {
         $pdf->estimateid = $estimateid;
         $pdf->estimated_date = $estimated_date;
         $pdf->delivery_method = $delivery_method;
-        $pdf->scheduled_date = $scheduled_date;
         $pdf->salesperson = get_staff_name($current_user_id);
         $pdf->token = $token;
 
@@ -842,6 +837,14 @@ if (mysqli_num_rows($result) > 0) {
         $pdf->SetXY($col1_x, $col_y);
         $pdf->MultiCell(120, 4, $disclaimer, 1, 'L');
 
+        $pdf->SetFont('Arial', 'B', 12);
+        $pdf->SetFillColor(220, 220, 220);
+
+        $pdf->SetX($col1_x);
+        $pdf->Cell(120, 6,'MATERIAL ESTIMATE', 1, 1, 'C', true);
+
+        $pdf->SetFont('Arial', 'B', 9);
+        $pdf->SetFillColor(255, 255, 255);
         $pdf->Cell(0, 5, 'Page ' . $pdf->PageNo() . ' of {nb}', 0, 0, 'L');
         
         $pdf->SetFont('Arial', '', 9);

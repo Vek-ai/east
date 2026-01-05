@@ -4171,6 +4171,7 @@ $editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) :
                     $('#paginationInfo').text(`Page ${currentPage} of ${totalPages}`);
 
                     updatePaginationUI();
+                    updateSelectedTags()
                 },
                 error: function(jqXHR, textStatus, errorThrown) {
                     alert('Error: ' + textStatus + ' - ' + errorThrown);
@@ -4461,6 +4462,9 @@ $editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) :
                 type: 'POST', 
                 data: {
                     id: id,
+                    color_id: color_id,
+                    grade_id: grade_id,
+                    gauge_id: gauge_id,
                     fetch_prompt_quantity: 'fetch_prompt_quantity'
                 },
                 success: function(response) {
@@ -4473,10 +4477,6 @@ $editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) :
                             dropdownPosition: 'below'
                         });
                     });
-
-                    $('#qty-color').val(color_id).trigger('change');
-                    $('#qty-grade').val(grade_id).trigger('change');
-                    $('#qty-gauge').val(gauge_id).trigger('change');
 
                     $('#prompt_quantity_modal').modal('show');
                 },
@@ -4497,6 +4497,9 @@ $editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) :
                 type: 'POST', 
                 data: {
                     id: id,
+                    color_id: color_id,
+                    grade_id: grade_id,
+                    gauge_id: gauge_id,
                     fetch_modal: 'fetch_modal'
                 },
                 success: function(response) {
@@ -4573,17 +4576,17 @@ $editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) :
 
         $(document).on("click", "#add-to-cart-screw-btn", function() {
             var id = $(this).data('id');
-            var color = $(this).data('color')
-            $('#set_screw_color').val(color);
-
+            var color_id = $('#select-color').find('option:selected').val();
+            $('#set_screw_color').val(color_id);
             $('.select-screw-div').addClass('d-none');
 
+            console.log(color_id);
             $.ajax({
                 url: 'pages/cashier_screw_modal.php',
                 type: 'POST', 
                 data: {
                     id: id,
-                    color: color,
+                    color: color_id,
                     fetch_modal: 'fetch_modal'
                 },
                 success: function(response) {
@@ -5033,71 +5036,79 @@ $editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) :
             ) {
                 alert("Please enter at least one payment amount!");
                 return;
-            }else{
-                $.ajax({
-                    url: 'pages/cashier_ajax.php',
-                    type: 'POST',
-                    dataType: 'json',
-                    data: {
-                        cash_amt: cash_amt,
-                        credit_amt: credit_amt,
-                        discount: discount,
-                        discount_amount: discount_amount,
-                        delivery_amt: delivery_amt,
-                        job_id: job_id,
-                        job_name: job_name,
-                        job_po: job_po,
-                        deliver_method: deliver_method,
-                        deliver_address: deliver_address,
-                        deliver_city: deliver_city,
-                        deliver_state: deliver_state,
-                        deliver_zip: deliver_zip,
-                        deliver_fname: deliver_fname,
-                        deliver_lname: deliver_lname,
-                        deliver_phone: deliver_phone,
-                        deliver_email: deliver_email,
-                        customer_tax: customer_tax,
-                        tax_exempt_number: tax_exempt_number,
-                        isAddingCustomer: isAddingCustomer,
-                        applyStoreCredit: applyStoreCredit,
-                        applyJobDeposit: applyJobDeposit,
-                        truck: truck,
-                        contractor_id: contractor_id,
-                        scheduled_date: scheduled_date,
-                        scheduled_time: scheduled_time,
-
-                        pay_cash: pay_cash,
-                        pay_card: pay_card,
-                        pay_check: pay_check,
-                        pay_pickup: pay_pickup,
-                        pay_delivery: pay_delivery,
-                        pay_net30: pay_net30,
-                        salesperson: salesperson,
-
-                        save_order: 'save_order'
-                    },
-                    success: function(response) {
-                        console.log(response);
-                        if (response.success) {
-                            alert("Order successfully saved.");
-
-                            orderIdSaved = response.order_id;
-                            customerIdSaved = response.customer_id;
-
-                            $('#print_order_category, #print_order, #print_deliver').removeClass('d-none');
-                            updatePrintLinks(orderIdSaved);
-
-                            $('#btnApprovalModal, #save_order, #save_order_alt, #save_estimate, #prev_page_order').addClass('d-none');
-                        } else if (response.error) {
-                            alert(response.error);
-                        }
-                    },
-                    error: function(jqXHR, textStatus, errorThrown) {
-                        console.log('Response Text: ' + jqXHR.responseText);
-                        console.log('Error: ' + textStatus + ' - ' + errorThrown);
-                    }
-                });
             }
+
+            if (!salesperson) {
+                alert("Please select salesperson!");
+                return;
+            }
+
+            $.ajax({
+                url: 'pages/cashier_ajax.php',
+                type: 'POST',
+                dataType: 'json',
+                data: {
+                    cash_amt: cash_amt,
+                    credit_amt: credit_amt,
+                    discount: discount,
+                    discount_amount: discount_amount,
+                    delivery_amt: delivery_amt,
+                    job_id: job_id,
+                    job_name: job_name,
+                    job_po: job_po,
+                    deliver_method: deliver_method,
+                    deliver_address: deliver_address,
+                    deliver_city: deliver_city,
+                    deliver_state: deliver_state,
+                    deliver_zip: deliver_zip,
+                    deliver_fname: deliver_fname,
+                    deliver_lname: deliver_lname,
+                    deliver_phone: deliver_phone,
+                    deliver_email: deliver_email,
+                    customer_tax: customer_tax,
+                    tax_exempt_number: tax_exempt_number,
+                    isAddingCustomer: isAddingCustomer,
+                    applyStoreCredit: applyStoreCredit,
+                    applyJobDeposit: applyJobDeposit,
+                    truck: truck,
+                    contractor_id: contractor_id,
+                    scheduled_date: scheduled_date,
+                    scheduled_time: scheduled_time,
+
+                    pay_cash: pay_cash,
+                    pay_card: pay_card,
+                    pay_check: pay_check,
+                    pay_pickup: pay_pickup,
+                    pay_delivery: pay_delivery,
+                    pay_net30: pay_net30,
+                    salesperson: salesperson,
+
+                    save_order: 'save_order'
+                },
+                success: function(response) {
+                    console.log(response);
+                    if (response.success) {
+                        alert("Order successfully saved.");
+
+                        orderIdSaved = response.order_id;
+                        customerIdSaved = response.customer_id;
+
+                        $('#print_order_category, #print_order, #print_deliver').removeClass('d-none');
+                        updatePrintLinks(orderIdSaved);
+
+                        $('#btnApprovalModal, #save_order, #save_order_alt, #save_estimate, #prev_page_order').addClass('d-none');
+                    } else if (response.error) {
+                        alert(response.error);
+                    }
+
+                    loadCartItemsHeader();
+                },
+                error: function(jqXHR, textStatus, errorThrown) {
+                    console.log('Response Text: ' + jqXHR.responseText);
+                    console.log('Error: ' + textStatus + ' - ' + errorThrown);
+                }
+            });
+            
         });
 
         $(document).on('click', '#submitApprovalBtn', function(event) {
@@ -5946,9 +5957,11 @@ $editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) :
         $('#select-category').on('change', updateSearchCategory);
 
         $(document).on('click', '.reset_filters', function () {
-            $('.filter-selection').val(null).trigger('change');
-            $('#text-srh').val('').trigger('input');
-            $('#onlyOnSale, #onlyPromotions').prop('checked', false).trigger('change');
+            $('.filter-selection').val(null);
+            $('#text-srh').val('');
+            $('#onlyOnSale, #onlyPromotions').prop('checked', false);
+
+            performSearch();
         });
 
         $('.filter-selection').each(function () {
@@ -5964,14 +5977,14 @@ $editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) :
         $(document).on('input', '#text-srh', function() {
             clearTimeout(searchTimer);
             const value = $(this).val();
-            searchTimer = setTimeout(() => performSearch(value), 500);
+            searchTimer = setTimeout(() => performSearch(), 500);
         });
 
         $(document).on('change', '#select-color, #select-grade, #select-gauge, #select-category, #select-profile, #select-type, #toggleActive, #onlyOnSale, #onlyPromotions', function() {
-            performSearch($('#text-srh').val());
+            performSearch();
         });
 
-        performSearch('');
+        performSearch();
 
         $(document).on('change', 'input[name="order_delivery_method"]', function () {
             const selectedMethod = $(this).val();
@@ -6234,6 +6247,42 @@ $editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) :
                 },
                 error: function(jqXHR, textStatus, errorThrown) {
                     console.error('Toggle group error:', textStatus, errorThrown);
+                }
+            });
+        });
+
+        $(document).on('change', '#customer_select_cart', function(event) {
+            var customer_id = $('#customer_id_cart').val();
+            $.ajax({
+                url: 'pages/cashier_ajax.php',
+                type: 'POST',
+                data: {
+                    customer_id: customer_id,
+                    change_customer: "change_customer"
+                },
+                success: function(response) {
+                    if (response.trim() == 'success') {
+                        loadCart();
+                    }
+                },
+                error: function(jqXHR, textStatus, errorThrown) {
+                    alert('Error: ' + textStatus + ' - ' + errorThrown);
+                }
+            });
+        });
+
+        $(document).on('click', '#customer_change_cart', function(event) {
+            $.ajax({
+                url: 'pages/cashier_ajax.php',
+                type: 'POST',
+                data: {
+                    unset_customer: "unset_customer"
+                },
+                success: function(response) { 
+                    loadCart();
+                },
+                error: function(jqXHR, textStatus, errorThrown) {
+                    alert('Error: ' + textStatus + ' - ' + errorThrown);
                 }
             });
         });

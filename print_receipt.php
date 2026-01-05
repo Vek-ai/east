@@ -581,12 +581,18 @@ class PDF extends FPDF {
         $qrX = $col2_x + $w;
         $qrY = max(0, $maxHeight - 15);
         $imageUrl = 'https://delivery.eastkentuckymetal.com/receiptqr/receiptqr' . $token . '.png';
-        $headers = @get_headers($imageUrl);
-        if ($headers && strpos($headers[0], '200') !== false) {
-            try {
-                $this->Image($imageUrl, $qrX, $qrY, 20, 20);
-            } catch (Exception $e) {
-            }
+
+        $headers = @get_headers($imageUrl, 1);
+
+        if (
+            $headers &&
+            strpos($headers[0], '200') !== false &&
+            isset($headers['Content-Type']) &&
+            (is_array($headers['Content-Type'])
+                ? in_array('image/png', $headers['Content-Type'])
+                : strpos($headers['Content-Type'], 'image/png') !== false)
+        ) {
+            @$this->Image($imageUrl, $qrX, $qrY, 20, 20);
         }
 
         $this->SetY(6 + $maxHeight + 5);
@@ -1028,6 +1034,42 @@ if (mysqli_num_rows($result) > 0) {
         $pdf->Cell(20, $lineheight, '$ ' . number_format($grand_total, 2), 0, 1, 'R');
 
         $pdf->Ln(5);
+
+        $payments = [
+            'Pay at Pickup'    => floatval($row_orders['pay_pickup']),
+            'Pay at Delivery'  => floatval($row_orders['pay_delivery']),
+            'Cash'             => floatval($row_orders['pay_cash']),
+            'Credit/Debit Card'=> floatval($row_orders['pay_card']),
+            'Check'            => floatval($row_orders['pay_check']),
+            'Charge Net 30'      => floatval($row_orders['pay_net30'])
+        ];
+
+        $lineheight = 5;
+        $rectWidth  = 60;
+
+        foreach ($payments as $type => $amt) {
+            if ($amt <= 0) continue;
+
+            $yStart = $pdf->GetY();
+            $rectHeight = $lineheight * 2;
+
+            $pdf->Rect($col2_x, $yStart, $rectWidth, $rectHeight);
+
+            $pdf->SetXY($col2_x, $yStart);
+            $pdf->SetFont('Arial', 'B', 9);
+            $pdf->Cell(30, $lineheight, 'Payment Type:', 0, 0, 'R');
+            $pdf->SetFont('Arial', '', 9);
+            $pdf->Cell(30, $lineheight, $type, 0, 1, 'L');
+
+            
+            $pdf->SetXY($col2_x, $pdf->GetY());
+            $pdf->SetFont('Arial', 'B', 9);
+            $pdf->Cell(30, $lineheight, 'Amount:', 0, 0, 'R');
+            $pdf->SetFont('Arial', '', 9);
+            $pdf->Cell(30, $lineheight, '$' . number_format($amt, 2), 0, 1, 'L');
+
+            $pdf->SetY($pdf->GetY() + 1);
+        }
 
         $pdf->SetTitle('Receipt');
         $pdf->Output('Receipt.pdf', 'I');
