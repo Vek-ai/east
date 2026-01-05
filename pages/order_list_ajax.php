@@ -330,333 +330,263 @@ if(isset($_REQUEST['action'])) {
 
     if ($action == "fetch_edit_modal") {
         $orderid = mysqli_real_escape_string($conn, $_POST['id']);
-        $query = "SELECT * FROM order_product WHERE orderid = '$orderid'";
+        $query = "SELECT * FROM order_product WHERE orderid = '$orderid' AND (product_category = '$trim_id' OR product_category = '$panel_id')";
         $result = mysqli_query($conn, $query);
-        
+
         if ($result && mysqli_num_rows($result) > 0) {
-            $order_details = getOrderDetails($orderid);
-            $totalquantity = $total_actual_price = $total_disc_price = 0;
-            $status_code = $order_details['status'];
-
-            $tracking_number = $order_details['tracking_number'];
-            $shipping_comp_details = getShippingCompanyDetails($order_details['shipping_company']);
-            $shipping_company = $shipping_comp_details['shipping_company'];
-
-            $response = array();
             ?>
-            <div class="card">
-                <div class="card-body datatables">
-                    <h4 class="modal-title" id="myLargeModalLabel">
-                        Edit Order
-                    </h4>
-                    <div class="order-details table-responsive">
-                        <table id="order_dtls_tbl" class="table table-hover mb-0 w-100">
-                            <thead>
-                                <tr>
-                                    <th style="max-width: 20%;">Description</th>
-                                    <th>Color</th>
-                                    <th>Grade</th>
-                                    <th>Profile</th>
-                                    <th class="text-center">Quantity</th>
-                                    <th class="text-center">Status</th>
-                                    <th class="text-center">Dimensions</th>
-                                    <th class="text-center">Customer Price</th>
-                                    <th></th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <?php 
-                                    $is_processing = false;
-                                    while ($row = mysqli_fetch_assoc($result)) {
-                                        $orderid = $row['orderid'];
-                                        $product_details = getProductDetails($row['productid']);
-                                        
-                                        $status_prod_db = $row['status'];
+            <form id="editOrderForm">
+                <div class="card">
+                    <div class="card-body datatables">
+                        <h4 class="modal-title mb-3">Edit Order</h4>
+                        <div class="order-details table-responsive">
+                            <table id="order_dtls_tbl" class="table table-hover mb-0 w-100">
+                                <thead>
+                                    <tr>
+                                        <th>Description</th>
+                                        <th>Color</th>
+                                        <th>Grade</th>
+                                        <th>Gauge</th>
+                                        <th>Profile</th>
+                                        <th class="text-center">Quantity</th>
+                                        <th class="text-center">Length</th>
+                                        <th class="text-center">Type</th>
+                                        <th class="text-center">Style</th>
+                                        <th></th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                <?php
+                                while ($row = mysqli_fetch_assoc($result)) {
+                                    $product_details = getProductDetails($row['productid']);
+                                    $product_name = $row['product_item'] ?: getProductName($row['productid']);
+                                    $line_id = $row['id'];
 
-                                        $product_name = '';
-                                        if(!empty($row['product_item'])){
-                                            $product_name = $row['product_item'];
-                                        }else{
-                                            $product_name = getProductName($row['product_id']);
-                                        }
-
-                                        if($status_prod_db == '1'){
-                                            $is_processing = true;
-                                        }
-
-                                        $status_prod_labels = [
-                                            0 => ['label' => 'New', 'class' => 'badge bg-primary'],
-                                            1 => ['label' => 'Processing', 'class' => 'badge bg-success'],
-                                            2 => ['label' => 'Waiting for Dispatch', 'class' => 'badge bg-warning'],
-                                            3 => ['label' => 'In Transit', 'class' => 'badge bg-secondary'],
-                                            4 => ['label' => 'Delivered', 'class' => 'badge bg-success'],
-                                            5 => ['label' => 'On Hold', 'class' => 'badge bg-danger']
-                                        ];
-
-                                        $status_prod = $status_prod_labels[$status_prod_db];
-                                    ?> 
-                                        <tr> 
-                                            <td style="max-width: 20%;">
-                                                <h6><?= htmlspecialchars($product_name) ?></h6>
-                                            </td>
-                                            <td>
-                                                <select class="form-control search-chat py-0 ps-5 select2-edit" name="color[<?= $row['id'] ?>]" id="edit-color-<?= $row['id'] ?>">
-                                                    <option value="" data-category="">All Colors</option>
-                                                    <optgroup label="Product Colors">
-                                                        <?php
-                                                        $query_color = "SELECT * FROM paint_colors WHERE hidden = '0' AND color_status = '1' ORDER BY `color_name` ASC";
-                                                        $result_color = mysqli_query($conn, $query_color);
-                                                        while ($row_color = mysqli_fetch_array($result_color)) {
-                                                            $selected = ($row_color['color_id'] == getColorFromID($product_details['color'])) ? 'selected' : '';
-                                                            ?>
-                                                            <option value="<?= $row_color['color_id'] ?>" data-category="category" <?= $selected ?>>
-                                                                <?= $row_color['color_name'] ?>
-                                                            </option>
-                                                        <?php } ?>
-                                                    </optgroup>
-                                                </select>
-                                            </td>
-                                            <td>
-                                                <select class="form-control search-chat py-0 ps-5 select2-edit" name="grade[<?= $row['id'] ?>]" id="edit-grade-<?= $row['id'] ?>">
-                                                    <option value="" data-category="">All Grades</option>
-                                                    <optgroup label="Product Grades">
-                                                        <?php
-                                                        $query_grade = "SELECT * FROM product_grade WHERE hidden = '0' AND status = '1' ORDER BY `product_grade` ASC";
-                                                        $result_grade = mysqli_query($conn, $query_grade);
-                                                        while ($row_grade = mysqli_fetch_array($result_grade)) {
-                                                            $selected = ($row_grade['product_grade_id'] == getGradeName($product_details['grade'])) ? 'selected' : '';
-                                                            ?>
-                                                            <option value="<?= $row_grade['product_grade_id'] ?>" data-category="grade" <?= $selected ?>>
-                                                                <?= $row_grade['product_grade'] ?>
-                                                            </option>
-                                                        <?php } ?>
-                                                    </optgroup>
-                                                </select>
-                                            </td>
-                                            <td>
-                                                <select class="form-control search-category py-0 ps-5 select2-edit" name="profile[<?= $row['id'] ?>]" id="edit-profile-<?= $row['id'] ?>">
-                                                    <option value="" data-category="">All Profile Types</option>
-                                                    <optgroup label="Product Line">
-                                                        <?php
-                                                        $query_profile = "SELECT * FROM profile_type WHERE hidden = '0' AND status = '1' ORDER BY `profile_type` ASC";
-                                                        $result_profile = mysqli_query($conn, $query_profile);
-                                                        while ($row_profile = mysqli_fetch_array($result_profile)) {
-                                                            $selected = ($row_profile['profile_type_id'] == getProfileTypeName($product_details['profile'])) ? 'selected' : '';
-                                                            ?>
-                                                            <option value="<?= $row_profile['profile_type_id'] ?>" data-category="<?= $v['product_category'] ?? '' ?>" <?= $selected ?>>
-                                                                <?= $row_profile['profile_type'] ?>
-                                                            </option>
-                                                        <?php } ?>
-                                                    </optgroup>
-                                                </select>
-                                            </td>
-                                            <td>
-                                                <input type="number" class="form-control text-center" name="quantity[<?= $row['id'] ?>]" value="<?= $row['quantity'] ?>">
-                                            </td>
-                                            <td>
-                                                <select class="form-select select2-edit" name="status[<?= $row['id'] ?>]">
-                                                    <?php foreach ($status_prod_labels as $code => $info): ?>
-                                                        <option value="<?= $code ?>" <?= $code == $status_prod_db ? 'selected' : '' ?>>
-                                                            <?= $info['label'] ?>
-                                                        </option>
+                                    $custom_color   = $row['custom_color'];
+                                    $custom_grade   = $row['custom_grade'];
+                                    $custom_gauge   = $row['custom_gauge'];
+                                    $custom_profile = $row['custom_profile'];
+                                    $quantity       = $row['quantity'];
+                                    $length_ft      = $row['custom_length'];
+                                    $length_in      = $row['custom_length2'];
+                                    $panel_type     = $row['panel_type'] ?? '';
+                                    $panel_style    = $row['panel_style'] ?? '';
+                                    ?>
+                                    <tr data-line="<?= $line_id ?>">
+                                        <td><?= htmlspecialchars($product_name) ?></td>
+                                        <td>
+                                            <?php if ($product_details['has_color'] > 0): ?>
+                                                <select class="form-control color-cart" name="color[<?= $line_id ?>]">
+                                                    <option value="">Select Color...</option>
+                                                    <?php
+                                                    $assigned_colors = getAssignedProductColors($row['productid']);
+                                                    if (!empty($custom_color) && !in_array($custom_color, $assigned_colors)) {
+                                                        $assigned_colors[] = $custom_color;
+                                                    }
+                                                    foreach ($assigned_colors as $color_id):
+                                                        $colorDetails = getColorDetails($color_id);
+                                                        $selected = ($custom_color == $color_id) ? 'selected' : '';
+                                                    ?>
+                                                        <option value="<?= $color_id ?>" <?= $selected ?>><?= $colorDetails['color_name'] ?></option>
                                                     <?php endforeach; ?>
                                                 </select>
-                                            </td>
-                                            <td>
-                                                <div class="d-flex flex-column align-items-center">
-                                                    <input type="text"
-                                                        class="form-control text-center mb-1"
-                                                        name="custom_width[<?= $row['id'] ?>]"
-                                                        value="<?= htmlspecialchars($row['custom_width']) ?>"
-                                                        placeholder="Width"
-                                                        size="5">
+                                            <?php endif; ?>
+                                        </td>
 
-                                                    <span class="mx-1 text-center mb-1">X</span>
+                                        <td>
+                                            <select class="form-control grade-cart" name="grade[<?= $line_id ?>]">
+                                                <option value="">Select Grade...</option>
+                                                <?php
+                                                $grades = mysqli_query($conn, "SELECT * FROM product_grade WHERE status = 1");
+                                                while ($g = mysqli_fetch_assoc($grades)):
+                                                    $selected = ($custom_grade == $g['product_grade_id']) ? 'selected' : '';
+                                                ?>
+                                                    <option value="<?= $g['product_grade_id'] ?>" <?= $selected ?>><?= $g['product_grade'] ?></option>
+                                                <?php endwhile; ?>
+                                            </select>
+                                        </td>
 
-                                                    <fieldset class="border p-1 position-relative">
-                                                        <div class="input-group d-flex align-items-center">
-                                                            <input type="number"
-                                                                class="form-control pr-0 pl-1 mr-1"
-                                                                name="custom_length[<?= $row['id'] ?>]"
-                                                                value="<?= htmlspecialchars($row['custom_length']) ?>"
-                                                                step="0.001"
-                                                                placeholder="FT"
-                                                                size="5">
+                                        <td>
+                                            <select class="form-control gauge-cart" name="gauge[<?= $line_id ?>]">
+                                                <option value="">Select Gauge...</option>
+                                                <?php
+                                                $gauges = mysqli_query($conn, "SELECT * FROM product_gauge WHERE status = 1");
+                                                while ($g = mysqli_fetch_assoc($gauges)):
+                                                    $selected = ($custom_gauge == $g['product_gauge_id']) ? 'selected' : '';
+                                                ?>
+                                                    <option value="<?= $g['product_gauge_id'] ?>" <?= $selected ?>><?= $g['product_gauge'] ?></option>
+                                                <?php endwhile; ?>
+                                            </select>
+                                        </td>
 
-                                                            <input type="number"
-                                                                class="form-control pr-0 pl-1"
-                                                                name="custom_length_inch[<?= $row['id'] ?>]"
-                                                                value="<?= htmlspecialchars($row['custom_length2']) ?>"
-                                                                step="0.001"
-                                                                placeholder="IN"
-                                                                size="5">
-                                                        </div>
-                                                    </fieldset>
-                                                </div>
-                                            </td>
-                                            <td>
-                                                <input type="number" step="0.01" class="form-control text-end" name="discounted_price[<?= $row['id'] ?>]" value="<?= $row['discounted_price'] ?>">
-                                            </td>
-                                            <td class="text-center">
-                                                <button type="button" class="btn btn-sm delete-row" data-id="<?= $row['id'] ?>">
-                                                    <i class="fa fa-trash text-danger"></i>
-                                                </button>
-                                            </td>
-                                        </tr>
+                                        <td>
+                                            <select class="form-control profile-cart" name="profile[<?= $line_id ?>]">
+                                                <option value="">Select Profile...</option>
+                                                <?php
+                                                $profiles = mysqli_query($conn, "SELECT * FROM profile_type WHERE status = 1");
+                                                while ($p = mysqli_fetch_assoc($profiles)):
+                                                    $selected = ($custom_profile == $p['profile_type_id']) ? 'selected' : '';
+                                                ?>
+                                                    <option value="<?= $p['profile_type_id'] ?>" <?= $selected ?>><?= $p['profile_type'] ?></option>
+                                                <?php endwhile; ?>
+                                            </select>
+                                        </td>
 
-                                <?php
-                                    }
-                                
-                                ?>
-                            </tbody>
-                        </table>
+                                        <td class="text-center">
+                                            <input type="number" class="form-control text-center" name="quantity[<?= $line_id ?>]" value="<?= $quantity ?>">
+                                        </td>
+
+                                        <td class="text-center">
+                                            <div class="d-flex">
+                                                <input type="number" class="form-control text-center me-1" name="custom_length[<?= $line_id ?>]" value="<?= $length_ft ?>" placeholder="FT">
+                                                <input type="number" class="form-control text-center" name="custom_length_inch[<?= $line_id ?>]" value="<?= $length_in ?>" placeholder="IN">
+                                            </div>
+                                        </td>
+
+                                        <td>
+                                            <select class="form-control panel_type_cart" name="panel_type[<?= $line_id ?>]">
+                                                <option value="">Select Type...</option>
+                                                <?php
+                                                $panel_types = ['Solid', 'Vented', 'Drip Stop'];
+                                                foreach ($panel_types as $type):
+                                                    $selected = ($panel_type === $type) ? 'selected' : '';
+                                                ?>
+                                                    <option value="<?= $type ?>" <?= $selected ?>><?= $type ?></option>
+                                                <?php endforeach; ?>
+                                            </select>
+                                        </td>
+
+                                        <td>
+                                            <select class="form-control panel_style_cart" name="panel_style[<?= $line_id ?>]">
+                                                <option value="">Select Style...</option>
+                                                <?php
+                                                $panel_styles = ['Striated', 'Flat', 'Minor Rib'];
+                                                foreach ($panel_styles as $style):
+                                                    $selected = (strtolower($panel_style) === strtolower($style)) ? 'selected' : '';
+                                                ?>
+                                                    <option value="<?= strtolower($style) ?>" <?= $selected ?>><?= $style ?></option>
+                                                <?php endforeach; ?>
+                                            </select>
+                                        </td>
+
+                                        <td class="text-center">
+                                            <button type="button" class="btn btn-sm delete-row" data-id="<?= $line_id ?>">
+                                                <i class="fa fa-trash text-danger"></i>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                <?php } ?>
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
                 </div>
-            </div>
-            <div class="d-flex justify-content-end mt-3">
-                <button type="button" id="saveEditOrderBtn" class="btn btn-success">
-                    Save Changes
-                </button>
-            </div>
+                <div class="d-flex justify-content-end mt-3">
+                    <button type="submit" id="saveEditOrderBtn" class="btn btn-success">Save Changes</button>
+                </div>
+            </form>
             <?php
         }
-    } 
+    }
+
 
     if ($action === 'save_edited_order') {
-        $order_data_json = $_POST['order_data'] ?? '';
-        $order_data = json_decode($order_data_json, true);
+        $current_user = $_SESSION['userid'] ?? 'System';
+        $success = true;
 
-        if (!is_array($order_data)) {
-            echo 'invalid_data';
-            exit;
+        $deleted_lines = $_POST['deleted'] ?? [];
+        foreach ($deleted_lines as $line_id) {
+            $line_id = intval($line_id);
+            $get_old_sql = "SELECT * FROM order_product WHERE id = '$line_id' LIMIT 1";
+            $old_result = mysqli_query($conn, $get_old_sql);
+            if ($old_result && mysqli_num_rows($old_result)) {
+                $old_data = mysqli_fetch_assoc($old_result);
+                $orderid = $old_data['orderid'];
+
+                $delete_sql = "DELETE FROM order_product WHERE id = '$line_id'";
+                if (!mysqli_query($conn, $delete_sql)) { $success = false; break; }
+
+                $old_json = mysqli_real_escape_string($conn, json_encode($old_data));
+                $log_sql = "INSERT INTO order_history (orderid, order_product_id, action_type, old_value, new_value, updated_by)
+                            VALUES ('$orderid', '$line_id', 'delete_product', '$old_json', '{}', '$current_user')";
+                mysqli_query($conn, $log_sql);
+            }
         }
 
-        $success = true;
-        $affected_orders = [];
-        $current_user = $_SESSION['userid'] ?? 'System';
+        if (!$success) { echo 'error'; exit; }
 
-        foreach ($order_data as $id => $data) {
-            $id = intval($id);
+        $lines = $_POST['quantity'] ?? [];
+        foreach ($lines as $line_id => $qty) {
+            $line_id = intval($line_id);
+            if (in_array($line_id, $deleted_lines)) continue;
 
-            $get_old_sql = "SELECT * FROM order_product WHERE id = '$id' LIMIT 1";
+            $get_old_sql = "SELECT * FROM order_product WHERE id = '$line_id' LIMIT 1";
             $old_result = mysqli_query($conn, $get_old_sql);
-            if (!$old_result || !mysqli_num_rows($old_result)) continue;
-            $old_data = mysqli_fetch_assoc($old_result);
+            if (!$old_result || mysqli_num_rows($old_result) === 0) continue;
 
-            $custom_color = intval($data['color']);
-            $custom_grade = intval($data['grade']);
-            $profile = intval($data['profile']);
-            $quantity = mysqli_real_escape_string($conn, $data['quantity']);
-            $status = intval($data['status']);
-            $custom_width = mysqli_real_escape_string($conn, $data['width']);
-            $custom_length = mysqli_real_escape_string($conn, $data['length']);
-            $custom_length2 = mysqli_real_escape_string($conn, $data['length2']);
-            $discounted_price = floatval($data['discounted_price']);
+            $old_data = mysqli_fetch_assoc($old_result);
+            $orderid = $old_data['orderid'];
+
+            $custom_color   = intval($_POST['color'][$line_id] ?? 0);
+            $custom_grade   = intval($_POST['grade'][$line_id] ?? 0);
+            $custom_gauge   = intval($_POST['gauge'][$line_id] ?? 0);
+            $custom_profile = intval($_POST['profile'][$line_id] ?? 0);
+            $quantity       = floatval($_POST['quantity'][$line_id] ?? 0);
+            $custom_length  = floatval($_POST['custom_length'][$line_id] ?? 0);
+            $custom_length2 = floatval($_POST['custom_length_inch'][$line_id] ?? 0);
+            $panel_type     = mysqli_real_escape_string($conn, $_POST['panel_type'][$line_id] ?? '');
+            $panel_style    = mysqli_real_escape_string($conn, $_POST['panel_style'][$line_id] ?? '');
 
             $new_data = [
-                'custom_color' => $custom_color,
-                'custom_grade' => $custom_grade,
-                'profile' => $profile,
-                'quantity' => $quantity,
-                'status' => $status,
-                'custom_width' => $custom_width,
-                'custom_length' => $custom_length,
+                'custom_color'   => $custom_color,
+                'custom_grade'   => $custom_grade,
+                'custom_gauge'   => $custom_gauge,
+                'custom_profile' => $custom_profile,
+                'quantity'       => $quantity,
+                'custom_length'  => $custom_length,
                 'custom_length2' => $custom_length2,
-                'discounted_price' => $discounted_price
+                'panel_type'     => $panel_type,
+                'panel_style'    => $panel_style
             ];
 
             $changes = [];
             foreach ($new_data as $key => $new_value) {
-                $old_value = $old_data[$key];
+                $old_value = $old_data[$key] ?? '';
                 if ((string)$old_value !== (string)$new_value) {
-                    $changes[$key] = [
-                        'old' => $old_value,
-                        'new' => $new_value
-                    ];
+                    $changes[$key] = ['old' => $old_value, 'new' => $new_value];
                 }
             }
 
             $update_sql = "
-                UPDATE order_product 
-                SET 
-                    custom_color = '$custom_color',
-                    custom_grade = '$custom_grade',
-                    quantity = '$quantity',
-                    status = '$status',
-                    custom_width = '$custom_width',
-                    custom_length = '$custom_length',
+                UPDATE order_product SET
+                    custom_color   = '$custom_color',
+                    custom_grade   = '$custom_grade',
+                    custom_gauge   = '$custom_gauge',
+                    custom_profile = '$custom_profile',
+                    quantity       = '$quantity',
+                    custom_length  = '$custom_length',
                     custom_length2 = '$custom_length2',
-                    discounted_price = '$discounted_price'
-                WHERE id = '$id'
+                    panel_type     = '$panel_type',
+                    panel_style    = '$panel_style'
+                WHERE id = '$line_id'
             ";
-
-            if (!mysqli_query($conn, $update_sql)) {
-                $success = false;
-                break;
-            }
+            if (!mysqli_query($conn, $update_sql)) { $success = false; break; }
 
             if (!empty($changes)) {
-                $orderid = $old_data['orderid'];
-                $old_json = json_encode(array_map(fn($v) => $v['old'], $changes));
-                $new_json = json_encode(array_map(fn($v) => $v['new'], $changes));
+                $old_json = mysqli_real_escape_string($conn, json_encode(array_map(fn($v) => $v['old'], $changes)));
+                $new_json = mysqli_real_escape_string($conn, json_encode(array_map(fn($v) => $v['new'], $changes)));
 
-                $log_sql = "
-                    INSERT INTO order_history 
-                        (orderid, order_product_id, action_type, old_value, new_value, updated_by) 
-                    VALUES 
-                        ('$orderid', '$id', 'update_product', 
-                        '" . mysqli_real_escape_string($conn, $old_json) . "', 
-                        '" . mysqli_real_escape_string($conn, $new_json) . "', 
-                        '" . mysqli_real_escape_string($conn, $current_user) . "')
-                ";
+                $log_sql = "INSERT INTO order_history (orderid, order_product_id, action_type, old_value, new_value, updated_by)
+                            VALUES ('$orderid', '$line_id', 'update_product', '$old_json', '$new_json', '$current_user')";
                 mysqli_query($conn, $log_sql);
             }
-
-            $affected_orders[] = $old_data['orderid'];
         }
 
-        $affected_orders = array_unique($affected_orders);
-
-        foreach ($affected_orders as $orderid) {
-            $get_statuses_sql = "SELECT status FROM order_product WHERE orderid = '$orderid'";
-            $status_result = mysqli_query($conn, $get_statuses_sql);
-
-            $statuses = [];
-            while ($row = mysqli_fetch_assoc($status_result)) {
-                $statuses[] = (int)$row['status'];
-            }
-
-            if (!empty($statuses)) {
-                $status_priority = [
-                    1 => 1,
-                    2 => 2,
-                    5 => 3,
-                    3 => 4,
-                    4 => 5
-                ];
-
-                $highest_status = 1;
-                $max_priority = 0;
-
-                foreach ($statuses as $s) {
-                    $priority = $status_priority[$s] ?? 0;
-                    if ($priority > $max_priority) {
-                        $max_priority = $priority;
-                        $highest_status = $s;
-                    }
-                }
-
-                $update_order_sql = "UPDATE orders SET status = '$highest_status' WHERE orderid = '$orderid'";
-                if (!mysqli_query($conn, $update_order_sql)) {
-                    $success = false;
-                    break;
-                }
-            }
-        }
-
-        echo $success ? 'success' : 'error';
+        echo $success ? json_encode(['success' => true]) : json_encode(['error' => 'Unable to save changes']);
         exit;
     }
+
+
 
     if ($action == "fetch_hold_modal") {
         $orderid = mysqli_real_escape_string($conn, $_POST['id']);

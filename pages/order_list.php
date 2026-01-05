@@ -1152,53 +1152,59 @@ function showCol($name) {
             });
         });
 
-        $(document).on("click", "#saveEditOrderBtn", function (e) {
+        $(document).on('submit', '#editOrderForm', function(e) {
             e.preventDefault();
 
-            if (!confirm("Are you sure you want to save these changes?")) {
-                return;
-            }
-
-            const formData = {};
-
-            $("#order_dtls_tbl tbody tr").each(function () {
-                const row = $(this);
-                const id = row.find(".delete-row").data("id");
-
-                formData[id] = {
-                    color: row.find(`[name="color[${id}]"]`).val(),
-                    grade: row.find(`[name="grade[${id}]"]`).val(),
-                    profile: row.find(`[name="profile[${id}]"]`).val(),
-                    quantity: row.find(`[name="quantity[${id}]"]`).val(),
-                    status: row.find(`[name="status[${id}]"]`).val(),
-                    width: row.find(`[name="custom_width[${id}]"]`).val(),
-                    length: row.find(`[name="custom_length[${id}]"]`).val(),
-                    length2: row.find(`[name="custom_length_inch[${id}]"]`).val(),
-                    discounted_price: row.find(`[name="discounted_price[${id}]"]`).val()
-                };
-            });
+            var formData = new FormData(this);
+            formData.append('action', 'save_edited_order');
 
             $.ajax({
                 url: 'pages/order_list_ajax.php',
                 type: 'POST',
-                data: {
-                    action: 'save_edited_order',
-                    order_data: JSON.stringify(formData)
+                data: formData,
+                dataType: 'json',
+                processData: false,
+                contentType: false,
+                beforeSend: function() {
+                    $('#saveEditOrderBtn').prop('disabled', true).text('Saving...');
                 },
-                success: function (response) {
-                    if(response.trim() == 'success'){
-                        alert("Successfully saved!");
-                        location.reload();
+                success: function(response) {
+                    $('#saveEditOrderBtn').prop('disabled', false).text('Save Changes');
+
+                    if (response.success) {
+                        alert('Order updated successfully.');
+                        $('#editOrderModal').modal('hide');
+                        if (typeof orderListTable !== 'undefined') orderListTable.ajax.reload(null, false);
+                    } else if (response.error) {
+                        alert('Error: ' + response.error);
+                    } else {
+                        alert('Unexpected response from server.');
                     }
                 },
-                error: function (xhr, status, error) {
-                    console.error("AJAX Save Error:", {
-                        status: status,
-                        error: error,
-                        responseText: xhr.responseText
-                    });
+                error: function(xhr, status, error) {
+                    $('#saveEditOrderBtn').prop('disabled', false).text('Save Changes');
+                    console.error(error);
+                    alert('AJAX request failed. Check console for details.');
                 }
             });
+        });
+
+        $(document).on('click', '.delete-row', function() {
+            var $btn = $(this);
+            var lineId = $btn.data('id');
+            if (confirm('Are you sure you want to delete this line?')) {
+                var $row = $btn.closest('tr');
+                $row.remove();
+                if ($('#editOrderForm input[name="deleted[]"]').length === 0) {
+                    $('#editOrderForm').append('<input type="hidden" name="deleted[]" value="'+lineId+'">');
+                } else {
+                    $('<input>').attr({
+                        type: 'hidden',
+                        name: 'deleted[]',
+                        value: lineId
+                    }).appendTo('#editOrderForm');
+                }
+            }
         });
 
         $(document).on('click', '#hold_order_btn', function(event) {
