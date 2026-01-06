@@ -236,6 +236,8 @@ if (isset($_REQUEST['query'])) {
     $query_product .= " GROUP BY p.product_id";
     if ($onlyInStock) $query_product .= " HAVING in_stock = 1";
 
+    $query_product .= " ORDER BY p.product_item ASC";
+
     $resCount = mysqli_query($conn, "SELECT COUNT(*) AS cnt FROM ($query_product) AS temp");
     $totalFiltered = mysqli_fetch_assoc($resCount)['cnt'];
 

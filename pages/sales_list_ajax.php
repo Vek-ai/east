@@ -902,37 +902,41 @@ if(isset($_REQUEST['print_result'])) {
 if (isset($_REQUEST['close_out_order'])) {
     $orderid = intval($_POST['orderid']);
 
-    $sql = "SELECT id, productid, custom_color, quantity 
-            FROM order_product 
-            WHERE orderid = $orderid";
+    $sql = "
+        SELECT id, productid, custom_color, quantity, product_category, status, custom_grade AS grade, custom_gauge AS gauge
+        FROM order_product
+        WHERE orderid = $orderid
+    ";
     $result = mysqli_query($conn, $sql);
 
     while ($row = mysqli_fetch_assoc($result)) {
-        $productid = intval($row['productid']);
-        $color_id = is_null($row['custom_color']) ? 'IS NULL' : '= ' . intval($row['custom_color']);
-        $quantity = intval($row['quantity']);
+        $productid        = intval($row['productid']);
+        $grade            = intval($row['grade']);
+        $gauge            = intval($row['gauge']);
+        $color_id         = $row['custom_color'] ?? null;
+        $quantity         = intval($row['quantity']);
         $order_product_id = intval($row['id']);
+        $product_category = intval($row['product_category']);
+        $status           = intval($row['status']);
 
-        $inv_sql = "
-            SELECT Inventory_id, quantity_ttl 
-            FROM inventory 
-            WHERE Product_id = $productid AND color_id $color_id 
-            LIMIT 1";
-        $inv_result = mysqli_query($conn, $inv_sql);
+        if (!in_array($product_category, [3, 4]) && !in_array($status, [0, 1])) {
+            $inventory_id = getInventoryId($productid, '', '', $grade, $gauge, $color_id);
 
-        if ($inv_row = mysqli_fetch_assoc($inv_result)) {
-            $inventory_id = intval($inv_row['Inventory_id']);
-            $new_qty = intval($inv_row['quantity_ttl']) + $quantity;
+            if ($inventory_id) {
+                $inv_res = mysqli_query($conn, "SELECT quantity_ttl FROM inventory WHERE Inventory_id = $inventory_id");
+                $inv_row = mysqli_fetch_assoc($inv_res);
+                $new_qty = intval($inv_row['quantity_ttl']) + $quantity;
 
-            mysqli_query($conn, "
-                UPDATE inventory 
-                SET quantity_ttl = $new_qty 
-                WHERE Inventory_id = $inventory_id
-            ");
+                mysqli_query($conn, "
+                    UPDATE inventory
+                    SET quantity_ttl = $new_qty
+                    WHERE Inventory_id = $inventory_id
+                ");
+            }
         }
 
         mysqli_query($conn, "
-            UPDATE order_product 
+            UPDATE order_product
             SET actual_price = 0,
                 discounted_price = 0,
                 quantity = 0,
@@ -941,7 +945,13 @@ if (isset($_REQUEST['close_out_order'])) {
         ");
     }
 
-    mysqli_query($conn, "UPDATE orders SET status = 6 WHERE orderid = $orderid");
+    mysqli_query($conn, "
+        UPDATE orders 
+        SET status = 6, 
+            total_price = 0, 
+            discounted_price = 0 
+        WHERE orderid = $orderid
+    ");
 
     echo 'success';
 }

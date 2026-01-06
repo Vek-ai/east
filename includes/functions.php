@@ -5131,4 +5131,107 @@ function fetchInventoryQuantity($params = []) {
     $row = mysqli_fetch_assoc($result);
     return intval($row['total_quantity']);
 }
+
+function getInventoryId(
+    int $product_id,
+    $product_type = null,
+    $product_line = null,
+    $grade = null,
+    $gauge = null,
+    $color_id = null
+) {
+    global $conn;
+
+    $conditions = ["Product_id = " . intval($product_id)];
+
+    if (!empty($product_type)) {
+        $conditions[] = "product_type = " . intval($product_type);
+    }
+
+    if (!empty($product_line)) {
+        $conditions[] = "product_line = " . intval($product_line);
+    }
+
+    if (!empty($grade)) {
+        $conditions[] = "grade = " . intval($grade);
+    }
+
+    if (!empty($gauge)) {
+        $conditions[] = "gauge = " . intval($gauge);
+    }
+
+    if (empty($color_id) || $color_id == 0) {
+        $conditions[] = "color_id IS NULL";
+    } else {
+        $conditions[] = "color_id = " . intval($color_id);
+    }
+
+    $where = implode(" AND ", $conditions);
+
+    $sql = "SELECT Inventory_id FROM inventory WHERE $where LIMIT 1";
+    $res = mysqli_query($conn, $sql);
+
+    if (!$res || mysqli_num_rows($res) === 0) return null;
+
+    $row = mysqli_fetch_assoc($res);
+    return (int)$row['Inventory_id'];
+}
+
+function getInventoryCount(int $order_product_id) {
+    global $conn;
+
+    $order_product_id = intval($order_product_id);
+
+    $sql = "
+        SELECT productid, custom_grade AS grade, custom_gauge AS gauge, custom_color AS color_id,
+               product_category
+        FROM order_product
+        WHERE id = $order_product_id
+        LIMIT 1
+    ";
+    $res = mysqli_query($conn, $sql);
+    if (!$res || mysqli_num_rows($res) === 0) return null;
+
+    $row = mysqli_fetch_assoc($res);
+
+    $productid        = intval($row['productid']);
+    $grade            = intval($row['grade']);
+    $gauge            = intval($row['gauge']);
+    $color_id         = $row['color_id'] ?? null;
+    $product_category = intval($row['product_category']);
+
+    if (in_array($product_category, [3, 4])) {
+        $colorList = $color_id ? intval($color_id) : 'NULL';
+        $gradeList = $grade;
+        $gaugeList = $gauge;
+
+        $sql_coil = "
+            SELECT * 
+            FROM coil_product
+            WHERE color_sold_as IN ($colorList)
+              AND grade_sold_as IN ($gradeList)
+              AND gauge_sold_as IN ($gaugeList)
+              AND status = 0
+              AND hidden = 0
+              AND remaining_feet > 0
+            ORDER BY entry_no ASC
+            LIMIT 1
+        ";
+        $coil_res = mysqli_query($conn, $sql_coil);
+        if ($coil_row = mysqli_fetch_assoc($coil_res)) {
+            return $coil_row;
+        }
+    } else {
+        $inventory_id = getInventoryId($productid, null, null, $grade, $gauge, $color_id);
+        if ($inventory_id) {
+            $inv_res = mysqli_query($conn, "SELECT * FROM inventory WHERE Inventory_id = $inventory_id LIMIT 1");
+            if ($inv_row = mysqli_fetch_assoc($inv_res)) {
+                return $inv_row;
+            }
+        }
+    }
+
+    return null;
+}
+
 ?>

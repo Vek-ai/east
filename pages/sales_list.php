@@ -1334,8 +1334,11 @@ function showCol($name) {
                         $('#close-out-details-modal').modal('hide');
                         alert('Order closed out successfully.');
                     } else {
-                        alert('⚠️ Error: ' + trimmedResponse);
+                        alert('Failed!');
+                        console.log(trimmedResponse);
                     }
+
+                    performSearch();
                 },
                 error: function(jqXHR, textStatus, errorThrown) {
                     alert('Submission error: ' + textStatus + ' - ' + errorThrown);
