@@ -77,7 +77,7 @@ class PDF extends FPDF {
 }
 
 $pdf = new PDF();
-$pdf->SetAutoPageBreak(true, 40);
+$pdf->SetAutoPageBreak(true, 60);
 
 if (!empty($_REQUEST['id'])) {
     $customer_id = $_REQUEST['id'];
