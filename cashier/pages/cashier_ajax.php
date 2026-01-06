@@ -281,9 +281,15 @@ if (isset($_REQUEST['query'])) {
 
             if ($row_product['in_stock'] > 0) {
                 $stock_text = '
-                    <a href="javascript:void(0);" id="view_in_stock" data-id="' . $row_product['product_id'] . '" class="d-flex justify-content-center align-items-center">
-                        <span class="text-bg-success p-1 rounded-circle"></span>
-                        <span class="ms-2">In Stock</span>
+                    <a href="javascript:void(0);" 
+                        id="view_in_stock" 
+                        data-id="' . $row_product['product_id'] . '" 
+                        data-color="'.$color_id.'" 
+                        data-grade="'.$grade.'" 
+                        data-gauge="'.$gauge_id.'" 
+                        class="d-flex justify-content-center align-items-center">
+                            <span class="text-bg-success p-1 rounded-circle"></span>
+                            <span class="ms-2">In Stock</span>
                     </a>';
             } else {
                 $stock_text = '
@@ -293,7 +299,9 @@ if (isset($_REQUEST['query'])) {
                     </a>';
             
                 if ($row_product['product_category'] == $trim_id || $row_product['product_category'] == $panel_id) {
-                    $sql = "SELECT COUNT(*) AS count FROM coil_product WHERE color_sold_as = '$product_color'";
+                    $sql = "SELECT COUNT(*) AS count FROM coil_product WHERE color_sold_as = '$color_id' 
+                            AND grade_sold_as = $grade
+                            AND gauge_sold_as = $gauge_id";
                     $result = mysqli_query($conn, $sql);
 
                     if ($result) {

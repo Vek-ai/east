@@ -3383,8 +3383,8 @@ function calculateCartItem($values) {
             FROM coil_product
             WHERE
                 color_sold_as = '" . mysqli_real_escape_string($conn, $color_id) . "'
-                AND grade = '" . mysqli_real_escape_string($conn, $grade) . "'
-                AND gauge = '" . mysqli_real_escape_string($conn, $gauge) . "'
+                AND grade_sold_as = '" . mysqli_real_escape_string($conn, $grade) . "'
+                AND gauge_sold_as = '" . mysqli_real_escape_string($conn, $gauge) . "'
             LIMIT 1
         ";
         $result = mysqli_query($conn, $query_coil);
@@ -3392,7 +3392,8 @@ function calculateCartItem($values) {
         if (mysqli_num_rows($result) > 0) {
 
             $stock_text = '
-            <a href="javascript:void(0);" id="view_available"
+            <a href="javascript:void(0);" id="view_in_stock"
+            data-id="' . htmlspecialchars($data_id, ENT_QUOTES, 'UTF-8') . '"
             data-color="' . htmlspecialchars($color_id, ENT_QUOTES, 'UTF-8') . '"
             data-grade="' . htmlspecialchars($grade, ENT_QUOTES, 'UTF-8') . '"
             data-gauge="' . htmlspecialchars($gauge, ENT_QUOTES, 'UTF-8') . '"

@@ -12,8 +12,11 @@ if (!isset($_SESSION['userid'])) {
 require 'includes/fpdf/fpdf.php';
 require 'includes/dbconn.php';
 require 'includes/functions.php';
+include_once 'delivery/qrlib.php';
 
 class PDF extends FPDF {
+    public string $qrImage = '';
+
     function Footer() {
         $marginLeft = 10;
         $marginLeft = 10;
@@ -59,7 +62,7 @@ class PDF extends FPDF {
         $this->SetXY($marginLeft + 2 * $colWidth + 17, $this->GetY());
         $this->Cell($colWidth, 5, 'EastKentuckyMetal.com', 0, 0, 'L');
 
-        /* $yStart = $this->GetY() - 35;
+        $yStart = $this->GetY() - 35;
         $this->SetFont('Arial', '', 10);
         $this->SetXY($marginLeft, $yStart);
         $this->MultiCell($colWidthRight, 5,
@@ -67,19 +70,37 @@ class PDF extends FPDF {
 
         $qrX = 20;
         $qrY = $this->GetY();
-        $this->Image('assets/images/qr_rickroll.png', $qrX, $qrY, 25, 25); */
+        if (!empty($this->qrImage) && file_exists($this->qrImage)) {
+            $this->Image($this->qrImage, $qrX, $qrY, 25, 25);
+        }
     }
 }
 
 $pdf = new PDF();
 $pdf->SetAutoPageBreak(true, 40);
-$pdf->AddPage();
-$pdf->SetFont('Arial', '', 10);
 
 if (!empty($_REQUEST['id'])) {
     $customer_id = $_REQUEST['id'];
     $customer_name = get_customer_name($customer_id);
     $customer_details = getCustomerDetails($customer_id);
+
+    $token = bin2hex(random_bytes(8));
+    $filename = "statement_{$customer_id}_{$token}.pdf";
+
+    $saveDir = $_SERVER['DOCUMENT_ROOT'] . "/statements/";
+    if (!is_dir($saveDir)) {
+        mkdir($saveDir, 0775, true);
+    }
+
+    $baseUrl = (!empty($_SERVER['HTTPS']) ? 'https://' : 'http://') . $_SERVER['HTTP_HOST'];
+    $statementUrl = $baseUrl . "/statements/" . $filename;
+
+    $qrTemp = sys_get_temp_dir() . "/qr_statement_{$token}.png";
+    QRcode::png($statementUrl, $qrTemp, QR_ECLEVEL_M, 4);
+    $pdf->qrImage = $qrTemp;
+
+    $pdf->AddPage();
+    $pdf->SetFont('Arial', '', 10);
 
     $marginLeft = 10;
     $marginRight = 10;
@@ -449,7 +470,11 @@ if (!empty($_REQUEST['id'])) {
     $yStart = $pdf->GetY();
 
     $pdf->SetTitle('Statement of Account');
+
+    $filePath = $saveDir . $filename;
+    $pdf->Output($filePath, 'F');
     $pdf->Output('Statement_of_Account.pdf', 'I');
+    register_shutdown_function(fn() => @unlink($qrTemp));
 }
 
 ?>

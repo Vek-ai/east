@@ -5632,11 +5632,17 @@ $editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) :
         $(document).on('click', '#view_in_stock', function(event) {
             event.preventDefault();
             var id = $(this).data('id');
+            var color = $(this).data('color');
+            var grade = $(this).data('grade');
+            var gauge = $(this).data('gauge');
             $.ajax({
                     url: 'pages/cashier_in_stock_modal.php',
                     type: 'POST',
                     data: {
                         id: id,
+                        color: color,
+                        grade: grade,
+                        gauge: gauge,
                         fetch_in_stock_modal: "fetch_in_stock_modal"
                     },
                     success: function(response) {

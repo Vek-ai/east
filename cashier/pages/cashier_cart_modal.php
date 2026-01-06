@@ -80,9 +80,11 @@ if(isset($_POST['fetch_cart'])){
         $customer_details_pricing = $customer_details['customer_pricing'];
     }
     $delivery_price = is_numeric(getDeliveryCost()) ? floatval(getDeliveryCost()) : 0;
+
+    //echo '<script>console.log('. print_r($_SESSION['cart']) .')</script>';
     ?>
 
-    <script>console.log(<?= print_r($_SESSION['cart']) ?>)</script>
+    
     
     <style>
         input[type="number"]::-webkit-inner-spin-button, 
@@ -1756,8 +1758,8 @@ if(isset($_POST['fetch_cart'])){
             });
 
             const selectConfigs = [
-                { class: 'color-cart', noResults: 'No paint color', templateResult: formatOption },
-                { class: 'pack-cart', noResults: 'No Packs Assigned', templateResult: formatOption },
+                { class: 'color-cart', noResults: 'No paint color' },
+                { class: 'pack-cart', noResults: 'No Packs Assigned' },
                 { class: 'grade-cart' },
                 { class: 'gauge-cart' },
                 { class: 'panel_type_cart' },
@@ -1767,7 +1769,7 @@ if(isset($_POST['fetch_cart'])){
             ];
 
             selectConfigs.forEach(config => {
-                $("." + config.class).each(function() {
+                $("." + config.class).each(function () {
                     const $select = $(this);
 
                     if (config.class === 'color-cart') {
@@ -1778,18 +1780,26 @@ if(isset($_POST['fetch_cart'])){
                     }
 
                     if (!$select.data("select2")) {
-                        $select.select2({
+
+                        const select2Config = {
                             width: '300px',
                             placeholder: "Select...",
                             dropdownAutoWidth: true,
-                            dropdownParent: $('.modal.show'),
-                            templateResult: config.templateResult || null,
+                            dropdownParent: $select.closest('.modal'),
                             language: {
-                                noResults: function() {
+                                noResults: function () {
                                     return config.noResults || "No results";
                                 }
                             }
-                        });
+                        };
+
+                        if (typeof config.templateResult === 'function') {
+                            select2Config.templateResult = config.templateResult;
+                            select2Config.templateSelection = formatSelected;
+                            select2Config.escapeMarkup = markup => markup;
+                        }
+
+                        $select.select2(select2Config);
                     }
                 });
             });
