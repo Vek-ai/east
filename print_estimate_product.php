@@ -613,7 +613,7 @@ if (mysqli_num_rows($result) > 0) {
         if (!empty($row_estimates['estimated_date']) && $row_estimates['estimated_date'] !== '0000-00-00 00:00:00') {
             $estimated_date = date("m/d/Y || g:i A", strtotime($row_estimates['estimated_date']));
         }
-
+        $cashier = $row_estimates['cashier'];
         
         if($delivery_price == 0){
             $delivery_method = 'Pickup';
@@ -624,7 +624,7 @@ if (mysqli_num_rows($result) > 0) {
         $pdf->estimateid = $estimateid;
         $pdf->estimated_date = $estimated_date;
         $pdf->delivery_method = $delivery_method;
-        $pdf->salesperson = get_staff_name($current_user_id);
+        $pdf->salesperson = get_staff_name($cashier);
         $pdf->token = $token;
 
         $pdf->AliasNbPages();

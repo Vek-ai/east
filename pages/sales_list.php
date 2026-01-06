@@ -261,7 +261,7 @@ function showCol($name) {
 </div>
 
 <div class="modal" id="close-out-details-modal" style="background-color: rgba(0, 0, 0, 0.5);">
-    <div class="modal-dialog modal-xl" role="document">
+    <div class="modal-dialog modal-dialog-centered modal-xl" role="document" style="max-width: 80%;">
         <div class="modal-content p-2">
             <div class="modal-header">
                 <h6 class="modal-title">Close Out Details</h6>

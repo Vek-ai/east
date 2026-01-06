@@ -233,10 +233,10 @@ if(isset($_POST['fetch_order_details'])){
                             ?>
                             <tr>
                                 <td class="text-wrap"> 
-                                    <?php echo "L" .$row['id'] ?>
+                                    <?= "L" .$row['id'] ?>
                                 </td>
                                 <td class="text-wrap"> 
-                                    <?php echo getProductName($product_id) ?>
+                                    <?= getProductName($product_id) ?>
                                 </td>
                                 <td>
                                     <div class="d-flex mb-0 gap-8">
@@ -251,7 +251,7 @@ if(isset($_POST['fetch_order_details'])){
                                     <?= getProfileTypeName($row['custom_profile']); ?>
                                 </td>
                                 <td>
-                                    <?php echo $row['quantity']; ?>
+                                    <?= $row['quantity']; ?>
                                 </td>
                                 <td>
                                     <?php 
@@ -340,7 +340,7 @@ if(isset($_POST['fetch_order_details'])){
                                 ?>
                                 <tr>
                                     <td class="text-wrap"> 
-                                        <?php echo getProductName($product_id) ?>
+                                        <?= getProductName($product_id) ?>
                                     </td>
                                     <td>
                                     <div class="d-flex mb-0 gap-8">
@@ -349,13 +349,13 @@ if(isset($_POST['fetch_order_details'])){
                                     </div>
                                     </td>
                                     <td>
-                                        <?php echo getGradeFromID($product_id); ?>
+                                        <?= getGradeFromID($product_id); ?>
                                     </td>
                                     <td>
-                                        <?php echo getProfileFromID($product_id); ?>
+                                        <?= getProfileFromID($product_id); ?>
                                     </td>
                                     <td>
-                                        <?php echo $row['quantity']; ?>
+                                        <?= $row['quantity']; ?>
                                     </td>
                                     <td>
                                         <?php 
@@ -462,22 +462,26 @@ if(isset($_POST['fetch_close_details'])){
     <div class="card card-body datatables">
         <div class="product-details table-responsive text-wrap">
             <h4>Products Ordered</h4>
-            <table id="order_dtls_tbl" class="table table-hover mb-0 text-md-nowrap">
+            <table id="order_dtls_tbl" class="table table-hover mb-0 text-center" style="border-collapse:separate !important;">
                 <thead>
                     <tr>
+                        <th>Product ID</th>
                         <th>Description</th>
                         <th>Color</th>
                         <th>Grade</th>
-                        <th>Profile</th>
-                        <th class="text-center">Quantity</th>
-                        <th class="text-center">Dimensions</th>
-                        <th class="text-center">Unit Price</th>
+                        <th>Gauge</th>
+                        <th class="text-center">Qty to Close Out</th>
+                        <th class="text-center">Length</th>
+                        <th class="text-center">Panel Type</th>
+                        <th class="text-center">Panel Style</th>
                         <th class="text-center">Price</th>
+                        <th class="text-center">Total Price</th>
                     </tr>
                 </thead>
                 <tbody>
                     <?php 
                     $no = 0;
+                    $screw_id = 16;
                     $query = "SELECT * FROM order_product WHERE orderid='$orderid' ";
                     $result = mysqli_query($conn, $query);
                     $totalquantity = $total_actual_price = $total_disc_price = 0;
@@ -485,79 +489,110 @@ if(isset($_POST['fetch_close_details'])){
                         $response = array();
                         while ($row = mysqli_fetch_assoc($result)) {
                             $product_id = $row['productid'];
+                            $product    = getProductDetails($product_id);
+                            $category = $product['product_category'];
                             if($row['quantity'] > 0){
+                                $order = getOrderDetails($row['orderid']);
+                                $customer_id = $order['customerid'];
+                                $tax = getCustomerTax($customer_id);
+
+                                $unit_price = $product['unit_price'];
+                                $length = $row['custom_length'];
+                                $inch = $row['custom_length2'];
+
+                                $total_length = '';
+                                if (!empty($length)) {
+                                    $total_length = $length . " ft";
+                                    
+                                    if (!empty($inch)) {
+                                        $total_length = " " . $inch . " in";
+                                    }
+                                } elseif (!empty($inch)) {
+                                    $total_length = $inch . " in";
+                                }
+
+                                if($category == $screw_id){
+                                    $dimension_name = $row['screw_length'] ?? '';
+                                    $dimension_id = getScrewDimensionID($dimension_name);
+                                    $unit_price = getScrewPrice($product_id, $dimension_id);
+                                    $total_length = $row['screw_length'];
+                                }
                             ?>
                             <tr>
                                 <td class="text-wrap"> 
-                                    <?php echo getProductName($product_id) ?>
+                                    <?= $row['product_id_abbrev'] ?>
+                                </td>
+                                <td class="text-wrap"> 
+                                    <?= $row['product_item'] ?>
                                 </td>
                                 <td>
                                 <div class="d-flex mb-0 gap-8">
                                     <span class="rounded-circle d-block p-3" href="javascript:void(0)" style="background-color:<?= getColorHexFromProdID($product_id)?>; width: 20px; height: 20px;"></span>
-                                    <?= getColorFromID($product_id); ?>
+                                    <?= getColorName($row['custom_color']); ?>
                                 </div>
                                 </td>
                                 <td>
-                                    <?php echo getGradeFromID($product_id); ?>
+                                    <?= getGradeName($row['custom_grade']); ?>
                                 </td>
                                 <td>
-                                    <?php echo getProfileFromID($product_id); ?>
+                                    <?= getGaugeName($row['custom_gauge']); ?>
                                 </td>
                                 <td>
-                                    <?php echo $row['quantity']; ?>
+                                    <?= $row['quantity']; ?>
                                 </td>
                                 <td>
-                                    <?php 
-                                    $width = $row['custom_width'];
-                                    $bend = $row['custom_bend'];
-                                    $hem = $row['custom_hem'];
-                                    $length = $row['custom_length'];
-                                    $inch = $row['custom_length2'];
-                                    
-                                    if (!empty($width)) {
-                                        echo "Width: " . htmlspecialchars($width) . "<br>";
-                                    }
-                                    
-                                    if (!empty($bend)) {
-                                        echo "Bend: " . htmlspecialchars($bend) . "<br>";
-                                    }
-                                    
-                                    if (!empty($hem)) {
-                                        echo "Hem: " . htmlspecialchars($hem) . "<br>";
-                                    }
-                                    
-                                    if (!empty($length)) {
-                                        echo "Length: " . htmlspecialchars($length) . " ft";
-                                        
-                                        if (!empty($inch)) {
-                                            echo " " . htmlspecialchars($inch) . " in";
-                                        }
-                                        echo "<br>";
-                                    } elseif (!empty($inch)) {
-                                        echo "Length: " . htmlspecialchars($inch) . " in<br>";
-                                    }
-                                    ?>
+                                    <?= $total_length ?>
                                 </td>
+                                <td>
+                                    <?= ucwords($row['panel_type']) ?>
+                                </td>
+                                <td>
+                                    <?= ucwords($row['panel_style']) ?>
+                                </td>
+                                <td class="text-end">$ <?= number_format($unit_price,2) ?></td>
                                 <td class="text-end">$ <?= number_format($row['discounted_price'],2) ?></td>
-                                <td class="text-end">$ <?= number_format($row['discounted_price'] * $row['quantity'],2) ?></td>
                             </tr>
-                    <?php
+                            <?php
                             $totalquantity += $row['quantity'] ;
                             $total_actual_price += $row['discounted_price'];
-                            $total_disc_price += $row['discounted_price'] * $row['quantity'];
+                            $total_disc_price += $row['discounted_price'];
                             }
                         }
                     }
+
+                    $subtotal   = $total_disc_price;
+                    $sales_tax  = $subtotal * $tax;
+                    $grand_total = $subtotal + $sales_tax;
                     ?>
                 </tbody>
 
                 <tfoot>
                     <tr>
-                        <td colspan="4">Total</td>
-                        <td><?= $totalquantity ?></td>
-                        <td></td>
-                        <td class="text-end">$ <?= number_format($total_actual_price,2) ?></td>
-                        <td class="text-end">$ <?= number_format($total_disc_price,2) ?></td>
+                        <td class="text-end" colspan="9"
+                            style="border:0 !important;">
+                        </td>
+                        <td class="text-end">Material Price</td>
+                        <td class="text-end">
+                            $ <?= number_format($subtotal,2) ?>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="text-end" colspan="9"
+                            style="border:0 !important;">
+                        </td>
+                        <td class="text-end">Sales Tax</td>
+                        <td class="text-end">
+                            $ <?= number_format($sales_tax,2) ?>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="text-end" colspan="9"
+                            style="border:0 !important;">
+                        </td>
+                        <td class="text-end">Total Paid</td>
+                        <td class="text-end">
+                            $ <?= number_format($grand_total,2) ?>
+                        </td>
                     </tr>
                 </tfoot>
             </table>

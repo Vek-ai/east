@@ -4148,6 +4148,8 @@ $editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) :
         function performSearch() {
             var query = $('#text-srh').val() || '';
 
+            console.log($('#select-profile').val());
+
             rowsPerPage = parseInt($('#rowsPerPage').val()) || 100;
             var start = (currentPage - 1) * rowsPerPage;
 
@@ -4172,6 +4174,7 @@ $editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) :
                 type: 'POST',
                 data: data,
                 success: function(response) {
+                    
                     var res = JSON.parse(response);
                     $('#productTableBody').html(res.data_html);
                     totalPages = res.totalPages;
@@ -4791,7 +4794,7 @@ $editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) :
                 var deliver_zip = $('#est_deliver_zip').val();
                 var deliver_fname = $('#est_deliver_fname').val();
                 var deliver_lname = $('#est_deliver_lname').val();
-
+                var salesperson = $('#salesperson').val();
                 $.ajax({
                     url: 'pages/cashier_ajax.php',
                     type: 'POST',
@@ -4808,6 +4811,7 @@ $editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) :
                         deliver_zip: deliver_zip,
                         deliver_fname: deliver_fname,
                         deliver_lname: deliver_lname,
+                        salesperson: salesperson,
                         save_estimate: 'save_estimate'
                     },
                     success: function (response) {

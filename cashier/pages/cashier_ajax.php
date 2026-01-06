@@ -175,10 +175,9 @@ if (isset($_REQUEST['query'])) {
             p.*,
             pt.profile_type AS profile_type_name,
             pg.product_grade AS product_grade_name,
-            -- Check if the product has any inventory with quantity_ttl > 0
             CASE 
-                WHEN p.product_category IN (3,4) THEN 1  -- always in stock for category 3 or 4
-                WHEN i.Product_id IS NOT NULL THEN 1     -- inventory exists with quantity > 0
+                WHEN p.product_category IN (3,4) THEN 1
+                WHEN i.Product_id IS NOT NULL THEN 1
                 ELSE 0
             END AS in_stock
         FROM product AS p
@@ -460,7 +459,7 @@ if (isset($_REQUEST['query'])) {
     echo json_encode([
         'data_html' => $tableHTML,
         'totalPages' => ceil($totalFiltered / $length),
-        'totalRecords' => $totalFiltered
+        'totalRecords' => $totalFiltered,
     ]);
     exit;
 }
@@ -3179,14 +3178,14 @@ if (isset($_POST['filter_category'])) {
                 <optgroup label="Product Line">
                     <?php
                         $query_profile = "
-                            SELECT DISTINCT profile_type
+                            SELECT DISTINCT profile_type, profile_type_id
                             FROM profile_type 
                             WHERE hidden = '0' $category_condition
                             ORDER BY profile_type ASC";
                         $result_profile = mysqli_query($conn, $query_profile);
                         while ($row_profile = mysqli_fetch_array($result_profile)) {
                         ?>
-                            <option value="<?= $row_profile['profile_type'] ?>">
+                            <option value="<?= $row_profile['profile_type_id'] ?>">
                                 <?= $row_profile['profile_type'] ?>
                             </option>
                         <?php } ?>
