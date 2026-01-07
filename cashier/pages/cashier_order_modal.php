@@ -144,7 +144,7 @@ if(isset($_POST['fetch_order'])){
                 <label>Customer Name</label>
                 <div class="input-group">
                     <input class="form-control" placeholder="Search Customer" type="text" id="customer_select_cash">
-                    <a class="input-group-text rounded-right m-0 p-0 toggle_add_customer" href="javascript:void(0)" target="_blank">
+                    <a class="input-group-text rounded-right m-0 p-0 addCustomerBtn" href="javascript:void(0)">
                         <span class="input-group-text"> + </span>
                     </a>
                 </div>

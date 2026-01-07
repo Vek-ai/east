@@ -869,6 +869,24 @@ $editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) :
     </div>
 </div>
 
+<div class="modal fade" id="customerModal" tabindex="-1" aria-labelledby="customerModalLabel" aria-hidden="true" style="background-color: rgba(0, 0, 0, 0.5);">
+  <div class="modal-dialog modal-xl">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h4 class="modal-title" id="customerModalLabel">Customer Details</h4>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <div id="form_section">
+          <form id="addCustomerForm" class="form-horizontal">
+              <div class="form_body"></div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
 <div class="modal fade" id="response_modal" tabindex="-1" style="background-color: rgba(0, 0, 0, 0.5);">
     <div class="modal-dialog modal-dialog-centered">
     <div class="modal-content">
@@ -5140,6 +5158,52 @@ $editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) :
             
         });
 
+        $(document).on('click', '#save_return, #save_return_alt', function (e) {
+            e.preventDefault();
+
+            const id = $('#hidden_id').val();
+            const quantity = $('#hidden_quantity').val();
+            const stock_fee = $('#hidden_stock_fee').val();
+            const pay_method = $('input[name="payReturnMethod"]:checked').val() || '';
+
+            $.ajax({
+                url: 'pages/cashier_ajax.php',
+                type: 'POST',
+                data: {
+                    id: id,
+                    quantity: quantity,
+                    stock_fee: stock_fee,
+                    pay_method: pay_method,
+                    return_product: "return_product"
+                },
+                success: function (response) {
+                    const trimmed = response.trim();
+
+                    if (trimmed.startsWith("success|")) {
+                        const returnId = trimmed.split("|")[1];
+
+                        alert("Successfully Returned!");
+
+                        $('#print_return')
+                            .attr('href', `/print_single_return.php?id=${returnId}`)
+                            .removeClass('d-none');
+
+                        $('.order_print_div').addClass('d-none');
+
+                        $('#save_return, #save_return_alt').addClass('d-none');
+                    } else {
+                        alert("Return failed.");
+                        console.log("Server response:", response);
+                    }
+                },
+                error: function (jqXHR, textStatus, errorThrown) {
+                    alert('Return failed (request error).');
+                    console.log('AJAX error:', textStatus, errorThrown);
+                    console.log(jqXHR.responseText);
+                }
+            });
+        });
+
         $(document).on('click', '#submitApprovalBtn', function(event) {
             $.ajax({
                 url: 'pages/cashier_ajax.php',
@@ -5404,50 +5468,7 @@ $editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) :
             });
         });
 
-        $(document).on('click', '#save_return, #save_return_alt', function (e) {
-            e.preventDefault();
-
-            const id = $('#hidden_id').val();
-            const quantity = $('#hidden_quantity').val();
-            const stock_fee = $('#hidden_stock_fee').val();
-            const pay_method = $('input[name="payReturnMethod"]:checked').val() || '';
-
-            $.ajax({
-                url: 'pages/cashier_ajax.php',
-                type: 'POST',
-                data: {
-                    id: id,
-                    quantity: quantity,
-                    stock_fee: stock_fee,
-                    pay_method: pay_method,
-                    return_product: "return_product"
-                },
-                success: function (response) {
-                    const trimmed = response.trim();
-
-                    if (trimmed.startsWith("success|")) {
-                        const returnId = trimmed.split("|")[1];
-
-                        alert("Successfully Returned!");
-
-                        $('#print_return_btn')
-                            .attr('href', `/print_single_return.php?id=${returnId}`)
-                            .removeClass('d-none');
-
-                        $('#save_return, #save_return_alt').addClass('d-none');
-
-                    } else {
-                        alert("Return failed.");
-                        console.log("Server response:", response);
-                    }
-                },
-                error: function (jqXHR, textStatus, errorThrown) {
-                    alert('Return failed (request error).');
-                    console.log('AJAX error:', textStatus, errorThrown);
-                    console.log(jqXHR.responseText);
-                }
-            });
-        });
+        
 
         $(document).on('click', '#btnApprovalModal', function (e) {
             e.preventDefault();
@@ -5526,6 +5547,22 @@ $editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) :
 
         var pdfUrl = '';
         var isPrinting = false;
+
+        $(document).on('click', '#print_return', function (e) {
+            e.preventDefault();
+
+            $('.btn-show-pdf').removeClass('btn-warning').addClass('btn-primary');
+
+            pdfUrl = $(this).attr('href');
+            order_url = pdfUrl;
+            if (!pdfUrl) {
+                alert('PDF URL not set.');
+                return;
+            }
+
+            $('#pdfFrame').attr('src', pdfUrl);
+            $('#pdfModal').modal('show');
+        });
 
         $(document).on('click', '.btn-show-pdf', function (e) {
             e.preventDefault();
@@ -6451,5 +6488,83 @@ $editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) :
             });
         });
 
+        $(document).on("click", ".addCustomerBtn", function() {
+            let type = 0;
+            if(type == '1'){
+                action = 'customer_personal_modal';
+            }else if(type == '2'){
+                action = 'customer_business_modal';
+            }else if(type == '3'){
+                action = 'customer_farm_modal';
+            }else if(type == '4'){
+                action = 'customer_exempt_modal';
+            }else{
+                action = 'customer_personal_modal';
+            }
+
+            $.ajax({
+                url: "pages/customer_ajax_modal.php",
+                type: "POST",
+                data: {
+                    id: "",
+                    action: action
+                },
+                success: function (response) {
+                    $(".form_body").html(response);
+                    $('#customerModal').modal('show');
+                },
+                error: function (jqXHR, textStatus, errorThrown) {
+                    alert("Error: " + textStatus + " - " + errorThrown);
+                }
+            });
+        });
+
+        $(document).on('submit', '#addCustomerForm', function (event) {
+            event.preventDefault();
+            var formData = new FormData(this);
+            formData.append('action', 'add_update');
+            var appendResult = "";
+            $.ajax({
+                url: 'pages/customer_ajax.php',
+                type: 'POST',
+                data: formData,
+                processData: false,
+                contentType: false,
+                success: function (response) {
+                    $('#customerModal').modal("hide");
+                    if (response.trim() === "success_update") {
+                        $('#responseHeader').text("Success");
+                        $('#responseMsg').text("Customer updated successfully.");
+                        $('#responseHeaderContainer').removeClass("bg-danger");
+                        $('#responseHeaderContainer').addClass("bg-success");
+                        $('#response-modal').modal("show");
+                        $('#response-modal').on('hide.bs.modal', function () {
+                        
+                        });
+                    } else if (response.trim() === "success_add") {
+                        $('#responseHeader').text("Success");
+                        $('#responseMsg').text("New customer added successfully.");
+                        $('#responseHeaderContainer').removeClass("bg-danger");
+                        $('#responseHeaderContainer').addClass("bg-success");
+                        $('#response-modal').modal("show");
+                        $('#response-modal').on('hide.bs.modal', function () {
+                            
+                        });
+                    } else {
+                        $('#responseHeader').text("Failed");
+                        $('#responseMsg').text(response);
+                        $('#responseHeaderContainer').removeClass("bg-success");
+                        $('#responseHeaderContainer').addClass("bg-danger");
+                        $('#response-modal').modal("show");
+                    }
+
+                    loadCart();
+                    loadOrderContents();
+                },
+                error: function (jqXHR, textStatus, errorThrown) {
+                    alert('Error: ' + textStatus + ' - ' + errorThrown);
+                }
+            });
+        });
     });
 </script>

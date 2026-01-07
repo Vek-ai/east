@@ -239,7 +239,7 @@ if(isset($_POST['return_product_modal'])){
         <a href="#"
             target="_blank"
             class="btn btn-primary mt-3 d-none"
-            id="print_return_btn"
+            id="print_return"
             style="background-color: #e4c30aff; color: black;">
             <i class="fa fa-print me-1"></i> Print Return Receipt
         </a>

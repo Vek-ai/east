@@ -213,7 +213,7 @@ if(isset($_POST['fetch_cart'])){
                     <label>Customer Name</label>
                     <div class="input-group">
                         <input class="form-control" placeholder="Search Customer" type="text" id="customer_select_cart">
-                        <a class="input-group-text rounded-right m-0 p-0 add_new_customer_btn" href="javascript:void(0)">
+                        <a class="input-group-text rounded-right m-0 p-0 addCustomerBtn" href="javascript:void(0)">
                             <span class="input-group-text"> + </span>
                         </a>
                     </div>
