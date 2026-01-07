@@ -1792,6 +1792,40 @@ if (isset($_POST['change_customer'])) {
     }
 }
 
+if (isset($_POST['load_customer_section'])) {
+    ob_start();
+    if (!empty($_SESSION['customer_id'])) {
+        $customer_id = $_SESSION['customer_id'];
+        $customer_name = get_customer_name($customer_id);
+        ?>
+        <div class="form-group row align-items-center">
+            <div class="d-flex flex-column gap-1">
+                <div>
+                    <label class="fw-bold fs-4">Customer Name: <?= htmlspecialchars($customer_name) ?></label>
+                    <button class="btn btn-primary btn-sm me-3 change_customer_btn" type="button">
+                        <i class="fe fe-reload"></i> Change
+                    </button>
+                </div>
+            </div>
+        </div>
+        <?php
+    } else {
+        ?>
+        <div class="form-group row align-items-center">
+            <div class="col-12">
+                <label>Customer Name</label>
+                <div class="input-group">
+                    <input class="form-control customer_select_input" placeholder="Search Customer" type="text">
+                </div>
+            </div>
+        </div>
+        <?php
+    }
+
+    echo ob_get_clean();
+    exit;
+}
+
 if (isset($_POST['unset_customer'])) {
     unset($_SESSION['customer_id']);
     echo "Customer session unset";
@@ -2542,6 +2576,30 @@ if(isset($_POST['fetch_change_color_modal'])){
         $category_ids = array_unique($category_ids);
     }
     ?>
+        <div class="col-md-12 mb-4">
+            <label class="form-label" for="product_select" style="display:block; width: 100%;">Product</label>
+            <select id="product_change_color" class="form-select select2 text-start" multiple="multiple">
+                <?php
+                    foreach ($_SESSION["cart"] as $keys => $values) {
+                        ?>
+                            <option value="<?= $values['product_id'] ?>"><?= getProductName($values['product_id']) ?></option>
+                        <?php
+                    }
+                ?>
+            </select>
+        </div>
+        <div id="change_category_container" class="col-12 mb-4">
+            <label class="form-label" for="category_id_color" style="display:block; width: 100%;">Category (Optional)</label>
+            <select id="category_id_color" class="form-select">
+                <option value="">Select Available Category</option>
+                <?php
+                foreach ($category_ids as $category_id) {
+                    echo '<option value="' . $category_id . '">' . getProductCategoryName($category_id) . '</option>';
+                }
+                ?>
+            </select>
+        </div>
+
         <div id="change_color_container" class="d-flex align-items-center justify-content-between w-100">
             <div class="col-md-5">
                 <label class="form-label" for="orig-colors" style="display:block; width: 100%;">Change Color From:</label>
@@ -2568,17 +2626,7 @@ if(isset($_POST['fetch_change_color_modal'])){
             </div>
         </div>
 
-        <div id="change_category_container" class="mt-4">
-            <label class="form-label" for="category_id_color" style="display:block; width: 100%;">Only for this category (Optional)</label>
-            <select id="category_id_color" class="form-select">
-                <option value="">Select Available Category</option>
-                <?php
-                foreach ($category_ids as $category_id) {
-                    echo '<option value="' . $category_id . '">' . getProductCategoryName($category_id) . '</option>';
-                }
-                ?>
-            </select>
-        </div>
+        
         <script>
             $(document).ready(function() {
                 $("#category_id_color").select2({
@@ -2607,6 +2655,16 @@ if(isset($_POST['fetch_change_color_modal'])){
                     templateResult: formatOption,
                     templateSelection: formatOption
                 });
+
+                $('#product_change_color').multiselect({
+                    includeSelectAllOption: true,
+                    nonSelectedText: 'Select Products',
+                    buttonWidth: '100%',
+                    templates: {
+                        button: '<button type="button" class="multiselect dropdown-toggle text-start" data-bs-toggle="dropdown" aria-expanded="false"><span class="multiselect-selected-text"></span></button>',
+                        ul: '<ul class="multiselect-container dropdown-menu dropdown-menu-start px-0"></ul>',
+                    },
+                });
             });
         </script>
 
@@ -2616,16 +2674,34 @@ if(isset($_POST['fetch_change_color_modal'])){
 if(isset($_POST['fetch_change_price_modal'])){
     ?>
         <div id="change_price_container" class="row">
+            <div class="col-md-12 mb-4">
+                <label class="form-label" for="product_select" style="display:block; width: 100%;">Product</label>
+                <select id="product_select" class="form-select select2 text-start" multiple="multiple">
+                    <?php
+                        foreach ($_SESSION["cart"] as $keys => $values) {
+                            ?>
+                                <option value="<?= $values['product_id'] ?>"><?= getProductName($values['product_id']) ?></option>
+                            <?php
+                        }
+                    ?>
+                </select>
+            </div>
             <div class="col-md-12">
                 <label class="form-label" for="price_input">Price</label>
                 <input class="form-control" id="price_input" name="price_input" placeholder="Price" />
             </div>
+            
             <div class="col-md-12 mt-4">
-                <label class="form-label" for="disc_input">Discount</label>
-                <input class="form-control" id="disc_input" name="disc_input" placeholder="Discount ($)" />
+                <label class="form-label" for="disc_input">Discount Off ($)</label>
+                <input class="form-control" id="disc_input" name="disc_input" placeholder="Enter Amount" />
             </div>
             <div class="col-md-12 mt-4">
-                <label class="form-label" for="price_group_select" style="display:block; width: 100%;">Discount Category</label>
+                <label class="form-label" for="disc_perc_input">Discount Off (%)</label>
+                <input class="form-control" id="disc_perc_input" name="disc_perc_input" placeholder="Enter Percentage" />
+            </div>
+
+            <div class="col-md-12 mt-4">
+                <label class="form-label" for="price_group_select" style="display:block; width: 100%;">Apply New Level Price Discount</label>
                 <select id="price_group_select" class="form-select custom-select text-start">
                     <option value="">Select Discount</option>
                     <?php
@@ -2641,18 +2717,7 @@ if(isset($_POST['fetch_change_price_modal'])){
                     ?>
                 </select>
             </div>
-            <div class="col-md-12 mt-4">
-                <label class="form-label" for="product_select" style="display:block; width: 100%;">Products Affected</label>
-                <select id="product_select" class="form-select custom-select text-start" multiple="multiple">
-                    <?php
-                        foreach ($_SESSION["cart"] as $keys => $values) {
-                            ?>
-                                <option value="<?= $values['product_id'] ?>"><?= getProductName($values['product_id']) ?></option>
-                            <?php
-                        }
-                    ?>
-                </select>
-            </div>
+            
             <div class="col-md-12 mt-4">
                 <label class="form-label" for="notes_input">Notes</label>
                 <textarea class="form-control" id="notes_input" name="notes_input" rows="3" placeholder="Notes here"></textarea>
@@ -2735,6 +2800,29 @@ if(isset($_POST['fetch_change_grade_modal'])){
         });
     }
     ?>
+        <div class="col-md-12 mb-4">
+            <label class="form-label" for="product_select" style="display:block; width: 100%;">Product</label>
+            <select id="product_change_grade" class="form-select select2 text-start" multiple="multiple">
+                <?php
+                    foreach ($_SESSION["cart"] as $keys => $values) {
+                        ?>
+                            <option value="<?= $values['product_id'] ?>"><?= getProductName($values['product_id']) ?></option>
+                        <?php
+                    }
+                ?>
+            </select>
+        </div>
+        <div id="change_category_container" class="col-md-12 mb-4">
+            <label class="form-label" for="category_id" style="display:block; width: 100%;">Category (Optional)</label>
+            <select id="category_id" class="form-select">
+                <option value="">Select Available Category</option>
+                <?php
+                foreach ($category_ids as $category_id) {
+                    echo '<option value="' . $category_id . '">' . getProductCategoryName($category_id) . '</option>';
+                }
+                ?>
+            </select>
+        </div>
         <div id="change_grade_container" class="d-flex align-items-center justify-content-between w-100">
             <div class="col-md-5">
                 <label class="form-label" for="orig-grade" style="display:block; width: 100%;">Change Grade From:</label>
@@ -2760,19 +2848,6 @@ if(isset($_POST['fetch_change_grade_modal'])){
                 </select>
             </div>
         </div>
-        <div id="change_category_container" class="mt-4">
-            <label class="form-label" for="category_id" style="display:block; width: 100%;">Only for this category (Optional)</label>
-            <select id="category_id" class="form-select">
-                <option value="">Select Available Category</option>
-                <?php
-                foreach ($category_ids as $category_id) {
-                    echo '<option value="' . $category_id . '">' . getProductCategoryName($category_id) . '</option>';
-                }
-                ?>
-            </select>
-        </div>
-    
-        
         <script>
             $(document).ready(function() {
                 $("#category_id").select2({
@@ -2801,6 +2876,16 @@ if(isset($_POST['fetch_change_grade_modal'])){
                     templateResult: formatOption,
                     templateSelection: formatOption
                 });
+
+                $('#product_change_grade').multiselect({
+                    includeSelectAllOption: true,
+                    nonSelectedText: 'Select Products',
+                    buttonWidth: '100%',
+                    templates: {
+                        button: '<button type="button" class="multiselect dropdown-toggle text-start" data-bs-toggle="dropdown" aria-expanded="false"><span class="multiselect-selected-text"></span></button>',
+                        ul: '<ul class="multiselect-container dropdown-menu dropdown-menu-start px-0"></ul>',
+                    },
+                });
             });
         </script>
 
@@ -2808,12 +2893,22 @@ if(isset($_POST['fetch_change_grade_modal'])){
 }
 
 if (isset($_POST['change_color'])) {
-    $orig_color = $_POST['orig_color'];
-    $in_stock_color = $_POST['in_stock_color'];
-    $selected_category_id = $_POST['category_id'];
+    $orig_color           = $_POST['orig_color'];
+    $in_stock_color       = $_POST['in_stock_color'];
+    $selected_category_id  = $_POST['category_id'];
+
+    $product_ids = [];
+    if (!empty($_POST['product_id'])) {
+        $product_id_to_change = $_POST['product_id'];
+        $product_ids = is_array($product_id_to_change)
+            ? array_map('intval', $product_id_to_change)
+            : [(int)$product_id_to_change];
+    }
 
     foreach ($_SESSION['cart'] as $key => &$item) {
-        if ($item['custom_color'] == $orig_color) {
+        $item_pid = (int)$item['product_id'];
+
+        if ($item['custom_color'] == $orig_color && (empty($product_ids) || in_array($item_pid, $product_ids))) {
             if (!empty($selected_category_id)) {
                 $product_details = getProductDetails($item['product_id']);
                 if ($product_details['product_category'] == $selected_category_id) {
@@ -2830,12 +2925,24 @@ if (isset($_POST['change_color'])) {
 }
 
 if (isset($_POST['change_grade'])) {
-    $orig_grade = $_POST['orig_grade'];
-    $in_stock_grade = $_POST['in_stock_grade'];
+    $orig_grade           = (int)$_POST['orig_grade'];
+    $in_stock_grade       = $_POST['in_stock_grade'];
     $selected_category_id = $_POST['category_id'];
 
+    $product_ids = [];
+    if (!empty($_POST['product_id'])) {
+        $product_id_to_change = $_POST['product_id'];
+        $product_ids = is_array($product_id_to_change)
+            ? array_map('intval', $product_id_to_change)
+            : [(int)$product_id_to_change];
+    }
+
     foreach ($_SESSION['cart'] as $key => &$item) {
-        if ($item['custom_grade'] == $orig_grade) {
+        $item_grade  = (int)$item['custom_grade'];
+        $item_pid    = (int)$item['product_id'];
+
+        if ($item_grade === $orig_grade && (empty($product_ids) || in_array($item_pid, $product_ids))) {
+
             if (!empty($selected_category_id)) {
                 $product_details = getProductDetails($item['product_id']);
                 if ($product_details['product_category'] == $selected_category_id) {
@@ -2853,26 +2960,33 @@ if (isset($_POST['change_grade'])) {
 
 if (isset($_POST['change_price'])) {
     $price_group_select = $_POST['price_group_select'];
-    $product_select = $_POST['product_select'];
-    $price = $_POST['price'];
-    $disc = $_POST['disc'];
-    $notes = $_POST['notes'];
+    $product_select     = $_POST['product_select'];
+    $price              = $_POST['price'];
+    $disc               = $_POST['disc'];
+    $disc_perc          = $_POST['disc_perc'];
+    $notes              = $_POST['notes'];
 
     if (!empty($product_select)) {
         foreach ($_SESSION['cart'] as $key => &$item) {
             if (in_array($item['product_id'], $product_select)) {
-                $item['used_discount'] = $price_group_select;
+                if ($disc_perc !== '' && $disc_perc !== null) {
+                    $item['used_discount'] =
+                        (float)$price_group_select
+                        - ((float)$price_group_select * ((float)$disc_perc / 100));
+                } else {
+                    $item['used_discount'] = (float)$price_group_select;
+                }
 
                 if (!empty($price)) {
-                    $item['unit_price'] = $price;
+                    $item['manual_unit_price'] = (float)$price;
                 }
 
                 if (!empty($disc)) {
-                    $item['amount_discount'] = $disc;
+                    $item['amount_discount'] = (float)$disc;
                 }
 
                 if (!empty($notes)) {
-                    $item['notes'] = $notes;
+                    $item['note'] = $notes;
                 }
             }
         }

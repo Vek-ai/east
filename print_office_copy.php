@@ -238,6 +238,16 @@ function renderScrewCategory($pdf, $product, $conn) {
     $dimension_id = getScrewDimensionID($dimension_name);
     $unit_price = getScrewPrice($productid, $dimension_id);
 
+    $productItem = $product['product_item'];
+    $pack = '';
+
+    if (preg_match_all('/\(([^()]*)\)/', $productItem, $matches)) {
+        $allMatches = $matches[1];
+        $pack = end($allMatches);
+    }
+
+    $quantity .= "\n $pack";
+
     $summaryRow = [
         $product_abbrev,
         $product['product_item'],
@@ -389,7 +399,7 @@ function renderServiceChargeCategory($pdf, $product, $conn) {
     $product_abbrev = $product['product_id_abbrev'] ?? '';
     $color = getColorName($product['custom_color']);
 
-    $unit_price = getProductPrice($productid);
+    $unit_price = round($act_price/$quantity,2);
 
     $summaryRow = [
         $product_abbrev,
@@ -401,17 +411,11 @@ function renderServiceChargeCategory($pdf, $product, $conn) {
         '',
         '',
         '',
-        '$ ' . number_format($act_price, 2),
+        '$ ' . number_format($unit_price, 2),
         '$ ' . number_format($disc_price, 2),
     ];
 
     $pdf->renderRow($columns, $summaryRow, false, $note);
-
-    if (!empty($note)) {
-        $pdf->SetFont('Arial', 'I', 7);
-        $pdf->Cell(0, 4, 'Note: ' . $note, 0, 1, 'L');
-        $pdf->SetFont('Arial', '', 7);
-    }
 
     $totalQty    = $quantity;
     $totalPrice  = $disc_price;
@@ -419,7 +423,6 @@ function renderServiceChargeCategory($pdf, $product, $conn) {
 
     return [$totalPrice, $totalQty, $totalActual];
 }
-
 
 class PDF extends FPDF {
     public $orderid;

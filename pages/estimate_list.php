@@ -376,7 +376,7 @@ function showCol($name) {
                                     ?>
                                     <tr
                                         data-by="<?= $row['order_from'] ?>"
-                                        data-tax="<?= $customer_details['tax_status'] ?>"
+                                        data-tax="<?= $customer_details['tax_status'] ?? '' ?>"
                                         data-cashier="<?= $row['cashier'] ?>"
                                         data-month="<?= date('m', strtotime($row['estimated_date'])) ?>"
                                         data-year="<?= date('Y', strtotime($row['estimated_date'])) ?>"

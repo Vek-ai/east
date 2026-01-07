@@ -1531,27 +1531,30 @@ $page_key = !empty($_REQUEST['page']) ? $_REQUEST['page'] : 'cashier';
   }
 
   $(document).ready(function() {
+    if ($.ui && $.ui.tooltip) {
+        $(document).tooltip('destroy');
+    }
+
     $(document).on('mouseenter', '[title]', function () {
         const $el = $(this);
 
-        if ($el.closest('.select2-container').length > 0) return;
+        if ($el.closest('.select2-container').length) return;
 
         if (!$el.data('bs.tooltip')) {
-            $el.tooltip({
+            new bootstrap.Tooltip(this, {
                 trigger: 'hover',
                 placement: 'top'
-            }).tooltip('show');
+            }).show();
         }
     });
 
     $(document).on('mouseleave', '[title]', function () {
         const $el = $(this);
 
-        if ($el.closest('.select2-container').length > 0) return;
+        if ($el.closest('.select2-container').length) return;
 
-        if ($el.data('bs.tooltip')) {
-            $el.tooltip('dispose');
-        }
+        const tip = bootstrap.Tooltip.getInstance(this);
+        if (tip) tip.dispose();
     });
     
     loadCartItemsHeader();

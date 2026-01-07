@@ -626,7 +626,7 @@ if (mysqli_num_rows($result) > 0) {
     if ($type === 'panel' || $type === '') {
         if (!empty($panelProducts)) {
             $pdf->AddPage();
-            renderInvoiceHeader($pdf, $row_orders, 'trim', $panelTotals);
+            renderInvoiceHeader($pdf, $row_orders, 'panel', $panelTotals);
             renderTableHeader($pdf, $columns);
 
             foreach ($panelProducts as $row_product) {
@@ -638,7 +638,7 @@ if (mysqli_num_rows($result) > 0) {
     if ($type === 'trim' || $type === '') {
         if (!empty($trimProducts)) {
             $pdf->AddPage();
-            renderInvoiceHeader($pdf, $row_orders, 'trim', $trimTotals);
+            renderInvoiceHeader($pdf, $row_orders, 'trim');
             renderTableHeader($pdf, $trim_columns);
 
             foreach ($trimProducts as $row_product) {

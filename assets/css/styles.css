@@ -10022,7 +10022,7 @@
   --bs-body-bg-rgb: 255, 255, 255;
   --bs-emphasis-color: #000;
   --bs-emphasis-color-rgb: 0, 0, 0;
-  --bs-secondary-color: rgba(118, 139, 158, 0.75);
+  --bs-secondary-color: rgba(0, 0, 0, 1);
   --bs-secondary-color-rgb: 118, 139, 158;
   --bs-secondary-bg: #e9ecef;
   --bs-secondary-bg-rgb: 233, 236, 239;
@@ -10041,7 +10041,7 @@
   --bs-highlight-bg: #fdf2cc;
   --bs-border-width: 1px;
   --bs-border-style: solid;
-  --bs-border-color: #ebf1f6;
+  --bs-border-color: #000000;
   --bs-border-color-translucent: rgba(0, 0, 0, 0.175);
   --bs-border-radius: 8px;
   --bs-border-radius-sm: 5px;
@@ -11956,13 +11956,13 @@ progress {
   --bs-table-bg-state: initial;
   --bs-table-color: #000000;
   --bs-table-bg: transparent;
-  --bs-table-border-color: #363636;
+  --bs-table-border-color: #000000;
   --bs-table-accent-bg: transparent;
   --bs-table-striped-color: #768b9e;
   --bs-table-striped-bg: #e9ecef;
   --bs-table-active-color: #768b9e;
   --bs-table-active-bg: rgba(var(--bs-emphasis-color-rgb), 0.1);
-  --bs-table-hover-color: #768b9e;
+  --bs-table-hover-color: #000000;
   --bs-table-hover-bg: #f2f4f8;
   width: 100%;
   margin-bottom: 1rem;
@@ -12164,7 +12164,7 @@ progress {
 .form-label {
   margin-bottom: 0.5rem;
   font-weight: 600;
-  color: #6c757d;
+  color: #000;
 }
 .col-form-label {
   padding-top: calc(8px + var(--bs-border-width));
@@ -27191,7 +27191,7 @@ html[data-card="border"] .card {
   border-bottom: none;
 }
 .striped-rows .row:nth-child(odd) {
-  background-color: var(--bs-gray-200);
+  background-color: var(--bs-black);
 }
 .b-form .row {
   border-bottom: 1px solid var(--bs-border-color);
@@ -27218,7 +27218,7 @@ html[data-card="border"] .card {
   border: none;
   font-family: var(--bs-body-font-family);
   border-radius: 0;
-  border-bottom: 1px solid var(--bs-gray-300);
+  border-bottom: 1px solid var(--bs-black);
 }
 .floating-labels .form-control:focus {
   box-shadow: none;

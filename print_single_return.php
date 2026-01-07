@@ -250,6 +250,16 @@ function renderScrewCategory($pdf, $product, $conn) {
     $dimension_id = getScrewDimensionID($dimension_name);
     $unit_price = getScrewPrice($productid, $dimension_id);
 
+    $productItem = $product['product_item'];
+    $pack = '';
+
+    if (preg_match_all('/\(([^()]*)\)/', $productItem, $matches)) {
+        $allMatches = $matches[1];
+        $pack = end($allMatches);
+    }
+
+    $quantity .= "\n $pack";
+
     $summaryRow = [
         $product_abbrev,
         $product['product_item'],

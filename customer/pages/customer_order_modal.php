@@ -513,7 +513,7 @@ if(isset($_POST['fetch_order'])){
                                 <?php
                                 }
                                 ?>
-                                <option value="add_new_job_name">Add new Job Name</option>
+                                <option value="add_new_job_name">Others...</option>
                             </select>
                         </div>
                     </div>

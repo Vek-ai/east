@@ -145,11 +145,7 @@ function renderPanelCategory($pdf, $product, $conn) {
 
     $pdf->renderRow($columns, $summaryRow);
 
-    if (!empty($note)) {
-        $pdf->SetFont('Arial', 'I', 7);
-        $pdf->Cell(0, 4, 'Note: ' . $note, 0, 1, 'L');
-        $pdf->SetFont('Arial', '', 7);
-    }
+    
 
     $totalQty    = $quantity;
     $totalPrice  = $disc_price;
@@ -206,11 +202,7 @@ function renderTrimCategory($pdf, $product, $conn) {
 
     $pdf->renderRow($columns, $summaryRow);
 
-    if (!empty($note)) {
-        $pdf->SetFont('Arial', 'I', 7);
-        $pdf->Cell(0, 4, 'Note: ' . $note, 0, 1, 'L');
-        $pdf->SetFont('Arial', '', 7);
-    }
+    
 
     $totalQty    = $quantity;
     $totalPrice  = $disc_price;
@@ -248,6 +240,16 @@ function renderScrewCategory($pdf, $product, $conn) {
 
     $unit_price = $quantity > 0 ? $disc_price / $quantity : 0;
 
+    $productItem = $product['product_item'];
+    $pack = '';
+
+    if (preg_match_all('/\(([^()]*)\)/', $productItem, $matches)) {
+        $allMatches = $matches[1];
+        $pack = end($allMatches);
+    }
+
+    $quantity .= "\n $pack";
+
     $summaryRow = [
         $product_abbrev,
         $product['product_item'],
@@ -264,11 +266,7 @@ function renderScrewCategory($pdf, $product, $conn) {
 
     $pdf->renderRow($columns, $summaryRow);
 
-    if (!empty($note)) {
-        $pdf->SetFont('Arial', 'I', 7);
-        $pdf->Cell(0, 4, 'Note: ' . $note, 0, 1, 'L');
-        $pdf->SetFont('Arial', '', 7);
-    }
+    
 
     $totalQty    = $quantity;
     $totalPrice  = $disc_price;
@@ -321,11 +319,7 @@ function renderDefaultCategory($pdf, $product, $conn) {
 
     $pdf->renderRow($columns, $summaryRow);
 
-    if (!empty($note)) {
-        $pdf->SetFont('Arial', 'I', 7);
-        $pdf->Cell(0, 4, 'Note: ' . $note, 0, 1, 'L');
-        $pdf->SetFont('Arial', '', 7);
-    }
+    
 
     $totalQty    = $quantity;
     $totalPrice  = $disc_price;

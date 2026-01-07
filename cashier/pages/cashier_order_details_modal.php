@@ -7,6 +7,11 @@ error_reporting(E_ERROR | E_PARSE | E_CORE_ERROR | E_CORE_WARNING | E_COMPILE_ER
 require '../../includes/dbconn.php';
 require '../../includes/functions.php';
 
+$lumber_id = 1;
+$trim_id = 4;
+$panel_id = 3;
+$screw_id = 16;
+
 if(isset($_POST['fetch_order_details'])){
     $orderid = mysqli_real_escape_string($conn, $_POST['orderid']);
     ?>
@@ -41,6 +46,7 @@ if(isset($_POST['fetch_order_details'])){
                         $response = array();
                         while ($row = mysqli_fetch_assoc($result)) {
                             $product_id = $row['productid'];
+                            $category = $row['product_category'];
                             if($row['quantity'] > 0){
                                 $actual_price = number_format(floatval($row['actual_price']),2);
                                 $discounted_price = number_format(floatval($row['discounted_price']),2);
@@ -83,33 +89,32 @@ if(isset($_POST['fetch_order_details'])){
                                 </td>
                                 <td>
                                     <?php 
-                                    $width = $row['custom_width'];
-                                    $bend = $row['custom_bend'];
-                                    $hem = $row['custom_hem'];
-                                    $length = $row['custom_length'];
-                                    $inch = $row['custom_length2'];
-                                    
-                                    if (!empty($width)) {
-                                        echo "Width: " . htmlspecialchars($width) . "<br>";
-                                    }
-                                    
-                                    if (!empty($bend)) {
-                                        echo "Bend: " . htmlspecialchars($bend) . "<br>";
-                                    }
-                                    
-                                    if (!empty($hem)) {
-                                        echo "Hem: " . htmlspecialchars($hem) . "<br>";
-                                    }
-                                    
-                                    if (!empty($length)) {
-                                        echo "Length: " . htmlspecialchars($length) . " ft";
-                                        
-                                        if (!empty($inch)) {
-                                            echo " " . htmlspecialchars($inch) . " in";
+                                    $length       = $row['custom_length'];
+                                    $inch         = $row['custom_length2'];
+                                    $screw_length = $row['screw_length'];
+
+                                    $display = '';
+
+                                    if ($category == $trim_id || $category == $panel_id) {
+                                        if (!empty($length) || !empty($inch)) {
+                                            $lengthVal = !empty($length) ? (int)floor($length) : 0;
+                                            $inchVal   = !empty($inch) ? (int)$inch : 0;
+
+                                            if ($lengthVal > 0) {
+                                                $display .= $lengthVal . ' ft';
+                                            }
+
+                                            if ($inchVal > 0) {
+                                                if ($display !== '') $display .= ' ';
+                                                $display .= $inchVal . ' in';
+                                            }
+
+                                            echo $display;
                                         }
-                                        echo "<br>";
-                                    } elseif (!empty($inch)) {
-                                        echo "Length: " . htmlspecialchars($inch) . " in<br>";
+                                    } elseif ($category == $screw_id) {
+                                        if (!empty($screw_length)) {
+                                            echo $screw_length;
+                                        }
                                     }
                                     ?>
                                 </td>

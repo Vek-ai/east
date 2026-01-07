@@ -3435,6 +3435,10 @@ function calculateCartItem($values) {
     $bulk_starts_at = isset($product["bulk_starts_at"]) ? floatval($product["bulk_starts_at"]) : 0;
     $base_price     = $product["unit_price"] ?? 0;
 
+    if(!empty($values["manual_unit_price"])){
+        $base_price = $values["manual_unit_price"];
+    }
+
     if ($bulk_price > 0 && $bulk_starts_at > 0 && $quantity >= $bulk_starts_at) {
         $base_price = $bulk_price;
     }

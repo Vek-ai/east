@@ -241,7 +241,7 @@ if(isset($_POST['fetch_modal'])){
                             $product_length = htmlspecialchars($entry['length']);
                             $length_in_feet = htmlspecialchars($entry['feet']);
                             $dimension_id   = htmlspecialchars($entry['dimension_id']);
-                            $selected = ($length_in_feet == 1.0) ? 'selected' : '';
+                            $selected = ($dimension_id == 11) ? 'selected' : '';
                             echo "<option value=\"$length_in_feet\" data-id=\"$dimension_id\" $selected>$product_length</option>";
                         }
                         ?>
@@ -412,8 +412,8 @@ if(isset($_POST['fetch_modal'])){
                     let $newRow = $(".quantity-length-row").first().clone();
 
                     $newRow.find(".trim_qty").val("");
-                    $newRow.find(".trim_length_select").prop("selectedIndex", 0);
-                    $newRow.find(".trim_length").val("");
+                    //$newRow.find(".trim_length_select").prop("selectedIndex", 0);
+                    //$newRow.find(".trim_length").val("");
 
                     $(".quantity-length-row").last().after($newRow);
                 }

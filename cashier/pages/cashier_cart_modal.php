@@ -81,10 +81,10 @@ if(isset($_POST['fetch_cart'])){
     }
     $delivery_price = is_numeric(getDeliveryCost()) ? floatval(getDeliveryCost()) : 0;
 
-    //echo '<script>console.log('. print_r($_SESSION['cart']) .')</script>';
+
     ?>
 
-    
+    <script>console.log(<?=print_r($_SESSION['cart'])?>)</script>
     
     <style>
         input[type="number"]::-webkit-inner-spin-button, 

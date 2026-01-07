@@ -346,9 +346,14 @@ $editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) :
                 </div>
                 <div class="col-10">
                     <div class="row mb-3">
-                        <div class="col-sm-12 col-md-10">
+                        <div class="col-sm-12 col-md-8">
                             <h5>Selected Items:</h5>
                             <div id="selected-tags"></div>
+                        </div>
+                        <div class="col-sm-12 col-md-4">
+                            <div id="customer_section">
+                                <!-- Customer section via AJAX -->
+                            </div>
                         </div>
                     </div>
                     <div class="table-responsive border rounded">
@@ -893,7 +898,7 @@ $editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) :
                 </button>
             </div>
             <div class="modal-body">
-                <div id="change_color_container"></div>
+                <div id="change_color_container" class="row"></div>
             </div>
             <div class="modal-footer">
                 <div class="form-actions">
@@ -941,7 +946,7 @@ $editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) :
                 </button>
             </div>
             <div class="modal-body">
-                <div id="change_grade_container"></div>
+                <div id="change_grade_container" class="row"></div>
             </div>
                 <div class="modal-footer">
                     <div class="form-actions">
@@ -3994,6 +3999,7 @@ $editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) :
             var orig_color = $('#orig-colors').val();
             var in_stock_color = $('#in-stock-colors').val();
             var category_id = $('#category_id_color').val();
+            var product_id = $('#product_change_color').val();
             $.ajax({
                 url: 'pages/cashier_ajax.php',
                 type: 'POST',
@@ -4004,7 +4010,7 @@ $editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) :
                     change_color: 'change_color'
                 },
                 success: function(response) {
-                    $('.modal').modal("hide");
+                    $('#chng_color_modal').modal("hide");
                     if (response.trim() === "success") {
                         $('#responseHeader').text("Success");
                         $('#responseMsg').text("Product Color Changed successfully.");
@@ -4012,7 +4018,7 @@ $editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) :
                         $('#responseHeaderContainer').addClass("bg-success");
                         $('#response_modal').modal("show");
                         $('#response_modal').on('hide.bs.modal', function () {
-                            location.reload();
+                            loadCart();
                         });
                     }else{
                         $('#responseHeader').text("Failed");
@@ -4021,7 +4027,7 @@ $editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) :
                         $('#responseHeaderContainer').addClass("bg-danger");
                         $('#response_modal').modal("show");
                         $('#response_modal').on('hide.bs.modal', function () {
-                            location.reload();
+                            loadCart();
                         });
                     }
                 },
@@ -4059,6 +4065,7 @@ $editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) :
             var product_select = $('#product_select').val();
             var price = $('#price_input').val();
             var disc = $('#disc_input').val();
+            var disc_perc = $('#disc_perc_input').val();
             var notes = $('#notes_input').val();
 
             $.ajax({
@@ -4067,13 +4074,14 @@ $editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) :
                 data: {
                     price: price,
                     disc: disc,
+                    disc_perc: disc_perc,
                     notes: notes,
                     price_group_select: price_group_select,
                     product_select: product_select,
                     change_price: 'change_price'
                 },
                 success: function(response) {
-                    $('.modal').modal("hide");
+                    $('#chng_price_modal').modal("hide");
                     if (response.trim() === "success") {
                         $('#responseHeader').text("Success");
                         $('#responseMsg').text("Product discount changed successfully.");
@@ -4081,7 +4089,7 @@ $editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) :
                         $('#responseHeaderContainer').addClass("bg-success");
                         $('#response_modal').modal("show");
                         $('#response_modal').on('hide.bs.modal', function () {
-                            location.reload();
+                            loadCart();
                         });
                     }else{
                         $('#responseHeader').text("Failed");
@@ -4090,7 +4098,7 @@ $editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) :
                         $('#responseHeaderContainer').addClass("bg-danger");
                         $('#response_modal').modal("show");
                         $('#response_modal').on('hide.bs.modal', function () {
-                            location.reload();
+                            loadCart();
                         });
                     }
                 },
@@ -4104,6 +4112,8 @@ $editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) :
             var orig_grade = $('#orig-grade').val();
             var in_stock_grade = $('#in-stock-grade').val();
             var category_id = $('#category_id').val();
+            var product_id = $('#product_change_grade').val();
+
             $.ajax({
                 url: 'pages/cashier_ajax.php',
                 type: 'POST',
@@ -4111,10 +4121,12 @@ $editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) :
                     orig_grade: orig_grade,
                     in_stock_grade: in_stock_grade,
                     category_id: category_id,
+                    product_id: product_id,
                     change_grade: 'change_grade'
                 },
                 success: function(response) {
-                    $('.modal').modal("hide");
+                    console.log(response);
+                    $('#chng_grade_modal').modal("hide");
                     if (response.trim() === "success") {
                         $('#responseHeader').text("Success");
                         $('#responseMsg').text("Product Grades Changed successfully.");
@@ -6323,6 +6335,118 @@ $editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) :
                 },
                 error: function(jqXHR, textStatus, errorThrown) {
                     alert('Error: ' + textStatus + ' - ' + errorThrown);
+                }
+            });
+        });
+
+        function initCustomerSection() {
+            $(document).on('input', '.customer_select_input', function() {
+                const $input = $(this);
+                const query = $input.val().trim();
+
+                if (query.length < 2) {
+                    $input.next('.autocomplete_results').remove();
+                    return;
+                }
+
+                $.ajax({
+                    url: 'pages/cashier_ajax.php',
+                    type: 'POST',
+                    dataType: 'json',
+                    data: { search_customer: query },
+                    success: function(data) {
+                        let html = '';
+                        data.forEach(customer => {
+                            html += `
+                                <div class="autocomplete_customer_item list-group-item list-group-item-action"
+                                    data-customer-id="${customer.value}">
+                                    ${customer.label}
+                                </div>
+                            `;
+                        });
+
+                        $input.next('.autocomplete_results').remove();
+
+                        const offset = $input.offset();
+                        const width = $input.outerWidth();
+                        const $dropdown = $(`
+                            <div class="autocomplete_results list-group position-absolute bg-white shadow"
+                                style="top:${$input.outerHeight()}px; left:0; width:${width}px; z-index:1050;">
+                                ${html}
+                            </div>
+                        `);
+
+                        $input.after($dropdown);
+                    },
+                    error: function(xhr, status, error) {
+                        console.error('Autocomplete AJAX error:', error);
+                    }
+                });
+            });
+
+            $(document).on('click', '.autocomplete_customer_item', function() {
+                const customerId = $(this).data('customer-id');
+                const customerName = $(this).text();
+                const $input = $(this).closest('#customer_section').find('.customer_select_input');
+
+                $input.val(customerName);
+                $input.data('customer-id', customerId);
+
+                $('.autocomplete_results').remove();
+
+                $.ajax({
+                    url: 'pages/cashier_ajax.php',
+                    type: 'POST',
+                    data: { change_customer: 1, customer_id: customerId },
+                    success: function(response) {
+                        if (response.trim() === 'success') {
+                            loadCustomerSection();
+                        } else {
+                            alert(response);
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        console.error('AJAX change_customer error:', error);
+                    }
+                });
+            });
+
+            $(document).on('click', function(e) {
+                if (!$(e.target).closest('.customer_select_input, .autocomplete_results').length) {
+                    $('.autocomplete_results').remove();
+                }
+            });
+        }
+
+        function loadCustomerSection() {
+            const customerId = $('#customer_section').find('.change_customer_btn').data('customer-id') || '';
+
+            $.ajax({
+                url: 'pages/cashier_ajax.php',
+                type: 'POST',
+                data: { load_customer_section: 1, customer_id: customerId },
+                success: function(html) {
+                    $('#customer_section').html(html);
+                    initCustomerSection();
+                },
+                error: function(xhr, status, error) {
+                    console.error('AJAX loadCustomerSection error:', error);
+                }
+            });
+        }
+
+        loadCustomerSection();
+
+        $(document).on('click', '.change_customer_btn', function() {
+            $.ajax({
+                url: 'pages/cashier_ajax.php',
+                type: 'POST',
+                data: { unset_customer: 1 },
+                success: function(response) {
+                    loadCustomerSection();
+                },
+                error: function(xhr, status, error) {
+                    console.error('AJAX unset_customer error:', error);
                 }
             });
         });
