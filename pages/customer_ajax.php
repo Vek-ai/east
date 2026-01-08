@@ -1050,8 +1050,6 @@ if(isset($_REQUEST['action'])) {
             ";
             mysqli_query($conn, $insert_deposit);
 
-            recordCashInflow($payment_method, 'job_deposit', $deposit_amount);
-
             if ($payment_method === 'cash' && $deposit_amount > 10000) {
 
                 $deposit_id = mysqli_insert_id($conn);
@@ -1131,6 +1129,13 @@ if(isset($_REQUEST['action'])) {
 
             if ($conn->query($sql_insert) === TRUE) {
                 $orderid = $conn->insert_id;
+
+                recordCashInflow(
+                    $payment_method,
+                    'job_deposit',
+                    $deposit_amount,
+                    $orderid
+                );
 
                 $query = "INSERT INTO order_product (
                     orderid, productid, product_item, quantity, custom_width, custom_bend, custom_hem,

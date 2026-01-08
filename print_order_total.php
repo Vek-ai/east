@@ -100,7 +100,7 @@ class PDF extends FPDF {
         $col2_x = 140;
 
         $this->SetXY($col2_x - 10, 6);
-        $this->MultiCell(95, 5, "Invoice #: " . $this->orderid, 0, 'L');
+        $this->MultiCell(95, 5, "Invoice #: " . getInvoiceNumName($this->orderid), 0, 'L');
 
         $this->SetXY($col2_x - 10, $this->GetY());
         $this->Cell(95, 5, "Order Date: " . $this->order_date, 0, 1, 'L');

@@ -11958,9 +11958,9 @@ progress {
   --bs-table-bg: transparent;
   --bs-table-border-color: #000000;
   --bs-table-accent-bg: transparent;
-  --bs-table-striped-color: #768b9e;
+  --bs-table-striped-color: #000000;
   --bs-table-striped-bg: #e9ecef;
-  --bs-table-active-color: #768b9e;
+  --bs-table-active-color: #000000;
   --bs-table-active-bg: rgba(var(--bs-emphasis-color-rgb), 0.1);
   --bs-table-hover-color: #000000;
   --bs-table-hover-bg: #f2f4f8;
@@ -12220,7 +12220,7 @@ progress {
   cursor: pointer;
 }
 .form-control:focus {
-  color: #768b9e;
+  color: #000;
   background-color: #fff;
   border-color: #3a4752;
   outline: 0;

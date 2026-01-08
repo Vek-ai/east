@@ -438,7 +438,7 @@ class PDF extends FPDF {
         $w = 60;
         $lineH = 5;
 
-        $blockText  = "Estimate #: " . $this->estimateid . "\n";
+        $blockText  = "Estimate #: " . getEstimateNumName($this->estimateid) . "\n";
         $blockText .= "Estimate Date: " . $this->estimated_date . "\n";
         $blockText .= "Pick-up or Delivery: " . $this->delivery_method . "\n";
         $blockText .= "\n";

@@ -496,125 +496,130 @@ if(isset($_REQUEST['action'])) {
         $date = date('Y-m-d', strtotime($selected_date));
 
         $query = "
-            SELECT *
-            FROM cash_flow
-            WHERE DATE(`date`) = '$date'
-            AND movement_type IN ('cash_inflow', 'cash_outflow')
-            ORDER BY `date` ASC
+            SELECT 
+                cf.orderid,
+                cf.amount,
+                cf.date,
+                cf.cash_flow_type,
+                o.pay_type,
+                o.orderid,
+                o.customerid
+            FROM cash_flow cf
+            LEFT JOIN orders o ON o.orderid = cf.orderid
+            WHERE DATE(cf.date) = '$date'
+            AND cf.movement_type IN ('cash_inflow')
+            ORDER BY cf.date ASC
         ";
+
         $result = mysqli_query($conn, $query);
 
         if (!$result || mysqli_num_rows($result) === 0) {
             echo '<div class="alert alert-info text-center">
-                No cash flow records found for ' . date('M d, Y', strtotime($date)) . '.
+                No cash inflow records found for ' . date('M d, Y', strtotime($date)) . '.
             </div>';
             exit;
         }
 
-        $inflows = [];
-        $outflows = [];
-        $total_inflows = 0;
-        $total_outflows = 0;
+        $groups = [];
+        $grandTotal = 0;
 
         while ($row = mysqli_fetch_assoc($result)) {
-            if ($row['movement_type'] === 'cash_inflow') {
-                $inflows[] = $row;
-                $total_inflows += floatval($row['amount']);
+
+            $payTypeRaw = strtolower($row['pay_type'] ?? '');
+
+            if($row['cash_flow_type'] == 'job_deposit'){
+                $payType = 'Account Payments';
+            } else if (strpos($payTypeRaw, 'cash') !== false) {
+                $payType = 'Cash';
+            } elseif (strpos($payTypeRaw, 'card') !== false) {
+                $payType = 'Credit/Debit Card';
+            } elseif (strpos($payTypeRaw, 'check') !== false || strpos($payTypeRaw, 'cheque') !== false) {
+                $payType = 'Check';
+            } elseif (strpos($payTypeRaw, 'pickup') !== false) {
+                $payType = 'Pay at Pick-Up';
+            } elseif (strpos($payTypeRaw, 'delivery') !== false) {
+                $payType = 'Pay at Delivery';
+            } elseif (strpos($payTypeRaw, 'net30') !== false) {
+                $payType = 'Charge Net 30';
             } else {
-                $outflows[] = $row;
-                $total_outflows += floatval($row['amount']);
+                $payType = 'Other';
             }
+
+            $groups[$payType]['rows'][] = $row;
+            $groups[$payType]['total'] = ($groups[$payType]['total'] ?? 0) + $row['amount'];
+
+            $grandTotal += $row['amount'];
+        }
+
+        if (empty($groups)) {
+            echo '<div class="alert alert-info text-center">
+                No valid cash inflows for ' . date('M d, Y', strtotime($date)) . '.
+            </div>';
+            exit;
         }
 
         ob_start();
         ?>
 
-        <div class="mb-4">
-            <h4 class="fw-bold text-success text-center mb-2">Cash Inflow for <?= date('F d, Y', strtotime($date)) ?></h4>
-            <table class="table table-bordered table-striped table-sm align-middle">
-                <thead class="text-center">
-                    <tr>
-                        <th>Salesperson</th>
-                        <th>Invoice #</th>
-                        <th>Customer Name</th>
-                        <th>Cash Flow Type</th>
-                        <th>Time</th>
-                        <th class="text-end">Amount</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <?php if ($inflows) {
-                        foreach ($inflows as $row) {
-                            $orderid = $row['orderid'];
-                            $order = getOrderDetails($orderid);
-                            $customer_name = get_customer_name($order['customerid'] ?? '');
-                            ?>
-                            <tr class="text-center">
-                                <td><?= htmlspecialchars(get_staff_name($row['received_by'])) ?></td>
-                                <td><?= $orderid ?></td>
-                                <td><?= $customer_name ?></td>
-                                <td><?= ucwords(str_replace('_', ' ', $row['cash_flow_type'])) ?></td>
-                                <td><?= date('h:i A', strtotime($row['date'])) ?></td>
-                                <td class="text-end">$<?= number_format($row['amount'], 2) ?></td>
-                            </tr>
-                        <?php }
-                    } else { ?>
+        <?php foreach ($groups as $payType => $group) { ?>
+            <div class="mb-4">
+                <table class="table table-bordered table-sm align-middle">
+                    <thead class="text-center bg-light">
                         <tr>
-                            <td colspan="6" class="text-center text-muted">No cash inflows</td>
+                            <th>Payment Type</th>
+                            <th class="text-center"><?= $payType ?></th>
+                        </tr>
+                        <tr>
+                            <th>Invoice #</th>
+                            <th>First Name</th>
+                            <th>Last Name</th>
+                            <th>Business Name</th>
+                            <th>Farm Name</th>
+                            <th>Invoice Type</th>
+                            <th>Job Name</th>
+                            <th>PO #</th>
+                            <th class="text-end" style="width: 200px;">Amount</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    <?php foreach ($group['rows'] as $row) {
+
+                        $order = getOrderDetails($row['orderid']);
+                        $customer = getCustomerDetails($order['customerid'] ?? '');
+                    ?>
+                        <tr class="text-center">
+                            <td><?= $order['orderid'] ?? '-' ?></td>
+                            <td><?= $customer['customer_first_name'] ?? '-' ?></td>
+                            <td><?= $customer['customer_last_name'] ?? '-' ?></td>
+                            <td><?= $customer['customer_business_name'] ?? '-' ?></td>
+                            <td><?= $customer['customer_farm_name'] ?? '-' ?></td>
+                            <td><?= $payType ?></td>
+                            <td><?= $order['job_name'] ?? '-' ?></td>
+                            <td><?= $order['job_po'] ?? '-' ?></td>
+                            <td class="text-end" style="width: 200px;">$<?= number_format($row['amount'], 2) ?></td>
                         </tr>
                     <?php } ?>
-                </tbody>
-            </table>
-        </div>
-
-        <div>
-            <h4 class="fw-bold text-danger text-center mb-2">Cash Outflow <?= date('F d, Y', strtotime($date)) ?></h4>
-            <table class="table table-bordered table-striped table-sm align-middle">
-                <thead class="text-center">
-                    <tr>
-                        <th colspan="3">Reason for Outflow</th>
-                        <th>Cash Flow Type</th>
-                        <th>Time</th>
-                        <th class="text-end">Amount</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <?php if ($outflows) {
-                        foreach ($outflows as $row) {
-                            $orderid = $row['orderid'];
-                            $order = getOrderDetails($orderid);
-                            $customer_name = get_customer_name($order['customerid'] ?? '');
-                            ?>
-                            <tr class="text-center">
-                                <td colspan="3"></td>
-                                <td><?= ucwords(str_replace('_', ' ', $row['cash_flow_type'])) ?></td>
-                                <td><?= date('h:i A', strtotime($row['date'])) ?></td>
-                                <td class="text-end">$<?= number_format($row['amount'], 2) ?></td>
-                            </tr>
-                        <?php }
-                    } else { ?>
-                        <tr>
-                            <td colspan="6" class="text-center text-muted">No cash outflows</td>
-                        </tr>
-                    <?php } ?>
-                </tbody>
-            </table>
-        </div>
-
-        <div class="mb-4">
-            <table class="table table-bordered table-striped table-sm align-middle">
-                <tbody>
+                    </tbody>
                     <tfoot>
                         <tr class="fw-bold bg-light">
-                            <td colspan="5" class="text-end">Total Inflows</td>
-                            <td class="text-end text-success">$<?= number_format($total_inflows, 2) ?></td>
-                        </tr>
-                        <tr class="fw-bold bg-light">
-                            <td colspan="5" class="text-end">Total Outflows</td>
-                            <td class="text-end text-danger">$<?= number_format($total_outflows, 2) ?></td>
+                            <td colspan="8" class="text-end"><?= $payType ?> Total:</td>
+                            <td class="text-end" style="width: 200px;">$<?= number_format($group['total'], 2) ?></td>
                         </tr>
                     </tfoot>
-                </tbody>
+                </table>
+            </div>
+        <?php } ?>
+
+        <div class="mb-3">
+            <table class="table table-bordered table-sm">
+                <tfoot>
+                    <tr class="fw-bold text-white">
+                        <td class="text-end">TOTAL CASH INFLOW:</td>
+                        <td class="text-end" style="width: 200px;">
+                            $<?= number_format($grandTotal, 2) ?>
+                        </td>
+                    </tr>
+                </tfoot>
             </table>
         </div>
 
@@ -625,7 +630,7 @@ if(isset($_REQUEST['action'])) {
 
 
     if ($action == 'fetch_daily_sales') {
-        $date = mysqli_real_escape_string($conn, $_POST['date']);
+        $date = mysqli_real_escape_string($conn, $_POST['date'] ?? '');
         $response_html = '';
 
         if (empty($date)) {
@@ -639,116 +644,158 @@ if(isset($_REQUEST['action'])) {
         $query = "
             SELECT 
                 o.*, 
-                CONCAT(c.customer_first_name, ' ', c.customer_last_name) AS customer_name
+                c.customer_first_name,
+                c.customer_last_name,
+                c.customer_business_name,
+                c.customer_farm_name,
+                c.tax_status
             FROM orders AS o
-            LEFT JOIN customer AS c ON c.customer_id = o.originalcustomerid
+            LEFT JOIN customer AS c ON c.customer_id = o.customerid
             WHERE o.status != 6
             AND o.order_date BETWEEN '$date_start' AND '$date_end'
             ORDER BY o.order_date DESC
         ";
 
         $result = mysqli_query($conn, $query);
-
-        if (!$result || mysqli_num_rows($result) === 0) {
-            echo '<div class="alert alert-info text-center">No sales found for this date.</div>';
-            exit;
-        }
-
-        $response_html .= '
-            <div class="mb-3 fw-bold text-center fs-5">
-                Daily Sales for ' . date('F d, Y', strtotime($date)) . '
-            </div>
-            <table class="table table-sm table-bordered table-striped align-middle mb-0">
-                <thead class="text-center">
-                    <tr>
-                        <th>Salesperson</th>
-                        <th>Invoice #</th>
-                        <th>Customer Name</th>
-                        <th>Date</th>
-                        <th>Time</th>
-                        <th>Payment Method</th>
-                        <th>Amount</th>
-                    </tr>
-                </thead>
-                <tbody>
-        ';
-
-        $total_amount = 0;
+        $orders_by_tax = [];
+        $all_tax_statuses = [];
 
         while ($row = mysqli_fetch_assoc($result)) {
-            $orderid = $row['orderid'];
-            $expected_amount = floatval($row['discounted_price']);
-            $total_paid = floatval(getOrderTotalPayments($orderid));
-            $customer_name = htmlspecialchars($row['customer_name']);
-            $salesperson = htmlspecialchars(get_staff_name($row['cashier']));
-            $order_date = date('F d, Y', strtotime($row['order_date']));
-            $order_time = date('h:i A', strtotime($row['order_date']));
-
-            $pay_cash     = floatval($row['pay_cash']);
-            $pay_card     = floatval($row['pay_card']);
-            $pay_check    = floatval($row['pay_check']);
-            $pay_pickup   = floatval($row['pay_pickup']);
-            $pay_delivery = floatval($row['pay_delivery']);
-            $pay_net30    = floatval($row['pay_net30']);
-
-            if (($pay_cash + $pay_card + $pay_check + $pay_pickup + $pay_delivery + $pay_net30) <= 0) continue;
-            $credit_total = $pay_pickup + $pay_delivery + $pay_net30;
-
-            if ($credit_total > 0) {
-                if ($total_paid >= $credit_total) {
-                    $credit_status = 'bg-success';
-                } elseif ($total_paid > 0) {
-                    $credit_status = 'bg-warning text-dark';
-                } else {
-                    $credit_status = 'bg-danger';
-                }
-            } else {
-                $credit_status = 'bg-success';
-            }
-
-            $always_paid = 'bg-success';
-
-            $parts = [
-                'Cash'     => [$pay_cash, $always_paid],
-                'Card'     => [$pay_card, $always_paid],
-                'Check'    => [$pay_check, $always_paid],
-                'Pickup'   => [$pay_pickup, $credit_status],
-                'Delivery' => [$pay_delivery, $credit_status],
-                'Net 30'   => [$pay_net30, $credit_status],
-            ];
-
-            foreach ($parts as $label => [$amount, $class]) {
-                if ($amount <= 0) continue;
-
-                $badge = '<span class="badge ' . $class . '">' . htmlspecialchars($label) . '</span>';
-
-                $response_html .= '
-                    <tr class="text-center">
-                        <td>' . $salesperson . '</td>
-                        <td>' . htmlspecialchars($orderid) . '</td>
-                        <td>' . $customer_name . '</td>
-                        <td>' . $order_date . '</td>
-                        <td>' . $order_time . '</td>
-                        <td>' . $badge . '</td>
-                        <td class="text-end">$' . number_format($amount, 2) . '</td>
-                    </tr>
-                ';
-
-                $total_amount += $amount;
-            }
+            $tax_status = $row['tax_status'] ?? 0;
+            $orders_by_tax[$tax_status][] = $row;
+            $all_tax_statuses[$tax_status] = $tax_status;
         }
 
-        if ($total_amount == 0) {
-            echo '<div class="alert alert-info text-center">No sales found for this date.</div>';
-            exit;
+        if (empty($all_tax_statuses)) {
+            $all_tax_statuses[0] = 0;
+        }
+
+        $grand_total_materials = 0;
+        $grand_total_delivery  = 0;
+        $grand_total_tax       = 0;
+        $grand_total_price     = 0;
+
+        foreach ($all_tax_statuses as $tax_status_id) {
+            $orders = $orders_by_tax[$tax_status_id] ?? [];
+            $tax_status_name = htmlspecialchars(getCustomerTaxName($tax_status_id));
+            $tax_rate_percent = floatval(getCustomerTaxById($tax_status_id));
+
+            $response_html .= '
+                <table class="table table-sm table-bordered table-striped align-middle mb-4">
+                    <colgroup>
+                        <col style="width:8%">
+                        <col style="width:10%">
+                        <col style="width:10%">
+                        <col style="width:15%">
+                        <col style="width:12%">
+                        <col style="width:10%">
+                        <col style="width:10%">
+                        <col style="width:10%">
+                        <col style="width:10%">
+                        <col style="width:5%">
+                    </colgroup>
+                    <thead class="text-center bg-light">
+                        <tr>
+                            <th>Invoice #</th>
+                            <th>First Name</th>
+                            <th>Last Name</th>
+                            <th>Business/Customer Name</th>
+                            <th>Farm Name</th>
+                            <th>Materials Price</th>
+                            <th>Delivery</th>
+                            <th>Sales Tax</th>
+                            <th>Total Price</th>
+                            <th>Tax Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            ';
+
+            $total_materials = 0;
+            $total_delivery  = 0;
+            $total_tax       = 0;
+            $total_price     = 0;
+
+            if (!empty($orders)) {
+                foreach ($orders as $row) {
+                    $materials_price = floatval($row['discounted_price'] ?? 0);
+                    $delivery_price  = floatval($row['delivery_amt'] ?? 0);
+                    $sales_tax       = $materials_price * $tax_rate_percent / 100;
+                    $total_order     = $materials_price + $delivery_price + $sales_tax;
+
+                    $total_materials += $materials_price;
+                    $total_delivery  += $delivery_price;
+                    $total_tax       += $sales_tax;
+                    $total_price     += $total_order;
+
+                    $response_html .= '
+                        <tr class="text-center">
+                            <td>' . htmlspecialchars($row['orderid']) . '</td>
+                            <td>' . htmlspecialchars($row['customer_first_name'] ?? '-') . '</td>
+                            <td>' . htmlspecialchars($row['customer_last_name'] ?? '-') . '</td>
+                            <td>' . htmlspecialchars($row['customer_business_name'] ?? '-') . '</td>
+                            <td>' . htmlspecialchars($row['customer_farm_name'] ?? '-') . '</td>
+                            <td class="text-end">$' . number_format($materials_price, 2) . '</td>
+                            <td class="text-end">$' . number_format($delivery_price, 2) . '</td>
+                            <td class="text-end">$' . number_format($sales_tax, 2) .'</td>
+                            <td class="text-end">$' . number_format($total_order, 2) . '</td>
+                            <td>' . $tax_status_name . '</td>
+                        </tr>
+                    ';
+                }
+            } else {
+                $response_html .= '
+                    <tr>
+                        <td colspan="10" class="text-center text-muted">No sales found.</td>
+                    </tr>
+                ';
+            }
+
+            $response_html .= '
+                    </tbody>
+                    <tfoot>
+                        <tr class="fw-bold text-end">
+                            <td colspan="4"></td>
+                            <td>' . $tax_status_name . ' Total:</td>
+                            <td>$' . number_format($total_materials, 2) . '</td>
+                            <td>$' . number_format($total_delivery, 2) . '</td>
+                            <td>$' . number_format($total_tax, 2) . '</td>
+                            <td>$' . number_format($total_price, 2) . '</td>
+                            <td></td>
+                        </tr>
+                    </tfoot>
+                </table>
+            ';
+
+            $grand_total_materials += $total_materials;
+            $grand_total_delivery  += $total_delivery;
+            $grand_total_tax       += $total_tax;
+            $grand_total_price     += $total_price;
         }
 
         $response_html .= '
-                </tbody>
+            <table class="table table-sm align-middle mb-4">
+                <colgroup>
+                    <col style="width:8%">
+                    <col style="width:10%">
+                    <col style="width:10%">
+                    <col style="width:15%">
+                    <col style="width:12%">
+                    <col style="width:10%">
+                    <col style="width:10%">
+                    <col style="width:10%">
+                    <col style="width:10%">
+                    <col style="width:5%">
+                </colgroup>
                 <tfoot>
-                    <tr class="fw-bold bg-light">
-                        <td colspan="6" class="text-end">Total:</td>
-                        <td class="text-end">$' . number_format($total_amount, 2) . '</td>
+                    <tr class="fw-bold text-end">
+                        <td colspan="4"></td>
+                        <td>Grand Total:</td>
+                        <td>$' . number_format($grand_total_materials, 2) . '</td>
+                        <td>$' . number_format($grand_total_delivery, 2) . '</td>
+                        <td>$' . number_format($grand_total_tax, 2) . '</td>
+                        <td>$' . number_format($grand_total_price, 2) . '</td>
+                        <td></td>
                     </tr>
                 </tfoot>
             </table>
@@ -759,7 +806,7 @@ if(isset($_REQUEST['action'])) {
     }
 
     if ($action == 'fetch_receivable') {
-        $date = mysqli_real_escape_string($conn, $_POST['date']);
+        $date = mysqli_real_escape_string($conn, $_POST['date'] ?? '');
         $response_html = '';
 
         if (empty($date)) {
@@ -767,113 +814,128 @@ if(isset($_REQUEST['action'])) {
             exit;
         }
 
-        $date_start = date('Y-m-d 00:00:00', strtotime($date));
-        $date_end   = date('Y-m-d 23:59:59', strtotime($date));
+        $date_end = date('Y-m-d 23:59:59', strtotime($date));
 
-        $query = "
-            SELECT 
-                o.*, 
-                CONCAT(c.customer_first_name, ' ', c.customer_last_name) AS customer_name
-            FROM orders AS o
-            LEFT JOIN customer AS c ON c.customer_id = o.originalcustomerid
-            WHERE o.status != 6
-            AND (
-                o.pay_pickup > 0 OR 
-                o.pay_delivery > 0 OR 
-                o.pay_net30 > 0
-            )
-            AND o.order_date BETWEEN '$date_start' AND '$date_end'
-            ORDER BY o.order_date DESC
+        $sql = "
+            SELECT
+                c.customer_id,
+                c.customer_first_name,
+                c.customer_last_name,
+                c.customer_business_name,
+                c.customer_farm_name,
+
+                COALESCE(sc.total_store_credit, 0) + COALESCE(dp.total_deposits, 0) AS available_balance,
+                COALESCE(cr.total_credit, 0) - COALESCE(py.total_paid, 0) AS outstanding_credit,
+                cr.first_credit_date,
+                py.last_payment_date
+            FROM customer c
+
+            LEFT JOIN (
+                SELECT customer_id, SUM(credit_amount) AS total_store_credit
+                FROM customer_store_credit_history
+                WHERE credit_type = 'add' AND credit_amount > 0
+                GROUP BY customer_id
+            ) sc ON sc.customer_id = c.customer_id
+
+            LEFT JOIN (
+                SELECT deposited_by AS customer_id, SUM(deposit_remaining) AS total_deposits
+                FROM job_deposits
+                WHERE deposit_status = 1 AND deposit_remaining > 0
+                GROUP BY deposited_by
+            ) dp ON dp.customer_id = c.customer_id
+
+            LEFT JOIN (
+                SELECT
+                    customer_id,
+                    SUM(amount) AS total_credit,
+                    MIN(created_at) AS first_credit_date
+                FROM job_ledger
+                WHERE entry_type = 'credit' AND created_at <= '$date_end'
+                GROUP BY customer_id
+            ) cr ON cr.customer_id = c.customer_id
+
+            LEFT JOIN (
+                SELECT
+                    jl.customer_id,
+                    SUM(jp.amount) AS total_paid,
+                    MAX(jp.created_at) AS last_payment_date
+                FROM job_payment jp
+                INNER JOIN job_ledger jl ON jl.ledger_id = jp.ledger_id
+                WHERE jp.status = 1 AND jp.created_at <= '$date_end'
+                GROUP BY jl.customer_id
+            ) py ON py.customer_id = c.customer_id
+
+            WHERE c.status = 1
+            HAVING available_balance > 0 OR outstanding_credit > 0
+            ORDER BY c.customer_last_name, c.customer_first_name
         ";
 
-        $result = mysqli_query($conn, $query);
+        $result = $conn->query($sql);
 
-        if (!$result || mysqli_num_rows($result) === 0) {
-            echo '<div class="alert alert-info text-center">No receivable orders found for this date.</div>';
+        if (!$result || $result->num_rows === 0) {
+            echo '<div class="alert alert-info text-center">No receivable or credit balances found for this date.</div>';
             exit;
         }
 
         $response_html .= '
             <div class="mb-3 fw-bold text-center fs-5">
-                Accounts Receivable for ' . date('F d, Y', strtotime($date)) . '
+                Accounts Receivable / Credit Balances as of ' . date('F d, Y', strtotime($date)) . '
             </div>
             <table class="table table-sm table-bordered table-striped align-middle mb-0">
-                <thead class="text-center">
+                <thead class="text-center bg-light">
                     <tr>
-                        <th>Salesperson</th>
-                        <th>Invoice #</th>
-                        <th>Customer Name</th>
-                        <th>Date</th>
-                        <th>Time</th>
-                        <th>Payment Method</th>
-                        <th>Amount</th>
+                        <th>First Name</th>
+                        <th>Last Name</th>
+                        <th>Business/Customer Name</th>
+                        <th>Farm Name</th>
+                        <th>Date Outstanding</th>
+                        <th>Last Payment</th>
+                        <th class="text-end">Total Credit Available</th>
+                        <th class="text-end">Total Balance Due</th>
                     </tr>
                 </thead>
                 <tbody>
         ';
 
-        $total_amount = 0;
+        $grand_total_available = 0;
+        $grand_total_due = 0;
 
-        while ($row = mysqli_fetch_assoc($result)) {
-            $orderid = $row['orderid'];
-            $customer_name = htmlspecialchars($row['customer_name']);
-            $salesperson = htmlspecialchars(get_staff_name($row['cashier']));
-            $order_date = date('F d, Y', strtotime($row['order_date']));
-            $order_time = date('h:i A', strtotime($row['order_date']));
+        while ($row = $result->fetch_assoc()) {
+            $first_name  = htmlspecialchars($row['customer_first_name'] ?? '-');
+            $last_name   = htmlspecialchars($row['customer_last_name'] ?? '-');
+            $business    = htmlspecialchars($row['customer_business_name'] ?? '-');
+            $farm_name   = htmlspecialchars($row['customer_farm_name'] ?? '-');
 
-            $total_paid = floatval(getOrderTotalPayments($orderid));
+            $date_outstanding = $row['first_credit_date'] ? date('F d, Y', strtotime($row['first_credit_date'])) : '-';
+            $last_payment     = $row['last_payment_date'] ? date('F d, Y', strtotime($row['last_payment_date'])) : '-';
 
-            $parts = [
-                'Pickup'   => floatval($row['pay_pickup']),
-                'Delivery' => floatval($row['pay_delivery']),
-                'Net 30'   => floatval($row['pay_net30'])
-            ];
+            $available_balance = floatval($row['available_balance']);
+            $outstanding_credit = floatval($row['outstanding_credit']);
 
-            $remaining_paid = $total_paid;
+            $grand_total_available += $available_balance;
+            $grand_total_due       += $outstanding_credit;
 
-            foreach ($parts as $label => $amount) {
-                if ($amount <= 0) continue;
-
-                $allocated = min($remaining_paid, $amount);
-                $remaining_paid -= $allocated;
-
-                if ($allocated <= 0) {
-                    $status_class = 'bg-danger';
-                } elseif ($allocated < $amount) {
-                    $status_class = 'bg-warning text-dark';
-                } else {
-                    $status_class = 'bg-success';
-                }
-
-                $badge = '<span class="badge ' . $status_class . '">' . htmlspecialchars($label) . '</span>';
-
-                $response_html .= '
-                    <tr class="text-center">
-                        <td>' . $salesperson . '</td>
-                        <td>' . htmlspecialchars($orderid) . '</td>
-                        <td>' . $customer_name . '</td>
-                        <td>' . $order_date . '</td>
-                        <td>' . $order_time . '</td>
-                        <td>' . $badge . '</td>
-                        <td class="text-end">$' . number_format($amount, 2) . '</td>
-                    </tr>
-                ';
-
-                $total_amount += $amount;
-            }
-        }
-
-        if ($total_amount == 0) {
-            echo '<div class="alert alert-info text-center">No receivable orders found for this date.</div>';
-            exit;
+            $response_html .= '
+                <tr class="text-center">
+                    <td>' . $first_name . '</td>
+                    <td>' . $last_name . '</td>
+                    <td>' . $business . '</td>
+                    <td>' . $farm_name . '</td>
+                    <td>' . $date_outstanding . '</td>
+                    <td>' . $last_payment . '</td>
+                    <td class="text-end">$' . number_format($available_balance, 2) . '</td>
+                    <td class="text-end">$' . number_format($outstanding_credit, 2) . '</td>
+                </tr>
+            ';
         }
 
         $response_html .= '
                 </tbody>
                 <tfoot>
-                    <tr class="fw-bold bg-light">
-                        <td colspan="6" class="text-end">Total:</td>
-                        <td class="text-end">$' . number_format($total_amount, 2) . '</td>
+                    <tr class="fw-bold bg-light text-end">
+                        <td colspan="6">Grand Total:</td>
+                        <td>$' . number_format($grand_total_available, 2) . '</td>
+                        <td>$' . number_format($grand_total_due, 2) . '</td>
                     </tr>
                 </tfoot>
             </table>
@@ -895,17 +957,14 @@ if(isset($_REQUEST['action'])) {
         $columns = [
             0 => 'tx_date',
             1 => 'tx_date',
-            2 => 'business_status',
-            3 => 'total_transactions',
-            4 => 'daily_status'
+            2 => 'total_transactions'
         ];
+
         $orderBy = $columns[$orderCol] ?? 'tx_date';
 
         $months = array_filter($_POST['month'] ?? [], fn($v) => $v !== '');
         $years  = array_filter($_POST['year'] ?? [], fn($v) => $v !== '');
         $days   = array_filter($_POST['day'] ?? [], fn($v) => $v !== '');
-        $businessStatus = $_POST['business_status'] ?? '';
-        $dailyStatus    = $_POST['daily_status'] ?? '';
 
         $maxDays = $start + $length;
         $baseSql = "
@@ -916,16 +975,17 @@ if(isset($_REQUEST['action'])) {
             )
             SELECT
                 CURDATE() - INTERVAL seq.n DAY AS tx_date,
-                COALESCE(cf.total_transactions, 0) AS total_transactions,
-                s.closing_date
+                COALESCE(cf.total_transactions, 0) AS total_transactions
             FROM seq
             LEFT JOIN (
                 SELECT DATE(`date`) AS d, COUNT(*) AS total_transactions
                 FROM cash_flow
                 GROUP BY DATE(`date`)
             ) cf ON cf.d = CURDATE() - INTERVAL seq.n DAY
-            LEFT JOIN cash_flow_summary s ON s.closing_date = CURDATE() - INTERVAL seq.n DAY
+            LEFT JOIN cash_flow_summary s 
+                ON s.closing_date = CURDATE() - INTERVAL seq.n DAY
             WHERE 1
+            AND DAYOFWEEK(CURDATE() - INTERVAL seq.n DAY) BETWEEN 2 AND 6
         ";
 
         $where = '';
@@ -941,18 +1001,7 @@ if(isset($_REQUEST['action'])) {
             $days = array_map('intval', $days);
             $where .= " AND DAY(tx_date) IN (" . implode(',', $days) . ")";
         }
-        if ($businessStatus !== '') {
-            $where .= $businessStatus === 'Open' 
-                ? " AND DAYOFWEEK(tx_date) BETWEEN 2 AND 6"
-                : " AND DAYOFWEEK(tx_date) IN (1,7)";
-        }
-        if ($dailyStatus !== '') {
-            if ($dailyStatus === 'Completed') {
-                $where .= " AND closing_date IS NOT NULL";
-            } elseif ($dailyStatus === 'In Operation') {
-                $where .= " AND tx_date = CURDATE() AND closing_date IS NULL";
-            }
-        }
+        
         if ($searchValue !== '') {
             $searchValue = mysqli_real_escape_string($conn, $searchValue);
             $where .= "
@@ -978,23 +1027,11 @@ if(isset($_REQUEST['action'])) {
         $data = [];
         while ($row = $result->fetch_assoc()) {
             $date = $row['tx_date'];
-            $dayNum = date('N', strtotime($date));
-            $businessStatusRow = ($dayNum <= 5) ? 'Open' : 'Closed';
-
-            if (!empty($row['closing_date'])) {
-                $dailyStatusRow = 'Completed';
-            } elseif ($date === date('Y-m-d')) {
-                $dailyStatusRow = 'In Operation';
-            } else {
-                $dailyStatusRow = 'Pending Completion';
-            }
 
             $data[] = [
                 'formatted_date'      => date('M. jS, Y', strtotime($date)),
                 'day_of_week'         => date('l', strtotime($date)),
-                'business_status'     => $businessStatusRow,
                 'total_transactions' => $row['total_transactions'],
-                'daily_status'        => $dailyStatusRow,
                 'action' => '
                     <a href="javascript:void(0)" class="me-1 view_report" data-date="'.$date.'">
                         <iconify-icon icon="solar:eye-outline" width="20"></iconify-icon>

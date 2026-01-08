@@ -116,22 +116,6 @@ td.notes,  td.last-edit{
             <div class="position-relative w-100 px-0 mb-2">
                 <select id="day_select" name="day[]" multiple class="form-select select2-day filter-selection select2" data-filter="day" data-filter-name="Day"></select>
             </div>
-
-            <div class="position-relative w-100 px-0 mb-2">
-                <select id="business_status_select" name="business_status" class="form-select select2-business-status filter-selection select2" data-filter="business-status" data-filter-name="Business Day Status">
-                    <option value="">All Business Day Status</option>
-                    <option value="Open">Open</option>
-                    <option value="Closed">Closed</option>
-                </select>
-            </div>
-
-            <div class="position-relative w-100 px-0 mb-2">
-                <select id="daily_status_select" name="daily_status" class="form-select select2-daily-status filter-selection select2" data-filter="daily-status" data-filter-name="Daily Status">
-                    <option value="">All Daily Status</option>
-                    <option value="Completed">Completed</option>
-                    <option value="In Operation">In Operation</option>
-                </select>
-            </div>
         </div>
 
         <div class="d-flex justify-content-end py-2">
@@ -151,10 +135,8 @@ td.notes,  td.last-edit{
                             <thead>
                                 <tr>
                                     <th>Date</th>
-                                    <th>Day</th>
-                                    <th>Business Status</th>
+                                    <th>Day of Week</th>
                                     <th>Total Transactions</th>
-                                    <th>Daily Status</th>
                                     <th>Action</th>
                                 </tr>
                             </thead>
@@ -203,7 +185,7 @@ td.notes,  td.last-edit{
 </div>
 
 <div class="modal fade" id="daily_sales_modal" tabindex="-1" aria-labelledby="daily_sales_modalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered modal-xl">
+    <div class="modal-dialog modal-dialog-centered modal-xl" style="max-width: 90%;">
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title" id="cashFlowModalLabel">Daily Sales</h5>
@@ -222,7 +204,7 @@ td.notes,  td.last-edit{
 </div>
 
 <div class="modal fade" id="receivable_modal" tabindex="-1" aria-labelledby="receivableModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered modal-xl">
+    <div class="modal-dialog modal-dialog-centered modal-xl" style="max-width: 90%;">
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title" id="receivableModalLabel">Accounts Receivable</h5>
@@ -284,9 +266,7 @@ td.notes,  td.last-edit{
         columns: [
             { data: 'formatted_date' },
             { data: 'day_of_week' },
-            { data: 'business_status' },
             { data: 'total_transactions' },
-            { data: 'daily_status' },
             { data: 'action', orderable: false, searchable: false }
         ]
     });
@@ -319,7 +299,7 @@ td.notes,  td.last-edit{
 
     $(".select2-day").each(function() {
         $(this).select2({
-            placeholder: "All Days",
+            placeholder: "Day of Week",
             width: "100%",
             dropdownParent: $(this).parent()
         });

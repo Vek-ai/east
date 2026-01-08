@@ -557,7 +557,7 @@ class PDF extends FPDF {
         $w = 60;
         $lineH = 5;
 
-        $blockText  = "Invoice #: " . $this->orderid . "\n";
+        $blockText  = "Invoice #: " . getInvoiceNumName($this->orderid) . "\n";
         $blockText .= "Order Date: " . $this->order_date . "\n";
         $blockText .= "Pick-up or Delivery: " . $this->delivery_method . "\n";
         $blockText .= "Scheduled Date: " . $this->scheduled_date . "\n";

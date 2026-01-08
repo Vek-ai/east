@@ -376,6 +376,17 @@ function getCustomerPricingName($id){
     return  $pricing_name;
 }
 
+function getCustomerPricingDetails($id) {
+    global $conn;
+    $id = mysqli_real_escape_string($conn, $id);
+    $query = "SELECT * FROM customer_pricing WHERE id = '$id' LIMIT 1";
+    $result = mysqli_query($conn, $query);
+    if ($result && mysqli_num_rows($result) > 0) {
+        return mysqli_fetch_assoc($result);
+    }
+    return null;
+}
+
 function getProductTypeName($product_type_id){
     global $conn;
     $product_type_id = intval($product_type_id);
@@ -5239,4 +5250,33 @@ function getInventoryCount(int $order_product_id) {
     return null;
 }
 
+function getInvoiceNumName($orderid) {
+    global $conn;
+    $order = getOrderDetails($orderid);
+    if (!$order) return null;
+    $customer_id = $order['customerid'] ?? null;
+    if (!$customer_id) return null;
+    $customer = getCustomerDetails($customer_id);
+    if (!$customer) return null;
+    $customer_pricing = $customer['customer_pricing'] ?? '';
+    $year_suffix = date('y');
+    $invoice_number = "INV{$year_suffix}-{$customer_pricing}-{$orderid}";
+
+    return $invoice_number;
+}
+
+function getEstimateNumName($estimateid) {
+    global $conn;
+    $estimate = getEstimateDetails($estimateid);
+    if (!$estimate) return null;
+    $customer_id = $estimate['customerid'] ?? null;
+    if (!$customer_id) return null;
+    $customer = getCustomerDetails($customer_id);
+    if (!$customer) return null;
+    $customer_pricing = $customer['customer_pricing'] ?? '';
+    $year_suffix = date('y');
+    $invoice_number = "EST{$year_suffix}-{$customer_pricing}-{$orderid}";
+
+    return $invoice_number;
+}
 ?>

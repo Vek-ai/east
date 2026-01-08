@@ -458,7 +458,7 @@ function renderInvoiceHeader($pdf, $row_orders, $type, array $totals_by_custom =
     $leftBottom = $pdf->GetY();
 
     $pdf->SetXY($col3_x, $currentY);
-    $pdf->Cell($mailToWidth - 5, 7, 'Invoice #: ' . $orderid, 1, 0, 'L', true);
+    $pdf->Cell($mailToWidth - 5, 7, 'Invoice #: ' . getInvoiceNumName($orderid), 1, 0, 'L', true);
 
     $rightText =
         "Order Date: " . $order_date . "\n" .

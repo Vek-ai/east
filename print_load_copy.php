@@ -532,7 +532,7 @@ function renderInvoiceHeader($pdf, $row_orders) {
 
     $pdf->SetFont('Arial', 'B', 9);
     $pdf->SetXY($invoiceX, $currentY);
-    $pdf->Cell($invoiceW, 7, 'Invoice #: ' . $orderid, 1, 1, 'L', true);
+    $pdf->Cell($invoiceW, 7, 'Invoice #: ' . getInvoiceNumName($orderid), 1, 1, 'L', true);
 
     $pdf->SetFont('Arial', '', 9);
     $pdf->SetXY($invoiceX, $startY);
