@@ -23,8 +23,8 @@ $columns = [
     ['label' => 'LENGTH',       'width' => 15, 'align' => 'C', 'fontsize' => 9],
     ['label' => 'TYPE',         'width' => 14, 'align' => 'C', 'fontsize' => 9],
     ['label' => 'STYLE',        'width' => 14, 'align' => 'C', 'fontsize' => 9],
-    ['label' => 'PRICE',        'width' => 20, 'align' => 'R', 'fontsize' => 9],
-    ['label' => 'TOTAL',        'width' => 14, 'align' => 'R', 'fontsize' => 9],
+    ['label' => 'PRICE',        'width' => 17, 'align' => 'R', 'fontsize' => 9],
+    ['label' => 'TOTAL',        'width' => 17, 'align' => 'R', 'fontsize' => 9],
 ];
 $subcolumns = [
     ['label' => '', 'width' => 25, 'align' => 'C', 'fontsize' => 9],
