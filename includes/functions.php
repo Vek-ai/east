@@ -5275,7 +5275,7 @@ function getEstimateNumName($estimateid) {
     if (!$customer) return null;
     $customer_pricing = $customer['customer_pricing'] ?? '';
     $year_suffix = date('y');
-    $invoice_number = "EST{$year_suffix}-{$customer_pricing}-{$orderid}";
+    $invoice_number = "EST{$year_suffix}-{$customer_pricing}-{$estimateid}";
 
     return $invoice_number;
 }
