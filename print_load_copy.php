@@ -23,16 +23,16 @@ $orderid = $_REQUEST['id'];
 $pricing_id = $_REQUEST['pricing_id'] ?? '';
 
 $columns = [
-    ['label' => 'PRODUCT ID', 'width' => 25, 'align' => 'C', 'fontsize' => 9],
-    ['label' => 'DESCRIPTION',  'width' => 26, 'align' => 'C', 'fontsize' => 9],
-    ['label' => 'COLOR',        'width' => 20, 'align' => 'C', 'fontsize' => 9],
-    ['label' => 'GRADE',        'width' => 17, 'align' => 'C', 'fontsize' => 9],
-    ['label' => 'GAUGE',        'width' => 17, 'align' => 'C', 'fontsize' => 9],
-    ['label' => 'QTY',          'width' => 18, 'align' => 'C', 'fontsize' => 9],
-    ['label' => 'LENGTH',       'width' => 15, 'align' => 'C', 'fontsize' => 9],
-    ['label' => 'TYPE',         'width' => 17, 'align' => 'C', 'fontsize' => 9],
-    ['label' => 'STYLE',        'width' => 17, 'align' => 'C', 'fontsize' => 9],
-    ['label' => 'LOADED BY',    'width' => 18, 'align' => 'C', 'fontsize' => 9],
+    ['label' => 'PRODUCT ID',  'width' => 26, 'align' => 'C', 'fontsize' => 9],
+    ['label' => 'DESCRIPTION', 'width' => 27, 'align' => 'C', 'fontsize' => 9],
+    ['label' => 'COLOR',       'width' => 21, 'align' => 'C', 'fontsize' => 9],
+    ['label' => 'GRADE',       'width' => 18, 'align' => 'C', 'fontsize' => 9],
+    ['label' => 'GAUGE',       'width' => 18, 'align' => 'C', 'fontsize' => 9],
+    ['label' => 'QTY',         'width' => 19, 'align' => 'C', 'fontsize' => 9],
+    ['label' => 'LENGTH',      'width' => 16, 'align' => 'C', 'fontsize' => 9],
+    ['label' => 'TYPE',        'width' => 18, 'align' => 'C', 'fontsize' => 9],
+    ['label' => 'STYLE',       'width' => 18, 'align' => 'C', 'fontsize' => 9],
+    ['label' => 'LOADED BY',   'width' => 19, 'align' => 'C', 'fontsize' => 9],
 ];
 
 function decimalToFractionInch($decimal, $precision = 16) {
@@ -410,7 +410,6 @@ function renderDefaultCategory($pdf, $product, $conn) {
     return [$totalPrice, $totalQty, $totalActual];
 }
 
-
 function renderInvoiceHeader($pdf, $row_orders) {
     $current_user_id = $_SESSION['userid'];
     $delivery_price = floatval($row_orders['delivery_amt']);
@@ -432,10 +431,10 @@ function renderInvoiceHeader($pdf, $row_orders) {
         $scheduled_date = date("m/d/Y || g:i A", strtotime($row_orders["scheduled_date"]));
     }
 
-    $col1_x = 10;
+    $col1_x = 5;
     $col3_x = 110;
 
-    $pdf->Image('assets/images/logo-bw.png', 10, 6, 60, 20);
+    $pdf->Image('assets/images/logo-bw.png', 5, 6, 60, 20);
 
     $pdf->SetFont('Arial', 'B', 32);
     $pdf->SetXY($col3_x, 10);
@@ -443,8 +442,8 @@ function renderInvoiceHeader($pdf, $row_orders) {
     $pdf->Ln(5);
 
     $pageWidth   = $pdf->GetPageWidth();
-    $marginLeft  = 10;
-    $marginRight = 10;
+    $marginLeft  = 5;
+    $marginRight = 5;
     $usableWidth = $pageWidth - $marginLeft - $marginRight;
     $mailToWidth = $usableWidth / 2;
 
@@ -761,6 +760,8 @@ class PDF extends FPDF {
 }
 
 $pdf = new PDF();
+$pdf->SetLeftMargin(5);
+$pdf->SetRightMargin(5);
 $pdf->SetAutoPageBreak(true, 40);
 
 $query = "SELECT * FROM orders WHERE orderid = '$orderid'";

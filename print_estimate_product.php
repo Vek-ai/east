@@ -14,30 +14,17 @@ require 'includes/dbconn.php';
 require 'includes/functions.php';
 
 $columns = [
-    ['label' => 'PRODUCT ID', 'width' => 25, 'align' => 'C', 'fontsize' => 9],
-    ['label' => 'DESCRIPTION',  'width' => 26, 'align' => 'C', 'fontsize' => 9],
-    ['label' => 'COLOR',        'width' => 20, 'align' => 'C', 'fontsize' => 9],
-    ['label' => 'GRADE',        'width' => 17, 'align' => 'C', 'fontsize' => 9],
-    ['label' => 'GAUGE',        'width' => 12, 'align' => 'C', 'fontsize' => 9],
-    ['label' => 'QTY',          'width' => 13, 'align' => 'C', 'fontsize' => 9],
-    ['label' => 'LENGTH',       'width' => 15, 'align' => 'C', 'fontsize' => 9],
-    ['label' => 'TYPE',         'width' => 14, 'align' => 'C', 'fontsize' => 9],
-    ['label' => 'STYLE',        'width' => 14, 'align' => 'C', 'fontsize' => 9],
-    ['label' => 'PRICE',        'width' => 17, 'align' => 'R', 'fontsize' => 9],
-    ['label' => 'TOTAL',        'width' => 17, 'align' => 'R', 'fontsize' => 9],
-];
-$subcolumns = [
-    ['label' => '', 'width' => 25, 'align' => 'C', 'fontsize' => 9],
-    ['label' => '',  'width' => 26, 'align' => 'C', 'fontsize' => 9],
-    ['label' => '',        'width' => 20, 'align' => 'C', 'fontsize' => 9],
-    ['label' => '',        'width' => 17, 'align' => 'C', 'fontsize' => 9],
-    ['label' => '',        'width' => 12, 'align' => 'C', 'fontsize' => 9],
-    ['label' => '',          'width' => 13, 'align' => 'C', 'fontsize' => 9],
-    ['label' => 'Ft     In',       'width' => 15, 'align' => 'C', 'fontsize' => 9],
-    ['label' => '',         'width' => 14, 'align' => 'C', 'fontsize' => 9],
-    ['label' => '',        'width' => 14, 'align' => 'C', 'fontsize' => 9],
-    ['label' => '',        'width' => 17, 'align' => 'R', 'fontsize' => 9],
-    ['label' => '',        'width' => 17, 'align' => 'R', 'fontsize' => 9],
+    ['label' => 'PRODUCT ID',  'width' => 24, 'align' => 'C', 'fontsize' => 9],
+    ['label' => 'DESCRIPTION', 'width' => 24, 'align' => 'C', 'fontsize' => 9],
+    ['label' => 'COLOR',       'width' => 21, 'align' => 'C', 'fontsize' => 9],
+    ['label' => 'GRADE',       'width' => 18, 'align' => 'C', 'fontsize' => 9],
+    ['label' => 'GAUGE',       'width' => 13, 'align' => 'C', 'fontsize' => 9],
+    ['label' => 'QTY',         'width' => 13, 'align' => 'C', 'fontsize' => 9],
+    ['label' => 'LENGTH',      'width' => 13, 'align' => 'C', 'fontsize' => 9],
+    ['label' => 'TYPE',        'width' => 16, 'align' => 'C', 'fontsize' => 9],
+    ['label' => 'STYLE',       'width' => 16, 'align' => 'C', 'fontsize' => 9],
+    ['label' => 'PRICE',       'width' => 21, 'align' => 'R', 'fontsize' => 9],
+    ['label' => 'TOTAL',       'width' => 21, 'align' => 'R', 'fontsize' => 9],
 ];
 
 function decimalToFractionInch($decimal, $precision = 16) {
@@ -431,11 +418,11 @@ class PDF extends FPDF {
 
     function Header() {
         $this->SetFont('Arial', '', 9);
-        $this->Image('assets/images/logo-bw.png', 10, 6, 60, 20);
+        $this->Image('assets/images/logo-bw.png', 5, 6, 60, 20);
         $yStart = $this->GetY();
 
-        $col2_x = 120;
-        $w = 60;
+        $col2_x = 100;
+        $w = 85;
         $lineH = 5;
 
         $blockText  = "Estimate #: " . getEstimateNumName($this->estimateid) . "\n";
@@ -466,9 +453,9 @@ class PDF extends FPDF {
 
 
     function Footer() {
-        $marginLeft = 10;
+        $marginLeft = 5;
         $colWidthLeft  = 110;
-        $colWidthRight = 70;
+        $colWidthRight = 75;
         $this->SetY(-40);
 
         $colWidth = ($this->w - 2 * $marginLeft) / 3;
@@ -577,10 +564,12 @@ class PDF extends FPDF {
 }
 
 $pdf = new PDF();
+$pdf->SetLeftMargin(5);
+$pdf->SetRightMargin(5);
 $pdf->SetAutoPageBreak(true, 40);
 
 
-$col1_x = 10;
+$col1_x = 5;
 $col2_x = 140;
 $lumber_id = 1;
 $screw_id = 16;
@@ -624,12 +613,12 @@ if (mysqli_num_rows($result) > 0) {
         $pdf->AliasNbPages();
         $pdf->AddPage();
 
-        $col1_x = 10;
+        $col1_x = 5;
         $col2_x -= 30;
         $col3_x = 140;
         $pageWidth = $pdf->GetPageWidth();
-        $marginLeft = 10;
-        $marginRight = 10;
+        $marginLeft = 5;
+        $marginRight = 5;
         $usableWidth = $pageWidth - $marginLeft - $marginRight;
         $mailToWidth = $usableWidth / 2;
 
@@ -731,7 +720,7 @@ if (mysqli_num_rows($result) > 0) {
         $total_actual = 0;
         $total_saved  = 0;
 
-        renderTableHeader($pdf, $columns, $subcolumns);
+        renderTableHeader($pdf, $columns);
 
         $bundledProducts = [];
         $nonBundledProducts = [];
@@ -807,7 +796,7 @@ if (mysqli_num_rows($result) > 0) {
 
         $pdf->ln();
         
-        $col1_x = 10;
+        $col1_x = 5;
         $col2_x = 140;
         $col_y = $pdf->GetY();
 
@@ -849,28 +838,28 @@ if (mysqli_num_rows($result) > 0) {
 
         $pdf->SetXY($col2_x, $col_y);
         $pdf->Cell(40, $lineheight, 'SAVINGS:', 0, 0);
-        $pdf->Cell(20, $lineheight, '$ ' . number_format(max(0, $total_saved), 2), 0, 1, 'R');
+        $pdf->Cell(25, $lineheight, '$ ' . number_format(max(0, $total_saved), 2), 0, 1, 'R');
 
         $pdf->Ln(5);
 
         $pdf->SetXY($col2_x, $pdf->GetY());
         $pdf->Cell(40, $lineheight, 'MATERIALS PRICE:', 0, 0);
-        $pdf->Cell(20, $lineheight, '$ ' . number_format($subtotal, 2), 0, 1 , 'R');
+        $pdf->Cell(25, $lineheight, '$ ' . number_format($subtotal, 2), 0, 1 , 'R');
 
         $pdf->SetXY($col2_x, $pdf->GetY());
         $pdf->Cell(40, $lineheight, 'DELIVERY CHARGE:', 0, 0);
-        $pdf->Cell(20, $lineheight, '$ ' . number_format($delivery_price, 2), 0, 1 , 'R');
+        $pdf->Cell(25, $lineheight, '$ ' . number_format($delivery_price, 2), 0, 1 , 'R');
 
         $pdf->SetXY($col2_x, $pdf->GetY());
         $pdf->Cell(40, $lineheight, 'SALES TAX:', 0, 0);
-        $pdf->Cell(20, $lineheight, '$ ' . number_format($sales_tax, 2), 0, 1, 'R');
+        $pdf->Cell(25, $lineheight, '$ ' . number_format($sales_tax, 2), 0, 1, 'R');
 
         $pdf->Ln(5);
 
         $pdf->SetFont('Arial', 'B', 10);
         $pdf->SetXY($col2_x, $pdf->GetY());
         $pdf->Cell(40, $lineheight, 'TOTAL PRICE:', 0, 0);
-        $pdf->Cell(20, $lineheight, '$ ' . number_format($grand_total, 2), 0, 1, 'R');
+        $pdf->Cell(25, $lineheight, '$ ' . number_format($grand_total, 2), 0, 1, 'R');
 
         $pdf->Ln(5);
 

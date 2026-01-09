@@ -18,11 +18,11 @@ class PDF extends FPDF {
     public string $qrImage = '';
 
     function Footer() {
-        $marginLeft = 10;
-        $marginLeft = 10;
-        $colWidthLeft  = 110;
-        $colWidthRight = 70;
-        $this->SetY(-40);
+        $marginLeft = 5;
+        $marginLeft = 5;
+        $colWidthLeft  = 115;
+        $colWidthRight = 75;
+        $this->SetY(-25);
 
         $colWidth = ($this->w - 2 * $marginLeft) / 3;
 
@@ -44,7 +44,7 @@ class PDF extends FPDF {
         $this->SetXY($x + $iconWidth + $spacing, $this->GetY());
         $this->Cell($this->GetStringWidth($text), 5, $text, 0, 1, 'L');
 
-        $this->SetY(-20);
+        $this->Ln();
         $this->SetFont('Arial', '', 9);
 
         $phoneIcon = 'assets/images/phone.png';
@@ -77,7 +77,9 @@ class PDF extends FPDF {
 }
 
 $pdf = new PDF();
-$pdf->SetAutoPageBreak(true, 60);
+$pdf->SetLeftMargin(5);
+$pdf->SetRightMargin(5);
+$pdf->SetAutoPageBreak(true, 45);
 
 if (!empty($_REQUEST['id'])) {
     $customer_id = $_REQUEST['id'];
@@ -102,15 +104,15 @@ if (!empty($_REQUEST['id'])) {
     $pdf->AddPage();
     $pdf->SetFont('Arial', '', 10);
 
-    $marginLeft = 10;
-    $marginRight = 10;
+    $marginLeft = 5;
+    $marginRight = 5;
     $pageWidth = $pdf->GetPageWidth();
     $usableWidth = $pageWidth - $marginLeft - $marginRight;
 
     $pdf->SetFont('Arial', '', 10);
-    $pdf->Image('assets/images/logo-bw.png', 10, 6, 60, 20);
+    $pdf->Image('assets/images/logo-bw.png', 5, 6, 60, 20);
 
-    $pdf->SetXY(10, 26);
+    $pdf->SetXY($marginLeft, 26);
     $pdf->SetFont('Arial', '', 10);
     $pdf->Cell(0, 5, '977 E Hal Rogers Parkway', 0, 1);
     $pdf->Cell(0, 5, 'London, KY 40741', 0, 1);

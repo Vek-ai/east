@@ -20,29 +20,29 @@ $panel_id = 3;
 $trim_id = 4;
 
 $columns = [
-    ['label' => 'PRODUCT ID', 'width' => 25, 'align' => 'C', 'fontsize' => 9],
-    ['label' => 'DESCRIPTION',  'width' => 26, 'align' => 'C', 'fontsize' => 9],
-    ['label' => 'COLOR',        'width' => 20, 'align' => 'C', 'fontsize' => 9],
-    ['label' => 'GRADE',        'width' => 17, 'align' => 'C', 'fontsize' => 9],
-    ['label' => 'GAUGE',        'width' => 17, 'align' => 'C', 'fontsize' => 9],
-    ['label' => 'QTY',          'width' => 18, 'align' => 'C', 'fontsize' => 9],
-    ['label' => 'LENGTH',       'width' => 15, 'align' => 'C', 'fontsize' => 9],
-    ['label' => 'TYPE',         'width' => 17, 'align' => 'C', 'fontsize' => 9],
-    ['label' => 'STYLE',        'width' => 17, 'align' => 'C', 'fontsize' => 9],
-    ['label' => 'COIL #',        'width' => 18, 'align' => 'C', 'fontsize' => 9],
+    ['label' => 'PRODUCT ID',  'width' => 26, 'align' => 'C', 'fontsize' => 9],
+    ['label' => 'DESCRIPTION', 'width' => 27, 'align' => 'C', 'fontsize' => 9],
+    ['label' => 'COLOR',       'width' => 21, 'align' => 'C', 'fontsize' => 9],
+    ['label' => 'GRADE',       'width' => 18, 'align' => 'C', 'fontsize' => 9],
+    ['label' => 'GAUGE',       'width' => 18, 'align' => 'C', 'fontsize' => 9],
+    ['label' => 'QTY',         'width' => 19, 'align' => 'C', 'fontsize' => 9],
+    ['label' => 'LENGTH',      'width' => 16, 'align' => 'C', 'fontsize' => 9],
+    ['label' => 'TYPE',        'width' => 18, 'align' => 'C', 'fontsize' => 9],
+    ['label' => 'STYLE',       'width' => 18, 'align' => 'C', 'fontsize' => 9],
+    ['label' => 'COIL #',      'width' => 19, 'align' => 'C', 'fontsize' => 9],
 ];
 
 $trim_columns = [
-    ['label' => 'PRODUCT ID', 'width' => 25, 'align' => 'C', 'fontsize' => 9],
-    ['label' => 'DESCRIPTION',  'width' => 26, 'align' => 'C', 'fontsize' => 9],
-    ['label' => 'COLOR',        'width' => 20, 'align' => 'C', 'fontsize' => 9],
-    ['label' => 'GRADE',        'width' => 17, 'align' => 'C', 'fontsize' => 9],
-    ['label' => 'GAUGE',        'width' => 17, 'align' => 'C', 'fontsize' => 9],
-    ['label' => 'QTY',          'width' => 18, 'align' => 'C', 'fontsize' => 9],
-    ['label' => 'LENGTH',       'width' => 15, 'align' => 'C', 'fontsize' => 9],
-    ['label' => '',         'width' => 17, 'align' => 'C', 'fontsize' => 9],
-    ['label' => '',        'width' => 17, 'align' => 'C', 'fontsize' => 9],
-    ['label' => 'COIL #',        'width' => 18, 'align' => 'C', 'fontsize' => 9],
+    ['label' => 'PRODUCT ID',  'width' => 26, 'align' => 'C', 'fontsize' => 9],
+    ['label' => 'DESCRIPTION', 'width' => 27, 'align' => 'C', 'fontsize' => 9],
+    ['label' => 'COLOR',       'width' => 21, 'align' => 'C', 'fontsize' => 9],
+    ['label' => 'GRADE',       'width' => 18, 'align' => 'C', 'fontsize' => 9],
+    ['label' => 'GAUGE',       'width' => 18, 'align' => 'C', 'fontsize' => 9],
+    ['label' => 'QTY',         'width' => 19, 'align' => 'C', 'fontsize' => 9],
+    ['label' => 'LENGTH',      'width' => 16, 'align' => 'C', 'fontsize' => 9],
+    ['label' => '',            'width' => 18, 'align' => 'C', 'fontsize' => 9],
+    ['label' => '',            'width' => 18, 'align' => 'C', 'fontsize' => 9],
+    ['label' => 'COIL #',      'width' => 19, 'align' => 'C', 'fontsize' => 9],
 ];
 
 function buildTotalsByCustom(array $products) {
@@ -390,10 +390,10 @@ function renderInvoiceHeader($pdf, $row_orders, $type, array $totals_by_custom =
     if($delivery_price == 0){
         $delivery_method = 'Pickup';
     }
-    $col1_x = 10;
+    $col1_x = 5;
     $col3_x = 110;
 
-    $pdf->Image('assets/images/logo-bw.png', 10, 6, 60, 20);
+    $pdf->Image('assets/images/logo-bw.png', 5, 6, 60, 20);
 
     $title = '';
     if($type == 'panel'){
@@ -408,8 +408,8 @@ function renderInvoiceHeader($pdf, $row_orders, $type, array $totals_by_custom =
     $pdf->Ln(5);
 
     $pageWidth   = $pdf->GetPageWidth();
-    $marginLeft  = 10;
-    $marginRight = 10;
+    $marginLeft  = 5;
+    $marginRight = 5;
     $usableWidth = $pageWidth - $marginLeft - $marginRight;
     $mailToWidth = $usableWidth / 2;
 
@@ -591,6 +591,8 @@ $orderid = $_REQUEST['id'];
 $type = $_REQUEST['type'] ?? '';
 
 $pdf = new PDF();
+$pdf->SetLeftMargin(5);
+$pdf->SetRightMargin(5);
 $pdf->SetAutoPageBreak(true, 40);
 
 $query = "SELECT * FROM orders WHERE orderid = '$orderid'";

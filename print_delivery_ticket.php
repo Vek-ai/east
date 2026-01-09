@@ -23,15 +23,15 @@ $orderid = $_REQUEST['id'];
 $pricing_id = $_REQUEST['pricing_id'] ?? '';
 
 $columns = [
-    ['label' => 'PRODUCT ID', 'width' => 29, 'align' => 'C', 'fontsize' => 9],
-    ['label' => 'DESCRIPTION',  'width' => 30, 'align' => 'C', 'fontsize' => 9],
-    ['label' => 'COLOR',        'width' => 20, 'align' => 'C', 'fontsize' => 9],
-    ['label' => 'GRADE',        'width' => 20, 'align' => 'C', 'fontsize' => 9],
-    ['label' => 'GAUGE',        'width' => 20, 'align' => 'C', 'fontsize' => 9],
-    ['label' => 'QTY',          'width' => 18, 'align' => 'C', 'fontsize' => 9],
-    ['label' => 'LENGTH',       'width' => 15, 'align' => 'C', 'fontsize' => 9],
-    ['label' => 'TYPE',         'width' => 19, 'align' => 'C', 'fontsize' => 9],
-    ['label' => 'STYLE',        'width' => 19, 'align' => 'C', 'fontsize' => 9],
+    ['label' => 'PRODUCT ID',  'width' => 31, 'align' => 'C', 'fontsize' => 9],
+    ['label' => 'DESCRIPTION', 'width' => 31, 'align' => 'C', 'fontsize' => 9],
+    ['label' => 'COLOR',       'width' => 21, 'align' => 'C', 'fontsize' => 9],
+    ['label' => 'GRADE',       'width' => 21, 'align' => 'C', 'fontsize' => 9],
+    ['label' => 'GAUGE',       'width' => 21, 'align' => 'C', 'fontsize' => 9],
+    ['label' => 'QTY',         'width' => 19, 'align' => 'C', 'fontsize' => 9],
+    ['label' => 'LENGTH',      'width' => 16, 'align' => 'C', 'fontsize' => 9],
+    ['label' => 'TYPE',        'width' => 20, 'align' => 'C', 'fontsize' => 9],
+    ['label' => 'STYLE',       'width' => 20, 'align' => 'C', 'fontsize' => 9],
 ];
 
 function decimalToFractionInch($decimal, $precision = 16) {
@@ -373,19 +373,19 @@ function renderInvoiceHeader($pdf, $row_orders) {
         $scheduled_date = date("m/d/Y || g:i A", strtotime($row_orders["scheduled_date"]));
     }
 
-    $col1_x = 10;
+    $col1_x = 5;
     $col3_x = 110;
 
-    $pdf->Image('assets/images/logo-bw.png', 10, 6, 60, 20);
+    $pdf->Image('assets/images/logo-bw.png', 5, 6, 60, 20);
 
     $pdf->SetFont('Arial', 'B', 30);
     $pdf->SetXY($col3_x, 10);
-    $pdf->Cell(0, 15, 'DELIVERY TICKET', 0, 1, 'C');
+    $pdf->Cell(0, 20, 'DELIVERY TICKET', 0, 1, 'R');
     $pdf->Ln(5);
 
     $pageWidth   = $pdf->GetPageWidth();
-    $marginLeft  = 10;
-    $marginRight = 10;
+    $marginLeft  = 5;
+    $marginRight = 5;
     $usableWidth = $pageWidth - $marginLeft - $marginRight;
     $mailToWidth = $usableWidth / 2;
 
@@ -702,6 +702,8 @@ class PDF extends FPDF {
 }
 
 $pdf = new PDF();
+$pdf->SetLeftMargin(5);
+$pdf->SetRightMargin(5);
 $pdf->SetAutoPageBreak(true, 40);
 
 $query = "SELECT * FROM orders WHERE orderid = '$orderid'";
@@ -798,11 +800,11 @@ if (mysqli_num_rows($result) > 0) {
 
     $pdf->Ln(5);
 
-    $box_width = 70;
+    $box_width = 75;
     $box_height = 30;
 
-    $box1_x = $col1_x;
-    $box2_x = $col1_x + $box_width;
+    $box1_x = 5;
+    $box2_x = $box1_x + $box_width;
     $col_y = $pdf->GetY();
     $box_y = $col_y;
 
