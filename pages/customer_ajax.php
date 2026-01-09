@@ -12,6 +12,50 @@ use PhpOffice\PhpSpreadsheet\IOFactory;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 
+function getCustomerIdViaNames(array $data): ?int{
+    global $conn;
+
+    $first = normalizeName($data['customer_first_name'] ?? '');
+    $last  = normalizeName($data['customer_last_name'] ?? '');
+    $biz   = normalizeName($data['customer_business_name'] ?? '');
+    $farm  = normalizeName($data['customer_farm_name'] ?? '');
+
+    if ($first === '' && $last === '' && $biz === '' && $farm === '') {
+        return null;
+    }
+
+    $first = mysqli_real_escape_string($conn, $first);
+    $last  = mysqli_real_escape_string($conn, $last);
+    $biz   = mysqli_real_escape_string($conn, $biz);
+    $farm  = mysqli_real_escape_string($conn, $farm);
+
+    $sql = "
+        SELECT customer_id
+        FROM customer
+        WHERE LOWER(TRIM(REPLACE(COALESCE(customer_first_name, ''), '  ', ' '))) = LOWER('$first')
+          AND LOWER(TRIM(REPLACE(COALESCE(customer_last_name, ''), '  ', ' '))) = LOWER('$last')
+          AND LOWER(TRIM(REPLACE(COALESCE(customer_business_name, ''), '  ', ' '))) = LOWER('$biz')
+          AND LOWER(TRIM(REPLACE(COALESCE(customer_farm_name, ''), '  ', ' '))) = LOWER('$farm')
+        LIMIT 1
+    ";
+
+    $res = $conn->query($sql);
+
+    if ($res && $res->num_rows > 0) {
+        return (int)$res->fetch_assoc()['customer_id'];
+    }
+
+    return null;
+}
+
+function normalizeName(string $value): string
+{
+    $value = trim($value);
+    $value = preg_replace('/\s+/', ' ', $value);
+    return mb_strtolower($value);
+}
+
+
 $permission = $_SESSION['permission'];
 
 $includedColumns = [
@@ -40,7 +84,7 @@ $includedColumns = [
 
     'is_corporate_parent'     => 'Add Corporate/Parent Company Information',
     'corpo_parent_name'       => 'Corporate Name/Parent Company Name',
-    'corpo_phone_no'          => 'Primary Contact Phone',
+    'corpo_phone_no'          => 'Corporate Primary Contact Phone',
     'corpo_address'           => 'Corporate Address',
     'corpo_city'              => 'Corporate City',
     'corpo_state'             => 'Corporate State',
@@ -554,8 +598,8 @@ if(isset($_REQUEST['action'])) {
             exit;
         }
 
-        $fileTmpPath = $_FILES['excel_file']['tmp_name'];
-        $fileName = $_FILES['excel_file']['name'];
+        $fileTmpPath   = $_FILES['excel_file']['tmp_name'];
+        $fileName      = $_FILES['excel_file']['name'];
         $fileExtension = strtolower(pathinfo($fileName, PATHINFO_EXTENSION));
 
         if (!in_array($fileExtension, ['xlsx', 'xls'])) {
@@ -571,8 +615,8 @@ if(isset($_REQUEST['action'])) {
         }
 
         foreach ($spreadsheet->getAllSheets() as $sheet) {
-            $rows = $sheet->toArray(null, true, true, false);
 
+            $rows = $sheet->toArray(null, true, true, false);
             if (count($rows) < 2) continue;
 
             $headers = array_map(
@@ -591,6 +635,7 @@ if(isset($_REQUEST['action'])) {
             if (empty($columnMap)) continue;
 
             for ($i = 1; $i < count($rows); $i++) {
+
                 $row = $rows[$i];
 
                 if (empty(array_filter($row, fn($v) => $v !== null && trim((string)$v) !== ''))) {
@@ -598,11 +643,12 @@ if(isset($_REQUEST['action'])) {
                 }
 
                 $data = [];
+
                 foreach ($columnMap as $excelIndex => $dbCol) {
 
                     $value = $row[$excelIndex] ?? '';
                     $value = $value === null ? '' : trim((string)$value);
-                    
+
                     if (strcasecmp($value, 'Yes') === 0) {
                         $value = 1;
                     } elseif (strcasecmp($value, 'No') === 0) {
@@ -610,8 +656,9 @@ if(isset($_REQUEST['action'])) {
                     }
 
                     switch ($dbCol) {
+
                         case 'tax_status':
-                            if (!is_numeric($value)) {
+                            if (!is_numeric($value) && $value !== '') {
                                 $value = getIdsFromColumnValues(
                                     "customer_tax",
                                     "tax_status_desc",
@@ -622,7 +669,7 @@ if(isset($_REQUEST['action'])) {
                             break;
 
                         case 'customer_pricing':
-                            if (!is_numeric($value)) {
+                            if (!is_numeric($value) && $value !== '') {
                                 $value = getIdsFromColumnValues(
                                     "customer_pricing",
                                     "pricing_name",
@@ -638,13 +685,23 @@ if(isset($_REQUEST['action'])) {
 
                 if (empty($data)) continue;
 
+                if (
+                    !isset($data['customer_id']) ||
+                    $data['customer_id'] === ''
+                ) {
+                    $data['customer_id'] = getCustomerIdViaNames($data, $conn);
+                } else {
+                    $data['customer_id'] = (int)$data['customer_id'];
+                }
+
                 $columnNames  = implode(', ', array_map(fn($c) => "`$c`", array_keys($data)));
                 $columnValues = implode("', '", array_values($data));
 
                 $sql = "INSERT INTO `$test_table` ($columnNames) VALUES ('$columnValues')";
 
                 if (!$conn->query($sql)) {
-                    echo "Error inserting row " . ($i + 1) . " in sheet '{$sheet->getTitle()}': " . $conn->error;
+                    echo "Error inserting row " . ($i + 1) .
+                        " in sheet '{$sheet->getTitle()}': " . $conn->error;
                     exit;
                 }
             }
@@ -652,6 +709,7 @@ if(isset($_REQUEST['action'])) {
 
         echo "success";
     }
+
     
     if ($action == "update_test_data") {
         $column_name = $_POST['header_name'];
