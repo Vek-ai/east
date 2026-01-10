@@ -1229,7 +1229,6 @@ if(isset($_REQUEST['action'])) {
 
         $textSearch = trim($_POST['textSearch'] ?? '');
         $isActive = isset($_POST['isActive']) ? intval($_POST['isActive']) : 0;
-
         $tax = $_POST['tax'] ?? '';
         $loyalty = $_POST['loyalty'] ?? '';
         $pricing = $_POST['pricing'] ?? '';
@@ -1257,17 +1256,24 @@ if(isset($_REQUEST['action'])) {
 
         $totalQuery = mysqli_query($conn, "SELECT COUNT(*) AS total FROM customer c WHERE c.hidden = 0");
         $totalRecords = mysqli_fetch_assoc($totalQuery)['total'];
+
         $filteredQuery = mysqli_query($conn, "SELECT COUNT(*) AS total FROM customer c $whereSql");
         $filteredRecords = mysqli_fetch_assoc($filteredQuery)['total'];
 
         $query = "
-            SELECT c.*, ct.customer_type_name,
-                (SELECT COUNT(o.customerid) FROM orders o WHERE o.customerid = c.customer_id) AS order_count,
-                lp.accumulated_total_orders, lp.loyalty_program_name
+            SELECT c.*, ct.customer_type_name, ctax.tax_status_desc AS tax_status_name,
+                o_counts.order_count,
+                lp.loyalty_program_name, lp.accumulated_total_orders
             FROM customer c
             LEFT JOIN customer_types ct ON c.customer_type_id = ct.customer_type_id
+            LEFT JOIN customer_tax ctax ON ctax.taxid = c.tax_status
+            LEFT JOIN (
+                SELECT customerid, COUNT(*) AS order_count
+                FROM orders
+                GROUP BY customerid
+            ) AS o_counts ON o_counts.customerid = c.customer_id
             LEFT JOIN loyalty_program lp ON c.loyalty = 1 
-                AND (SELECT COUNT(o.customerid) FROM orders o WHERE o.customerid = c.customer_id) >= lp.accumulated_total_orders
+                AND o_counts.order_count >= lp.accumulated_total_orders
             $whereSql
             ORDER BY $orderColumn $orderDir
             LIMIT $start, $length
@@ -1276,38 +1282,36 @@ if(isset($_REQUEST['action'])) {
 
         $data = [];
         $no = $start + 1;
+
         while ($row = mysqli_fetch_assoc($result)) {
             $customer_id = $row['customer_id'];
             $type = $row['customer_type_id'];
             $db_status = $row['status'];
 
-            $db_status = $row['status'];
-
-            if ($db_status == '0' || $db_status == '3') {
-                $statusHtml = "<a href='#' class='changeStatus' data-no='$no' data-id='$customer_id' data-status='$db_status'><div id='status-alert$no' class='alert alert-danger bg-danger text-white border-0 text-center py-1 px-2 my-0' style='border-radius: 5%;' role='alert'>Inactive</div></a>";
-            } else {
-                $statusHtml = "<a href='#' class='changeStatus' data-no='$no' data-id='$customer_id' data-status='$db_status'><div id='status-alert$no' class='alert alert-success bg-success text-white border-0 text-center py-1 px-2 my-0' style='border-radius: 5%;' role='alert'>Active</div></a>";
-            }
+            $statusHtml = $db_status == '0' || $db_status == '3' 
+                ? "<a href='#' class='changeStatus' data-no='$no' data-id='$customer_id' data-status='$db_status'>
+                    <div id='status-alert$no' class='alert alert-danger bg-danger text-white border-0 text-center py-1 px-2 my-0' style='border-radius: 5%;'>Inactive</div></a>"
+                : "<a href='#' class='changeStatus' data-no='$no' data-id='$customer_id' data-status='$db_status'>
+                    <div id='status-alert$no' class='alert alert-success bg-success text-white border-0 text-center py-1 px-2 my-0' style='border-radius: 5%;'>Active</div></a>";
 
             if ($db_status == '0') {
-                $actionHtml = '<a href="?page=customer&customer_id=' . $customer_id . '&t=e" class="py-1 text-dark hideCustomer" data-id="' . $customer_id . '" data-row="' . $no . '" style="border-radius:10%;" data-toggle="tooltip" data-placement="top" title="Archive"><i class="fa fa-box-archive text-danger"></i></a>';
+                $actionHtml = '<a href="?page=customer&customer_id=' . $customer_id . '&t=e" class="py-1 text-dark hideCustomer" data-id="' . $customer_id . '" data-row="' . $no . '" style="border-radius:10%;" title="Archive"><i class="fa fa-box-archive text-danger"></i></a>';
             } else {
                 $actionHtml = '';
                 $actionHtml .= '<a href="javascript:void(0)" data-id="' . $customer_id . '" data-type="' . $type . '" class="py-1 pe-1 viewCustomerBtn" title="View"><i class="fa fa-eye text-light"></i></a>';
                 if ($permission === 'edit') {
-                    $actionHtml .= '<a href="javascript:void(0)" data-id="' . $customer_id . '" data-type="' . $type . '" data-type="e" class="py-1 pe-1 editCustomerBtn" data-toggle="tooltip" data-placement="top" title="Edit"><i class="fa fa-pencil text-warning"></i></a>';
+                    $actionHtml .= '<a href="javascript:void(0)" data-id="' . $customer_id . '" data-type="' . $type . '" data-type="e" class="py-1 pe-1 editCustomerBtn" title="Edit"><i class="fa fa-pencil text-warning"></i></a>';
                 }
-                $actionHtml .= '<a href="?page=customer-dashboard&id=' . $customer_id . '" class="py-1 pe-1" style="border-radius:10%;" data-toggle="tooltip" data-placement="top" title="Dashboard"><i class="fa fa-chart-bar text-primary"></i></a>';
-                $actionHtml .= '<a href="?page=estimate_list&customer_id=' . $customer_id . '" class="py-1 pe-1" style="border-radius:10%;" data-toggle="tooltip" data-placement="top" title="Estimates"><i class="fa fa-calculator text-secondary"></i></a>';
-                $actionHtml .= '<a href="?page=invoice&customer_id=' . $customer_id . '" class="py-1 pe-1" style="border-radius:10%;" data-toggle="tooltip" data-placement="top" title="Invoices"><i class="fa fa-cart-shopping text-success"></i></a>';
-                $actionHtml .= '<a href="javascript:void(0)" class="py-1 pe-1" id="depositModalBtn" data-id="' . $customer_id . '" style="border-radius:10%;" data-toggle="tooltip" data-placement="top" title="Add Customer Deposit"><iconify-icon icon="solar:hand-money-outline" class="text-success fs-6"></iconify-icon></a>';
+                $actionHtml .= '<a href="?page=customer-dashboard&id=' . $customer_id . '" class="py-1 pe-1" title="Dashboard"><i class="fa fa-chart-bar text-primary"></i></a>';
+                $actionHtml .= '<a href="?page=estimate_list&customer_id=' . $customer_id . '" class="py-1 pe-1" title="Estimates"><i class="fa fa-calculator text-secondary"></i></a>';
+                $actionHtml .= '<a href="?page=invoice&customer_id=' . $customer_id . '" class="py-1 pe-1" title="Invoices"><i class="fa fa-cart-shopping text-success"></i></a>';
+                $actionHtml .= '<a href="javascript:void(0)" class="py-1 pe-1" id="depositModalBtn" data-id="' . $customer_id . '" title="Add Customer Deposit"><iconify-icon icon="solar:hand-money-outline" class="text-success fs-6"></iconify-icon></a>';
             }
 
             $business_name = trim($row['customer_business_name'] ?? '');
             $farm_name = trim($row['customer_farm_name'] ?? '');
-            $tax_status_id = $row['tax_status'];
-            $tax_status = getCustomerTaxName($tax_status_id);
-            
+            $tax_status = $row['tax_status_name'] ?? '';
+
             $data[] = [
                 'fname' => $row['customer_first_name'],
                 'lname' => $row['customer_last_name'],
@@ -1334,7 +1338,6 @@ if(isset($_REQUEST['action'])) {
         ]);
         exit;
     }
-
 
     mysqli_close($conn);
 }
