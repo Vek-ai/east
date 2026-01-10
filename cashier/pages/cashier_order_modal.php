@@ -895,45 +895,6 @@ if(isset($_POST['fetch_order'])){
 
             populateTimeSelect();
             init_select_cash();
-
-            $(document).on('change', '#customer_select_cash', function(event) {
-                var customer_id = $('#customer_id_cash').val();
-                $.ajax({
-                    url: 'pages/cashier_ajax.php',
-                    type: 'POST',
-                    data: {
-                        customer_id: customer_id,
-                        change_customer: "change_customer"
-                    },
-                    success: function(response) {
-                        if (response.trim() == 'success') {
-                            loadOrderContents();
-                        }
-                    },
-                    error: function(jqXHR, textStatus, errorThrown) {
-                        alert('Error: ' + textStatus + ' - ' + errorThrown);
-                    }
-                });
-            });
-
-            $(document).on('click', '#customer_change_cash', function(event) {
-                $.ajax({
-                    url: 'pages/cashier_ajax.php',
-                    type: 'POST',
-                    data: {
-                        unset_customer: "unset_customer"
-                    },
-                    success: function(response) {
-                        loadOrderContents();
-                        $('#next_page_order').removeClass("d-none");
-                        $('#prev_page_order').addClass("d-none");
-                        $('#save_order').addClass("d-none");
-                    },
-                    error: function(jqXHR, textStatus, errorThrown) {
-                        alert('Error: ' + textStatus + ' - ' + errorThrown);
-                    }
-                });
-            });
             
             $(document).on('click', '#cancel_change_address_order', function(event) {
                 loadOrderContents();

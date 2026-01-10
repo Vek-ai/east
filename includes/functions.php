@@ -4852,22 +4852,25 @@ function getAssignedProductColors($product_id) {
 function getAssignedProductGrades($product_id) {
     global $conn;
 
-    $product_id = intval($product_id);
+    $product_id = (int)$product_id;
     $grades = [];
 
-    $query = "SELECT grade
-              FROM product
-              WHERE product_id = $product_id 
-              AND status = 1";
+    $query = "
+        SELECT grade
+        FROM product
+        WHERE product_id = $product_id
+          AND status = 1
+        LIMIT 1
+    ";
 
     $result = mysqli_query($conn, $query);
 
-    if ($result && mysqli_num_rows($result) > 0) {
-        while ($row = mysqli_fetch_assoc($result)) {
-            $grade_str = trim($row['grade'], "[] ");
-            if ($grade_str !== '') {
-                $grades = array_map('intval', explode(',', $grade_str));
-            }
+    if ($result && $row = mysqli_fetch_assoc($result)) {
+        $grade_str = $row['grade'] ?? '';
+        $grade_str = str_replace(['[', ']', '"', "'"], '', $grade_str);
+
+        if ($grade_str !== '') {
+            $grades = array_map('intval', array_filter(explode(',', $grade_str)));
         }
     }
 
@@ -4877,27 +4880,31 @@ function getAssignedProductGrades($product_id) {
 function getAssignedProductGauges($product_id) {
     global $conn;
 
-    $product_id = intval($product_id);
+    $product_id = (int)$product_id;
     $gauges = [];
 
-    $query = "SELECT gauge
-              FROM product
-              WHERE product_id = $product_id 
-              AND status = 1";
+    $query = "
+        SELECT gauge
+        FROM product
+        WHERE product_id = $product_id
+          AND status = 1
+        LIMIT 1
+    ";
 
     $result = mysqli_query($conn, $query);
 
-    if ($result && mysqli_num_rows($result) > 0) {
-        while ($row = mysqli_fetch_assoc($result)) {
-            $gauge_str = trim($row['gauge'], "[] ");
-            if ($gauge_str !== '') {
-                $gauges = array_map('intval', explode(',', $gauge_str));
-            }
+    if ($result && $row = mysqli_fetch_assoc($result)) {
+        $gauge_str = $row['gauge'] ?? '';
+        $gauge_str = str_replace(['[', ']', '"', "'"], '', $gauge_str);
+
+        if ($gauge_str !== '') {
+            $gauges = array_map('intval', array_filter(explode(',', $gauge_str)));
         }
     }
 
     return $gauges;
 }
+
 
 function getProductAttributes($product_id) {
     global $conn;

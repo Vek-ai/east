@@ -197,7 +197,7 @@ $editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) :
                         </div>
                         <div class="filter-wrapper d-flex flex-column h-100">
                             <div class="position-relative w-100 py-2 px-1">
-                                <select class="form-control search-chat ps-5 filter-selection" id="select-category" data-filter-name="Category">
+                                <select class="form-control search-chat ps-5 filter-selection select-filter-checkbox" id="select-category" data-filter-name="Category">
                                     <option value="">All Categories</option>
                                     <optgroup label="Category">
                                         <?php
@@ -882,6 +882,26 @@ $editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) :
               <div class="form_body"></div>
           </form>
         </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="columnFilterModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-sm modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header py-2">
+        <h6 class="modal-title">Filter Column</h6>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body" style="max-height:400px; overflow:auto;">
+        <input type="text" id="filterSearchInput" class="form-control form-control-sm mb-2" placeholder="Search options...">
+
+        <div id="filterOptions"></div>
+      </div>
+      <div class="modal-footer py-2">
+        <button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">Cancel</button>
+        <button type="button" class="btn btn-sm btn-primary" id="applyFilterBtn">Apply</button>
       </div>
     </div>
   </div>
@@ -6352,6 +6372,7 @@ $editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) :
                 success: function(response) {
                     if (response.trim() == 'success') {
                         loadCart();
+                        loadCustomerSection();
                     }
                 },
                 error: function(jqXHR, textStatus, errorThrown) {
@@ -6369,6 +6390,48 @@ $editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) :
                 },
                 success: function(response) { 
                     loadCart();
+                    loadCustomerSection();
+                },
+                error: function(jqXHR, textStatus, errorThrown) {
+                    alert('Error: ' + textStatus + ' - ' + errorThrown);
+                }
+            });
+        });
+
+        $(document).on('change', '#customer_select_cash', function(event) {
+            var customer_id = $('#customer_id_cash').val();
+            $.ajax({
+                url: 'pages/cashier_ajax.php',
+                type: 'POST',
+                data: {
+                    customer_id: customer_id,
+                    change_customer: "change_customer"
+                },
+                success: function(response) {
+                    if (response.trim() == 'success') {
+                        loadOrderContents();
+                        loadCustomerSection();
+                    }
+                },
+                error: function(jqXHR, textStatus, errorThrown) {
+                    alert('Error: ' + textStatus + ' - ' + errorThrown);
+                }
+            });
+        });
+
+        $(document).on('click', '#customer_change_cash', function(event) {
+            $.ajax({
+                url: 'pages/cashier_ajax.php',
+                type: 'POST',
+                data: {
+                    unset_customer: "unset_customer"
+                },
+                success: function(response) {
+                    loadOrderContents();
+                    $('#next_page_order').removeClass("d-none");
+                    $('#prev_page_order').addClass("d-none");
+                    $('#save_order').addClass("d-none");
+                    loadCustomerSection();
                 },
                 error: function(jqXHR, textStatus, errorThrown) {
                     alert('Error: ' + textStatus + ' - ' + errorThrown);
