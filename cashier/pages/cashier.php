@@ -196,6 +196,25 @@ $editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) :
                             <i class="ti ti-search position-absolute top-50 start-0 translate-middle-y fs-6 text-dark ms-3"></i>
                         </div>
                         <div class="filter-wrapper d-flex flex-column h-100">
+                            <div class="position-relative w-100 py-2 px-1 d-none">
+                                <select class="form-control search-chat ps-5 filter-selection select-filter-checkbox" id="select-product" data-filter-name="Product">
+                                    <option value="">All Products</option>
+                                    <optgroup label="Products">
+                                        <?php
+                                        $query_product = "SELECT * FROM product WHERE hidden = '0' AND status = '1' ORDER BY `product_item` ASC";
+                                        $result_product = mysqli_query($conn, $query_product);
+                                        while ($row_product = mysqli_fetch_array($result_product)) {
+                                        ?>
+                                            <option value="<?= $row_product['product_id'] ?>"
+                                                    data-category="<?= $row_product['product_category'] ?>" >
+                                                        <?= $row_product['product_item'] ?>
+                                            </option>
+                                        <?php
+                                        }
+                                        ?>
+                                    </optgroup>
+                                </select>
+                            </div>
                             <div class="position-relative w-100 py-2 px-1">
                                 <select class="form-control search-chat ps-5 filter-selection select-filter-checkbox" id="select-category" data-filter-name="Category">
                                     <option value="">All Categories</option>
@@ -363,7 +382,7 @@ $editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) :
                                     <th scope="col">
                                         Description 
                                         <i class="fa fa-filter ms-1 filter-trigger-select2"
-                                            data-filter-target="#text-srh"
+                                            data-filter-target="#select-product"
                                             title="Filter"></i>
                                     </th>
                                     <th scope="col">
@@ -4233,8 +4252,6 @@ $editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) :
         function performSearch() {
             var query = $('#text-srh').val() || '';
 
-            console.log($('#select-profile').val());
-
             rowsPerPage = parseInt($('#rowsPerPage').val()) || 100;
             var start = (currentPage - 1) * rowsPerPage;
 
@@ -4242,6 +4259,7 @@ $editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) :
                 query: query,
                 start: start,
                 length: rowsPerPage,
+                product_id: $('#select-product').val(),
                 color_id: $('#select-color').val(),
                 grade: $('#select-grade').val(),
                 gauge_id: $('#select-gauge').val(),

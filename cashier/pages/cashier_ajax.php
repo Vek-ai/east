@@ -158,6 +158,7 @@ if (isset($_POST['deleteproduct'])) {
 
 if (isset($_REQUEST['query'])) {
     $searchQuery = mysqli_real_escape_string($conn, $_REQUEST['query'] ?? '');
+    $product_id    = (int) ($_REQUEST['product_id'] ?? 0);
     $color_id    = (int) ($_REQUEST['color_id'] ?? 0);
     $grade       = (int) ($_REQUEST['grade'] ?? 0);
     $gauge_id    = (int) ($_REQUEST['gauge_id'] ?? 0);
@@ -232,6 +233,8 @@ if (isset($_REQUEST['query'])) {
                                   AND (sd.date_finished = '0000-00-00 00:00:00' OR sd.date_finished >= NOW())
                             )";
     }
+
+    if (!empty($product_id)) $query_product .= " AND p.product_id = '$product_id'";
 
     $query_product .= " GROUP BY p.product_id";
     if ($onlyInStock) $query_product .= " HAVING in_stock = 1";
