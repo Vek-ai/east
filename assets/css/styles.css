@@ -9335,6 +9335,7 @@
 [data-bs-theme="dark"] .form-control:focus,
 [data-bs-theme="dark"] .form-select:focus {
   border-color: #1b84ff !important;
+  color: #ffffff;
 }
 [data-bs-theme="dark"] input::file-selector-button {
   background-color: #192838;

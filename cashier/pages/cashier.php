@@ -217,7 +217,7 @@ $editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) :
                             </div>
                             <div class="sub_search_cat">
                                 <div class="position-relative w-100 py-2 px-1">
-                                    <select class="form-control ps-5 select2_filter filter-selection" id="select-profile" data-filter-name="Profile Type">
+                                    <select class="form-control ps-5 select2_filter filter-selection select-filter-checkbox" id="select-profile" data-filter-name="Profile Type">
                                         <option value="" data-category="">All Profile Types</option>
                                         <optgroup label="Product Line">
                                             <?php
@@ -239,7 +239,7 @@ $editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) :
 
                                 <!-- Product Type -->
                                 <div class="position-relative w-100 py-2 px-1">
-                                    <select class="form-control search-category ps-5 select2_filter filter-selection" id="select-type" data-filter-name="Product Types">
+                                    <select class="form-control search-category ps-5 select2_filter filter-selection select-filter-checkbox" id="select-type" data-filter-name="Product Types">
                                         <option value="" data-category="">All Product Types</option>
                                         <optgroup label="Product Type">
                                             <?php
@@ -258,7 +258,7 @@ $editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) :
 
                                 <!-- Colors -->
                                 <div class="position-relative w-100 py-2 px-1">
-                                    <select class="form-control search-category ps-5 select2_filter filter-selection" id="select-color" data-filter-name="Color">
+                                    <select class="form-control search-category ps-5 select2_filter filter-selection select-filter-checkbox" id="select-color" data-filter-name="Color">
                                         <option value="" data-category="">All Colors</option>
                                         <optgroup label="Product Colors">
                                             <?php
@@ -277,7 +277,7 @@ $editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) :
 
                                 <!-- Grade -->
                                 <div class="position-relative w-100 py-2 px-1">
-                                    <select class="form-control search-category ps-5 select2_filter filter-selection" id="select-grade" data-filter-name="Grade">
+                                    <select class="form-control search-category ps-5 select2_filter filter-selection select-filter-checkbox" id="select-grade" data-filter-name="Grade">
                                         <option value="" data-category="">All Grades</option>
                                         <optgroup label="Product Grades">
                                             <?php
@@ -296,7 +296,7 @@ $editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) :
 
                                 <!-- Gauge -->
                                 <div class="position-relative w-100 py-2 px-1">
-                                    <select class="form-control ps-5 select2_filter filter-selection" id="select-gauge" data-filter-name="Gauge">
+                                    <select class="form-control ps-5 select2_filter filter-selection select-filter-checkbox" id="select-gauge" data-filter-name="Gauge">
                                         <option value="" data-category="">All Gauges</option>
                                         <optgroup label="Product Gauges">
                                             <?php
@@ -360,13 +360,48 @@ $editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) :
                         <table id="productTable" class="table align-middle text-wrap mb-0 text-white text-center">
                             <thead>
                                 <tr>
-                                    <th scope="col">Description </th>
-                                    <th scope="col">Avail. Colors</th>
-                                    <th scope="col">Grade</th>
-                                    <th scope="col">Gauge</th>
-                                    <th scope="col">Type</th>
-                                    <th scope="col">Profile</th>
-                                    <th scope="col">Status</th>
+                                    <th scope="col">
+                                        Description 
+                                        <i class="fa fa-filter ms-1 filter-trigger-select2"
+                                            data-filter-target="#text-srh"
+                                            title="Filter"></i>
+                                    </th>
+                                    <th scope="col">
+                                        Avail. Colors
+                                        <i class="fa fa-filter ms-1 filter-trigger-select2"
+                                            data-filter-target="#select-color"
+                                            title="Filter"></i>
+                                    </th>
+                                    <th scope="col">
+                                        Grade
+                                        <i class="fa fa-filter ms-1 filter-trigger-select2"
+                                            data-filter-target="#select-grade"
+                                            title="Filter"></i>
+                                    </th>
+                                    <th scope="col">
+                                        Gauge
+                                        <i class="fa fa-filter ms-1 filter-trigger-select2"
+                                            data-filter-target="#select-gauge"
+                                            title="Filter"></i>
+                                    </th>
+                                    <th scope="col">
+                                        Type
+                                        <i class="fa fa-filter ms-1 filter-trigger-select2"
+                                            data-filter-target="#select-type"
+                                            title="Filter"></i>
+                                    </th>
+                                    <th scope="col">
+                                        Profile
+                                        <i class="fa fa-filter ms-1 filter-trigger-select2"
+                                            data-filter-target="#select-profile"
+                                            title="Filter"></i>
+                                    </th>
+                                    <th scope="col">
+                                        Status
+                                        <i class="fa fa-filter ms-1 filter-trigger-select2"
+                                            data-filter-target="#select-status"
+                                            title="Filter"></i>
+                                    </th>
                                     <th scope="col">Quantity</th>
                                     <th scope="col">Actions</th>
                                 </tr>
@@ -6629,5 +6664,97 @@ $editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) :
                 }
             });
         });
+
+        let activeSelect2 = null;
+
+        $(document).on('click', '.filter-trigger-select2', function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+
+            const target = $(this).data('filter-target');
+            if (!target) return;
+
+            const $select = $(target);
+
+            if (!$select.length || !$select.hasClass('select-filter-checkbox')) {
+                console.warn('Invalid Select2 filter target:', target);
+                return;
+            }
+
+            activeSelect2 = $select;
+
+            const options = $select.find('option').map(function () {
+                const value = this.value;
+
+                if (value === '' || value === null) return null;
+
+                return {
+                    value: value,
+                    text: $(this).text().trim(),
+                    selected: this.selected
+                };
+            }).get();
+
+            let html = `
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" id="selectAllFilters">
+                    <label class="form-check-label fw-bold">Select All</label>
+                </div>
+                <hr class="my-2">
+            `;
+
+            options.forEach((opt, idx) => {
+                html += `
+                    <div class="form-check">
+                        <input
+                            class="form-check-input filter-option"
+                            type="checkbox"
+                            value="${opt.value}"
+                            id="filterOpt_${idx}"
+                            ${opt.selected ? 'checked' : ''}>
+                        <label class="form-check-label" for="filterOpt_${idx}">
+                            ${opt.text}
+                        </label>
+                    </div>
+                `;
+            });
+
+            $('#filterOptions').html(html);
+            $('#columnFilterModal .modal-title')
+                .text('Filter: ' + ($select.data('filter-title') || 'Options'));
+
+            new bootstrap.Modal('#columnFilterModal').show();
+        });
+
+        $(document).on('change', '#selectAllFilters', function () {
+            $('.filter-option').prop('checked', this.checked);
+        });
+
+        $('#applyFilterBtn').on('click', function () {
+            if (!activeSelect2) return;
+
+            const selectedValues = $('.filter-option:checked')
+                .map(function () {
+                    return this.value;
+                })
+                .get();
+
+            activeSelect2
+                .val(selectedValues)
+                .trigger('change');
+
+            bootstrap.Modal
+                .getInstance(document.getElementById('columnFilterModal'))
+                .hide();
+        });
+
+        $(document).on('keyup', '#filterSearchInput', function () {
+            const query = $(this).val().toLowerCase();
+            $('#filterOptions .form-check').each(function () {
+                const label = $(this).find('label').text().toLowerCase();
+                $(this).toggle(label.includes(query));
+            });
+        });
+
     });
 </script>
