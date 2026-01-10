@@ -6142,7 +6142,7 @@ $editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) :
             searchTimer = setTimeout(() => performSearch(), 500);
         });
 
-        $(document).on('change', '#select-color, #select-grade, #select-gauge, #select-category, #select-profile, #select-type, #toggleActive, #onlyOnSale, #onlyPromotions', function() {
+        $(document).on('change', '#select-product ,#select-color, #select-grade, #select-gauge, #select-category, #select-profile, #select-type, #toggleActive, #onlyOnSale, #onlyPromotions', function() {
             performSearch();
         });
 

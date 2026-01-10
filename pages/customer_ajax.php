@@ -91,10 +91,10 @@ $includedColumns = [
     'corpo_zip'               => 'Corporate Zip Code',
 
     'is_bill_corpo_address'   => 'Use Corporate/Parent Company Address for Billing address',
-    'address'                 => 'Billing Address',
-    'city'                    => 'Billing City',
-    'state'                   => 'Billing State',
-    'zip'                     => 'Billing Zip Code',
+    'address'                 => 'Address',
+    'city'                    => 'City',
+    'state'                   => 'State',
+    'zip'                     => 'Zip Code',
 
     'different_ship_address'  => 'Shipping Address different than Billing Address?',
     'ship_address'            => 'Shipping Address',
