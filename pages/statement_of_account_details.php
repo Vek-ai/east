@@ -380,29 +380,31 @@ $permission = $_SESSION['permission'];
                                             <?= $balance > 0 ? '$' .number_format($balance, 2) : '' ?>
                                         </td>
                                         <td>
-                                            <?php
-                                            if($is_credit){
-                                                ?>
+                                            
                                                 <div class="d-flex justify-content-center gap-2">
-                                                    <?php                                                    
-                                                    if ($permission === 'edit') {
-                                                    ?>
-                                                    <a id="paymentBtn" title="Payment" role="button" class="py-1" data-id="<?= $ledger_id ?>">
-                                                        <iconify-icon icon="solar:hand-money-outline" class="text-success fs-6"></iconify-icon>
-                                                    </a>
-                                                    <?php                                                    
+                                                    <?php
+                                                    if($is_credit){
+                                                        ?>
+                                                        <?php                                                    
+                                                        if ($permission === 'edit') {
+                                                        ?>
+                                                        <a id="paymentBtn" title="Payment" role="button" class="py-1" data-id="<?= $ledger_id ?>">
+                                                            <iconify-icon icon="solar:hand-money-outline" class="text-success fs-6"></iconify-icon>
+                                                        </a>
+                                                        <?php                                                    
+                                                        }
+                                                        ?>
+                                                        <a id="paymentHistoryBtn" title="Payment History" role="button" class="py-1" data-id="<?= $ledger_id ?>">
+                                                            <i class="fas fa-history text-primary fs-5"></i>
+                                                        </a>
+                                                    <?php
                                                     }
                                                     ?>
-                                                    <a id="paymentHistoryBtn" title="Payment History" role="button" class="py-1" data-id="<?= $ledger_id ?>">
-                                                        <i class="fas fa-history text-primary fs-5"></i>
-                                                    </a>
                                                     <a href="print_order_product.php?id=<?= $order_id ?>" data-type="<?= $customer_details['customer_pricing'] ?>" class="btn-show-pdf btn btn-danger-gradient btn-sm me-1 py-1 px-0" type="button" data-id="<?= $order_id ?>" title="Print/Download">
                                                         <i class="text-success fa fa-print fs-5"></i>
                                                     </a>
                                                 </div>
-                                                <?php
-                                            }
-                                            ?>
+                                                
                                         </td>
                                     </tr>
                                 <?php } ?>

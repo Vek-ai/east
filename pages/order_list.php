@@ -1183,7 +1183,7 @@ function showCol($name) {
                 },
                 error: function(xhr, status, error) {
                     $('#saveEditOrderBtn').prop('disabled', false).text('Save Changes');
-                    console.error(error);
+                    console.log(xhr.responseText);
                     alert('AJAX request failed. Check console for details.');
                 }
             });

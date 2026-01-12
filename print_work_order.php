@@ -631,7 +631,31 @@ if (mysqli_num_rows($result) > 0) {
             renderInvoiceHeader($pdf, $row_orders, 'panel', $panelTotals);
             renderTableHeader($pdf, $columns);
 
+            $panelBundled    = [];
+            $panelNonBundled = [];
+
             foreach ($panelProducts as $row_product) {
+                $bundleId = $row_product['bundle_id'] ?? null;
+                if (!empty($bundleId)) {
+                    $panelBundled[$bundleId][] = $row_product;
+                } else {
+                    $panelNonBundled[] = $row_product;
+                }
+            }
+
+            foreach ($panelBundled as $bundleId => $bundleGroup) {
+                $bundleName = $bundleGroup[0]['bundle_id'] ?? 'Bundle ' . $bundleId;
+                $pdf->SetFont('Arial', 'B', 9);
+                $pdf->Cell(0, 6, $bundleName, 1, 1, 'L');
+                $pdf->SetFont('Arial', '', 7);
+
+                foreach ($bundleGroup as $row_product) {
+                    renderPanelCategory($pdf, $row_product, $conn);
+                }
+                $pdf->Ln(5);
+            }
+
+            foreach ($panelNonBundled as $row_product) {
                 renderPanelCategory($pdf, $row_product, $conn);
             }
         }
@@ -643,7 +667,31 @@ if (mysqli_num_rows($result) > 0) {
             renderInvoiceHeader($pdf, $row_orders, 'trim');
             renderTableHeader($pdf, $trim_columns);
 
+            $trimBundled    = [];
+            $trimNonBundled = [];
+
             foreach ($trimProducts as $row_product) {
+                $bundleId = $row_product['bundle_id'] ?? null;
+                if (!empty($bundleId)) {
+                    $trimBundled[$bundleId][] = $row_product;
+                } else {
+                    $trimNonBundled[] = $row_product;
+                }
+            }
+
+            foreach ($trimBundled as $bundleId => $bundleGroup) {
+                $bundleName = $bundleGroup[0]['bundle_id'] ?? 'Bundle ' . $bundleId;
+                $pdf->SetFont('Arial', 'B', 9);
+                $pdf->Cell(0, 6, $bundleName, 1, 1, 'L');
+                $pdf->SetFont('Arial', '', 7);
+
+                foreach ($bundleGroup as $row_product) {
+                    renderTrimCategory($pdf, $row_product, $conn);
+                }
+                $pdf->Ln(5);
+            }
+
+            foreach ($trimNonBundled as $row_product) {
                 renderTrimCategory($pdf, $row_product, $conn);
             }
         }

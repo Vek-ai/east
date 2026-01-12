@@ -106,9 +106,14 @@ class PDF extends FPDF {
         $this->Cell(95, 5, "Order Date: " . $this->order_date, 0, 1, 'L');
 
         $this->SetXY($col2_x - 10, $this->GetY());
-        $this->Cell(95, 5, "Pick-up or Delivery: " . $this->delivery_method, 0, 1, 'L');
+        $labelWidth = 33;
+        $this->SetFont('Arial', '', 10);
+        $this->Cell($labelWidth, 5, "Pick-up or Delivery:", 0, 0, 'L');
+        $this->SetFont('Arial', 'B', 10);
+        $this->Cell(95 - $labelWidth, 5, $this->delivery_method, 0, 1, 'L');
 
         $this->SetXY($col2_x - 10, $this->GetY());
+        $this->SetFont('Arial', '', 10);
         $this->Cell(95, 5, "Scheduled Date: " . $this->scheduled_date, 0, 1, 'L');
 
         $this->SetXY($col2_x - 10, $this->GetY());

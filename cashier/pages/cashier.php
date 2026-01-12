@@ -197,7 +197,7 @@ $editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) :
                         </div>
                         <div class="filter-wrapper d-flex flex-column h-100">
                             <div class="position-relative w-100 py-2 px-1 d-none">
-                                <select class="form-control search-chat ps-5 filter-selection select-filter-checkbox" id="select-product" data-filter-name="Product">
+                                <select class="form-control search-chat ps-5 filter-selection select-filter-checkbox" id="select-product" data-filter-name="Product" multiple>
                                     <option value="">All Products</option>
                                     <optgroup label="Products">
                                         <?php
@@ -236,7 +236,7 @@ $editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) :
                             </div>
                             <div class="sub_search_cat">
                                 <div class="position-relative w-100 py-2 px-1">
-                                    <select class="form-control ps-5 select2_filter filter-selection select-filter-checkbox" id="select-profile" data-filter-name="Profile Type">
+                                    <select class="form-control ps-5 select2_filter filter-selection select-filter-checkbox" id="select-profile" data-filter-name="Profile Type" multiple>
                                         <option value="" data-category="">All Profile Types</option>
                                         <optgroup label="Product Line">
                                             <?php
@@ -258,7 +258,7 @@ $editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) :
 
                                 <!-- Product Type -->
                                 <div class="position-relative w-100 py-2 px-1">
-                                    <select class="form-control search-category ps-5 select2_filter filter-selection select-filter-checkbox" id="select-type" data-filter-name="Product Types">
+                                    <select class="form-control search-category ps-5 select2_filter filter-selection select-filter-checkbox" id="select-type" data-filter-name="Product Types" multiple>
                                         <option value="" data-category="">All Product Types</option>
                                         <optgroup label="Product Type">
                                             <?php
@@ -277,7 +277,7 @@ $editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) :
 
                                 <!-- Colors -->
                                 <div class="position-relative w-100 py-2 px-1">
-                                    <select class="form-control search-category ps-5 select2_filter filter-selection select-filter-checkbox" id="select-color" data-filter-name="Color">
+                                    <select class="form-control search-category ps-5 select2_filter filter-selection select-filter-checkbox" id="select-color" data-filter-name="Color" multiple>
                                         <option value="" data-category="">All Colors</option>
                                         <optgroup label="Product Colors">
                                             <?php
@@ -296,7 +296,7 @@ $editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) :
 
                                 <!-- Grade -->
                                 <div class="position-relative w-100 py-2 px-1">
-                                    <select class="form-control search-category ps-5 select2_filter filter-selection select-filter-checkbox" id="select-grade" data-filter-name="Grade">
+                                    <select class="form-control search-category ps-5 select2_filter filter-selection select-filter-checkbox" id="select-grade" data-filter-name="Grade" multiple>
                                         <option value="" data-category="">All Grades</option>
                                         <optgroup label="Product Grades">
                                             <?php
@@ -315,7 +315,7 @@ $editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) :
 
                                 <!-- Gauge -->
                                 <div class="position-relative w-100 py-2 px-1">
-                                    <select class="form-control ps-5 select2_filter filter-selection select-filter-checkbox" id="select-gauge" data-filter-name="Gauge">
+                                    <select class="form-control ps-5 select2_filter filter-selection select-filter-checkbox" id="select-gauge" data-filter-name="Gauge" multiple>
                                         <option value="" data-category="">All Gauges</option>
                                         <optgroup label="Product Gauges">
                                             <?php
@@ -6030,11 +6030,10 @@ $editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) :
             var displayDiv = $('#selected-tags');
             displayDiv.empty();
 
-            $('.filter-selection, #onlyOnSale, #onlyPromotions').each(function() {
+            $('.filter-selection, #onlyOnSale, #onlyPromotions').each(function () {
                 var $filter = $(this);
                 var filterName = $filter.data('filter-name');
                 var filterId = $filter.attr('id');
-                var value = $filter.val();
 
                 if ($filter.attr('type') === 'checkbox') {
                     if ($filter.is(':checked')) {
@@ -6044,40 +6043,54 @@ $editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) :
                                 <button type="button"
                                     class="btn-close btn-sm ms-1 remove-tag"
                                     style="width: 0.75rem; height: 0.75rem;"
-                                    aria-label="Close"
                                     data-select="#${filterId}">
                                 </button>
                             </div>
                         `);
                     }
-                } else {
-                    if (value) {
-                        var selectedOption = $filter.find('option:selected');
-                        var selectedText = selectedOption.text().trim();
-
-                        displayDiv.append(`
-                            <div class="d-inline-block p-1 m-1 border rounded bg-light">
-                                <span class="text-dark">${filterName}: ${selectedText}</span>
-                                <button type="button"
-                                    class="btn-close btn-sm ms-1 remove-tag"
-                                    style="width: 0.75rem; height: 0.75rem;"
-                                    aria-label="Close"
-                                    data-select="#${filterId}">
-                                </button>
-                            </div>
-                        `);
-                    }
+                    return;
                 }
+
+                var selectedOptions = $filter.find('option:selected');
+
+                selectedOptions.each(function () {
+                    var optionValue = $(this).val();
+                    if (!optionValue) return;
+
+                    var optionText = $(this).text().trim();
+
+                    displayDiv.append(`
+                        <div class="d-inline-block p-1 m-1 border rounded bg-light">
+                            <span class="text-dark">${filterName}: ${optionText}</span>
+                            <button type="button"
+                                class="btn-close btn-sm ms-1 remove-tag"
+                                style="width: 0.75rem; height: 0.75rem;"
+                                data-select="#${filterId}"
+                                data-value="${optionValue}">
+                            </button>
+                        </div>
+                    `);
+                });
             });
 
-            $('.remove-tag').on('click', function() {
-                var $target = $($(this).data('select'));
+            $('.remove-tag').off('click').on('click', function () {
+                var $btn = $(this);
+                var $target = $($btn.data('select'));
+                var valueToRemove = $btn.data('value');
+
                 if ($target.attr('type') === 'checkbox') {
                     $target.prop('checked', false).trigger('change');
                 } else {
-                    $target.val('').trigger('change');
+                    if ($target.prop('multiple')) {
+                        var currentValues = $target.val() || [];
+                        $target.val(currentValues.filter(v => v != valueToRemove));
+                    } else {
+                        $target.val('');
+                    }
+                    $target.trigger('change');
                 }
-                $(this).parent().remove();
+
+                $btn.parent().remove();
             });
         }
 
@@ -6098,13 +6111,7 @@ $editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) :
 
                     $('.sub_search_cat').html(result);
 
-                    $('.select2_filter').each(function () {
-                        $(this).select2({
-                            width: '100%',
-                            dropdownParent: $(this).parent(),
-                            dropdownPosition: 'below'
-                        });
-                    });
+                    initFilterSelect();
                 },
                 error: function(xhr, status, error) {
                     console.error("AJAX Error:", {
@@ -6126,13 +6133,72 @@ $editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) :
             performSearch();
         });
 
-        $('.filter-selection').each(function () {
-            $(this).select2({
-                width: '100%',
-                dropdownParent: $(this).parent(),
-                dropdownPosition: 'below'
+        function initFilterSelect(){
+            $('#select-category').each(function () {
+                $(this).select2({
+                    width: '100%',
+                    dropdownParent: $(this).parent(),
+                    dropdownPosition: 'below',
+                    placeholder: 'All Categories',
+                });
             });
-        });
+
+            $('#select-gauge').each(function () {
+                $(this).select2({
+                    width: '100%',
+                    dropdownParent: $(this).parent(),
+                    dropdownPosition: 'below',
+                    placeholder: 'All Gauges',
+                });
+            });
+
+            $('#select-grade').each(function () {
+                $(this).select2({
+                    width: '100%',
+                    dropdownParent: $(this).parent(),
+                    dropdownPosition: 'below',
+                    placeholder: 'All Grades',
+                });
+            });
+
+            $('#select-color').each(function () {
+                $(this).select2({
+                    width: '100%',
+                    dropdownParent: $(this).parent(),
+                    dropdownPosition: 'below',
+                    placeholder: 'All Colors',
+                });
+            });
+
+            $('#select-color').each(function () {
+                $(this).select2({
+                    width: '100%',
+                    dropdownParent: $(this).parent(),
+                    dropdownPosition: 'below',
+                    placeholder: 'All Colors',
+                });
+            });
+
+            $('#select-type').each(function () {
+                $(this).select2({
+                    width: '100%',
+                    dropdownParent: $(this).parent(),
+                    dropdownPosition: 'below',
+                    placeholder: 'All Types',
+                });
+            });
+
+            $('#select-profile').each(function () {
+                $(this).select2({
+                    width: '100%',
+                    dropdownParent: $(this).parent(),
+                    dropdownPosition: 'below',
+                    placeholder: 'All Profiles',
+                });
+            });
+        }
+
+        initFilterSelect();
 
         let searchTimer;
 

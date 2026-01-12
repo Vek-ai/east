@@ -5286,4 +5286,41 @@ function getEstimateNumName($estimateid) {
 
     return $invoice_number;
 }
+
+function recalcOrderTotals($orderid){
+    global $conn;
+    $resp = ['success'=>true];
+    $query = "SELECT * FROM order_product WHERE orderid='$orderid'";
+    $result = mysqli_query($conn,$query);
+    if(!$result){$resp=['success'=>false,'error'=>mysqli_error($conn)];return $resp;}
+    $total_discounted = 0;
+    $line_totals = [];
+    while($row=mysqli_fetch_assoc($result)){
+        $qty = floatval($row['quantity']);
+        $unit_price = $qty>0 ? floatval($row['discounted_price'])/$qty : 0;
+        $line_totals[$row['id']] = $unit_price * $qty;
+        $total_discounted += $unit_price * $qty;
+    }
+    foreach($line_totals as $line_id => $line_total){
+        $upd_sql = "UPDATE order_product SET discounted_price='$line_total' WHERE id='$line_id'";
+        mysqli_query($conn,$upd_sql);
+    }
+    $upd_order_sql = "UPDATE orders SET discounted_price='$total_discounted' WHERE orderid='$orderid'";
+    if(!mysqli_query($conn,$upd_order_sql)){$resp=['success'=>false,'error'=>mysqli_error($conn)];}
+    $query_payments = "SELECT cash_amt, credit_amt, pay_pickup, pay_delivery, pay_net30 FROM orders WHERE orderid='$orderid' LIMIT 1";
+    $res = mysqli_query($conn,$query_payments);
+    if($res && mysqli_num_rows($res)){
+        $row=mysqli_fetch_assoc($res);
+        $total_payment = floatval($row['cash_amt'])+floatval($row['credit_amt'])+floatval($row['pay_pickup'])+floatval($row['pay_delivery'])+floatval($row['pay_net30']);
+        $factor = $total_discounted>0 ? $total_discounted/$total_payment : 1;
+        $ledger_types = ['cash_amt'=>'cash','credit_amt'=>'credit','pay_pickup'=>'pickup','pay_delivery'=>'delivery','pay_net30'=>'net30'];
+        foreach($ledger_types as $col=>$method){
+            $old_val = floatval($row[$col]);
+            $new_val = $old_val * $factor;
+            $upd_sql = "UPDATE job_ledger SET amount='$new_val' WHERE reference_no='$orderid' AND payment_method='$method'";
+            mysqli_query($conn,$upd_sql);
+        }
+    }
+    return $resp;
+}
 ?>

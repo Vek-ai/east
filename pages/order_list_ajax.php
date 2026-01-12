@@ -489,21 +489,29 @@ if(isset($_REQUEST['action'])) {
         }
     }
 
-
     if ($action === 'save_edited_order') {
         $current_user = $_SESSION['userid'] ?? 'System';
         $success = true;
 
         $deleted_lines = $_POST['deleted'] ?? [];
+        $orderid = null;
+        $old_lines = [];
+
         foreach ($deleted_lines as $line_id) {
             $line_id = intval($line_id);
-            $get_old_sql = "SELECT * FROM order_product WHERE id = '$line_id' LIMIT 1";
+            $get_old_sql = "SELECT * FROM order_product WHERE id='$line_id' LIMIT 1";
             $old_result = mysqli_query($conn, $get_old_sql);
             if ($old_result && mysqli_num_rows($old_result)) {
                 $old_data = mysqli_fetch_assoc($old_result);
                 $orderid = $old_data['orderid'];
+                $old_lines[$line_id] = [
+                    'quantity' => floatval($old_data['quantity']),
+                    'discounted_price' => floatval($old_data['discounted_price']),
+                    'custom_length' => floatval($old_data['custom_length']),
+                    'custom_length2' => floatval($old_data['custom_length2'])
+                ];
 
-                $delete_sql = "DELETE FROM order_product WHERE id = '$line_id'";
+                $delete_sql = "DELETE FROM order_product WHERE id='$line_id'";
                 if (!mysqli_query($conn, $delete_sql)) { $success = false; break; }
 
                 $old_json = mysqli_real_escape_string($conn, json_encode($old_data));
@@ -513,19 +521,26 @@ if(isset($_REQUEST['action'])) {
             }
         }
 
-        if (!$success) { echo 'error'; exit; }
+        if (!$success) { echo json_encode(['error'=>'Unable to save changes']); exit; }
 
         $lines = $_POST['quantity'] ?? [];
         foreach ($lines as $line_id => $qty) {
             $line_id = intval($line_id);
             if (in_array($line_id, $deleted_lines)) continue;
 
-            $get_old_sql = "SELECT * FROM order_product WHERE id = '$line_id' LIMIT 1";
+            $get_old_sql = "SELECT * FROM order_product WHERE id='$line_id' LIMIT 1";
             $old_result = mysqli_query($conn, $get_old_sql);
             if (!$old_result || mysqli_num_rows($old_result) === 0) continue;
 
             $old_data = mysqli_fetch_assoc($old_result);
             $orderid = $old_data['orderid'];
+
+            $old_lines[$line_id] = [
+                'quantity' => floatval($old_data['quantity']),
+                'discounted_price' => floatval($old_data['discounted_price']),
+                'custom_length' => floatval($old_data['custom_length']),
+                'custom_length2' => floatval($old_data['custom_length2'])
+            ];
 
             $custom_color   = intval($_POST['color'][$line_id] ?? 0);
             $custom_grade   = intval($_POST['grade'][$line_id] ?? 0);
@@ -537,56 +552,83 @@ if(isset($_REQUEST['action'])) {
             $panel_type     = mysqli_real_escape_string($conn, $_POST['panel_type'][$line_id] ?? '');
             $panel_style    = mysqli_real_escape_string($conn, $_POST['panel_style'][$line_id] ?? '');
 
-            $new_data = [
-                'custom_color'   => $custom_color,
-                'custom_grade'   => $custom_grade,
-                'custom_gauge'   => $custom_gauge,
-                'custom_profile' => $custom_profile,
-                'quantity'       => $quantity,
-                'custom_length'  => $custom_length,
-                'custom_length2' => $custom_length2,
-                'panel_type'     => $panel_type,
-                'panel_style'    => $panel_style
-            ];
+            $update_sql = "UPDATE order_product SET
+                custom_color='$custom_color',custom_grade='$custom_grade',custom_gauge='$custom_gauge',
+                custom_profile='$custom_profile',quantity='$quantity',custom_length='$custom_length',
+                custom_length2='$custom_length2',panel_type='$panel_type',panel_style='$panel_style'
+                WHERE id='$line_id'";
+            if (!mysqli_query($conn, $update_sql)) { $success=false; break; }
 
             $changes = [];
-            foreach ($new_data as $key => $new_value) {
-                $old_value = $old_data[$key] ?? '';
-                if ((string)$old_value !== (string)$new_value) {
-                    $changes[$key] = ['old' => $old_value, 'new' => $new_value];
-                }
+            foreach (['custom_color','custom_grade','custom_gauge','custom_profile','quantity','custom_length','custom_length2','panel_type','panel_style'] as $key) {
+                $old_val = $old_data[$key] ?? '';
+                $new_val = $$key ?? '';
+                if ((string)$old_val !== (string)$new_val) $changes[$key] = ['old'=>$old_val,'new'=>$new_val];
             }
 
-            $update_sql = "
-                UPDATE order_product SET
-                    custom_color   = '$custom_color',
-                    custom_grade   = '$custom_grade',
-                    custom_gauge   = '$custom_gauge',
-                    custom_profile = '$custom_profile',
-                    quantity       = '$quantity',
-                    custom_length  = '$custom_length',
-                    custom_length2 = '$custom_length2',
-                    panel_type     = '$panel_type',
-                    panel_style    = '$panel_style'
-                WHERE id = '$line_id'
-            ";
-            if (!mysqli_query($conn, $update_sql)) { $success = false; break; }
-
             if (!empty($changes)) {
-                $old_json = mysqli_real_escape_string($conn, json_encode(array_map(fn($v) => $v['old'], $changes)));
-                $new_json = mysqli_real_escape_string($conn, json_encode(array_map(fn($v) => $v['new'], $changes)));
-
+                $old_json = mysqli_real_escape_string($conn, json_encode(array_map(fn($v)=>$v['old'],$changes)));
+                $new_json = mysqli_real_escape_string($conn, json_encode(array_map(fn($v)=>$v['new'],$changes)));
                 $log_sql = "INSERT INTO order_history (orderid, order_product_id, action_type, old_value, new_value, updated_by)
                             VALUES ('$orderid', '$line_id', 'update_product', '$old_json', '$new_json', '$current_user')";
                 mysqli_query($conn, $log_sql);
             }
         }
 
-        echo $success ? json_encode(['success' => true]) : json_encode(['error' => 'Unable to save changes']);
+        $total_discounted = 0;
+        $line_totals = [];
+        $ledger_types = ['pay_cash'=>'cash','pay_card'=>'credit','pay_pickup'=>'pickup','pay_delivery'=>'delivery','pay_net30'=>'net30'];
+
+        $query_payments = "SELECT pay_cash, pay_card, pay_check, pay_pickup, pay_delivery, pay_net30 FROM orders WHERE orderid='$orderid' LIMIT 1";
+        $res = mysqli_query($conn,$query_payments);
+        $old_payment = [];
+        $old_total_payment = 0;
+        if($res && mysqli_num_rows($res)){
+            $row = mysqli_fetch_assoc($res);
+            foreach($ledger_types as $col=>$method){
+                $old_payment[$method] = floatval($row[$col]);
+                $old_total_payment += floatval($row[$col]);
+            }
+        }
+
+        foreach($old_lines as $line_id => $line){
+            $old_qty = $line['quantity'];
+            $old_discounted = $line['discounted_price'];
+            $old_length_ft = ($line['custom_length'] ?? 0) + ($line['custom_length2'] ?? 0)/12;
+            $old_length_ft = $old_length_ft > 0 ? $old_length_ft : 1;
+            $unit_price_per_ft = ($old_qty > 0 ? $old_discounted / $old_qty : 0) / $old_length_ft;
+
+            $res = mysqli_query($conn, "SELECT quantity, custom_length, custom_length2 FROM order_product WHERE id='$line_id' LIMIT 1");
+            if($res && mysqli_num_rows($res)){
+                $row = mysqli_fetch_assoc($res);
+                $new_qty = floatval($row['quantity']);
+                $new_length_ft = floatval($row['custom_length'] ?? 0) + floatval($row['custom_length2'] ?? 0)/12;
+                $new_length_ft = $new_length_ft > 0 ? $new_length_ft : 1;
+            } else {
+                $new_qty = 0;
+                $new_length_ft = 1;
+            }
+
+            $line_total = $unit_price_per_ft * $new_length_ft * $new_qty;
+            $line_totals[$line_id] = $line_total;
+            $total_discounted += $line_total;
+
+            mysqli_query($conn, "UPDATE order_product SET discounted_price='$line_total' WHERE id='$line_id'");
+        }
+
+        mysqli_query($conn, "UPDATE orders SET discounted_price='$total_discounted' WHERE orderid='$orderid'");
+
+        if($old_total_payment > 0){
+            foreach($ledger_types as $col=>$method){
+                $old_val = $old_payment[$method];
+                $new_val = $old_val * $total_discounted / $old_total_payment;
+                mysqli_query($conn,"UPDATE job_ledger SET amount='$new_val' WHERE reference_no='$orderid' AND payment_method='$method'");
+            }
+        }
+
+        echo json_encode(['success'=>true]);
         exit;
     }
-
-
 
     if ($action == "fetch_hold_modal") {
         $orderid = mysqli_real_escape_string($conn, $_POST['id']);

@@ -1035,21 +1035,16 @@ if(isset($_REQUEST['action'])) {
         $job_id         = trim($_POST['job_id'] ?? '');
         $deposit_amount = floatval($_POST['deposit_amount'] ?? 0);
         $deposited_by   = $_POST['deposited_by'];
-        $reference_no   = trim($_POST['reference_no'] ?? '');
         $payment_method = $_POST['type'] ?? 'cash';
+        $reference_no_reciept   = trim($_POST['reference_no'] ?? '');
         $check_no       = trim($_POST['check_no'] ?? '');
         $auth_no        = trim($_POST['auth_no'] ?? '');
-        $job_po        = trim($_POST['job_po'] ?? '');
+        $job_po         = trim($_POST['job_po'] ?? '');
         $description    = mysqli_real_escape_string($conn, $_POST['description'] ?? 'Job deposit');
 
         $job_id   = mysqli_real_escape_string($conn, $job_id);
-        $check_no = $payment_method === 'check'
-            ? mysqli_real_escape_string($conn, $check_no)
-            : '';
-
-        $auth_no = $payment_method === 'card'
-            ? mysqli_real_escape_string($conn, $auth_no)
-            : '';
+        $check_no = $payment_method === 'check' ? mysqli_real_escape_string($conn, $check_no) : '';
+        $auth_no  = $payment_method === 'card'  ? mysqli_real_escape_string($conn, $auth_no) : '';
 
         $deposit_status = 1;
         if ($payment_method === 'cash' && $deposit_amount > 10000) {
@@ -1074,7 +1069,7 @@ if(isset($_REQUEST['action'])) {
                 '$deposit_amount',
                 'job_deposit',
                 '$check_no',
-                '" . mysqli_real_escape_string($conn, $reference_no) . "',
+                '',
                 '$description',
                 '" . mysqli_real_escape_string($conn, $deposited_by) . "'
             )
@@ -1099,7 +1094,7 @@ if(isset($_REQUEST['action'])) {
                     '$deposit_amount',
                     '$deposit_status',
                     '" . mysqli_real_escape_string($conn, $deposited_by) . "',
-                    '" . mysqli_real_escape_string($conn, $reference_no) . "',
+                    '" . mysqli_real_escape_string($conn, $reference_no_reciept) . "',
                     '$payment_method',
                     '$check_no',
                     '$auth_no',
@@ -1109,12 +1104,9 @@ if(isset($_REQUEST['action'])) {
             mysqli_query($conn, $insert_deposit);
 
             if ($payment_method === 'cash' && $deposit_amount > 10000) {
-
                 $deposit_id = mysqli_insert_id($conn);
-
                 $actorId   = $_SESSION['userid'];
                 $actorName = get_staff_name($actorId);
-
                 createNotification(
                     $actorId,
                     'deposit_approval',
@@ -1138,27 +1130,16 @@ if(isset($_REQUEST['action'])) {
             $job = getJobDetails($job_id);
             $job_name = $job['job_name'] ?? '';
 
-            $pay_cash = 0;
-            $pay_card = 0;
-            $pay_check = 0;
-            $pay_pickup = 0;
-            $pay_delivery = 0;
-            $pay_net30 = 0;
+            $pay_cash = $payment_method == 'cash' ? $deposit_amount : 0;
+            $pay_card = $payment_method == 'card' ? $deposit_amount : 0;
+            $pay_check = $payment_method == 'check' ? $deposit_amount : 0;
+            $pay_pickup = $pay_delivery = $pay_net30 = 0;
 
-            if($payment_method == 'cash'){
-                $pay_cash = $deposit_amount;
-            }else if($payment_method == 'card'){
-                $pay_card = $deposit_amount;
-            }else if($payment_method == 'check'){
-                $pay_check = $deposit_amount;
-            }
-
-            $customer_details   = getCustomerDetails($deposited_by);
-            $tax_status = $customer_details['tax_status'];
-            $tax_exempt_number  = $customer_details['tax_exempt_number'] ?? '';
+            $customer_details  = getCustomerDetails($deposited_by);
+            $tax_status        = $customer_details['tax_status'];
+            $tax_exempt_number = $customer_details['tax_exempt_number'] ?? '';
 
             $token = bin2hex(random_bytes(8));
-
             $_GET['prod'] = $token;  
             ob_start();
             include __DIR__ . '/../delivery/receipt.php';
@@ -1176,7 +1157,7 @@ if(isset($_REQUEST['action'])) {
                 ) VALUES (
                     '', '$cashierid', '', '$deposit_amount', '$deposit_amount', '', '',
                     NOW(), NOW(), '$deposited_by', '$deposited_by',
-                    '$deposit_amount', '', '$job_name', '$job_po',
+                    '$pay_cash', '$pay_card', '$job_name', '$job_po',
                     '', '', '', '',
                     '', '', '', '',
                     '$payment_method',
@@ -1188,12 +1169,13 @@ if(isset($_REQUEST['action'])) {
             if ($conn->query($sql_insert) === TRUE) {
                 $orderid = $conn->insert_id;
 
-                recordCashInflow(
-                    $payment_method,
-                    'job_deposit',
-                    $deposit_amount,
-                    $orderid
-                );
+                mysqli_query($conn, "
+                    UPDATE job_ledger
+                    SET reference_no = '$orderid'
+                    WHERE job_id = '$job_id' AND reference_no = ''
+                ");
+
+                recordCashInflow($payment_method, 'job_deposit', $deposit_amount, $orderid);
 
                 $query = "INSERT INTO order_product (
                     orderid, productid, product_item, quantity, custom_width, custom_bend, custom_hem,
@@ -1221,6 +1203,7 @@ if(isset($_REQUEST['action'])) {
             echo 'error_insert';
         }
     }
+
 
     if ($action === "fetch_table") {
         $draw = intval($_POST['draw'] ?? 1);

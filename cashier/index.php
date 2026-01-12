@@ -593,7 +593,7 @@ $page_key = !empty($_REQUEST['page']) ? $_REQUEST['page'] : 'cashier';
                   -->
 
                   
-                  <li class="nav-item hover-dd dropdown nav-icon-hover-bg rounded-circle d-none d-lg-block me-4">
+                  <!-- <li class="nav-item hover-dd dropdown nav-icon-hover-bg rounded-circle d-none d-lg-block me-4">
                     <a class="nav-link nav-icon-hover waves-effect waves-dark" href="javascript:void(0)" aria-expanded="false">
                       <iconify-icon icon="ic:round-search" class="search-icon iconify-lg"></iconify-icon>
                     </a>
@@ -611,7 +611,7 @@ $page_key = !empty($_REQUEST['page']) ? $_REQUEST['page'] : 'cashier';
                       </div>
                       <div id="customer-search-list"></div>
                     </div>
-                  </li> 
+                  </li>  -->
                  
 
                   <li class="nav-item hover-dd dropdown nav-icon-hover-bg rounded-circle d-none d-lg-block">

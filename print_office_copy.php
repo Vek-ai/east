@@ -233,8 +233,6 @@ function renderScrewCategory($pdf, $product, $conn) {
         $pack = end($allMatches);
     }
 
-    $quantity .= "\n $pack";
-
     $summaryRow = [
         $product_abbrev,
         $product['product_item'],
@@ -538,23 +536,42 @@ class PDF extends FPDF {
         $w = 85;
         $lineH = 5;
 
-        $blockText  = "Invoice #: " . getInvoiceNumName($this->orderid) . "\n";
-        $blockText .= "Order Date: " . $this->order_date . "\n";
-        $blockText .= "Pick-up or Delivery: " . $this->delivery_method . "\n";
-        $blockText .= "Scheduled Date: " . $this->scheduled_date . "\n";
-        $blockText .= "Salesperson: " . $this->salesperson;
-
-        $maxHeight = $this->NbLines($w, $blockText) * $lineH;
-
         $this->SetXY($col2_x, 6);
-        $this->MultiCell($w, $lineH, $blockText, 0, 'L');
+        $this->SetFont('Arial', 'B', 9);
+        $this->Cell($w, $lineH, "Invoice #: " . getInvoiceNumName($this->orderid), 0, 1, 'L');
+
+        $currentY = $this->GetY();
+
+        $this->SetFont('Arial', '', 9);
+        $this->SetXY($col2_x, $currentY);
+        $this->Cell($w, $lineH, "Order Date: " . $this->order_date, 0, 1, 'L');
+
+        $currentY = $this->GetY();
+
+        $this->SetXY($col2_x, $currentY);
+        $labelWidth = 29;
+        $this->SetFont('Arial', '', 9);
+        $this->Cell($labelWidth, $lineH, "Pick-up or Delivery:", 0, 0, 'L');
+        $this->SetFont('Arial', 'B', 9);
+        $this->Cell($w - $labelWidth, $lineH, $this->delivery_method, 0, 1, 'L');
+
+        $currentY = $this->GetY();
+
+        $this->SetFont('Arial', '', 9);
+        $this->SetXY($col2_x, $currentY);
+        $this->Cell($w, $lineH, "Scheduled Date: " . $this->scheduled_date, 0, 1, 'L');
+
+        $currentY = $this->GetY();
+
+        $this->SetXY($col2_x, $currentY);
+        $this->Cell($w, $lineH, "Salesperson: " . $this->salesperson, 0, 1, 'L');
 
         $this->SetXY($col2_x + $w, 6);
         $this->MultiCell(30, $lineH, "Digital receipt", 0, 'L');
 
         $token = $this->token;
         $qrX = $col2_x + $w;
-        $qrY = max(0, $maxHeight - 15);
+        $qrY = 6;
         $imageUrl = 'https://delivery.eastkentuckymetal.com/receiptqr/receiptqr' . $token . '.png';
 
         $headers = @get_headers($imageUrl, 1);
@@ -570,7 +587,7 @@ class PDF extends FPDF {
             @$this->Image($imageUrl, $qrX, $qrY, 20, 20);
         }
 
-        $this->SetY(6 + $maxHeight + 5);
+        $this->SetY($currentY + $lineH + 2);
     }
 
     public function GetMultiCellHeight($w, $h, $txt) {

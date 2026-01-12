@@ -91,7 +91,7 @@ if (isset($_POST['modifyquantity']) || isset($_POST['duplicate_product'])) {
     $result = mysqli_query($conn, $query);
 
     if ($row = mysqli_fetch_assoc($result)) {
-        $item_quantity = min($qty, $totalStock);
+        $item_quantity = $qty;
 
         $weight    = floatval($row['weight']);
         $basePrice = floatval($row['unit_price']);
@@ -158,12 +158,21 @@ if (isset($_POST['deleteproduct'])) {
 
 if (isset($_REQUEST['query'])) {
     $searchQuery = mysqli_real_escape_string($conn, $_REQUEST['query'] ?? '');
-    $product_id    = (int) ($_REQUEST['product_id'] ?? 0);
-    $color_id    = (int) ($_REQUEST['color_id'] ?? 0);
-    $grade       = (int) ($_REQUEST['grade'] ?? 0);
-    $gauge_id    = (int) ($_REQUEST['gauge_id'] ?? 0);
-    $type_id     = (int) ($_REQUEST['type_id'] ?? 0);
-    $profile_id  = (int) ($_REQUEST['profile_id'] ?? 0);
+
+    function getIntArray($key) {
+        if (!isset($_REQUEST[$key])) return [];
+        $val = $_REQUEST[$key];
+        if (!is_array($val)) $val = [$val];
+        return array_values(array_filter(array_map('intval', $val)));
+    }
+
+    $product_ids = getIntArray('product_id');
+    $color_ids   = getIntArray('color_id');
+    $grades      = getIntArray('grade');
+    $gauge_ids   = getIntArray('gauge_id');
+    $type_ids    = getIntArray('type_id');
+    $profile_ids = getIntArray('profile_id');
+    
     $category_id = (int) ($_REQUEST['category_id'] ?? 0);
     $onlyInStock = filter_var($_REQUEST['onlyInStock'] ?? false, FILTER_VALIDATE_BOOLEAN);
     $onlyPromotions = filter_var($_REQUEST['onlyPromotions'] ?? false, FILTER_VALIDATE_BOOLEAN);
@@ -207,19 +216,20 @@ if (isset($_REQUEST['query'])) {
     }
 
     $jsonFilters = [
-        'color' => $color_id,
-        'grade' => $grade,
-        'gauge' => $gauge_id,
-        'product_type' => $type_id,
-        'profile' => $profile_id
+        'color'        => $color_ids,
+        'grade'        => $grades,
+        'gauge'        => $gauge_ids,
+        'product_type'=> $type_ids,
+        'profile'     => $profile_ids
     ];
 
-    foreach ($jsonFilters as $col => $val) {
-        if (!empty($val)) {
-            $query_product .= " AND JSON_VALID(p.$col) AND (
-                                    JSON_CONTAINS(p.$col, '\"$val\"') 
-                                    OR JSON_CONTAINS(p.$col, '$val')
-                                )";
+    foreach ($jsonFilters as $col => $values) {
+        if (!empty($values)) {
+            $conditions = [];
+            foreach ($values as $v) {
+                $conditions[] = "JSON_CONTAINS(p.$col, '\"$v\"') OR JSON_CONTAINS(p.$col, '$v')";
+            }
+            $query_product .= " AND JSON_VALID(p.$col) AND (" . implode(' OR ', $conditions) . ")";
         }
     }
 
@@ -234,7 +244,10 @@ if (isset($_REQUEST['query'])) {
                             )";
     }
 
-    if (!empty($product_id)) $query_product .= " AND p.product_id = '$product_id'";
+    if (!empty($product_ids)) {
+        $ids = implode(',', $product_ids);
+        $query_product .= " AND p.product_id IN ($ids)";
+    }
 
     $query_product .= " GROUP BY p.product_id";
     if ($onlyInStock) $query_product .= " HAVING in_stock = 1";
@@ -368,11 +381,18 @@ if (isset($_REQUEST['query'])) {
                 $btn_id = 'add-to-cart-btn';
             }
 
-            if (!empty($color_id)) {
-                $color_name = getColorName($color_id);
+            if (!empty($color_ids)) {
                 $color_html = '
                     <div class="d-flex justify-content-center mb-0 gap-8 text-center">
-                        <a href="javascript:void(0)" id="view_available_color" data-id="'.$row_product['product_id'].'">'.$color_name.'</a>
+                        <a href="javascript:void(0)" id="view_available_color" data-id="'.$row_product['product_id'].'">'
+                        .   mb_strimwidth(
+                                getColumnFromTable(
+                                    "paint_colors",
+                                    "color_name",
+                                    !empty($color_ids) ? $color_ids : getAssignedProductColors($row_product['product_id'])
+                                ),
+                                0, 30, '...'
+                            ).'</a>
                     </div>
                 ';
             }else{
@@ -408,7 +428,7 @@ if (isset($_REQUEST['query'])) {
                             getColumnFromTable(
                                 "product_grade",
                                 "product_grade",
-                                !empty($grade) ? $grade : $row_product['grade']
+                                !empty($grades) ? $grades : $row_product['grade']
                             ),
                             0, 30, '...'
                         ) . '
@@ -421,7 +441,7 @@ if (isset($_REQUEST['query'])) {
                             getColumnFromTable(
                                 "product_gauge",
                                 "product_gauge",
-                                !empty($gauge_id) ? $gauge_id : $row_product['gauge']
+                                !empty($gauge_ids) ? $gauge_ids : $row_product['gauge']
                             ),
                             0, 30, '...'
                         ) . '
@@ -434,7 +454,7 @@ if (isset($_REQUEST['query'])) {
                             getColumnFromTable(
                                 "product_type",
                                 "product_type",
-                                !empty($type_id) ? $type_id : $row_product['product_type']
+                                !empty($type_ids) ? $type_ids : $row_product['product_type']
                             ),
                             0, 30, '...'
                         ) . '
@@ -447,7 +467,7 @@ if (isset($_REQUEST['query'])) {
                             getColumnFromTable(
                                 "profile_type",
                                 "profile_type",
-                                !empty($profile_id) ? $profile_id : $row_product['profile']
+                                !empty($profile_ids) ? $profile_ids : $row_product['profile']
                             ),
                             0, 30, '...'
                         ) . '
@@ -1752,24 +1772,23 @@ if (isset($_POST['search_customer'])) {
             use_farm,
             contact_phone
         FROM customer
-        WHERE (
-                customer_first_name LIKE '%$search%' 
-                OR customer_last_name LIKE '%$search%' 
-                OR customer_business_name LIKE '%$search%' 
+        WHERE status NOT IN ('0', '3')
+          AND (
+                CONCAT(customer_first_name, ' ', customer_last_name) LIKE '%$search%'
+                OR customer_first_name LIKE '%$search%'
+                OR customer_last_name LIKE '%$search%'
+                OR customer_business_name LIKE '%$search%'
                 OR customer_farm_name LIKE '%$search%'
               )
-          AND status NOT IN ('0', '3')
         LIMIT 15
     ";
 
     $result = mysqli_query($conn, $query);
-
     $response = [];
 
     if ($result) {
         while ($row = mysqli_fetch_assoc($result)) {
             $label = get_customer_name($row['customer_id']);
-
             if (!empty($row['contact_phone'])) {
                 $label .= ' (' . htmlspecialchars($row['contact_phone']) . ')';
             }
@@ -1784,6 +1803,7 @@ if (isset($_POST['search_customer'])) {
     echo json_encode($response);
     exit;
 }
+
 
 if (isset($_POST['change_customer'])) {
     if (isset($_POST['customer_id'])) {
@@ -3300,7 +3320,7 @@ if (isset($_POST['filter_category'])) {
         ?>
         <!-- Profile Type -->
         <div class="position-relative w-100 py-2 px-1">
-            <select class="form-control ps-5 select2_filter filter-selection" id="select-profile" data-filter-name="Profile Type">
+            <select class="form-control ps-5 select2_filter filter-selection" id="select-profile" data-filter-name="Profile Type" multiple>
                 <option value="" data-category="">All Profile Types</option>
                 <optgroup label="Product Line">
                     <?php
@@ -3322,7 +3342,7 @@ if (isset($_POST['filter_category'])) {
 
         <!-- Product Type -->
         <div class="position-relative w-100 py-2 px-1">
-            <select class="form-control search-category ps-5 select2_filter filter-selection" id="select-type" data-filter-name="Product Types">
+            <select class="form-control search-category ps-5 select2_filter filter-selection" id="select-type" data-filter-name="Product Types" multiple>
                 <option value="" data-category="">All Product Types</option>
                 <optgroup label="Product Type">
                     <?php
@@ -3341,17 +3361,31 @@ if (isset($_POST['filter_category'])) {
 
         <!-- Colors -->
         <div class="position-relative w-100 py-2 px-1">
-            <select class="form-control search-category ps-5 select2_filter filter-selection" id="select-color" data-filter-name="Color">
-                <option value="" data-category="">All Colors</option>
+            <select class="form-control search-category ps-5 select2_filter filter-selection"
+                    id="select-color"
+                    data-filter-name="Color"
+                    multiple>
+
                 <optgroup label="Product Colors">
                     <?php
-                    $query_color = "SELECT * FROM paint_colors WHERE hidden = '0' AND color_status = '1' $category_condition ORDER BY color_name ASC";
+                    $where = "";
+                    if (!empty($product_category)) {
+                        $product_category = (int)$product_category;
+                        $where = "WHERE p.product_category = $product_category";
+                    }
+
+                    $query_color = "
+                        SELECT DISTINCT pca.color_id
+                        FROM product_color_assign pca
+                        LEFT JOIN product p ON p.product_id = pca.product_id
+                        $where
+                    ";
+
                     $result_color = mysqli_query($conn, $query_color);
                     while ($row_color = mysqli_fetch_array($result_color)) {
                     ?>
-                        <option value="<?= htmlspecialchars($row_color['color_id']) ?>" 
-                                data-category="<?= htmlspecialchars($row_color['product_category']) ?>">
-                            <?= htmlspecialchars($row_color['color_name']) ?>
+                        <option value="<?= (int)$row_color['color_id'] ?>">
+                            <?= getColorName($row_color['color_id']) ?>
                         </option>
                     <?php } ?>
                 </optgroup>
@@ -3360,7 +3394,7 @@ if (isset($_POST['filter_category'])) {
 
         <!-- Grade -->
         <div class="position-relative w-100 py-2 px-1">
-            <select class="form-control search-category ps-5 select2_filter filter-selection" id="select-grade" data-filter-name="Grade">
+            <select class="form-control search-category ps-5 select2_filter filter-selection" id="select-grade" data-filter-name="Grade" multiple>
                 <option value="" data-category="">All Grades</option>
                 <optgroup label="Product Grades">
                     <?php
@@ -3379,7 +3413,7 @@ if (isset($_POST['filter_category'])) {
 
         <!-- Gauge -->
         <div class="position-relative w-100 py-2 px-1">
-            <select class="form-control ps-5 select2_filter filter-selection" id="select-gauge" data-filter-name="Gauge">
+            <select class="form-control ps-5 select2_filter filter-selection" id="select-gauge" data-filter-name="Gauge" multiple>
                 <option value="" data-category="">All Gauges</option>
                 <optgroup label="Product Gauges">
                     <?php

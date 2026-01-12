@@ -11,45 +11,43 @@ if (isset($_POST['search_customer'])) {
     $search = mysqli_real_escape_string($conn, $_POST['search_customer']);
 
     $query = "
-            SELECT 
-                customer_id AS value, 
-                COALESCE(
-                    NULLIF(customer_business_name, ''),
-                    NULLIF(customer_farm_name, ''),
-                    CONCAT(customer_first_name, ' ', customer_last_name)
-                ) AS label
-            FROM 
-                customer
-            WHERE 
-                (
-                    customer_first_name LIKE '%$search%' OR
-                    customer_last_name LIKE '%$search%' OR
-                    customer_business_name LIKE '%$search%' OR
-                    customer_farm_name LIKE '%$search%'
-                )
-                AND status != '3'
-            LIMIT 15
-        ";
-
+        SELECT 
+            customer_id, 
+            customer_first_name, 
+            customer_last_name, 
+            customer_business_name,
+            customer_farm_name,
+            use_business,
+            use_farm,
+            contact_phone
+        FROM customer
+        WHERE status NOT IN ('0', '3')
+          AND (
+                CONCAT(customer_first_name, ' ', customer_last_name) LIKE '%$search%'
+                OR customer_first_name LIKE '%$search%'
+                OR customer_last_name LIKE '%$search%'
+                OR customer_business_name LIKE '%$search%'
+                OR customer_farm_name LIKE '%$search%'
+              )
+        LIMIT 15
+    ";
 
     $result = mysqli_query($conn, $query);
+    $response = [];
 
     if ($result) {
-        $response = array();
-
-        $response[] = array(
-            'value' => 'all_customers',
-            'label' => 'All Customers'
-        );
-
         while ($row = mysqli_fetch_assoc($result)) {
-            $response[] = $row;
-        }
+            $label = get_customer_name($row['customer_id']);
 
-        echo json_encode($response);
-    } else {
-        echo json_encode(array('error' => 'Query failed'));
+            $response[] = [
+                'value' => $row['customer_id'],
+                'label' => $label
+            ];
+        }
     }
+
+    echo json_encode($response);
+    exit;
 }
 
 if (isset($_POST['search_orders'])) {

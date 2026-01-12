@@ -353,12 +353,11 @@ function renderDefaultCategory($pdf, $product, $conn) {
 
 
 function renderInvoiceHeader($pdf, $row_orders) {
-    $current_user_id = $_SESSION['userid'];
     $delivery_price = floatval($row_orders['delivery_amt']);
     $discount = floatval($row_orders['discount_percent']) / 100;
     $orderid = $row_orders['orderid'];
     $customer_id = $row_orders['customerid'];
-    $salesperson = get_staff_name($current_user_id);
+    $salesperson = get_staff_name($row_orders['cashier']);
     $customerDetails = getCustomerDetails($customer_id);
     $tax = floatval(getCustomerTax($customer_id)) / 100;
     $delivery_method = $delivery_price == 0 ? 'Pickup' : 'Deliver';
@@ -475,14 +474,21 @@ function renderInvoiceHeader($pdf, $row_orders) {
     $pdf->SetXY($invoiceX, $currentY);
     $pdf->Cell($invoiceW, 7, 'Invoice #: ' . getInvoiceNumName($orderid), 1, 1, 'L', true);
 
-    $pdf->SetFont('Arial', '', 9);
     $pdf->SetXY($invoiceX, $startY);
-    $rightText =
-        "Order Date: " . $order_date . "\n" .
-        "Pick-up or Delivery: " . $delivery_method . "\n" .
-        "Scheduled Date: " . $scheduled_date . "\n" .
-        "Salesperson: " . $salesperson;
-    $pdf->MultiCell($invoiceW, 5, $rightText, 0, 'L');
+    $lineHeight = 5;
+    $pdf->SetFont('Arial', '', 9);
+    $pdf->Cell($invoiceW, $lineHeight, "Order Date: $order_date", 0, 1, 'L');
+    $pdf->SetFont('Arial', '', 9);
+    $pdf->SetX($invoiceX);
+    $labelWidth = 29;
+    $pdf->Cell($labelWidth, $lineHeight, "Pick-up or Delivery:", 0, 0, 'L');
+    $pdf->SetFont('Arial', 'B', 9);
+    $pdf->Cell($invoiceW - $labelWidth, $lineHeight, $delivery_method, 0, 1, 'L');
+    $pdf->SetFont('Arial', '', 9);
+    $pdf->SetX($invoiceX);
+    $pdf->Cell($invoiceW, $lineHeight, "Scheduled Date: $scheduled_date", 0, 1, 'L');
+    $pdf->SetX($invoiceX);
+    $pdf->Cell($invoiceW, $lineHeight, "Salesperson: $salesperson", 0, 1, 'L');
     $rightEnd = $pdf->GetY();
 
     $finalHeight = max($billEnd, $shipEnd, $rightEnd) - $startY;
@@ -800,25 +806,26 @@ if (mysqli_num_rows($result) > 0) {
 
     $pdf->Ln(5);
 
-    $box_width = 75;
+    $box_width  = 75;
     $box_height = 30;
 
     $box1_x = 5;
     $box2_x = $box1_x + $box_width;
-    $col_y = $pdf->GetY();
-    $box_y = $col_y;
+    $col_y  = $pdf->GetY();
+    $box_y  = $col_y;
+
+    $pdf->Rect($box1_x, $box_y, $box_width, $box_height);
 
     $pdf->SetFont('Arial', 'B', 10);
     $pdf->SetXY($box1_x, $box_y);
-    $pdf->Cell($box_width, 6, 'Delivered By:', 1, 1, 'C');
+    $pdf->Cell($box_width, 6, 'Delivered By:', 1, 2, 'C');
+    $pdf->SetFont('Arial', '', 8);
+    $pdf->Cell($box_width, 4, '(Sign Here)', 0, 0, 'C');
 
-    $pdf->Rect($box1_x, $box_y + 6, $box_width, $box_height);
-
+    $pdf->Rect($box2_x, $box_y, $box_width, $box_height);
     $pdf->SetFont('Arial', 'B', 10);
     $pdf->SetXY($box2_x, $box_y);
-    $pdf->Cell($box_width, 6, 'Digital Delivery Ticket', 1, 1, 'C');
-
-    $pdf->Rect($box2_x, $box_y + 6, $box_width, $box_height);
+    $pdf->Cell($box_width, 6, 'Scan Me to Submit Delivery Proof', 1, 0, 'C');
 
     $query_qr = "SELECT * FROM order_estimate WHERE order_estimate_id = '$orderid'";
     $result_qr = mysqli_query($conn, $query_qr);
@@ -827,7 +834,6 @@ if (mysqli_num_rows($result) > 0) {
         $row_qr = mysqli_fetch_assoc($result_qr);
 
         $imageUrl = 'https://delivery.eastkentuckymetal.com/deliveryqr/qrcode' . $row_qr['id'] . '.png';
-
         $headers = @get_headers($imageUrl);
 
         if ($headers && strpos($headers[0], '200') !== false) {
@@ -839,12 +845,16 @@ if (mysqli_num_rows($result) > 0) {
             $qr_y = $box_y + 6 + (($box_height - $qr_max_height) / 2);
 
             $pdf->Image($imageUrl, $qr_x, $qr_y, $qr_width, $qr_max_height);
-
-        } else {
-            $pdf->Cell($box_width, 6, 'QR image not found', 1, 1, 'C');
         }
     }
 
+    $received_y = $box_y + $box_height + 5;
+    $pdf->Rect($box1_x, $received_y, $box_width, $box_height);
+    $pdf->SetFont('Arial', 'B', 10);
+    $pdf->SetXY($box1_x, $received_y);
+    $pdf->Cell($box_width, 6, 'Received By:', 1, 2, 'C');
+    $pdf->SetFont('Arial', '', 8);
+    $pdf->Cell($box_width, 4, '(Sign Here)', 0, 0, 'C');
 
     $pdf->SetTitle('Receipt');
     $pdf->Output('Receipt.pdf', 'I');

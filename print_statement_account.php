@@ -21,52 +21,41 @@ class PDF extends FPDF {
         $marginLeft = 5;
         $marginLeft = 5;
         $colWidthLeft  = 115;
-        $colWidthRight = 75;
+        $colWidthRight = 60;
         $this->SetY(-25);
 
         $colWidth = ($this->w - 2 * $marginLeft) / 3;
 
         $this->SetFont('Arial', '', 10);
         $this->SetTextColor(0, 51, 153);
-        $this->Cell($this->w - 2 * $marginLeft, 5, 'We appreciate your continued business with East Kentucky Metal!', 0, 1, 'C');
+        $this->Cell($this->w - 2 * $marginLeft, 5, 'Thank you for choosing East Kentucky Metal. We appreciate your business!', 0, 1, 'C');
 
         $this->SetTextColor(0, 0, 0);
         $this->SetY($this->GetY() + 1);
-        $gpsIcon = 'assets/images/gps.png';
-        $text = '977 E. Hal Rogers Parkway';
-        $iconWidth = 5;
-        $spacing = 2;
 
-        $totalWidth = $iconWidth + $spacing + $this->GetStringWidth($text);
-        $x = ($this->w - $totalWidth) / 2;
-
-        $this->Image($gpsIcon, $x, $this->GetY(), $iconWidth, 5);
-        $this->SetXY($x + $iconWidth + $spacing, $this->GetY());
-        $this->Cell($this->GetStringWidth($text), 5, $text, 0, 1, 'L');
+        $text = '977 E. Hal Rogers Parkway, London, KY 40741';
+        $textWidth = $this->GetStringWidth($text);
+        $x = ($this->w - $textWidth) / 2;
+        $this->SetXY($x, $this->GetY());
+        $this->Cell($textWidth, 5, $text, 0, 1, 'L');
 
         $this->Ln();
         $this->SetFont('Arial', '', 9);
 
-        $phoneIcon = 'assets/images/phone.png';
-        $this->Image($phoneIcon, $marginLeft, $this->GetY(), 5, 5);
-        $this->SetXY($marginLeft + 7, $this->GetY());
+        $this->SetXY($marginLeft, $this->GetY());
         $this->Cell($colWidth, 5, '(606) 877-1848 | Fax: (606) 864-4280', 0, 0, 'L');
 
-        $emailIcon = 'assets/images/email.png';
-        $this->Image($emailIcon, $marginLeft + $colWidth + 10, $this->GetY(), 5, 5);
-        $this->SetXY($marginLeft + $colWidth + 17, $this->GetY());
+        $this->SetXY($marginLeft + $colWidth + 10, $this->GetY());
         $this->Cell($colWidth, 5, 'Sales@EastKentuckyMetal.com', 0, 0, 'L');
 
-        $webIcon = 'assets/images/web.png';
-        $this->Image($webIcon, $marginLeft + 2 * $colWidth + 10, $this->GetY(), 5, 5);
-        $this->SetXY($marginLeft + 2 * $colWidth + 17, $this->GetY());
+        $this->SetXY($marginLeft + 2 * $colWidth + 10, $this->GetY());
         $this->Cell($colWidth, 5, 'EastKentuckyMetal.com', 0, 0, 'L');
 
         $yStart = $this->GetY() - 35;
         $this->SetFont('Arial', '', 10);
         $this->SetXY($marginLeft, $yStart);
         $this->MultiCell($colWidthRight, 5,
-            "Scan me for a Digtal copy of this receipt", 0, 'C');
+            "Scan me for Digital Statement", 0, 'C');
 
         $qrX = 20;
         $qrY = $this->GetY();

@@ -534,24 +534,6 @@ function showCol($name) {
             <iframe id="pdfFrame" src="" style="height: 70vh; width: 100%;" class="mb-3 border rounded"></iframe>
 
             <div class="container-fluid border rounded p-3">
-                <?php
-                $sql = "SELECT id, pricing_name FROM customer_pricing WHERE status = 1 AND hidden = 0 ORDER BY pricing_name ASC";
-                $result = $conn->query($sql);
-
-                if ($result && $result->num_rows > 0) {
-                    echo '<div class="mt-3 text-center">';
-                    echo '<div class="d-flex flex-wrap justify-content-center">';
-                    while ($row = $result->fetch_assoc()) {
-                        echo '<button type="button" class="btn btn-secondary btn-sm mx-1 my-1 pricing-btn" style="color:#000;" id="view_customer_pricing" data-id="' . $row['id'] . '">'
-                            . htmlspecialchars($row['pricing_name']) .
-                            '</button>';
-                    }
-                    echo '</div></div>';
-                } else {
-                    echo '<p>No active pricing types found.</p>';
-                }
-                ?>
-
                 <div class="mt-3 d-flex flex-wrap justify-content-end gap-2">
                     <button id="printBtn" class="btn btn-success">Print</button>
                     <button id="downloadBtn" class="btn btn-primary">Download</button>
