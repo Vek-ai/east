@@ -105,6 +105,7 @@ if(isset($_POST['fetch_prompt_quantity'])){
                         include "panel_layouts/snap_lock.php";
                         break;
                     case 45;
+                    case 48;
                     case 20: // mechanical_seam
                         include "panel_layouts/mechanical_seam.php";
                         break;
