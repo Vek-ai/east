@@ -559,6 +559,13 @@ if(isset($_REQUEST['action'])) {
                 WHERE id='$line_id'";
             if (!mysqli_query($conn, $update_sql)) { $success=false; break; }
 
+            $work_order_sql = "UPDATE work_order SET
+                custom_color='$custom_color',custom_grade='$custom_grade',custom_gauge='$custom_gauge',
+                custom_profile='$custom_profile',quantity='$quantity',custom_length='$custom_length',
+                custom_length2='$custom_length2',panel_type='$panel_type',panel_style='$panel_style'
+                WHERE work_order_product_id='$line_id'";
+            mysqli_query($conn, $work_order_sql);
+
             $changes = [];
             foreach (['custom_color','custom_grade','custom_gauge','custom_profile','quantity','custom_length','custom_length2','panel_type','panel_style'] as $key) {
                 $old_val = $old_data[$key] ?? '';

@@ -1163,13 +1163,21 @@ if ($page) {
         <div class="modal-dialog modal-xl modal-dialog-centered" role="document">
           <div class="modal-content modal-content-demo">
             <div class="modal-header">
-              <h4 class="modal-title">Color Chart</h4>
+              <h4 class="modal-title">EKM Color Chart</h4>
             </div>
-            <div class="modal-body">
-              <img id="chartImage" src="assets/images/low_rib.jpg" alt="Trim Chart" class="img-fluid mb-4">
+
+            <div class="modal-body text-center">
+              <img
+                src="assets/images/color_chart.jpg"
+                alt="Trim Chart"
+                class="img-fluid"
+                style="max-height: 78vh; width: auto;"
+              >
             </div>
             <div class="modal-footer">
-              <button class="btn ripple btn-danger" data-bs-dismiss="modal" type="button">Close</button>
+              <button class="btn ripple btn-danger" data-bs-dismiss="modal" type="button">
+                Close
+              </button>
             </div>
           </div>
         </div>

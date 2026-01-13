@@ -188,10 +188,18 @@ function renderPanelCategory($pdf, $product, $conn) {
     $total_length = $ft + ($in_decimal / 12);
 
     $ft_only = floor($total_length);
-    $inch_only = round(($total_length - $ft_only) * 12);
+    $inch_raw   = ($total_length - $ft_only) * 12;
+    $inch_round = round($inch_raw, 2);
+    $inch_disp  = rtrim(rtrim(number_format($inch_round, 2, '.', ''), '0'), '.');
 
-    $length_display = str_pad($ft_only . 'ft', 6, ' ', STR_PAD_RIGHT)
-                . str_pad($inch_only . 'in', 6, ' ', STR_PAD_LEFT);
+    if ($inch_round >= 12) {
+        $ft_only++;
+        $inch_disp = '0';
+    }
+
+    $length_display =
+        str_pad($ft_only . 'ft', 6, ' ', STR_PAD_RIGHT) .
+        str_pad($inch_disp . 'in', 6, ' ', STR_PAD_LEFT);
 
 
     $product_abbrev = $product['product_id_abbrev'] ?? '';
@@ -258,10 +266,18 @@ function renderTrimCategory($pdf, $product, $conn) {
     $total_length = $ft + ($in_decimal / 12);
 
     $ft_only = floor($total_length);
-    $inch_only = round(($total_length - $ft_only) * 12);
+    $inch_raw   = ($total_length - $ft_only) * 12;
+    $inch_round = round($inch_raw, 2);
+    $inch_disp  = rtrim(rtrim(number_format($inch_round, 2, '.', ''), '0'), '.');
 
-    $length_display = str_pad($ft_only . 'ft', 6, ' ', STR_PAD_RIGHT)
-                . str_pad($inch_only . 'in', 6, ' ', STR_PAD_LEFT);
+    if ($inch_round >= 12) {
+        $ft_only++;
+        $inch_disp = '0';
+    }
+
+    $length_display =
+        str_pad($ft_only . 'ft', 6, ' ', STR_PAD_RIGHT) .
+        str_pad($inch_disp . 'in', 6, ' ', STR_PAD_LEFT);
 
 
     $product_abbrev = $product['product_id_abbrev'] ?? '';

@@ -1460,6 +1460,8 @@ if (isset($_POST['save_order'])) {
             $bundle_id         = $item['bundle_name'] ?? '';
             $note              = $item['note'] ?? '';
             $screw_length      = $item['screw_length'] ?? '';
+            $lumber_length      = $item['lumber_length'] ?? '';
+            $dimension_id      = $item['dimension_id'] ?? '';
 
             $curr_discount    = intval(getCustomerDiscountProfile($customerid));
             $loyalty_discount = intval(getCustomerDiscountLoyalty($customerid));
@@ -1472,14 +1474,14 @@ if (isset($_POST['save_order'])) {
                 custom_length, custom_length2, actual_price, discounted_price, product_category,
                 custom_color, custom_grade, custom_gauge, custom_profile, current_customer_discount, current_loyalty_discount,
                 used_discount, stiff_stand_seam, stiff_board_batten, panel_type, panel_style, custom_img_src, bundle_id, note,
-                product_id_abbrev, screw_length
+                product_id_abbrev, screw_length, lumber_length, dimension_id
             ) VALUES (
                 '$orderid', '$product_id', '$product_item', '$quantity', '" . ($item['estimate_width'] ?? $calc['product']['width']) . "',
                 '" . ($item['estimate_bend'] ?? '') . "', '" . ($item['estimate_hem'] ?? '') . "', '$total_length', '" . ($item['estimate_length_inch'] ?? 0) . "',
                 '$product_price', '$customer_price', '$category_id',
                 '$color_id', '$grade', '$gauge', '$profile', '$curr_discount', '$loyalty_discount',
                 '$used_discount', '$stiff_stand_seam', '$stiff_board_batten', '$panel_type', '$panel_style', '$custom_img_src', '$bundle_id', '$note',
-                '$product_id_abbrev', '$screw_length'
+                '$product_id_abbrev', '$screw_length', '$lumber_length', '$dimension_id'
             )";
 
             if ($conn->query($query) !== TRUE) {
@@ -1930,7 +1932,7 @@ if (isset($_POST['save_trim'])) {
             $newLine = empty($_SESSION['cart']) ? 1 : (max(array_keys($_SESSION['cart'])) + 1);
             $_SESSION["cart"][$newLine] = [
                 'product_id'            => $row['product_id'],
-                'product_item'          => !empty($description) ? $description : $row['product_item'],
+                'product_item'          => $row['product_item'],
                 'unit_price'            => $price,
                 'line'                  => $newLine,
                 'quantity_cart'         => $quantity,
@@ -1945,7 +1947,7 @@ if (isset($_POST['save_trim'])) {
                 'width'                 => $width,
                 'hem'                   => $hem,
                 'bend'                  => $bend,
-                'note'                  => $note,
+                'note'                  => !empty($description) ? $description : $note,
                 'weight'                => $row['weight'],
                 'usage'                 => 0,
                 'supplier_id'           => '',
@@ -2263,6 +2265,7 @@ if (isset($_POST['save_lumber'])) {
                     'dimension_id'        => $dimension,
                     'screw_length'        => '',
                     'screw_type'          => '',
+                    'lumber_length'       => $dimension_value,
                     'weight'              => 0,
                     'supplier_id'         => '',
                     'custom_grade'        => '',

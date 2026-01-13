@@ -128,10 +128,18 @@ function renderPanelCategory($pdf, $product, $conn) {
     $total_length = $ft + ($in_decimal / 12);
 
     $ft_only = floor($total_length);
-    $inch_only = round(($total_length - $ft_only) * 12);
+    $inch_raw   = ($total_length - $ft_only) * 12;
+    $inch_round = round($inch_raw, 2);
+    $inch_disp  = rtrim(rtrim(number_format($inch_round, 2, '.', ''), '0'), '.');
 
-    $length_display = str_pad($ft_only . 'ft', 6, ' ', STR_PAD_RIGHT)
-                . str_pad($inch_only . 'in', 6, ' ', STR_PAD_LEFT);
+    if ($inch_round >= 12) {
+        $ft_only++;
+        $inch_disp = '0';
+    }
+
+    $length_display =
+        str_pad($ft_only . 'ft', 6, ' ', STR_PAD_RIGHT) .
+        str_pad($inch_disp . 'in', 6, ' ', STR_PAD_LEFT);
 
 
     $product_abbrev = $product['product_id_abbrev'] ?? '';
@@ -198,10 +206,18 @@ function renderTrimCategory($pdf, $product, $conn) {
     $total_length = $ft + ($in_decimal / 12);
 
     $ft_only = floor($total_length);
-    $inch_only = round(($total_length - $ft_only) * 12);
+    $inch_raw   = ($total_length - $ft_only) * 12;
+    $inch_round = round($inch_raw, 2);
+    $inch_disp  = rtrim(rtrim(number_format($inch_round, 2, '.', ''), '0'), '.');
 
-    $length_display = str_pad($ft_only . 'ft', 6, ' ', STR_PAD_RIGHT)
-                . str_pad($inch_only . 'in', 6, ' ', STR_PAD_LEFT);
+    if ($inch_round >= 12) {
+        $ft_only++;
+        $inch_disp = '0';
+    }
+
+    $length_display =
+        str_pad($ft_only . 'ft', 6, ' ', STR_PAD_RIGHT) .
+        str_pad($inch_disp . 'in', 6, ' ', STR_PAD_LEFT);
 
 
     $product_abbrev = $product['product_id_abbrev'] ?? '';
@@ -450,7 +466,14 @@ function renderInvoiceHeader($pdf, $row_orders) {
     $pdf->SetXY($col2_x, $startY);
     $shipStartY = $pdf->GetY();
 
-    $shipName = trim($row_orders['deliver_fname'] . ' ' . $row_orders['deliver_lname']);
+    $deliver_name = trim(
+        ($row_orders['deliver_fname'] ?? '') . ' ' . ($row_orders['deliver_lname'] ?? '')
+    );
+
+    if ($deliver_name === '') {
+        $deliver_name = get_customer_name($row_orders['customerid']);
+    }
+    $shipName = trim($deliver_name);
     $pdf->MultiCell($wHalf-5, 5, $shipName, 1, 'L');
 
     $shipAddressParts = [];

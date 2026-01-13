@@ -105,11 +105,18 @@ function renderPanelCategory($pdf, $product, $conn) {
     $total_length = $ft + ($in_decimal / 12);
 
     $ft_only = floor($total_length);
-    $inch_only = round(($total_length - $ft_only) * 12);
+    $inch_raw   = ($total_length - $ft_only) * 12;
+    $inch_round = round($inch_raw, 2);
+    $inch_disp  = rtrim(rtrim(number_format($inch_round, 2, '.', ''), '0'), '.');
 
-    $length_display = str_pad($ft_only . 'ft', 6, ' ', STR_PAD_RIGHT)
-                . str_pad($inch_only . 'in', 6, ' ', STR_PAD_LEFT);
+    if ($inch_round >= 12) {
+        $ft_only++;
+        $inch_disp = '0';
+    }
 
+    $length_display =
+        str_pad($ft_only . 'ft', 6, ' ', STR_PAD_RIGHT) .
+        str_pad($inch_disp . 'in', 6, ' ', STR_PAD_LEFT);
 
     $product_abbrev = $product['product_id_abbrev'] ?? '';
     $color = getColorName($product['custom_color']);
@@ -161,11 +168,18 @@ function renderTrimCategory($pdf, $product, $conn) {
     $total_length = $ft + ($in_decimal / 12);
 
     $ft_only = floor($total_length);
-    $inch_only = round(($total_length - $ft_only) * 12);
+    $inch_raw   = ($total_length - $ft_only) * 12;
+    $inch_round = round($inch_raw, 2);
+    $inch_disp  = rtrim(rtrim(number_format($inch_round, 2, '.', ''), '0'), '.');
 
-    $length_display = str_pad($ft_only . 'ft', 6, ' ', STR_PAD_RIGHT)
-                . str_pad($inch_only . 'in', 6, ' ', STR_PAD_LEFT);
+    if ($inch_round >= 12) {
+        $ft_only++;
+        $inch_disp = '0';
+    }
 
+    $length_display =
+        str_pad($ft_only . 'ft', 6, ' ', STR_PAD_RIGHT) .
+        str_pad($inch_disp . 'in', 6, ' ', STR_PAD_LEFT);
 
     $product_abbrev = $product['product_id_abbrev'] ?? '';
     $color = getColorName($product['custom_color']);
@@ -290,7 +304,8 @@ function renderLumberCategory($pdf, $product, $conn) {
     $product_abbrev = $product['product_id_abbrev'] ?? '';
     $color = getColorName($product['custom_color']);
 
-    $unit_price = getProductPrice($productid);
+    $dimension_id = $product['dimension_id'] ?? '';
+    $unit_price = getLumberPrice($productid, $dimension_id);
 
     $summaryRow = [
         $product_abbrev,
@@ -823,7 +838,15 @@ if (mysqli_num_rows($result) > 0) {
         $pdf->MultiCell($leftWidth, 5, $leftText, 0, 'L');
         $leftBottom = $pdf->GetY();
 
-        $rightText = trim($row_orders['deliver_fname'] . ' ' . $row_orders['deliver_lname']) . "\n";
+        $deliver_name = trim(
+            ($row_orders['deliver_fname'] ?? '') . ' ' . ($row_orders['deliver_lname'] ?? '')
+        );
+
+        if ($deliver_name === '') {
+            $deliver_name = get_customer_name($row_orders['customerid']);
+        }
+
+        $rightText = $deliver_name . "\n";
         $shipAddressParts = [];
         if (!empty($row_orders['deliver_address'])) $shipAddressParts[] = $row_orders['deliver_address'];
         if (!empty($row_orders['deliver_city'])) $shipAddressParts[] = $row_orders['deliver_city'];

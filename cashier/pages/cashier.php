@@ -504,11 +504,11 @@ $editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) :
         <h6 class="modal-title">Trim Chart</h6>
       </div>
       <div class="modal-body">
-        <img id="chartImage" src="../assets/images/low_rib.jpg" alt="Trim Chart" class="img-fluid mb-4">
+        <img id="chartImage" src="../assets/images/trim_chart.jpg" alt="Trim Chart" class="img-fluid mb-4 w-100">
 
         <h6>Exposed Fasteners</h6>
         <div class="d-flex flex-wrap gap-2 mb-3">
-          <button class="chart-btn btn btn-sm btn-outline-primary" data-img="../assets/images/low_rib.jpg">Low-Rib</button>
+          <button class="chart-btn btn btn-sm btn-outline-primary" data-img="../assets/images/trim_chart.jpg">Low-Rib</button>
           <button class="chart-btn btn btn-sm btn-outline-primary" data-img="../assets/images/hi_rib.jpg">Hi-Rib</button>
           <button class="chart-btn btn btn-sm btn-outline-primary" data-img="../assets/images/corrugated.jpg">Corrugated</button>
           <button class="chart-btn btn btn-sm btn-outline-primary" data-img="../assets/images/5v.jpg">5-V</button>
