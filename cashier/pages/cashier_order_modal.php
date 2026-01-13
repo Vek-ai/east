@@ -629,8 +629,14 @@ if(isset($_POST['fetch_order'])){
                                         <div class="d-flex flex-column align-items-center">
                                             <input class="form-check-input pay-method mb-2" type="checkbox" id="payCheck" name="payCheck" value="check"><br>
                                             <div id="checkAmountDiv" class="amount-div d-none mt-2 w-100">
-                                                <label class="form-label small text-center d-block mb-1">Amount</label>
-                                                <input type="number" class="form-control form-control-sm text-center" id="checkAmount" name="checkAmount" placeholder="0.00">
+                                                <div class="form-group mt-2">
+                                                    <label class="form-label small text-center d-block mb-1">Amount</label>
+                                                    <input type="number" class="form-control form-control-sm text-center" id="checkAmount" name="checkAmount" placeholder="0.00">
+                                                </div>
+                                                <div class="form-group mt-2">
+                                                    <label class="form-label" for="check_no">Check #</label>
+                                                    <input class="form-control form-control-sm" type="text" id="check_no" name="check_no" placeholder="Check #">
+                                                </div>
                                             </div>
                                         </div>
                                     </div>

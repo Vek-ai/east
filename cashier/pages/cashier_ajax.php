@@ -806,7 +806,7 @@ if (isset($_POST['save_estimate'])) {
     header('Content-Type: application/json');
     $response = [];
 
-    if (!isset($_SESSION['customer_id']) || empty($_SESSION['cart'])) {
+    if (!isset($_SESSION['customer_id']) && empty($_SESSION['cart'])) {
         $response['error'] = "Customer ID or cart is not set.";
         echo json_encode($response);
         exit;
@@ -3018,14 +3018,14 @@ if (isset($_POST['change_price'])) {
     }
 }
 
-if (isset($_POST['change_discount'])) {
+/* if (isset($_POST['change_discount'])) {
     $discount = (float) $_POST['discount'];
     foreach ($_SESSION['cart'] as $key => &$item) {
         $item['used_discount'] = $discount;
     }
     unset($item);
     echo "success";
-}
+} */
 
 if (isset($_POST['add_to_cart'])) {
     $quantity       = $_POST['quantity_product'] ?? [];

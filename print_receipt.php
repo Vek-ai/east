@@ -980,12 +980,23 @@ if (mysqli_num_rows($result) > 0) {
         
         $pdf->SetFont('Arial', '', 9);
 
-        $subtotal   = $total_price;
-        $sales_tax  = $subtotal * $tax;
-        $grand_total = $subtotal + $delivery_price + $sales_tax;
+        $materials_total = $row_orders['total_price'] ?? 0;
+        $discount_value = 0;
+        if (!empty($row_orders['discount_percent']) && $row_orders['discount_percent'] > 0) {
+            $discount_value = $materials_total * ($row_orders['discount_percent'] / 100);
+        } elseif (!empty($row_orders['discount_amount']) && $row_orders['discount_amount'] > 0) {
+            $discount_value = min($row_orders['discount_amount'], $materials_total);
+        }
+
+        $subtotal = max(0, $materials_total - $discount_value);
+        $taxable_total = $subtotal + $delivery_price;
+        $sales_tax = $taxable_total * $tax;
+        $grand_total = $taxable_total + $sales_tax;
+
+        $total_saved = $discount_value;
 
         $pdf->SetXY($col2_x, $col_y);
-        $pdf->Cell(40, $lineheight, 'CUSTOMER SAVINGS:', 0, 0);
+        $pdf->Cell(40, $lineheight, 'SAVINGS:', 0, 0);
         $pdf->Cell(25, $lineheight, '$ ' . number_format(max(0, $total_saved), 2), 0, 1, 'R');
 
         $pdf->Ln(5);

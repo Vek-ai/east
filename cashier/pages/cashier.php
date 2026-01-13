@@ -4135,7 +4135,9 @@ $editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) :
             if (discount > 100) discount = 100;
             if (discount < 0) discount = 0;
 
-            $.ajax({
+            $(this).val(discount);
+
+            /* $.ajax({
                 url: 'pages/cashier_ajax.php',
                 type: 'POST',
                 data: {
@@ -4149,7 +4151,7 @@ $editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) :
                 error: function(jqXHR, textStatus, errorThrown) {
                     alert('Error: ' + textStatus + ' - ' + errorThrown);
                 }
-            });
+            }); */
         });
 
         $(document).on('click', '#save_price_change', function () {

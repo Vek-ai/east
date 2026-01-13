@@ -945,7 +945,7 @@ if (mysqli_num_rows($result) > 0) {
 
         $pdf->SetFont('Arial', '', 9);
 
-        $materials_total = $row_orders['discounted_price'] ?? 0;
+        $materials_total = $row_orders['total_price'] ?? 0;
         $discount_value = 0;
         if (!empty($row_orders['discount_percent']) && $row_orders['discount_percent'] > 0) {
             $discount_value = $materials_total * ($row_orders['discount_percent'] / 100);

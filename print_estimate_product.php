@@ -414,8 +414,6 @@ class PDF extends FPDF {
         $this->SetXY($xStart, $yStart + $rowHeight);
     }
 
-
-
     function Header() {
         $this->SetFont('Arial', '', 9);
         $this->Image('assets/images/logo-bw.png', 5, 6, 60, 20);
@@ -640,10 +638,10 @@ if (mysqli_num_rows($result) > 0) {
 
         $leftText = get_customer_name($row_estimates['customerid']) . "\n";
         $addressParts = [];
-        $address = $customerDetails['address'];
-        $city = $customerDetails['city'];
-        $state = $customerDetails['state'];
-        $zip = $customerDetails['zip'];
+        $address = $customerDetails['address'] ?? '';
+        $city = $customerDetails['city'] ?? '';
+        $state = $customerDetails['state'] ?? '';
+        $zip = $customerDetails['zip'] ?? '';
         if(!empty($customerDetails['different_ship_address'])){
             $address = $customerDetails['ship_address'];
             $city = $customerDetails['ship_city'];
