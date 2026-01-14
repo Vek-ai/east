@@ -7,7 +7,7 @@ function calculateUnitPrice(
         $soldByFeet = 0, 
         $bends = 0, 
         $hems = 0, 
-        $color = '', 
+        $color, 
         $grade = '', 
         $gauge = '', 
         $width = ''
