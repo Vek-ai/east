@@ -39,7 +39,7 @@ function calculateUnitPrice(
     //$baseTotal = ($soldByFeet == 1) ? $basePrice * $totalLength : $basePrice;
     $baseTotal = $basePrice * $totalLength * ($width / 12);
 
-    $multiplier = getMultiplierValue($color, $grade, $gauge) ?? 1;
+    $multiplier = getMultiplierValue(3,$color, $grade, $gauge) ?? 1;
     $priceWithMultipliers = $baseTotal * $multiplier;
 
     $panelExtraCost = $baseTotal * $panelExtra;
