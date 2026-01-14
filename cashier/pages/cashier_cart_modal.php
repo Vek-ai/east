@@ -75,6 +75,7 @@ if(isset($_POST['fetch_cart'])){
         ])));
         $fname = $customer_details['customer_first_name'];
         $lname = $customer_details['customer_last_name'];
+        //test
         $discount = is_numeric(getCustomerDiscount($customer_id)) ? floatval(getCustomerDiscount($customer_id)) / 100 : 0;
         $tax = is_numeric(getCustomerTax($customer_id)) ? floatval(getCustomerTax($customer_id)) / 100 : 0;
         $customer_details_pricing = $customer_details['customer_pricing'];
@@ -185,7 +186,7 @@ if(isset($_POST['fetch_cart'])){
             <div class="form-group row align-items-center">
                 <div class="d-flex flex-column gap-1">
                     <div>
-                        <label class="fw-bold fs-5">Customer Name: <?= $customer_name ?></label>
+                        <label class="fw-bold fs-5">Customer Name: <?= $customer_name ?> <?= $discount ?></label>
                         <button class="btn btn-primary btn-sm me-3" type="button" id="customer_change_cart">
                             <i class="fe fe-reload"></i> Change
                         </button>
