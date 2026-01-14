@@ -3369,7 +3369,7 @@ function calculateCartItem($values) {
     $product_type= $product['product_type'];
 
     $customer_pricing_rate = getPricingCategory($category_id, $customer_details_pricing) / 100;
-echo $customer_pricing_rate;
+echo "customer_pricing_rate:"$customer_pricing_rate;
     $pack = isset($values['pack']) && is_numeric($values['pack']) ? floatval($values['pack']) : 1;
     $estimate_length      = isset($values["estimate_length"]) && is_numeric($values["estimate_length"]) ? floatval($values["estimate_length"]) : 1;
     $estimate_length_inch = isset($values["estimate_length_inch"]) && is_numeric($values["estimate_length_inch"]) ? floatval($values["estimate_length_inch"]) : 0;
