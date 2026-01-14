@@ -75,7 +75,6 @@ if(isset($_POST['fetch_cart'])){
         ])));
         $fname = $customer_details['customer_first_name'];
         $lname = $customer_details['customer_last_name'];
-        //test
         $discount = is_numeric(getCustomerDiscount($customer_id)) ? floatval(getCustomerDiscount($customer_id)) / 100 : 0;
         $tax = is_numeric(getCustomerTax($customer_id)) ? floatval(getCustomerTax($customer_id)) / 100 : 0;
         $customer_details_pricing = $customer_details['customer_pricing'];
@@ -186,7 +185,7 @@ if(isset($_POST['fetch_cart'])){
             <div class="form-group row align-items-center">
                 <div class="d-flex flex-column gap-1">
                     <div>
-                        <label class="fw-bold fs-5">Customer Name: <?= $customer_name ?> test<?= $discount ?> details<?= $customer_details_pricing ?>rate: <?= $customer_pricing_rate ?></label>
+                        <label class="fw-bold fs-5">Customer Name: <?= $customer_name ?></label>
                         <button class="btn btn-primary btn-sm me-3" type="button" id="customer_change_cart">
                             <i class="fe fe-reload"></i> Change
                         </button>
@@ -353,11 +352,10 @@ if(isset($_POST['fetch_cart'])){
                                     $sold_by_feet = $item['sold_by_feet'];
                                     $linear_price =$item['linear_price'];
                                     $panel_price = $item['panel_price'];
-                                    $customer_pricing_rate= $item['customer_pricing_rate'];
-                                    
+
                                     $total_price_actual = $item['product_price'];
                                     $total_customer_price = $item['customer_price'];
- 
+
                                     $unique_prod_id = $item['unique_prod_id'];
                                     $multiplier = $item['multiplier'];
                                     $parent_prod_id = $item['parent_prod_id'];
