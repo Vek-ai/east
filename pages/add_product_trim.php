@@ -236,7 +236,7 @@ if(isset($_REQUEST['action'])) {
                                     $selected = in_array($row_group['id'], $selected_color_groups) ? 'selected' : '';
                                     ?>
                                     <option value="<?= $row_group['id'] ?>" <?= $selected ?>>
-                                        <?= htmlspecialchars($row_group['color_name']) ?>
+                                        <?= htmlspecialchars($row_group['color_name']) .' - ' .number_format($row_group['multiplier'],2) ?>
                                     </option>
                                     <?php
                                 }
