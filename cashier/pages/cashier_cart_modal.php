@@ -353,7 +353,7 @@ if(isset($_POST['fetch_cart'])){
                                     $sold_by_feet = $item['sold_by_feet'];
                                     $linear_price =$item['linear_price'];
                                     $panel_price = $item['panel_price'];
-                                    $customer_pricing_rate= $item['panel_price'];
+                                    $customer_pricing_rate= $item['customer_pricing_rate'];
                                     
                                     $total_price_actual = $item['product_price'];
                                     $total_customer_price = $item['customer_price'];
