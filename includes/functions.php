@@ -68,7 +68,7 @@ function getCoilConditionName($id){
     $coil_condition = !empty($row['coil_condition']) ? $row['coil_condition'] : '';
     return  $coil_condition;
 }
-
+//Paki comment eto, seems not being used?
 function getProductColorMultName($id){
     global $conn;
     $query = "SELECT color FROM color_multiplier WHERE id = '$id'";
@@ -77,7 +77,7 @@ function getProductColorMultName($id){
     $color = $row['color'] ?? '';
     return  $color;
 }
-
+//Paki comment eto, seems not being used?
 function getProductColorMultValue($id) {
     global $conn;
     $query = "SELECT multiplier FROM color_multiplier WHERE id = '$id'";
@@ -357,7 +357,7 @@ function getProductCategoryName($product_category_id){
     $product_category = $row['product_category'] ?? '';
     return  $product_category;
 }
-
+//Saan eto ginagamit?
 function getCustomMultiplier($product_category_id){
     global $conn;
     $query = "SELECT custom_multiplier FROM product_category WHERE product_category_id = '$product_category_id'";
@@ -482,7 +482,7 @@ function getColorName($color_id){
     $color_name = $row['color_name'] ?? '';
     return  $color_name;
 }
-
+//same here->
 function getColorMultiplierName($id){
     global $conn;
     $query = "SELECT color FROM color_multiplier WHERE id  = '$id'";
@@ -2542,7 +2542,7 @@ function getAvailableInventory($product_id) {
         }
 
         $color_id = $row['color_id'];
-        $multiplier = getMultiplierValue($color_id, '', '');
+        $multiplier = getMultiplierValue('',$color_id, '', '');
 
         $price *= $multiplier;
 
@@ -3177,7 +3177,7 @@ function decrypt_password_from_storage(string $b64): string {
     if ($plaintext === false) throw new Exception('Decryption failed');
     return $plaintext;
 }
-
+//
 function fetchColorMultiplier($colorGroup, $grade = 0, $gauge = 0, $category = 0) {
     global $conn;
 
@@ -3211,12 +3211,13 @@ function fetchColorMultiplier($colorGroup, $grade = 0, $gauge = 0, $category = 0
     return 1.0;
 }
 
-function getMultiplierValue($color_id, $grade_id, $gauge_id) {
+function getMultiplierValue($category_id,$color_id, $grade_id, $gauge_id) {
     global $conn;
     
     $color_id    = intval($color_id);
     $grade_id    = intval($grade_id);
     $gauge_id    = intval($gauge_id);
+    $category_id = intval($gauge_id);
 
     $color_details = getColorDetails($color_id);
     $color_group = $color_details['color_group'] ?? '';
@@ -3224,11 +3225,23 @@ function getMultiplierValue($color_id, $grade_id, $gauge_id) {
     $multiplier = 1.0;
 
     if ($color_id > 0) {
-        $sql = "SELECT multiplier FROM product_color WHERE id = '$color_group' LIMIT 1";
-        $res = $conn->query($sql);
-        if ($res && $row = $res->fetch_assoc()) {
-            $multiplier *= floatval($row['multiplier']);
-        }
+        //$sql = "SELECT multiplier FROM product_color WHERE id = '$color_group' LIMIT 1";
+           $multiplier = 1.0;
+            $sql = "
+            SELECT multiplier 
+            FROM product_color 
+            WHERE id = '$color_group'
+            AND FIND_IN_SET('$category_id', product_category)
+            AND FIND_IN_SET('$grade_id', grade)
+            AND FIND_IN_SET('$gauge_id', gauge)
+            LIMIT 1
+             ";
+
+            $res = $conn->query($sql);
+
+             if ($res && $row = $res->fetch_assoc()) {
+            $multiplier = floatval($row['multiplier']); // override if found
+            }
     }
 
     if ($grade_id > 0) {
@@ -3608,8 +3621,8 @@ function calculateCartItem($values) {
         $custom_multiplier = floatval(getCustomMultiplier($category_id));
         $product_price += $product_price * $custom_multiplier;
     }
-
-    $multiplier = getMultiplierValue($color_id, $grade, $gauge);
+//added category_id->
+    $multiplier = getMultiplierValue($category_id, $color_id, $grade, $gauge);
     $discount = isset($values["used_discount"]) ? floatval($values["used_discount"]) / 100 : 0;
 
     $subtotal       = $product_price;
