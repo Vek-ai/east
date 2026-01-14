@@ -1533,7 +1533,7 @@ function getCustomerDiscount($customer_id) {
     return max($discount_loyalty, $discount_customer);
 }
 
-function getPricingCategory($product_category_id, $customer_pricing_id) {
+function getPricingCategory($product_category_id, $customer_pricing_id,$data_id) {
     global $conn;
     $percentage = 0;
     $query = "
@@ -1541,7 +1541,8 @@ function getPricingCategory($product_category_id, $customer_pricing_id) {
         FROM pricing_category 
         WHERE 
             product_category_id = '$product_category_id' AND
-            customer_pricing_id = '$customer_pricing_id'
+            customer_pricing_id = '$customer_pricing_id'AND
+            FIND_IN_SET('$data_id', product_items) > 0
         ";
     $result = mysqli_query($conn, $query);
     if ($result && mysqli_num_rows($result) > 0) {
@@ -3368,7 +3369,7 @@ function calculateCartItem($values) {
     $category_id = $product["product_category"];
     $product_type= $product['product_type'];
 
-    $customer_pricing_rate = getPricingCategory($category_id, $customer_details_pricing) / 100;
+    $customer_pricing_rate = getPricingCategory($category_id, $customer_details_pricing,$data_id) / 100;
     $pack = isset($values['pack']) && is_numeric($values['pack']) ? floatval($values['pack']) : 1;
     $estimate_length      = isset($values["estimate_length"]) && is_numeric($values["estimate_length"]) ? floatval($values["estimate_length"]) : 1;
     $estimate_length_inch = isset($values["estimate_length_inch"]) && is_numeric($values["estimate_length_inch"]) ? floatval($values["estimate_length_inch"]) : 0;
