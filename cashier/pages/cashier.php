@@ -4572,6 +4572,7 @@ $editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) :
             var color_id = $('#select-color').find('option:selected').val();
             var grade_id = $('#select-grade').find('option:selected').val();
             var gauge_id = $('#select-gauge').find('option:selected').val();
+            var preselectedProfile = ($('#select-profile').val() || [])[0];
             $.ajax({
                 url: 'pages/cashier_quantity_modal.php',
                 type: 'POST', 
@@ -4580,6 +4581,7 @@ $editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) :
                     color_id: color_id,
                     grade_id: grade_id,
                     gauge_id: gauge_id,
+                    profile_id: preselectedProfile,
                     fetch_prompt_quantity: 'fetch_prompt_quantity'
                 },
                 success: function(response) {
@@ -4607,6 +4609,7 @@ $editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) :
             var color_id = $('#select-color').find('option:selected').val();
             var grade_id = $('#select-grade').find('option:selected').val();
             var gauge_id = $('#select-gauge').find('option:selected').val();
+            var preselectedProfile = ($('#select-profile').val() || [])[0];
             $.ajax({
                 url: 'pages/cashier_trim_modal.php',
                 type: 'POST', 
@@ -4615,6 +4618,7 @@ $editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) :
                     color_id: color_id,
                     grade_id: grade_id,
                     gauge_id: gauge_id,
+                    profile_id: preselectedProfile,
                     fetch_modal: 'fetch_modal'
                 },
                 success: function(response) {

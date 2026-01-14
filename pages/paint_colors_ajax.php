@@ -19,7 +19,6 @@ if(isset($_REQUEST['action'])) {
         $color_id            = mysqli_real_escape_string($conn, $_POST['color_id']);
         $color_name          = mysqli_real_escape_string($conn, $_POST['color_name'] ?? '');
         $color_code          = mysqli_real_escape_string($conn, $_POST['color_code'] ?? '');
-        $color_group         = mysqli_real_escape_string($conn, $_POST['color_group'] ?? '');
         $provider_id         = mysqli_real_escape_string($conn, $_POST['provider'] ?? '');
         $ekm_color_code      = mysqli_real_escape_string($conn, $_POST['ekm_color_code'] ?? '');
         $ekm_color_no        = mysqli_real_escape_string($conn, $_POST['ekm_color_no'] ?? '');
@@ -32,6 +31,10 @@ if(isset($_REQUEST['action'])) {
         $notes               = mysqli_real_escape_string($conn, $_POST['notes'] ?? '');
         $userid              = mysqli_real_escape_string($conn, $_POST['userid']);
         $use_ekm_color_name  = isset($_POST['use_ekm_color_name']) ? 1 : 0;
+
+        $color_group = mysqli_real_escape_string(
+            $conn, json_encode(array_map('intval', $_POST['color_group'] ?? []))
+        );
 
         $product_category = mysqli_real_escape_string(
             $conn, json_encode(array_map('intval', $_POST['product_category'] ?? []))
@@ -103,6 +106,10 @@ if(isset($_REQUEST['action'])) {
     if ($action == "fetch_update_modal") {
         $color_id = mysqli_real_escape_string($conn, $_POST['id']);
         $color_details = getColorDetails($color_id);
+
+        $selected_group = !empty($color_details['color_group']) ? json_decode($color_details['color_group'], true) : [];
+        $selected_group = is_array($selected_group) ? $selected_group : [];
+
         ?>
         <input type="hidden" id="color_id" name="color_id" class="form-control" value="<?= $color_id ?>"/>
 
@@ -148,19 +155,21 @@ if(isset($_REQUEST['action'])) {
                             <div class="d-flex justify-content-between align-items-center">
                                 <label class="form-label">Color Group</label>
                             </div>
-                            <select id="color_group" class="form-control select2-edit" name="color_group">
+                            <select id="color_group" class="form-control select2-edit" name="color_group[]" multiple>
                                 <option value="">Select Color Group...</option>
                                 <?php
-                                $query_color_group = "
-                                    SELECT * FROM product_color ORDER BY color_name ASC
-                                ";
-
+                                $query_color_group = "SELECT * FROM product_color ORDER BY color_name ASC";
                                 $result_color_group = mysqli_query($conn, $query_color_group);
+
                                 while ($row_color_group = mysqli_fetch_array($result_color_group)) {
-                                    $selected = (($color_details['color_group'] ?? '') == $row_color_group['id']) ? 'selected' : '';
-                                ?>
+                                    $selected = (is_array($selected_group) 
+                                                    ? in_array($row_color_group['id'], $selected_group) 
+                                                    : $row_color_group['id'] == $selected_group) 
+                                                ? 'selected' 
+                                                : '';
+                                    ?>
                                     <option value="<?= $row_color_group['id'] ?>" <?= $selected ?>>
-                                        <?= $row_color_group['color_name'] ?>
+                                        <?= htmlspecialchars($row_color_group['color_name']) .'-' .number_format($row_color_group['multiplier'], 2) ?>
                                     </option>
                                 <?php
                                 }

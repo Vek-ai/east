@@ -41,6 +41,7 @@ if(isset($_POST['fetch_modal'])){
     $color_id = mysqli_real_escape_string($conn, $_POST['color_id'] ?? '');
     $grade_id = mysqli_real_escape_string($conn, $_POST['grade_id'] ?? '');
     $gauge_id = mysqli_real_escape_string($conn, $_POST['gauge_id'] ?? '');
+    $preselected_profile = mysqli_real_escape_string($conn, $_POST['profile_id'] ?? '');
     $product_details = getProductDetails($id);
     $type_details = getProductTypeDetails($product_details['product_type']);
     $custom_multiplier = getCustomMultiplier($product_details['product_category']);
@@ -90,6 +91,7 @@ if(isset($_POST['fetch_modal'])){
             $category_id = $product_details['product_category'];
         ?>
         <input type="hidden" id="trim_product_id" name="id" value="<?= $id ?>" />
+        <input type="hidden" id="trim_profile_id" name="profile_id" value="<?= $preselected_profile ?>" />
         <input type="hidden" id="trim_unit_price" name="price" value="<?= $product_details['unit_price'] ?>" />
         <input type="hidden" id="custom_multiplier_trim" name="custom_multiplier" value="<?= $custom_multiplier ?>" />
         <input type="hidden" id="is_pre_order" name="is_pre_order" value="0" />
@@ -300,6 +302,7 @@ if(isset($_POST['fetch_modal'])){
             $(document).ready(function () {
                 function updatePrice() {
                     const product_id = $('#trim_product_id').val();
+                    const profile_id = $('#trim_profile_id').val();
                     const quantities = [];
                     const lengthFeetArr = [];
 
@@ -320,6 +323,7 @@ if(isset($_POST['fetch_modal'])){
                         method: 'POST',
                         data: {
                             product_id: product_id,
+                            profile_id: profile_id,
                             quantity: quantities,
                             lengthFeet: lengthFeetArr,
                             color: color,
@@ -444,6 +448,7 @@ if (isset($_POST['fetch_price'])) {
     $color_id = intval($_POST['color'] ?? 0);
     $grade    = intval($_POST['grade'] ?? 0);
     $gauge    = intval($_POST['gauge'] ?? 0);
+    $preselected_profile = intval($_POST["profile_id"]);
 
     $totalPrice = 0;
 
@@ -470,6 +475,13 @@ if (isset($_POST['fetch_price'])) {
                 ? $bulk_price
                 : $basePrice;
 
+            $width = '';
+            $profile_raw = $product['profile'] ?? '[]';
+            $profile = json_decode($profile_raw, true);
+            $profile = is_array($profile) ? array_map('intval', $profile) : [];
+
+            $profile = !empty($preselected_profile) ? $preselected_profile : $profile;
+
             $totalPrice += $qty * calculateUnitPrice(
                 $unitPrice,
                 $feet,
@@ -480,7 +492,10 @@ if (isset($_POST['fetch_price'])) {
                 0,
                 $color_id,
                 $grade,
-                $gauge
+                $gauge,
+                $width,
+                $category,
+                $profile
             );
         }
     }

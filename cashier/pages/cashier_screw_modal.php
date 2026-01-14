@@ -270,6 +270,7 @@ if (isset($_POST['fetch_price'])) {
 
     if ($product_id > 0 && !empty($quantities)) {
         $product = getProductDetails($product_id);
+        $category   = $product['product_category'];
         $soldByFeet = intval($product['sold_by_feet'] ?? 0);
 
         $bulkData = getBulkData($product_id);
@@ -311,7 +312,9 @@ if (isset($_POST['fetch_price'])) {
                 $hems,
                 $color_id,
                 $grade,
-                $gauge
+                $gauge,
+                $category,
+                ''
             );
         }
     }

@@ -18,6 +18,7 @@ if(isset($_POST['fetch_prompt_quantity'])){
     $color_id = mysqli_real_escape_string($conn, $_POST['color_id'] ?? '');
     $grade_id = mysqli_real_escape_string($conn, $_POST['grade_id'] ?? '');
     $gauge_id = mysqli_real_escape_string($conn, $_POST['gauge_id'] ?? '');
+    $preselected_profile = mysqli_real_escape_string($conn, $_POST['profile_id'] ?? '');
     $product_details = getProductDetails($id);
     $type_details = getProductTypeDetails($product_details['product_type']);
     $is_special = $type_details['special'];
@@ -63,13 +64,7 @@ if(isset($_POST['fetch_prompt_quantity'])){
             $basePrice = $product_details["unit_price"];
             $product_system = $product_details["product_system"];
             $profile = $product_details["profile"];
-        ?>
-        <input type="hidden" id="product_id" name="product_id" value="<?= $id ?>" />
-        <input type="hidden" id="category_id" name="category_id" value="<?= $category_id ?>" />
-        <input type="hidden" id="is_pre_order" name="is_pre_order" value="0" />
-        <div class="row">
-            
-            <?php
+
             if (!empty($profile)) {
                 if (is_string($profile)) {
                     $profileArray = json_decode($profile, true);
@@ -82,8 +77,17 @@ if(isset($_POST['fetch_prompt_quantity'])){
                     $profile = [$profile];
                 }
 
-                $highestProfile = max($profile);
-
+                $highestProfile = !empty($preselected_profile) ? $preselected_profile : max($profile);
+            }
+        ?>
+        <input type="hidden" id="product_id" name="product_id" value="<?= $id ?>" />
+        <input type="hidden" id="category_id" name="category_id" value="<?= $category_id ?>" />
+        <input type="hidden" id="is_pre_order" name="is_pre_order" value="0" />
+        <input type="hidden" id="profile_id" name="profile_id" value="<?= $preselected_profile ?>" />
+        <div class="row">
+            <?php
+            if (!empty($profile)) {
+                
                 switch ($highestProfile) {
                     case 14: // low-rib
                         include "panel_layouts/low_rib.php";
@@ -193,6 +197,7 @@ if(isset($_POST['fetch_prompt_quantity'])){
 
         function calculateProductCost() {
             const product_id = $('#product_id').val();
+            const profile_id = $('#profile_id').val();
             const quantities = [], lengthFeetArr = [], lengthInchArr = [], panelOptionArr = [];
 
             $('.quantity-length-container').each(function() {
@@ -216,6 +221,7 @@ if(isset($_POST['fetch_prompt_quantity'])){
                 method: 'POST',
                 data: {
                     product_id: product_id,
+                    profile_id: profile_id,
                     quantity: quantities,
                     lengthFeet: lengthFeetArr,
                     lengthInch: lengthInchArr,
@@ -508,11 +514,13 @@ if (isset($_POST['fetch_price'])) {
     $color_id = intval($_POST['color']);
     $grade    = intval($_POST["grade"]);
     $gauge    = intval($_POST["gauge"]);
+    $preselected_profile = intval($_POST["profile_id"]);
 
     $totalPrice = 0;
 
     if ($product_id > 0) {
         $product    = getProductDetails($product_id);
+        $category   = $product['product_category'];
         $soldByFeet = intval($product['sold_by_feet']);
 
         // get bulk data
@@ -535,6 +543,14 @@ if (isset($_POST['fetch_price'])) {
             $panelType = $panelTypes[$index] ?? 'solid';
             $panelDripStop = $panelDripStops[$index] ?? '';
 
+            $width = '';
+
+            $profile_raw = $product['profile'] ?? '[]';
+            $profile = json_decode($profile_raw, true);
+            $profile = is_array($profile) ? array_map('intval', $profile) : [];
+
+            $profile = !empty($preselected_profile) ? $preselected_profile : $profile;
+
             $totalPrice += $qty * calculateUnitPrice(
                 $basePrice,
                 $feet,
@@ -545,7 +561,10 @@ if (isset($_POST['fetch_price'])) {
                 $hems,
                 $color_id,
                 $grade,
-                $gauge
+                $gauge,
+                $width,
+                $category,
+                $profile
             );
         }
     }

@@ -10,7 +10,9 @@ function calculateUnitPrice(
         $color = '', 
         $grade = '', 
         $gauge = '', 
-        $width = ''
+        $width = '', 
+        $category = 3,
+        $profile = []
     ) {
     global $conn;
 
@@ -21,6 +23,10 @@ function calculateUnitPrice(
     $bends      = is_numeric($bends) ? intval($bends) : 0;
     $hems       = is_numeric($hems) ? intval($hems) : 0;
     $width      = is_numeric($width) ? intval($width) : 12;
+    if (!is_array($profile)) {
+        $profile = [$profile];
+    }
+    $profile = array_filter(array_map('intval', $profile));
 
     $pricePerBend = floatval(getPaymentSetting('price_per_bend') ?? 0);
     $pricePerHem  = floatval(getPaymentSetting('price_per_hem') ?? 0);
@@ -39,7 +45,7 @@ function calculateUnitPrice(
     //$baseTotal = ($soldByFeet == 1) ? $basePrice * $totalLength : $basePrice;
     $baseTotal = $basePrice * $totalLength * ($width / 12);
 
-    $multiplier = getMultiplierValue(3,$color, $grade, $gauge) ?? 1;
+    $multiplier = getMultiplierValue($category, $color, $grade, $gauge, $profile) ?? 1;
     $priceWithMultipliers = $baseTotal * $multiplier;
 
     $panelExtraCost = $baseTotal * $panelExtra;

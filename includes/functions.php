@@ -3211,50 +3211,80 @@ function fetchColorMultiplier($colorGroup, $grade = 0, $gauge = 0, $category = 0
     return 1.0;
 }
 
-function getMultiplierValue($category_id,$color_id, $grade_id, $gauge_id) {
+function getMultiplierValue($category_id, $color_id, $grade_id, $gauge_id, $profile_id = []) {
     global $conn;
-    
+
+    $category_id = intval($category_id);
     $color_id    = intval($color_id);
     $grade_id    = intval($grade_id);
     $gauge_id    = intval($gauge_id);
-    $category_id = intval($gauge_id);
+
+    if (!is_array($profile_id)) {
+        $profile_id = [$profile_id];
+    }
+    $profile_id = array_filter(array_map('intval', $profile_id));
+
+    $conditions = [];
+    if ($category_id > 0) $conditions[] = "JSON_CONTAINS(product_category, '$category_id')";
+    if ($grade_id > 0)    $conditions[] = "JSON_CONTAINS(grade, '$grade_id')";
+    if ($gauge_id > 0)    $conditions[] = "JSON_CONTAINS(gauge, '$gauge_id')";
+
+    if (!empty($profile_id)) {
+        $profile_checks = [];
+        foreach ($profile_id as $pid) {
+            $profile_checks[] = "JSON_CONTAINS(profile, '$pid')";
+        }
+        $conditions[] = '(' . implode(' OR ', $profile_checks) . ')';
+    }
+
+    $where = !empty($conditions) ? implode(' AND ', $conditions) : '1';
 
     $color_details = getColorDetails($color_id);
-    $color_group = $color_details['color_group'] ?? '';
+    $color_group_raw = $color_details['color_group'] ?? '[]';
+    $color_group = json_decode($color_group_raw, true);
+    $color_group = is_array($color_group)
+        ? implode(',', array_map('intval', $color_group))
+        : '';
 
     $multiplier = 1.0;
 
-    if ($color_id > 0) {
-        //$sql = "SELECT multiplier FROM product_color WHERE id = '$color_group' LIMIT 1";
-           $multiplier = 1.0;
-            $sql = "
-            SELECT multiplier 
-            FROM product_color 
-            WHERE id = '$color_group'
-            AND FIND_IN_SET('$category_id', product_category)
-            AND FIND_IN_SET('$grade_id', grade)
-            AND FIND_IN_SET('$gauge_id', gauge)
+    if ($color_id > 0 && !empty($color_group)) {
+
+        $sql = "
+            SELECT multiplier
+            FROM product_color
+            WHERE id IN ($color_group)
+            AND $where
+            ORDER BY multiplier DESC
             LIMIT 1
-             ";
+        ";
 
-            $res = $conn->query($sql);
+        $res = $conn->query($sql);
 
-             if ($res && $row = $res->fetch_assoc()) {
-            $multiplier *= floatval($row['multiplier']); // override if found
-            }
+        if ($res && $row = $res->fetch_assoc()) {
+            $multiplier *= floatval($row['multiplier']);
+        }
     }
 
     if ($grade_id > 0) {
-        $sql = "SELECT multiplier FROM product_grade WHERE product_grade_id = '$grade_id' LIMIT 1";
-        $res = $conn->query($sql);
+        $res = $conn->query("
+            SELECT multiplier 
+            FROM product_grade 
+            WHERE product_grade_id = '$grade_id' 
+            LIMIT 1
+        ");
         if ($res && $row = $res->fetch_assoc()) {
             $multiplier *= floatval($row['multiplier']);
         }
     }
 
     if ($gauge_id > 0) {
-        $sql = "SELECT multiplier FROM product_gauge WHERE product_gauge_id = '$gauge_id' LIMIT 1";
-        $res = $conn->query($sql);
+        $res = $conn->query("
+            SELECT multiplier 
+            FROM product_gauge 
+            WHERE product_gauge_id = '$gauge_id' 
+            LIMIT 1
+        ");
         if ($res && $row = $res->fetch_assoc()) {
             $multiplier *= floatval($row['multiplier']);
         }
@@ -3478,7 +3508,9 @@ function calculateCartItem($values) {
         $color_id,
         $grade,
         $gauge,
-        $width
+        $width,
+        $category_id,
+        $profile
     );
 
     $product_id_abbrev = fetchSingleProductABR(
@@ -3582,6 +3614,8 @@ function calculateCartItem($values) {
             '',
             $color_id,
             '',
+            '',
+            '',
             ''
         ) * $pack;
     }else if($category_id == $lumber_id){
@@ -3605,6 +3639,8 @@ function calculateCartItem($values) {
             '',
             $color_id,
             '',
+            '',
+            '',
             ''
         );
     }else if($category_id == $service_chrg_id){
@@ -3621,7 +3657,7 @@ function calculateCartItem($values) {
         $custom_multiplier = floatval(getCustomMultiplier($category_id));
         $product_price += $product_price * $custom_multiplier;
     }
-//added category_id->
+    //added category_id->
     $multiplier = getMultiplierValue($category_id, $color_id, $grade, $gauge);
     $discount = isset($values["used_discount"]) ? floatval($values["used_discount"]) / 100 : 0;
 

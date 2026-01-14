@@ -166,6 +166,7 @@ if (isset($_POST['fetch_price'])) {
 
     if ($product_id > 0) {
         $product     = getProductDetails($product_id);
+        $category    = $product['product_category'];
         $soldByFeet  = intval($product['sold_by_feet'] ?? 1);
 
         $bulk = getBulkData($product_id);
@@ -202,6 +203,8 @@ if (isset($_POST['fetch_price'])) {
                 '',
                 $color_id,
                 '',
+                '',
+                $category,
                 ''
             );
 

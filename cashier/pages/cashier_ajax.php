@@ -99,7 +99,7 @@ if (isset($_POST['modifyquantity']) || isset($_POST['duplicate_product'])) {
             $basePrice = $basePrice / max(floatval($row['length']), 1);
         }
 
-        $unitPrice = calculateUnitPrice($basePrice, 0, 0, '', $row['sold_by_feet'], 0, 0);
+        $unitPrice = $basePrice;
 
         $_SESSION["cart"][$newLine] = [
             'product_id'          => $row['product_id'],
@@ -490,7 +490,7 @@ if (isset($_REQUEST['query'])) {
     }
 
     echo json_encode([
-        'data_html' => $tableHTML,
+        'data_html' => $query_product,
         'totalPages' => ceil($totalFiltered / $length),
         'totalRecords' => $totalFiltered,
     ]);
@@ -3145,14 +3145,22 @@ if (isset($_POST['add_to_cart'])) {
                 if ($length > 0) $basePrice = $basePrice / $length;
             }
 
+            $category = $product_details['product_category'];
+
             $unit_price = calculateUnitPrice(
-                $basePrice,
-                1,
-                0,
+                $base_price,
+                $length_feet,
+                $length_inch,
                 $panel_type_row,
-                $row['sold_by_feet'],
+                $product["sold_by_feet"] ?? 0,
                 $bend_product,
-                $hem_product
+                $hem_product,
+                $color,
+                $grade,
+                $gauge,
+                '',
+                $category,
+                $profile
             );
 
             $weight   = floatval($row['weight']);
