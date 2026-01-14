@@ -3224,7 +3224,6 @@ function getMultiplierValue($category_id, $color_id, $grade_id, $gauge_id, $prof
     }
     $profile_id = array_filter(array_map('intval', $profile_id));
 
-    // ---- Build conditions for color query ----
     $conditions = [];
 
     if ($category_id > 0) {
@@ -3245,31 +3244,26 @@ function getMultiplierValue($category_id, $color_id, $grade_id, $gauge_id, $prof
         $conditions[] = '(' . implode(' OR ', $profile_checks) . ')';
     }
 
-    $where = !empty($conditions) ? implode(' AND ', $conditions) : '1';
+    $where = !empty($conditions) ? implode(' AND ', $conditions) : '';
 
-    // ---- Get color group ----
     $color_details = getColorDetails($color_id);
     $color_group_raw = $color_details['color_group'] ?? '[]';
     $color_group = json_decode($color_group_raw, true);
-    $color_group = is_array($color_group)
-        ? implode(',', array_map('intval', $color_group))
-        : '';
+    $color_group = is_array($color_group) ? implode(',', array_map('intval', $color_group)) : '';
 
     $multiplier = 1.0;
 
-    if ($color_id > 0 && !empty($color_group)) {
-
+    if ($color_id > 0 && !empty($color_group) && !empty($where)) {
         $sql = "
             SELECT multiplier
             FROM product_color
             WHERE id IN ($color_group)
             AND $where
-            ORDER BY multiplier DESC
             LIMIT 1
         ";
 
         $res = $conn->query($sql);
-        if ($res && $row = $res->fetch_assoc()) {
+        if ($res && $res->num_rows > 0 && $row = $res->fetch_assoc()) {
             $multiplier *= floatval($row['multiplier']);
         }
     }
