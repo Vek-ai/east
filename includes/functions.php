@@ -3240,7 +3240,7 @@ function getMultiplierValue($category_id,$color_id, $grade_id, $gauge_id) {
             $res = $conn->query($sql);
 
              if ($res && $row = $res->fetch_assoc()) {
-            $multiplier = floatval($row['multiplier']); // override if found
+            $multiplier *= floatval($row['multiplier']); // override if found
             }
     }
 
