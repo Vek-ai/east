@@ -490,7 +490,7 @@ if (isset($_REQUEST['query'])) {
     }
 
     echo json_encode([
-        'data_html' => $query_product,
+        'data_html' => $tableHTML,
         'totalPages' => ceil($totalFiltered / $length),
         'totalRecords' => $totalFiltered,
     ]);
