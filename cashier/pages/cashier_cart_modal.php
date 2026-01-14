@@ -186,7 +186,7 @@ if(isset($_POST['fetch_cart'])){
             <div class="form-group row align-items-center">
                 <div class="d-flex flex-column gap-1">
                     <div>
-                        <label class="fw-bold fs-5">Customer Name: <?= $customer_name ?> test<?= $discount ?></label>
+                        <label class="fw-bold fs-5">Customer Name: <?= $customer_name ?> test<?= $discount ?> details<?= customer_details_pricing ?></label>
                         <button class="btn btn-primary btn-sm me-3" type="button" id="customer_change_cart">
                             <i class="fe fe-reload"></i> Change
                         </button>
