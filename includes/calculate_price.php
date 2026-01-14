@@ -11,7 +11,7 @@ function calculateUnitPrice(
         $grade = '', 
         $gauge = '', 
         $width = '', 
-        $category = 3,
+        $category = '',
         $profile = []
     ) {
     global $conn;

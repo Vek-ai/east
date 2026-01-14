@@ -227,7 +227,8 @@ if (isset($_REQUEST['query'])) {
         if (!empty($values)) {
             $conditions = [];
             foreach ($values as $v) {
-                $conditions[] = "JSON_CONTAINS(p.$col, '\"$v\"') OR JSON_CONTAINS(p.$col, '$v')";
+                $v = intval($v);
+                $conditions[] = "JSON_CONTAINS(p.$col, '$v')";
             }
             $query_product .= " AND JSON_VALID(p.$col) AND (" . implode(' OR ', $conditions) . ")";
         }
