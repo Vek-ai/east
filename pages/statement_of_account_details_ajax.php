@@ -496,25 +496,16 @@ if(isset($_REQUEST['action'])) {
 
     if ($action == "fetch_deposit_ledgers") {
         $customer_id = intval($_POST['customer_id'] ?? 0);
-
         $data = [];
 
         if ($customer_id > 0) {
-
             $sql = "
-                SELECT 
-                    *,
-                    jl.reference_no as invoice_no
-                FROM job_deposits jd
-                INNER JOIN job_ledger jl 
-                    ON jl.job_id = jd.job_id
-                WHERE 
-                    jd.deposited_by = ?
-                    AND jl.entry_type = 'deposit'
-                    AND jd.deposit_remaining > 0
-                    AND jd.deposit_status = 1
-                GROUP BY jd.deposit_id
-                ORDER BY jd.created_at ASC
+                SELECT *
+                FROM job_deposits
+                WHERE deposited_by = ?
+                    AND deposit_remaining > 0
+                    AND deposit_status = 1
+                ORDER BY created_at ASC
             ";
 
             $stmt = $conn->prepare($sql);
@@ -529,6 +520,7 @@ if(isset($_REQUEST['action'])) {
 
         echo json_encode($data);
     }
+
 
     mysqli_close($conn);
 }

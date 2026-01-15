@@ -687,7 +687,7 @@ $permission = $_SESSION['permission'];
                             res.forEach(row => {
                                 $select.append(`
                                     <option value="${row.deposit_id}">
-                                        Invoice #: ${row.invoice_no ?? 'N/A'} |
+                                        Ref #: ${row.reference_no ?? 'N/A'} |
                                         Balance: ${parseFloat(row.deposit_remaining).toFixed(2)}
                                     </option>
                                 `);
