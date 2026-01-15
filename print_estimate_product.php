@@ -733,11 +733,11 @@ if (mysqli_num_rows($result) > 0) {
         $leftBottom = $pdf->GetY();
 
         $deliver_name = trim(
-            ($row_orders['deliver_fname'] ?? '') . ' ' . ($row_orders['deliver_lname'] ?? '')
+            ($row_estimatess['deliver_fname'] ?? '') . ' ' . ($row_estimatess['deliver_lname'] ?? '')
         );
 
         if ($deliver_name === '') {
-            $deliver_name = get_customer_name($row_orders['customerid']);
+            $deliver_name = get_customer_name($row_estimatess['customerid']);
         }
         $rightText = trim($deliver_name) . "\n";
         $shipAddressParts = [];

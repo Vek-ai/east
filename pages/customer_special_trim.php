@@ -468,6 +468,32 @@ $page_title = "Special Trim";
 
         $(document).on('change', '#product_id', fetchProductDetails);
 
+        $(document).on('click', '.remove-image-btn', function(event) {
+            event.preventDefault();
+            let imageId = $(this).data('image-id');
+
+            if (confirm("Are you sure you want to remove this image?")) {
+                $.ajax({
+                    url: 'pages/customer_special_trim_ajax.php',
+                    type: 'POST',
+                    data: { 
+                        image_id: imageId,
+                        action: "remove_image"
+                    },
+                    success: function(response) {
+                        if(response.trim() == 'success') {
+                            $('button[data-image-id="' + imageId + '"]').closest('.col-md-2').remove();
+                        } else {
+                            alert('Failed to remove image.');
+                        }
+                    },
+                    error: function() {
+                        alert('An error occurred. Please try again.');
+                    }
+                });
+            }
+        });
+
         $('#toggleActive').trigger('change');
 
         $(".select2").each(function() {

@@ -159,23 +159,25 @@ if(isset($_REQUEST['action'])) {
         $debug = false;
         $debug_log = [];
 
-        $ledger_ids_raw = $_POST['ledger_id'] ?? '';
-        $ledger_ids = array_filter(array_map('intval', explode(',', $ledger_ids_raw)));
-        $total_payment = floatval($_POST['payment_amount'] ?? 0);
-        $paid_by = trim($_POST['paid_by'] ?? '');
-        $reference_no = trim($_POST['reference_no'] ?? '');
-        $payment_method = $_POST['type'] ?? 'cash';
-        $check_no = $_POST['check_no'] ?? null;
-        $description = mysqli_real_escape_string($conn, $_POST['description'] ?? '');
-        $cashier = $_SESSION['userid'] ?? 0;
-        $check_no_sql = $payment_method === 'cheque' ? "'" . mysqli_real_escape_string($conn, $check_no) . "'" : "NULL";
+        $ledger_ids_raw  = $_POST['ledger_id'] ?? '';
+        $ledger_ids      = array_filter(array_map('intval', explode(',', $ledger_ids_raw)));
+        $total_payment   = floatval($_POST['payment_amount'] ?? 0);
+        $paid_by         = trim($_POST['paid_by'] ?? '');
+        $reference_no    = trim($_POST['reference_no'] ?? '');
+        $payment_method  = $_POST['type'] ?? 'cash';
+        $check_no        = trim($_POST['check_no'] ?? '');
+        $deposit_id      = intval($_POST['deposit_id'] ?? 0);
+        $description     = mysqli_real_escape_string($conn, $_POST['description'] ?? '');
+        $cashier         = $_SESSION['userid'] ?? 0;
+        $check_no_sql    = ($payment_method === 'check' || $payment_method === 'cheque') ? "'" . mysqli_real_escape_string($conn, $check_no) . "'" : "NULL";
 
         $debug_log[] = [
             'ledger_ids' => $ledger_ids,
             'total_payment' => $total_payment,
             'payment_method' => $payment_method,
             'reference_no' => $reference_no,
-            'check_no_sql' => $check_no_sql
+            'check_no_sql' => $check_no_sql,
+            'deposit_id' => $deposit_id
         ];
 
         if (empty($ledger_ids) || $total_payment <= 0) {
@@ -187,170 +189,139 @@ if(isset($_REQUEST['action'])) {
             return;
         }
 
-        $ids_in_clause = implode(',', $ledger_ids);
-        $query = "
-            SELECT l.ledger_id, l.amount AS credit_amount, 
-                IFNULL(SUM(p.amount), 0) AS total_paid
-            FROM job_ledger l
-            LEFT JOIN job_payment p ON l.ledger_id = p.ledger_id AND p.status = '1'
-            WHERE l.ledger_id IN ($ids_in_clause)
-            GROUP BY l.ledger_id
-            ORDER BY l.created_at ASC
-        ";
-
-        $result = mysqli_query($conn, $query);
-        if (!$result) {
-            echo json_encode([
-                'status' => 'error',
-                'message' => 'Failed to fetch ledger: ' . mysqli_error($conn),
-                'query' => $query
-            ]);
-            return;
-        }
-
         $remaining_payment = $total_payment;
         $success = false;
         $total_inserted = 0;
 
-        while ($row = mysqli_fetch_assoc($result)) {
-            $ledger_id = $row['ledger_id'];
-            $credit = floatval($row['credit_amount']);
-            $paid = floatval($row['total_paid']);
-            $balance = max(0, $credit - $paid);
-
-            $debug_log[] = [
-                'ledger_id' => $ledger_id,
-                'credit' => $credit,
-                'paid' => $paid,
-                'balance' => $balance,
-                'remaining_before' => $remaining_payment
-            ];
-
-            if ($balance <= 0 || $remaining_payment <= 0) continue;
-
-            $to_pay = min($balance, $remaining_payment);
-
-            $staff_id   = $_SESSION['userid'] ?? 0;
-            $station_id = $_SESSION['station'] ?? 0;
-
-            $insert = "
-                INSERT INTO job_payment (
-                    ledger_id, 
-                    amount, 
-                    payment_method, 
-                    check_number, 
-                    reference_no, 
-                    description, 
-                    created_by, 
-                    cashier, 
-                    status,
-                    staff,
-                    station
-                ) VALUES (
-                    '$ledger_id',
-                    '$to_pay',
-                    '$payment_method',
-                    $check_no_sql,
-                    '" . mysqli_real_escape_string($conn, $reference_no) . "',
-                    '$description',
-                    '" . mysqli_real_escape_string($conn, $paid_by) . "',
-                    '$cashier',
-                    '1',
-                    '$staff_id',
-                    '$station_id'
-                )
-            ";
-
-            if (mysqli_query($conn, $insert)) {
-                $success = true;
-                $total_inserted++;
-
-                $debug_log[] = ['insert_success' => $ledger_id, 'amount' => $to_pay];
-                recordCashInflow($payment_method, 'receivable_payment', $to_pay);
-
-                $orderids_query = "
-                    SELECT DISTINCT l.reference_no AS orderid
-                    FROM job_ledger l
-                    WHERE l.ledger_id IN ($ids_in_clause)
+        if ($payment_method === 'deposit') {
+            if ($deposit_id > 0) {
+                $deposit_sql = "
+                    SELECT job_id, deposit_remaining
+                    FROM job_deposits
+                    WHERE deposit_id = $deposit_id
+                    AND deposit_status = 1
+                    LIMIT 1
                 ";
+                $deposit_res = mysqli_query($conn, $deposit_sql);
+                $deposit = mysqli_fetch_assoc($deposit_res);
 
-                $orderids_result = mysqli_query($conn, $orderids_query);
-                if ($orderids_result) {
-                    while ($order_row = mysqli_fetch_assoc($orderids_result)) {
-                        $orderid = mysqli_real_escape_string($conn, $order_row['orderid']);
-
-                        $order_total_query = "
-                            SELECT SUM(discounted_price) AS total_amount
-                            FROM order_product
-                            WHERE orderid = '$orderid'
+                if ($deposit) {
+                    $apply_amount = min($deposit['deposit_remaining'], $remaining_payment);
+                    if ($apply_amount > 0) {
+                        $job_id = $deposit['job_id'];
+                        $insert_usage = "
+                            INSERT INTO job_ledger (
+                                job_id, customer_id, entry_type, amount,
+                                payment_method, reference_no, description, created_by, created_at
+                            ) VALUES (
+                                '$job_id',
+                                '" . mysqli_real_escape_string($conn, $paid_by) . "',
+                                'usage',
+                                '$apply_amount',
+                                'job_deposit',
+                                '" . mysqli_real_escape_string($conn, $reference_no) . "',
+                                '$description',
+                                '$cashier',
+                                NOW()
+                            )
                         ";
-                        $order_total_result = mysqli_query($conn, $order_total_query);
-                        $order_total = mysqli_fetch_assoc($order_total_result)['total_amount'] ?? 0;
+                        mysqli_query($conn, $insert_usage);
 
-                        $paid_query = "
-                            SELECT SUM(p.amount) AS total_paid
-                            FROM job_ledger l
-                            JOIN job_payment p ON l.ledger_id = p.ledger_id
-                            WHERE l.reference_no = '$orderid' AND p.status = '1'
+                        $new_remaining = $deposit['deposit_remaining'] - $apply_amount;
+                        $new_status = ($new_remaining <= 0) ? 2 : 1;
+                        $update_deposit = "
+                            UPDATE job_deposits
+                            SET deposit_remaining = $new_remaining,
+                                deposit_status = $new_status
+                            WHERE deposit_id = $deposit_id
                         ";
-                        $paid_result = mysqli_query($conn, $paid_query);
-                        $total_paid = mysqli_fetch_assoc($paid_result)['total_paid'] ?? 0;
+                        mysqli_query($conn, $update_deposit);
 
+                        //$remaining_payment -= $apply_amount;
+                        $success = true;
+                        $total_inserted = 1;
                         $debug_log[] = [
-                            'orderid' => $orderid,
-                            'order_total' => $order_total,
-                            'total_paid' => $total_paid
+                            'deposit_applied' => $apply_amount,
+                            'deposit_remaining' => $new_remaining
                         ];
+                    }
+                }
+            }
+        }
 
-                        if (floatval($total_paid) >= floatval($order_total)) {
-                            mysqli_query($conn, "
-                                UPDATE order_product
-                                SET paid_status = 1
-                                WHERE orderid = '$orderid'
-                            ");
-                        }
+        if ($remaining_payment > 0) {
+            $ids_in_clause = implode(',', $ledger_ids);
+            $query = "
+                SELECT l.ledger_id, l.amount AS credit_amount, 
+                    IFNULL(SUM(p.amount), 0) AS total_paid
+                FROM job_ledger l
+                LEFT JOIN job_payment p ON l.ledger_id = p.ledger_id AND p.status = '1'
+                WHERE l.ledger_id IN ($ids_in_clause)
+                GROUP BY l.ledger_id
+                ORDER BY l.created_at ASC
+            ";
+            $result = mysqli_query($conn, $query);
+            if ($result) {
+                while ($row = mysqli_fetch_assoc($result)) {
+                    $ledger_id = $row['ledger_id'];
+                    $credit = floatval($row['credit_amount']);
+                    $paid = floatval($row['total_paid']);
+                    $balance = max(0, $credit - $paid);
+                    if ($balance <= 0 || $remaining_payment <= 0) continue;
+                    $to_pay = min($balance, $remaining_payment);
+                    $insert = "
+                        INSERT INTO job_payment (
+                            ledger_id, 
+                            amount, 
+                            payment_method, 
+                            check_number, 
+                            reference_no, 
+                            description, 
+                            created_by, 
+                            cashier, 
+                            status,
+                            staff,
+                            station
+                        ) VALUES (
+                            '$ledger_id',
+                            '$to_pay',
+                            '$payment_method',
+                            $check_no_sql,
+                            '" . mysqli_real_escape_string($conn, $reference_no) . "',
+                            '$description',
+                            '" . mysqli_real_escape_string($conn, $paid_by) . "',
+                            '$cashier',
+                            '1',
+                            '$cashier',
+                            '0'
+                        )
+                    ";
+                    if (mysqli_query($conn, $insert)) {
+                        $success = true;
+                        $total_inserted++;
+                        $remaining_payment -= $to_pay;
+                        recordCashInflow($payment_method, 'receivable_payment', $to_pay);
                     }
                 }
             } else {
-                $success = false;
                 echo json_encode([
                     'status' => 'error',
-                    'message' => 'Failed to insert payment for ledger ID ' . $ledger_id . ': ' . mysqli_error($conn),
-                    'insert_query' => $insert,
-                    'debug' => $debug_log
+                    'message' => 'Failed to fetch ledger: ' . mysqli_error($conn),
+                    'query' => $query
                 ]);
-                break;
+                return;
             }
-
-            $remaining_payment -= $to_pay;
         }
 
-        if ($debug) {
-            echo json_encode([
-                'status' => $success ? 'success' : 'failed',
-                'message' => $success ? 'Payment recorded successfully.' : 'No payment recorded.',
-                'total_inserted' => $total_inserted,
-                'remaining_payment' => $remaining_payment,
-                'debug' => $debug_log
-            ]);
-            return;
-        }
-
-        if ($success) {
-            echo json_encode([
-                'status' => 'success',
-                'message' => 'Payment recorded successfully.',
-                'total_inserted' => $total_inserted,
-                'remaining_payment' => $remaining_payment
-            ]);
-        } else {
-            echo json_encode([
-                'status' => 'failed',
-                'message' => 'No payment was recorded or an error occurred.',
-                'total_inserted' => $total_inserted
-            ]);
-        }
+        echo json_encode([
+            'status' => $success ? 'success' : 'failed',
+            'message' => $success ? 'Payment recorded successfully.' : 'No payment recorded.',
+            'total_inserted' => $total_inserted,
+            'remaining_payment' => $remaining_payment,
+            'debug' => $debug ? $debug_log : []
+        ]);
     }
+
 
     if ($action === "payout_credits") {
         $total_payout   = floatval($_POST['payment_amount'] ?? 0);
@@ -372,7 +343,7 @@ if(isset($_REQUEST['action'])) {
 
         $query = "
             SELECT 'deposit' AS type, jd.deposit_id AS id, jd.deposit_remaining AS amount, jd.created_at
-            FROM job_deposits jd
+            FROM job_depositss jd
             WHERE jd.deposited_by = '$customer_id'
             AND jd.deposit_status = 1
             AND jd.deposit_remaining > 0
@@ -414,7 +385,7 @@ if(isset($_REQUEST['action'])) {
 
                 if ($row['type'] === 'deposit') {
                     mysqli_query($conn, "
-                        UPDATE job_deposits
+                        UPDATE job_depositss
                         SET deposit_remaining = ROUND(deposit_remaining - $refund, 2),
                             deposit_status = IF(ROUND(deposit_remaining - $refund, 2) <= 0, 2, 1)
                         WHERE deposit_id = '{$row['id']}'
@@ -523,6 +494,41 @@ if(isset($_REQUEST['action'])) {
         <?php
     }
 
+    if ($action == "fetch_deposit_ledgers") {
+        $customer_id = intval($_POST['customer_id'] ?? 0);
+
+        $data = [];
+
+        if ($customer_id > 0) {
+
+            $sql = "
+                SELECT 
+                    *,
+                    jl.reference_no as invoice_no
+                FROM job_deposits jd
+                INNER JOIN job_ledger jl 
+                    ON jl.job_id = jd.job_id
+                WHERE 
+                    jd.deposited_by = ?
+                    AND jl.entry_type = 'deposit'
+                    AND jd.deposit_remaining > 0
+                    AND jd.deposit_status = 1
+                GROUP BY jd.deposit_id
+                ORDER BY jd.created_at ASC
+            ";
+
+            $stmt = $conn->prepare($sql);
+            $stmt->bind_param("i", $customer_id);
+            $stmt->execute();
+            $result = $stmt->get_result();
+
+            while ($row = $result->fetch_assoc()) {
+                $data[] = $row;
+            }
+        }
+
+        echo json_encode($data);
+    }
 
     mysqli_close($conn);
 }

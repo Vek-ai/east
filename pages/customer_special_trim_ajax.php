@@ -90,6 +90,33 @@ if(isset($_REQUEST['action'])) {
             }
             echo "success_add";
         }
+
+        if (!empty($_FILES['picture_path']['name'][0])) {
+            $uploadFileDir = '../images/special_trim/';
+            if (!is_dir($uploadFileDir)) {
+                mkdir($uploadFileDir, 0755, true);
+            }
+
+            for ($i = 0; $i < count($_FILES['picture_path']['name']); $i++) {
+
+                $fileTmpPath = $_FILES['picture_path']['tmp_name'][$i];
+                $fileName    = $_FILES['picture_path']['name'][$i];
+
+                if (empty($fileName)) continue;
+
+                $fileExtension = strtolower(pathinfo($fileName, PATHINFO_EXTENSION));
+                $newFileName   = md5(time() . $fileName) . '.' . $fileExtension;
+                $dest_path     = $uploadFileDir . $newFileName;
+
+                if (move_uploaded_file($fileTmpPath, $dest_path)) {
+                    $conn->query("
+                        INSERT INTO special_trim_images (special_trim_id, image_url) 
+                        VALUES ('$special_trim_id', 'images/special_trim/$newFileName')
+                    ");
+                }
+            }
+        }
+
     }
 
     if ($action == "fetch_modal") {
@@ -291,24 +318,65 @@ if(isset($_REQUEST['action'])) {
                         <p id="weight"><?= $product['weight'] ?></p>
                     </div>
                     
+                    <div class="col-md-12">
+                        <div class="card-body p-0">
+                            <h4 class="card-title text-center">Special Trim Image</h4>
+                            <p action="#" id="myUpdateDropzone" class="dropzone">
+                                <div class="fallback">
+                                <input type="file" id="picture_path_update" name="picture_path[]" class="form-control" style="display: none" multiple/>
+                                </div>
+                            </p>
+                        </div>
+                    </div>
+
                     <?php
-                    $query_img = "SELECT * FROM product_images WHERE productid = '$product_id'";
+                    $query_img = "SELECT * FROM special_trim_images WHERE special_trim_id = '$special_trim_id'";
                     $result_img = mysqli_query($conn, $query_img);
                     if (mysqli_num_rows($result_img) > 0) { ?>
                         <div class="col-md-12">
                             <h5>Current Images</h5>
                             <div class="row pt-3">
                                 <?php while ($row_img = mysqli_fetch_array($result_img)) { 
-                                    $image_id = $row_img['prodimgid'];
-                                ?>
+                                    $image_id = $row_img['id'];
+                                    ?>
                                     <div class="col-md-2 position-relative">
-                                        <img src="<?= $row_img['image_url'] ?>" class="img-fluid" alt="Product Image" />
-                                        <button class="btn btn-danger btn-sm position-absolute top-0 end-0 remove-image-btn" data-image-id="<?= $image_id ?>">X</button>
+                                        <div class="mb-3">
+                                            <img src="<?= $row_img['image_url'] ?>" class="img-fluid" alt="Product Image" />
+                                            <button class="btn btn-danger btn-sm position-absolute top-0 end-0 remove-image-btn" data-image-id="<?= $image_id ?>">X</button>
+                                        </div>
                                     </div>
                                 <?php } ?>
                             </div>
                         </div>
                     <?php } ?>
+
+                    <script>
+                        window.uploadedUpdateFiles = window.uploadedUpdateFiles || [];
+                        $('#myUpdateDropzone').dropzone({
+                            addRemoveLinks: true,
+                            dictRemoveFile: "X",
+                            init: function() {
+                                this.on("addedfile", function(file) {
+                                    uploadedUpdateFiles.push(file);
+                                    updateFileInput2();
+                                });
+
+                                this.on("removedfile", function(file) {
+                                    uploadedUpdateFiles = uploadedUpdateFiles.filter(f => f.name !== file.name);
+                                    updateFileInput2();
+                                });
+                            }
+                        });
+                        function updateFileInput2() {
+                            const fileInput = document.getElementById('picture_path_update');
+                            const dataTransfer = new DataTransfer();
+                            uploadedUpdateFiles.forEach(file => {
+                                const fileBlob = new Blob([file], { type: file.type });
+                                dataTransfer.items.add(new File([fileBlob], file.name, { type: file.type }));
+                            });
+                            fileInput.files = dataTransfer.files;
+                        }
+                    </script>
                 </div>
             </div>
         </div>
@@ -381,11 +449,8 @@ if(isset($_REQUEST['action'])) {
     if ($action == "remove_image") {
         $image_id = $_POST['image_id'];
     
-        $delete_query = "DELETE FROM product_images WHERE prodimgid = '$image_id'";
+        $delete_query = "DELETE FROM special_trim_images WHERE id = '$image_id'";
         if (mysqli_query($conn, $delete_query)) {
-            /* if (file_exists($image_url)) {
-                unlink($image_url);
-            } */
             echo 'success';
         } else {
             echo "Error removing image: " . mysqli_error($conn);

@@ -108,6 +108,9 @@ $permission = $_SESSION['permission'];
                                         <option value="">-- Select Type --</option>
                                         <option value="cash">Cash</option>
                                         <option value="check">Check</option>
+                                        <option value="card">Credit/Debit Card</option>
+                                        <option value="wire">Wire Transfer</option>
+                                        <option value="deposit">Account Credit</option>
                                     </select>
                                 </div>
 
@@ -125,6 +128,18 @@ $permission = $_SESSION['permission'];
                                     <div class="mb-3 d-none" id="check_no_group">
                                         <label for="check_no" class="form-label">Check No</label>
                                         <input type="text" class="form-control" id="check_no" name="check_no">
+                                    </div>
+
+                                    <div class="mb-3 d-none" id="card_group">
+                                        <label for="auth_no" class="form-label">Authorization No</label>
+                                        <input type="text" class="form-control" id="check_no" name="check_no">
+                                    </div>
+
+                                    <div class="mb-3 d-none" id="deposit_group">
+                                        <label for="deposit_id" class="form-label">Select Available Deposit</label>
+                                        <select class="form-select" id="deposit_id" name="deposit_id">
+                                            <option value="">-- Select Deposit --</option>
+                                        </select>
                                     </div>
 
                                     <div class="mb-3">
@@ -638,21 +653,56 @@ $permission = $_SESSION['permission'];
 
         $(document).on('change', '#type', function () {
             const type = $(this).val();
+            const customerId = $('#paid_by').val();
 
-            if (type === 'cash') {
-                $('#payment_details_group').removeClass('d-none');
-                $('#check_no_group').addClass('d-none');
-                $('#check_no').removeAttr('required').val('');
-            } else if (type === 'check') {
-                $('#payment_details_group').removeClass('d-none');
+            $('#payment_details_group').removeClass('d-none');
+            $('#check_no_group, #card_group, #deposit_group').addClass('d-none');
+            $('#check_no').removeAttr('required').val('');
+
+            if (type === 'check') {
                 $('#check_no_group').removeClass('d-none');
                 $('#check_no').attr('required', true);
-            } else {
-                $('#payment_details_group').addClass('d-none');
-                $('#check_no_group').addClass('d-none');
-                $('#check_no').removeAttr('required').val('');
+            }
+
+            if (type === 'card') {
+                $('#card_group').removeClass('d-none');
+            }
+
+            if (type === 'deposit') {
+                $('#deposit_group').removeClass('d-none');
+
+                $.ajax({
+                    url: 'pages/statement_of_account_details_ajax.php',
+                    type: 'POST',
+                    dataType: 'json',
+                    data: { 
+                        customer_id: customerId,
+                        action: 'fetch_deposit_ledgers'
+                    },
+                    success: function (res) {
+                        const $select = $('#deposit_id');
+                        $select.empty().append('<option value="">-- Select Deposit --</option>');
+
+                        if (res.length) {
+                            res.forEach(row => {
+                                $select.append(`
+                                    <option value="${row.deposit_id}">
+                                        Invoice #: ${row.invoice_no ?? 'N/A'} |
+                                        Balance: ${parseFloat(row.deposit_remaining).toFixed(2)}
+                                    </option>
+                                `);
+                            });
+                        } else {
+                            $select.append('<option value="">No available deposits</option>');
+                        }
+                    },
+                    error: function (xhr) {
+                        console.error('AJAX Error:', xhr.responseText);
+                    }
+                });
             }
         });
+
 
         $(document).on('change', '#payout_type', function () {
             const type = $(this).val();

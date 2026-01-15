@@ -150,7 +150,7 @@ td.notes,  td.last-edit{
 </div>
 
 <div class="modal fade" id="view_modal" tabindex="-1" aria-labelledby="view_modalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered modal-xl">
+    <div class="modal-dialog modal-dialog-centered modal-xl" style="max-width: 90%;">
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title" id="cashFlowModalLabel">View Details</h5>
@@ -166,7 +166,7 @@ td.notes,  td.last-edit{
 </div>
 
 <div class="modal fade" id="cash_flow_modal" tabindex="-1" aria-labelledby="cash_flow_modalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered modal-xl">
+    <div class="modal-dialog modal-dialog-centered modal-xl" style="max-width: 90%;">
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title" id="cashFlowModalLabel">Cash Flow Details</h5>
