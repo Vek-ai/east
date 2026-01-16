@@ -67,7 +67,7 @@ if (isset($_POST['search_returns'])) {
     $staff = mysqli_real_escape_string($conn, $_POST['staff'] ?? '');
     $tax_status = mysqli_real_escape_string($conn, $_POST['tax_status'] ?? '');
 
-    $query = "
+    /* $query = "
         SELECT pr.*, 
                CONCAT(c.customer_first_name, ' ', c.customer_last_name) AS customer_name,
                c.customer_id
@@ -75,6 +75,16 @@ if (isset($_POST['search_returns'])) {
         LEFT JOIN orders AS o ON o.orderid = pr.orderid
         LEFT JOIN customer AS c ON c.customer_id = o.originalcustomerid
         WHERE pr.status = '1'
+    "; */
+
+    $query = "
+        SELECT pr.*, 
+               CONCAT(c.customer_first_name, ' ', c.customer_last_name) AS customer_name,
+               c.customer_id
+        FROM product_returns AS pr
+        LEFT JOIN orders AS o ON o.orderid = pr.orderid
+        LEFT JOIN customer AS c ON c.customer_id = o.originalcustomerid
+        WHERE 1=1
     ";
 
     if (!empty($customer_name) && $customer_name !== 'All Customers') {
@@ -134,14 +144,17 @@ if (isset($_POST['search_returns'])) {
                     break;
             }
 
+            $customer_id = $order_details['customer_id'] ?? '';
+            $customer_name = get_customer_name($customer_id);
+
             $response['orders'][] = [
                 'orderid' => $order_id,
                 'order_date' => $row['order_date'],
-                'formatted_date' => date("F d, Y", strtotime($order_details['order_date'])),
+                'formatted_date' => date("m/d/Y", strtotime($order_details['order_date'])),
                 'formatted_time' => date("h:i A", strtotime($order_details['order_date'])),
                 'cashier' => get_staff_name($order_details['cashier']),
-                'customer_name' => $row['customer_name'],
-                'customer_id' => $order_details['customer_id'] ?? null,
+                'customer_name' => $customer_name,
+                'customer_id' => $customer_id,
                 'amount' => $amount,
                 'status' => $status,
                 'status_badge' => $badge

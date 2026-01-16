@@ -74,7 +74,7 @@ if(isset($_POST['fetch_order_list'])){
                                     $ <?php echo number_format(floatval(getOrderTotalsDiscounted($row["orderid"])),2) ?>
                                 </td>
                                 <td>
-                                    <?php echo date("F d, Y", strtotime($row["order_date"])); ?>
+                                    <?php echo date("m/d/Y", strtotime($row["order_date"])); ?>
                                 </td>
                                 <td>
                                     <?= get_staff_name($row["cashier"]) ?>
