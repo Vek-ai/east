@@ -298,7 +298,7 @@ function renderLumberCategory($pdf, $product, $conn) {
     $product_abbrev = $product['product_id_abbrev'] ?? '';
     $color = getColorName($product['custom_color']);
 
-    $dimension_id = $product['lumber_length'] ?? '';
+    $dimension_id = intval($product['dimension_id'] ?? 0);
     $unit_price = getLumberPrice($productid, $dimension_id);
 
     $summaryRow = [
