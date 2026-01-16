@@ -830,7 +830,7 @@ if (mysqli_num_rows($result) > 0) {
     $pdf->Ln(5);
 
     $box_width  = 75;
-    $box_height = 30;
+    $box_height = 40;
 
     $box1_x = 5;
     $box2_x = $box1_x + $box_width;
