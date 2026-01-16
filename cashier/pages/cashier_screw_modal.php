@@ -301,6 +301,7 @@ if (isset($_POST['fetch_price'])) {
             $hems = 0;
             $grade = '';
             $gauge = '';
+            $width = '';
 
             $totalPrice += $pack_count * $qty * calculateUnitPrice(
                 $unit_price,
@@ -313,6 +314,7 @@ if (isset($_POST['fetch_price'])) {
                 $color_id,
                 $grade,
                 $gauge,
+                $width,
                 $category,
                 ''
             );
