@@ -319,9 +319,7 @@ $permission = $_SESSION['permission'];
     });
 
     $('#toggleActive').trigger('change');
-    $(document).on('click', '#downloadBtn', function(event) {
-        window.location.href = "pages/pricing_category_ajax.php?action=download_excel";
-    });
+
     $(document).on('click', '.changeStatus', function(event) {
         event.preventDefault(); 
         var id = $(this).data('id');
@@ -563,4 +561,7 @@ $permission = $_SESSION['permission'];
     });
     
 });
+ $(document).on('click', '#downloadBtn', function(event) {
+        window.location.href = "pages/pricing_category_ajax.php?action=download_excel";
+    });
 </script>

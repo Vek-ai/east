@@ -4,6 +4,27 @@ ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
 
 require '../includes/dbconn.php';
+require '../includes/functions.php';
+require '../includes/vendor/autoload.php';
+
+use PhpOffice\PhpSpreadsheet\IOFactory;
+use PhpOffice\PhpSpreadsheet\Spreadsheet;
+use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
+
+$permission = $_SESSION['permission'];
+
+$includedColumns = [
+    'Category'     => 'Category',
+    'Product Name' => 'Product Name',
+    'Base Price'   => 'Base Price',
+    'Price 1'      => 'Price 1',
+    'Price 2'      => 'Price 2',
+    'Price 3'      => 'Price 3',
+    'Price 4'      => 'Price 4',
+    'Price 5'      => 'Price 5',
+    'Price 6'      => 'Price 6',
+    'Price 7'      => 'Price 7',
+];
 
 if(isset($_REQUEST['action'])) {
     $action = $_REQUEST['action'];
@@ -243,134 +264,126 @@ if(isset($_REQUEST['action'])) {
         <?php
     }
 
+if ($action === "download_excel") {
+
+    $sql = "
+    SELECT
+        pc.product_category AS category,
+        p.product_item      AS product_name,
+        p.unit_price        AS base_price,
+
+        MAX(CASE WHEN pr.customer_pricing_id = 1 THEN CAST(pr.percentage AS DECIMAL(10,3)) END) AS perc_1,
+        MAX(CASE WHEN pr.customer_pricing_id = 2 THEN CAST(pr.percentage AS DECIMAL(10,3)) END) AS perc_2,
+        MAX(CASE WHEN pr.customer_pricing_id = 3 THEN CAST(pr.percentage AS DECIMAL(10,3)) END) AS perc_3,
+        MAX(CASE WHEN pr.customer_pricing_id = 7 THEN CAST(pr.percentage AS DECIMAL(10,3)) END) AS perc_7,
+        MAX(CASE WHEN pr.customer_pricing_id = 5 THEN CAST(pr.percentage AS DECIMAL(10,3)) END) AS perc_5,
+        MAX(CASE WHEN pr.customer_pricing_id = 6 THEN CAST(pr.percentage AS DECIMAL(10,3)) END) AS perc_6,
+        MAX(CASE WHEN pr.customer_pricing_id = 4 THEN CAST(pr.percentage AS DECIMAL(10,3)) END) AS perc_4
+
+    FROM pricing_category pr
+    INNER JOIN product_category pc
+        ON pc.product_category_id = pr.product_category_id
+    INNER JOIN product p
+        ON p.product_id = CAST(pr.product_items AS UNSIGNED)
+
+    WHERE pr.hidden = 0
+      AND pr.status = 1
+      AND p.hidden = 0
+      AND p.status = 1
+
+    GROUP BY pc.product_category, p.product_item, p.unit_price
+    ORDER BY pc.product_category ASC, p.product_item ASC
+";
+
+
+    $result = $conn->query($sql);
+    if (!$result) {
+        echo "Database error: " . $conn->error;
+        exit;
+    }
+
+    $spreadsheet = new \PhpOffice\PhpSpreadsheet\Spreadsheet();
+    $sheet = $spreadsheet->getActiveSheet();
+    $sheet->setTitle('Pricing Category');
+
+    // Write headers from $includedColumns
+    $colIndex = 0;
+    foreach ($includedColumns as $key => $displayName) {
+        $colLetter = indexToColumnLetter($colIndex);
+        $sheet->setCellValue($colLetter . '1', $displayName);
+        $sheet->getColumnDimension($colLetter)->setAutoSize(true);
+        $colIndex++;
+    }
+
+    // Header style
+    $headerRange = 'A1:' . $sheet->getHighestColumn() . '1';
+    $sheet->getStyle($headerRange)->applyFromArray([
+        'font' => ['bold' => true],
+        'fill' => [
+            'fillType' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID,
+            'startColor' => ['rgb' => 'D9D9D9']
+        ],
+        'alignment' => ['horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER],
+        'borders' => ['allBorders' => ['borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN]]
+    ]);
+
+    // Price calc: base - (base * percent/100)
+    $calcPrice = function ($basePrice, $percent) {
+        if (!is_numeric($basePrice) || $basePrice === '' || $basePrice === null) return '';
+        if (!is_numeric($percent)   || $percent === ''   || $percent === null) return '';
+        $base = (float)$basePrice;
+        $pct  = (float)$percent; // 10 means 10%
+        return round($base - ($base * ($pct / 100)), 2);
+    };
+
+    $rowNum = 2;
+    while ($r = $result->fetch_assoc()) {
+
+        $base = $r['base_price'] ?? '';
+
+        $rowData = [
+            'Category'     => $r['category'] ?? '',
+            'Product Name' => $r['product_name'] ?? '',
+            'Base Price'   => (is_numeric($base) ? round((float)$base, 2) : ''),
+
+            'Price 1' => $calcPrice($base, $r['perc_1'] ?? null),
+            'Price 2' => $calcPrice($base, $r['perc_2'] ?? null),
+            'Price 3' => $calcPrice($base, $r['perc_3'] ?? null),
+            'Price 4' => $calcPrice($base, $r['perc_7'] ?? null),
+            'Price 5' => $calcPrice($base, $r['perc_5'] ?? null),
+            'Price 6' => $calcPrice($base, $r['perc_6'] ?? null),
+            'Price 7' => $calcPrice($base, $r['perc_4'] ?? null),
+        ];
+
+        $colIndex = 0;
+        foreach ($includedColumns as $key => $displayName) {
+            $colLetter = indexToColumnLetter($colIndex);
+            $sheet->setCellValue($colLetter . $rowNum, $rowData[$key] ?? '');
+            $colIndex++;
+        }
+
+        $rowNum++;
+    }
+
+    // Currency format for Base Price + Price 1..7 (C..J)
+    $lastRow = $rowNum - 1;
+    if ($lastRow >= 2) {
+        $sheet->getStyle("C2:J{$lastRow}")
+              ->getNumberFormat()
+              ->setFormatCode('#,##0.00');
+    }
+
+    $filename = "PRICING_CATEGORY.xlsx";
+    header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+    header('Content-Disposition: attachment; filename="' . $filename . '"');
+    header('Cache-Control: max-age=0');
+
+    $writer = new \PhpOffice\PhpSpreadsheet\Writer\Xlsx($spreadsheet);
+    $writer->save('php://output');
+    exit;
+}
 
     mysqli_close($conn);
 }
-
-//
- if ($action === "download_excel") {
-        $column_txt = implode(', ', array_keys($includedColumns));
-
-        $sql = "
-            SELECT $column_txt, customer_type_id
-            FROM $table
-            WHERE hidden = '0'
-            AND status = '1'
-            AND customer_type_id IS NOT NULL
-            AND customer_type_id != '0'
-        ";
-
-        $result = $conn->query($sql);
-        if (!$result) {
-            echo "Database error: " . $conn->error;
-            exit;
-        }
-
-        $spreadsheet = new \PhpOffice\PhpSpreadsheet\Spreadsheet();
-        $spreadsheet->removeSheetByIndex(0);
-
-        $customerTypeMap = [
-            1 => 'Customer Type (Personal)',
-            2 => 'Customer Type (Business)',
-            3 => 'Customer Type (Farm)',
-            4 => 'Customer Type (Exempt)'
-        ];
-
-        $sheets = [];
-        $currentRow = [];
-        $columnHasData = [];
-
-        while ($data = $result->fetch_assoc()) {
-            $customerTypeId = (int)($data['customer_type_id'] ?? 0);
-            if (!isset($customerTypeMap[$customerTypeId])) continue;
-
-            $sheetName = sanitizeSheetTitle($customerTypeMap[$customerTypeId]);
-
-            if (!isset($sheets[$sheetName])) {
-                $sheet = $spreadsheet->createSheet();
-                $sheet->setTitle($sheetName);
-                $sheets[$sheetName] = $sheet;
-                $columnHasData[$sheetName] = [];
-
-                $headerRow = 1;
-                $colIndex = 0;
-                foreach ($includedColumns as $dbColumn => $displayName) {
-                    $colLetter = indexToColumnLetter($colIndex);
-                    $sheet->setCellValue($colLetter . $headerRow, $displayName);
-                    $sheet->getColumnDimension($colLetter)->setAutoSize(true);
-                    $colIndex++;
-                }
-
-                $headerRange = 'A1:' . $sheet->getHighestColumn() . '1';
-                $sheet->getStyle($headerRange)->applyFromArray([
-                    'font' => ['bold' => true],
-                    'fill' => [
-                        'fillType' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID,
-                        'startColor' => ['rgb' => 'D9D9D9']
-                    ],
-                    'alignment' => ['horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER],
-                    'borders' => ['allBorders' => ['borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN]]
-                ]);
-
-                $currentRow[$sheetName] = 2;
-            }
-
-            $sheet = $sheets[$sheetName];
-            $colIndex = 0;
-            foreach ($includedColumns as $dbColumn => $displayName) {
-                $colLetter = indexToColumnLetter($colIndex);
-                $value = $data[$dbColumn] ?? '';
-
-                if ($dbColumn === 'password' && !empty($value)) {
-                    try {
-                        $value = decrypt_password_from_storage($value);
-                    } catch (Exception $e) {
-                        $value = '';
-                    }
-                }
-
-                if (strcasecmp($value, 'Yes') === 0) $value = 1;
-                elseif (strcasecmp($value, 'No') === 0) $value = 0;
-
-                if ($value !== '' && $value !== null) {
-                    $columnHasData[$sheetName][$colLetter] = true;
-                }
-
-                $sheet->setCellValueExplicit(
-                    $colLetter . $currentRow[$sheetName],
-                    $value,
-                    \PhpOffice\PhpSpreadsheet\Cell\DataType::TYPE_STRING
-                );
-
-                $colIndex++;
-            }
-
-            $currentRow[$sheetName]++;
-        }
-
-        foreach ($sheets as $sheetName => $sheet) {
-            $highestColumn = $sheet->getHighestColumn();
-            foreach (range('A', $highestColumn) as $colLetter) {
-                if (empty($columnHasData[$sheetName][$colLetter])) {
-                    $sheet->getColumnDimension($colLetter)->setVisible(false);
-                }
-            }
-        }
-        if ($spreadsheet->getSheetCount() === 0) {
-            echo "No data to export.";
-            exit;
-        }
-
-        $spreadsheet->setActiveSheetIndex(0);
-        $name = strtoupper(str_replace('_', ' ', $table));
-        $filename = "{$name}.xlsx";
-
-        header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-        header('Content-Disposition: attachment; filename="' . $filename . '"');
-        header('Cache-Control: max-age=0');
-
-        $writer = new \PhpOffice\PhpSpreadsheet\Writer\Xlsx($spreadsheet);
-        $writer->save('php://output');
-        exit;
-    }
+ 
 ?>
