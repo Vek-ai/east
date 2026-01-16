@@ -126,6 +126,9 @@ $permission = $_SESSION['permission'];
                     <?php                                                    
                     if ($permission === 'edit') {
                     ?>
+                    <button type="button" id="downloadBtn" class="btn btn-primary d-flex align-items-center">
+              <i class="ti ti-download text-white me-1 fs-5"></i> Download Pricing Category
+          </button>
                     <button type="button" id="addModalBtn" class="btn btn-primary d-flex align-items-center" data-id="" data-type="add">
                         <i class="ti ti-plus text-white me-1 fs-5"></i> Add Pricing Category
                     </button>
@@ -316,7 +319,9 @@ $permission = $_SESSION['permission'];
     });
 
     $('#toggleActive').trigger('change');
-
+    $(document).on('click', '#downloadBtn', function(event) {
+        window.location.href = "pages/pricing_category_ajax.php?action=download_excel";
+    });
     $(document).on('click', '.changeStatus', function(event) {
         event.preventDefault(); 
         var id = $(this).data('id');

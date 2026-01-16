@@ -246,4 +246,131 @@ if(isset($_REQUEST['action'])) {
 
     mysqli_close($conn);
 }
+
+//
+ if ($action === "download_excel") {
+        $column_txt = implode(', ', array_keys($includedColumns));
+
+        $sql = "
+            SELECT $column_txt, customer_type_id
+            FROM $table
+            WHERE hidden = '0'
+            AND status = '1'
+            AND customer_type_id IS NOT NULL
+            AND customer_type_id != '0'
+        ";
+
+        $result = $conn->query($sql);
+        if (!$result) {
+            echo "Database error: " . $conn->error;
+            exit;
+        }
+
+        $spreadsheet = new \PhpOffice\PhpSpreadsheet\Spreadsheet();
+        $spreadsheet->removeSheetByIndex(0);
+
+        $customerTypeMap = [
+            1 => 'Customer Type (Personal)',
+            2 => 'Customer Type (Business)',
+            3 => 'Customer Type (Farm)',
+            4 => 'Customer Type (Exempt)'
+        ];
+
+        $sheets = [];
+        $currentRow = [];
+        $columnHasData = [];
+
+        while ($data = $result->fetch_assoc()) {
+            $customerTypeId = (int)($data['customer_type_id'] ?? 0);
+            if (!isset($customerTypeMap[$customerTypeId])) continue;
+
+            $sheetName = sanitizeSheetTitle($customerTypeMap[$customerTypeId]);
+
+            if (!isset($sheets[$sheetName])) {
+                $sheet = $spreadsheet->createSheet();
+                $sheet->setTitle($sheetName);
+                $sheets[$sheetName] = $sheet;
+                $columnHasData[$sheetName] = [];
+
+                $headerRow = 1;
+                $colIndex = 0;
+                foreach ($includedColumns as $dbColumn => $displayName) {
+                    $colLetter = indexToColumnLetter($colIndex);
+                    $sheet->setCellValue($colLetter . $headerRow, $displayName);
+                    $sheet->getColumnDimension($colLetter)->setAutoSize(true);
+                    $colIndex++;
+                }
+
+                $headerRange = 'A1:' . $sheet->getHighestColumn() . '1';
+                $sheet->getStyle($headerRange)->applyFromArray([
+                    'font' => ['bold' => true],
+                    'fill' => [
+                        'fillType' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID,
+                        'startColor' => ['rgb' => 'D9D9D9']
+                    ],
+                    'alignment' => ['horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER],
+                    'borders' => ['allBorders' => ['borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN]]
+                ]);
+
+                $currentRow[$sheetName] = 2;
+            }
+
+            $sheet = $sheets[$sheetName];
+            $colIndex = 0;
+            foreach ($includedColumns as $dbColumn => $displayName) {
+                $colLetter = indexToColumnLetter($colIndex);
+                $value = $data[$dbColumn] ?? '';
+
+                if ($dbColumn === 'password' && !empty($value)) {
+                    try {
+                        $value = decrypt_password_from_storage($value);
+                    } catch (Exception $e) {
+                        $value = '';
+                    }
+                }
+
+                if (strcasecmp($value, 'Yes') === 0) $value = 1;
+                elseif (strcasecmp($value, 'No') === 0) $value = 0;
+
+                if ($value !== '' && $value !== null) {
+                    $columnHasData[$sheetName][$colLetter] = true;
+                }
+
+                $sheet->setCellValueExplicit(
+                    $colLetter . $currentRow[$sheetName],
+                    $value,
+                    \PhpOffice\PhpSpreadsheet\Cell\DataType::TYPE_STRING
+                );
+
+                $colIndex++;
+            }
+
+            $currentRow[$sheetName]++;
+        }
+
+        foreach ($sheets as $sheetName => $sheet) {
+            $highestColumn = $sheet->getHighestColumn();
+            foreach (range('A', $highestColumn) as $colLetter) {
+                if (empty($columnHasData[$sheetName][$colLetter])) {
+                    $sheet->getColumnDimension($colLetter)->setVisible(false);
+                }
+            }
+        }
+        if ($spreadsheet->getSheetCount() === 0) {
+            echo "No data to export.";
+            exit;
+        }
+
+        $spreadsheet->setActiveSheetIndex(0);
+        $name = strtoupper(str_replace('_', ' ', $table));
+        $filename = "{$name}.xlsx";
+
+        header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+        header('Content-Disposition: attachment; filename="' . $filename . '"');
+        header('Cache-Control: max-age=0');
+
+        $writer = new \PhpOffice\PhpSpreadsheet\Writer\Xlsx($spreadsheet);
+        $writer->save('php://output');
+        exit;
+    }
 ?>
