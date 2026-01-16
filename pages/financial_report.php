@@ -222,6 +222,67 @@ td.notes,  td.last-edit{
     </div>
 </div>
 
+<div class="modal fade" id="dateModal" tabindex="-1" role="dialog">
+  <div class="modal-dialog modal-sm" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Select Date Range</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <div class="mb-3">
+          <label for="modalDateFrom" class="form-label">From:</label>
+          <input type="date" id="modalDateFrom" class="form-control">
+        </div>
+        <div class="mb-3">
+          <label for="modalDateTo" class="form-label">To:</label>
+          <input type="date" id="modalDateTo" class="form-control">
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button id="searchPdfBtn" class="btn btn-primary">Search</button>
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade custom-size" id="pdfModal" tabindex="-1" role="dialog">
+  <div class="modal-dialog modal-xl" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Print/View Outputs</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+
+        <ul class="nav nav-tabs mb-3" id="pdfTabs">
+          <li class="nav-item">
+            <a class="nav-link" href="#" data-tab="dailySales">Daily Sales</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link active" href="#" data-tab="cashFlow">Cash Flow</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="#" data-tab="accountsReceivable">Accounts Receivable</a>
+          </li>
+        </ul>
+
+        <iframe id="pdfFrame" src="" style="height: 60vh; width: 100%;" class="mb-3 border rounded"></iframe>
+
+        <div class="container mt-3 border rounded p-3">
+          <div class="text-end">
+            <button id="printBtn" class="btn btn-success me-2">Print</button>
+            <button id="downloadBtn" class="btn btn-primary me-2">Download</button>
+            <button class="btn btn-danger" data-bs-dismiss="modal">Cancel</button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
 <div class="modal fade" id="response-modal" tabindex="-1" aria-labelledby="vertical-center-modal" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered">
     <div class="modal-content">
@@ -511,6 +572,94 @@ td.notes,  td.last-edit{
         $('#filter_date').val('');
 
         filterTable();
+    });
+
+    let selectedPdfTab = 'cashFlow';
+    let selectedDateRange = { from: '', to: '' };
+    let pdfUrl = '';
+    let isPrinting = false;
+
+    $(document).on('click', '.view_print', function(e) {
+        e.preventDefault();
+        console.log(123);
+
+        const date = $(this).data('id');
+
+        $('#modalDateFrom').val(date);
+        $('#modalDateTo').val(date);
+
+        const modal = new bootstrap.Modal(document.getElementById('dateModal'));
+        modal.show();
+    });
+
+    $('#searchPdfBtn').on('click', function() {
+        selectedDateRange.from = $('#modalDateFrom').val();
+        selectedDateRange.to = $('#modalDateTo').val();
+
+        if (!selectedDateRange.from || !selectedDateRange.to) {
+            alert('Please select both From and To dates.');
+            return;
+        }
+
+        const smallModal = bootstrap.Modal.getInstance(document.getElementById('dateModal'));
+        smallModal.hide();
+
+        pdfUrl = getPdfUrl(selectedPdfTab, selectedDateRange.from, selectedDateRange.to);
+        $('#pdfFrame').attr('src', pdfUrl);
+
+        const bigModal = new bootstrap.Modal(document.getElementById('pdfModal'));
+        bigModal.show();
+    });
+
+    $('#pdfTabs').on('click', 'a.nav-link', function(e) {
+        e.preventDefault();
+        $('#pdfTabs a.nav-link').removeClass('active bg-warning text-dark');
+        $(this).addClass('active bg-warning text-dark');
+
+        selectedPdfTab = $(this).data('tab');
+
+        pdfUrl = getPdfUrl(selectedPdfTab, selectedDateRange.from, selectedDateRange.to);
+        $('#pdfFrame').attr('src', pdfUrl);
+    });
+
+    function getPdfUrl(tab, from, to) {
+        switch(tab) {
+            case 'dailySales':
+                return `/print_financial_daily_sales.php?from=${from}&to=${to}`;
+            case 'cashFlow':
+                return `/print_financial_cash_flow.php?from=${from}&to=${to}`;
+            case 'accountsReceivable':
+                return `/print_financial_statement_account.php?from=${from}&to=${to}`;
+            default:
+                return '';
+        }
+    }
+
+    $('#printBtn').on('click', function () {
+        if (isPrinting) return;
+        isPrinting = true;
+
+        const $iframe = $('#pdfFrame');
+        $iframe.off('load').one('load', function () {
+            try {
+                this.contentWindow.focus();
+                this.contentWindow.print();
+            } catch (e) {
+                alert("Failed to print PDF.");
+            }
+            isPrinting = false;
+        });
+
+        $iframe.attr('src', pdfUrl);
+    });
+
+    $('#downloadBtn').on('click', function () {
+        const link = document.createElement('a');
+        link.href = pdfUrl;
+        link.download = '';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
     });
 
     var today = new Date().toISOString().split('T')[0];

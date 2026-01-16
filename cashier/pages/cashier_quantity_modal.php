@@ -551,7 +551,12 @@ if (isset($_POST['fetch_price'])) {
 
             $profile = !empty($preselected_profile) ? $preselected_profile : $profile;
 
-            $totalPrice += $qty * calculateUnitPrice(
+            $customer_id = $_SESSION['customer_id'];
+            $customer_details = getCustomerDetails($customer_id);
+            $customer_details_pricing = $customer_details['customer_pricing'];
+
+            $customer_pricing_rate = getPricingCategory($panel_id, $customer_details_pricing, $product_id) / 100;
+            $price += $qty * (1 - $customer_pricing_rate) * calculateUnitPrice(
                 $basePrice,
                 $feet,
                 $inch,
@@ -566,6 +571,8 @@ if (isset($_POST['fetch_price'])) {
                 $category,
                 $profile
             );
+            
+            $totalPrice += $price;
         }
     }
 

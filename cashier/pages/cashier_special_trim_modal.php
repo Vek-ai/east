@@ -24,6 +24,7 @@ $drawingData = [
 ];
 $jsonDrawing = json_encode($drawingData, JSON_UNESCAPED_UNICODE);
 $drawing_str = htmlspecialchars($jsonDrawing, ENT_QUOTES, 'UTF-8');
+$trim_id = 4;
 
 if(isset($_POST['fetch_modal'])){
     $id = mysqli_real_escape_string($conn, $_POST['id']);
@@ -450,7 +451,13 @@ if (isset($_POST['fetch_price'])) {
             $profile = json_decode($profile_raw, true);
             $profile = is_array($profile) ? array_map('intval', $profile) : [];
 
-            $totalPrice += $qty * calculateUnitPrice(
+            $customer_id = $_SESSION['customer_id'];
+            $customer_details = getCustomerDetails($customer_id);
+            $customer_details_pricing = $customer_details['customer_pricing'];
+
+            $customer_pricing_rate = getPricingCategory($trim_id, $customer_details_pricing, $product_id) / 100;
+
+            $price += $qty * (1 - $customer_pricing_rate) * calculateUnitPrice(
                 $unitPrice,
                 $feet,
                 '',
@@ -465,6 +472,8 @@ if (isset($_POST['fetch_price'])) {
                 $category,
                 $profile
             );
+
+            $totalPrice += $price;
         }
     }
 

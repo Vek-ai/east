@@ -7,6 +7,8 @@ error_reporting(E_ERROR | E_PARSE | E_CORE_ERROR | E_CORE_WARNING | E_COMPILE_ER
 require '../../includes/dbconn.php';
 require '../../includes/functions.php';
 
+$screw_id = 16;
+
 if(isset($_POST['fetch_modal'])){
     $id = mysqli_real_escape_string($conn, $_POST['id']);
     $color = mysqli_real_escape_string($conn, $_POST['color']);
@@ -303,7 +305,13 @@ if (isset($_POST['fetch_price'])) {
             $gauge = '';
             $width = '';
 
-            $totalPrice += $pack_count * $qty * calculateUnitPrice(
+            $customer_id = $_SESSION['customer_id'];
+            $customer_details = getCustomerDetails($customer_id);
+            $customer_details_pricing = $customer_details['customer_pricing'];
+
+            $customer_pricing_rate = getPricingCategory($screw_id, $customer_details_pricing, $product_id) / 100;
+
+            $price += $pack_count * $qty * (1 - $customer_pricing_rate) * calculateUnitPrice(
                 $unit_price,
                 1,
                 0,
@@ -318,6 +326,8 @@ if (isset($_POST['fetch_price'])) {
                 $category,
                 ''
             );
+
+            $totalPrice += $price;
         }
     }
 

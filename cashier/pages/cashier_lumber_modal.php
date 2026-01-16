@@ -7,6 +7,8 @@ error_reporting(E_ERROR | E_PARSE | E_CORE_ERROR | E_CORE_WARNING | E_COMPILE_ER
 require '../../includes/dbconn.php';
 require '../../includes/functions.php';
 
+$lumber_id = 1;
+
 if(isset($_POST['fetch_modal'])){
     $id = mysqli_real_escape_string($conn, $_POST['id']);
     $product_details = getProductDetails($id);
@@ -193,15 +195,21 @@ if (isset($_POST['fetch_price'])) {
                 $unit_price = $bulk_price;
             }
 
-            $unitPrice = calculateUnitPrice(
+            $customer_id = $_SESSION['customer_id'];
+            $customer_details = getCustomerDetails($customer_id);
+            $customer_details_pricing = $customer_details['customer_pricing'];
+
+            $customer_pricing_rate = getPricingCategory($lumber_id, $customer_details_pricing, $product_id) / 100;
+            $unitPrice = (1 - $customer_pricing_rate) * calculateUnitPrice(
                 $unit_price,
-                1,
+                '',
                 '',
                 '',
                 '',
                 '', 
                 '',
                 $color_id,
+                '',
                 '',
                 '',
                 $category,

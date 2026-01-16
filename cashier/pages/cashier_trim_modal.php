@@ -35,6 +35,7 @@ $ga_26 = 2;
 $ga_29 = 3;
 
 $galvalume_id = 14;
+$trim_id = 4;
 
 if(isset($_POST['fetch_modal'])){
     $id = mysqli_real_escape_string($conn, $_POST['id']);
@@ -482,7 +483,13 @@ if (isset($_POST['fetch_price'])) {
 
             $profile = !empty($preselected_profile) ? $preselected_profile : $profile;
 
-            $totalPrice += $qty * calculateUnitPrice(
+            $customer_id = $_SESSION['customer_id'];
+            $customer_details = getCustomerDetails($customer_id);
+            $customer_details_pricing = $customer_details['customer_pricing'];
+
+            $customer_pricing_rate = getPricingCategory($trim_id, $customer_details_pricing, $product_id) / 100;
+
+            $price += $qty * (1 - $customer_pricing_rate) * calculateUnitPrice(
                 $unitPrice,
                 $feet,
                 '',
@@ -497,6 +504,8 @@ if (isset($_POST['fetch_price'])) {
                 $category,
                 $profile
             );
+
+            $totalPrice += $price;
         }
     }
 

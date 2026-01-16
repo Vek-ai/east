@@ -628,7 +628,6 @@ if(isset($_REQUEST['action'])) {
         exit;
     }
 
-
     if ($action == 'fetch_daily_sales') {
         $date = mysqli_real_escape_string($conn, $_POST['date'] ?? '');
         $response_html = '';
