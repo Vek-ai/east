@@ -33,7 +33,7 @@ $query = "
     ORDER BY cf.date ASC
 ";
 
-$result = $conn->query($sql);
+$result = $conn->query($query);
 if (!$result || $result->num_rows === 0) {
     echo 'No Cash Flows found for this period.';
     exit;
