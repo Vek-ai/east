@@ -2272,11 +2272,22 @@ $editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) :
         }
     });
 
-    $("#return_customer_name").autocomplete({
+    let lastCustomerValue = '';
+
+    $("#return_customer_name")
+    .on("focus", function () {
+        lastCustomerValue = this.value;
+    })
+    .on("input", function () {
+        if (this.value !== lastCustomerValue) {
+            $("#return_customer_id").val('');
+        }
+    })
+    .autocomplete({
         source: function(request, response) {
             $.ajax({
                 url: "pages/cashier_ajax.php",
-                type: 'post',
+                type: "post",
                 dataType: "json",
                 data: {
                     search_customer: request.term
@@ -2284,17 +2295,19 @@ $editEstimateId = isset($_GET['editestimate']) ? intval($_GET['editestimate']) :
                 success: function(data) {
                     response(data);
                 },
-                error: function(xhr, status, error) {
-                    console.log("Error: " + xhr.responseText);
+                error: function(xhr) {
+                    console.log(xhr.responseText);
                 }
             });
         },
         select: function(event, ui) {
-            $('#return_customer_name').val(ui.item.label);
-            $('#return_customer_id').val(ui.item.value);
+            $("#return_customer_name").val(ui.item.label);
+            $("#return_customer_id").val(ui.item.value);
+
+            lastCustomerValue = ui.item.label;
             return false;
         },
-        appendTo: "#view_order_list_modal", 
+        appendTo: "#view_order_list_modal",
         open: function() {
             $(".ui-autocomplete").css("z-index", 1050);
         }

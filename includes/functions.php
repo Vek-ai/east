@@ -3310,32 +3310,55 @@ function indexToColumnLetter($index) {
 function getColumnFromTable($table, $column, $ids = null) {
     global $conn;
 
-    $idColumn = getPrimaryKey($table);
-    if (!$idColumn || empty($ids)) {
+    if (empty($table) || empty($column)) {
         return '';
     }
 
-    if (is_string($ids) && $ids[0] === '[') {
-        $ids = json_decode($ids, true);
-    } elseif (!is_array($ids)) {
+    if (!preg_match('/^[a-zA-Z0-9_]+$/', $table) || !preg_match('/^[a-zA-Z0-9_]+$/', $column)) {
+        return '';
+    }
+
+    $idColumn = getPrimaryKey($table);
+    if (empty($idColumn) || !preg_match('/^[a-zA-Z0-9_]+$/', $idColumn)) {
+        return '';
+    }
+
+    if (empty($ids)) {
+        return '';
+    }
+
+    if (is_string($ids) && isset($ids[0]) && $ids[0] === '[') {
+        $decoded = json_decode($ids, true);
+        if (json_last_error() === JSON_ERROR_NONE) {
+            $ids = $decoded;
+        }
+    }
+
+    if (!is_array($ids)) {
         $ids = [$ids];
     }
 
-    $ids = array_filter($ids, 'is_numeric');
-    if (!$ids) {
+    $ids = array_unique(array_filter(array_map('intval', $ids)));
+    if (empty($ids)) {
         return '';
     }
 
-    $idList = implode(',', array_map('intval', $ids));
-    $query  = "SELECT $column FROM $table WHERE $idColumn IN ($idList)";
+    $idList = implode(',', $ids);
+    $query = "SELECT DISTINCT `$column` FROM `$table` WHERE `$idColumn` IN ($idList)";
     $result = mysqli_query($conn, $query);
+
+    if ($result === false) {
+        return '';
+    }
 
     $data = [];
     while ($row = mysqli_fetch_assoc($result)) {
-        $data[] = $row[$column];
+        if (isset($row[$column]) && $row[$column] !== '') {
+            $data[] = $row[$column];
+        }
     }
 
-    return implode(', ', $data);
+    return $data ? implode(', ', $data) : '';
 }
 
 function getIdsFromColumnValues($table, $column, $values = null) {
