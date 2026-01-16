@@ -3226,9 +3226,17 @@ function getMultiplierValue($category_id, $color_id, $grade_id, $gauge_id, $prof
 
     $conditions = [];
 
-    $conditions[] = "(JSON_CONTAINS(product_category, '$category_id') OR product_category = '$category_id')";
-    $conditions[] = "(JSON_CONTAINS(grade, '$grade_id') OR grade = '$grade_id')";
-    $conditions[] = "(JSON_CONTAINS(gauge, '$gauge_id') OR gauge = '$gauge_id')";
+    if ($category_id > 0) {
+        $conditions[] = "(JSON_CONTAINS(product_category, '$category_id') OR product_category = '$category_id')";
+    }
+
+    if ($grade_id > 0) {
+        $conditions[] = "(JSON_CONTAINS(grade, '$grade_id') OR grade = '$grade_id')";
+    }
+
+    if ($gauge_id > 0) {
+        $conditions[] = "(JSON_CONTAINS(gauge, '$gauge_id') OR gauge = '$gauge_id')";
+    }
 
     if (!empty($profile_id)) {
         $profile_checks = [];
@@ -3238,7 +3246,7 @@ function getMultiplierValue($category_id, $color_id, $grade_id, $gauge_id, $prof
         $conditions[] = '(' . implode(' OR ', $profile_checks) . ')';
     }
 
-    $where = implode(' AND ', $conditions);
+    $where = !empty($conditions) ? implode(' AND ', $conditions) : '1';
 
     $color_details = getColorDetails($color_id);
     $color_group_raw = $color_details['color_group'] ?? '[]';
@@ -3258,7 +3266,7 @@ function getMultiplierValue($category_id, $color_id, $grade_id, $gauge_id, $prof
         ";
 
         $res = $conn->query($sql);
-        if ($res && $res->num_rows > 0 && $row = $res->fetch_assoc()) {
+        if ($res && $row = $res->fetch_assoc()) {
             $multiplier *= floatval($row['multiplier']);
         }
     }
@@ -3267,7 +3275,7 @@ function getMultiplierValue($category_id, $color_id, $grade_id, $gauge_id, $prof
         $res = $conn->query("
             SELECT multiplier 
             FROM product_grade 
-            WHERE product_grade_id = '$grade_id' 
+            WHERE product_grade_id = '$grade_id'
             LIMIT 1
         ");
         if ($res && $row = $res->fetch_assoc()) {
@@ -3275,12 +3283,11 @@ function getMultiplierValue($category_id, $color_id, $grade_id, $gauge_id, $prof
         }
     }
 
-    // ---- Gauge multiplier ----
     if ($gauge_id > 0) {
         $res = $conn->query("
             SELECT multiplier 
             FROM product_gauge 
-            WHERE product_gauge_id = '$gauge_id' 
+            WHERE product_gauge_id = '$gauge_id'
             LIMIT 1
         ");
         if ($res && $row = $res->fetch_assoc()) {

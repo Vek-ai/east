@@ -415,7 +415,7 @@ if (isset($_REQUEST['query'])) {
                     <a href="javascript:void(0);" data-id="' . $row_product['product_id'] . '" class="d-flex align-items-center '.$view_class.'">
                         <div class="d-flex align-items-center" >
                             <div class="ms-3">
-                                <h6 class="fw-semibold mb-0 fs-4">'. getProductName($row_product['product_id']) .' ' .$dimensions .'</h6>
+                                <h6 class="fw-semibold mb-0 fs-4">'. getProductName($row_product['product_id']) .'</h6>
                             </div>
                         </div>
                     </a>

@@ -353,6 +353,9 @@ if(isset($_POST['fetch_cart'])){
                                     $linear_price =$item['linear_price'];
                                     $panel_price = $item['panel_price'];
 
+                                    //override
+                                    $unit_price = $customer_price;
+
                                     $total_price_actual = $item['product_price'];
                                     $total_customer_price = $item['customer_price'];
 
