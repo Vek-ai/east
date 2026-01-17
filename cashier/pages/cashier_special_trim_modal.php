@@ -446,7 +446,6 @@ if (isset($_POST['fetch_price'])) {
                 ? $bulk_price
                 : $basePrice;
 
-            $width = '';
             $profile_raw = $product['profile'] ?? '[]';
             $profile = json_decode($profile_raw, true);
             $profile = is_array($profile) ? array_map('intval', $profile) : [];
