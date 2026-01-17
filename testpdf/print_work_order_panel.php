@@ -145,7 +145,10 @@ function renderPanelCategory($pdf, $product, $conn) {
     $coils_raw = $work_order['assigned_coils'] ?? '';
     $coils = json_decode($coils_raw, true);
 
-    $coils_assigned = implode(', ', array_filter(array_map(fn($id) => getCoilEntry($id), array_filter(array_map('intval', explode(',', str_replace(['[', ']'], '', $work_order['assigned_coils'] ?? '')))))));
+    $ids = array_filter(array_map('intval', explode(',', trim($work_order['assigned_coils'] ?? '', '[]'))));
+    $coils_assigned = implode(', ', array_filter(array_map(function($id){
+        return getCoilEntry($id);
+    }, $ids)));
 
     $productid = $product['productid'];
     $product_details = getProductDetails($productid);
@@ -216,10 +219,6 @@ function renderRow($pdf, $columns, $row, $bold = false) {
     $xStart = $pdf->GetX();
     $yStart = $pdf->GetY();
     $x = $xStart;
-
-    if (!is_array($row) || !is_array($columns)) {
-        return;
-    }
 
     $row = array_slice($row, 0, count($columns));
     $columnHeights = [];
