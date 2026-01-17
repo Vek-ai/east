@@ -22,7 +22,7 @@ function calculateUnitPrice(
     $soldByFeet = ($soldByFeet == 1) ? 1 : 0;
     $bends      = is_numeric($bends) ? intval($bends) : 0;
     $hems       = is_numeric($hems) ? intval($hems) : 0;
-    $width      = is_numeric($width) ? intval($width) : 12;
+    $width      = is_numeric($width) ? floatval($width) : 12;
     if (!is_array($profile)) {
         $profile = [$profile];
     }
